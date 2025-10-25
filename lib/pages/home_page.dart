@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/model/gallery_image_page_url.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/pages/details/details_page_logic.dart';
@@ -11,31 +10,21 @@ import 'package:jhentai/pages/gallery_image/gallery_image_page_logic.dart';
 import 'package:jhentai/pages/layout/desktop/desktop_layout_page.dart';
 import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2.dart';
 import 'package:jhentai/pages/layout/tablet_v2/tablet_layout_page_v2.dart';
-import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/toast_util.dart';
-import 'package:jhentai/utils/version_util.dart';
-import 'package:jhentai/widget/will_pop_interceptor.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:retry/retry.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../mixin/window_widget_mixin.dart';
 import '../mixin/login_required_logic_mixin.dart';
 import '../model/jh_layout.dart';
-import '../network/eh_request.dart';
 import '../routes/routes.dart';
-import '../service/storage_service.dart';
 import '../setting/advanced_setting.dart';
-import '../utils/eh_spider_parser.dart';
 import '../utils/route_util.dart';
 import '../utils/screen_size_util.dart';
 import '../utils/snack_util.dart';
-import '../utils/string_uril.dart';
-import '../widget/update_dialog.dart';
 
 const int left = 1;
 const int right = 2;
@@ -48,7 +37,7 @@ Routing rightRouting = Routing();
 
 /// Core widget to decide which layout to be applied
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();

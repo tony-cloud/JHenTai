@@ -13,7 +13,7 @@ mixin LoginRequiredMixin {
     return true;
   }
 
-  showLoginToast() {
+  void showLoginToast() {
     toast('needLoginToOperate'.tr);
   }
 }

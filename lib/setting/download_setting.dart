@@ -134,19 +134,19 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
 
   Future<void> saveDownloadOriginalImageByDefault(bool value) async {
     log.debug('saveDownloadOriginalImageByDefault:$value');
-    this.downloadOriginalImageByDefault.value = value;
+    downloadOriginalImageByDefault.value = value;
     await saveBeanConfig();
   }
 
   Future<void> saveDefaultGalleryGroup(String? group) async {
     log.debug('saveDefaultGalleryGroup:$group');
-    this.defaultGalleryGroup.value = group;
+    defaultGalleryGroup.value = group;
     await saveBeanConfig();
   }
 
   Future<void> saveDefaultArchiveGroup(String? group) async {
     log.debug('saveDefaultArchiveGroup:$group');
-    this.defaultArchiveGroup.value = group;
+    defaultArchiveGroup.value = group;
     await saveBeanConfig();
   }
 
@@ -215,8 +215,8 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
       log.uploadError(
         e,
         extraInfos: {
-          'defaultDownloadPath': this.defaultDownloadPath,
-          'downloadPath': this.downloadPath.value,
+          'defaultDownloadPath': defaultDownloadPath,
+          'downloadPath': downloadPath.value,
           'exists': pathService.getVisibleDir().existsSync(),
         },
       );

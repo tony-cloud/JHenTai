@@ -17,9 +17,8 @@ import 'dashboard_page_logic.dart';
 
 /// For mobile v2 layout
 class DashboardPage extends BasePage {
-  const DashboardPage({Key? key})
+  const DashboardPage({super.key})
       : super(
-          key: key,
           showMenuButton: true,
           showTitle: true,
           showScroll2TopButton: true,
@@ -112,7 +111,7 @@ class DashboardPage extends BasePage {
                   gallery: state.ranklistGallerys[index], badge: _getRanklistBadge(index)),
               separatorBuilder: (_, __) => const VerticalDivider(),
               cacheExtent: 2000,
-            ).enableMouseDrag(withScrollBar: false).fadeIn(),
+            ).enableMouseDrag(withScrollBar: false).fadeInWidget(),
           ),
         ),
       ),
@@ -144,7 +143,7 @@ class DashboardPage extends BasePage {
               itemBuilder: (_, index) => EHDashboardCard(gallery: state.popularGallerys[index]),
               separatorBuilder: (_, __) => const VerticalDivider(),
               cacheExtent: 2000,
-            ).enableMouseDrag(withScrollBar: false).fadeIn(),
+            ).enableMouseDrag(withScrollBar: false).fadeInWidget(),
           ),
         ),
       ),
@@ -200,7 +199,7 @@ class DashboardPage extends BasePage {
 }
 
 class _RankListDesc extends StatelessWidget {
-  const _RankListDesc({Key? key}) : super(key: key);
+  const _RankListDesc();
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +241,7 @@ class _RankListDesc extends StatelessWidget {
 }
 
 class _PopularListDesc extends StatelessWidget {
-  const _PopularListDesc({Key? key}) : super(key: key);
+  const _PopularListDesc();
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +284,7 @@ class _PopularListDesc extends StatelessWidget {
 class _GalleryListDesc extends StatelessWidget {
   final List<Widget> actions;
 
-  const _GalleryListDesc({Key? key, required this.actions}) : super(key: key);
+  const _GalleryListDesc({required this.actions});
 
   @override
   Widget build(BuildContext context) {

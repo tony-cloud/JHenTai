@@ -25,7 +25,7 @@ mixin MultiSelectDownloadPageLogicMixin<T> on GetxController {
 
     updateSafely([
       bottomAppbarId,
-      ...selectedGids.map((gid) => '$itemCardId::$gid').toList(),
+      ...selectedGids.map((gid) => '$itemCardId::$gid'),
     ]);
   }
 

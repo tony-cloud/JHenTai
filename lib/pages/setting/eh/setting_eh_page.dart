@@ -22,7 +22,7 @@ import '../../../utils/route_util.dart';
 import '../../../utils/snack_util.dart';
 
 class SettingEHPage extends StatefulWidget {
-  const SettingEHPage({Key? key}) : super(key: key);
+  const SettingEHPage({super.key});
 
   @override
   State<SettingEHPage> createState() => _SettingEHPageState();
@@ -98,7 +98,7 @@ class _SettingEHPageState extends State<SettingEHPage> {
       subtitle: Text('redirect2EhHint'.tr),
       value: ehSetting.redirect2Eh.value,
       onChanged: ehSetting.saveRedirect2Eh,
-    ).fadeIn();
+    ).fadeInWidget();
   }
 
   Widget _buildProfile() {
@@ -146,7 +146,7 @@ class _SettingEHPageState extends State<SettingEHPage> {
           idleWidgetBuilder: () => const Text(''),
           errorWidgetSameWithIdle: true,
           successWidgetBuilder: () => isDonator
-              ? Text('${'resetCost'.tr} $resetCost GP').fadeIn()
+              ? Text('${'resetCost'.tr} $resetCost GP').fadeInWidget()
               : Text('isNotDonator'.tr),
         ),
         onTap: fetchDataFromHomePage,
@@ -160,7 +160,7 @@ class _SettingEHPageState extends State<SettingEHPage> {
               idleWidgetBuilder: () => const SizedBox(),
               errorWidgetSameWithIdle: true,
               successWidgetBuilder: () =>
-                  isDonator ? Text('$currentConsumption / $totalLimit').fadeIn() : const Text(''),
+                  isDonator ? Text('$currentConsumption / $totalLimit').fadeInWidget() : const Text(''),
             ).marginOnly(right: 4),
             const Icon(Icons.keyboard_arrow_right),
           ],
@@ -177,7 +177,7 @@ class _SettingEHPageState extends State<SettingEHPage> {
         loadingWidgetBuilder: () => const Text(''),
         idleWidgetBuilder: () => const Text(''),
         errorWidgetSameWithIdle: true,
-        successWidgetBuilder: () => Text('GP: $gp    Credits: $credit').fadeIn(),
+        successWidgetBuilder: () => Text('GP: $gp    Credits: $credit').fadeInWidget(),
       ),
       onTap: getAssets,
       trailing: Row(

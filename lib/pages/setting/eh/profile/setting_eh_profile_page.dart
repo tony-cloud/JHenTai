@@ -67,7 +67,7 @@ class _SettingEHProfilePageState extends State<SettingEHProfilePage> {
               },
               items: profiles
                   .map(
-                    (p) => DropdownMenuItem(child: Text(p.name), value: p.number),
+                    (p) => DropdownMenuItem(value: p.number, child: Text(p.name)),
                   )
                   .toList(),
             ),

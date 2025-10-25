@@ -20,7 +20,7 @@ import 'loading_state_indicator.dart';
 class EHDownloadHHDialog extends StatefulWidget {
   final String archivePageUrl;
 
-  const EHDownloadHHDialog({Key? key, required this.archivePageUrl}) : super(key: key);
+  const EHDownloadHHDialog({super.key, required this.archivePageUrl});
 
   @override
   State<EHDownloadHHDialog> createState() => _EHDownloadHHDialogState();
@@ -45,7 +45,7 @@ class _EHDownloadHHDialogState extends State<EHDownloadHHDialog> {
         child: LoadingStateIndicator(
           loadingState: loadingState,
           errorTapCallback: _getHHInfo,
-          successWidgetBuilder: () => _buildBody(),
+          successWidgetBuilder: _buildBody,
         ),
       ),
     );
@@ -115,7 +115,7 @@ class _EHDownloadHHDialogState extends State<EHDownloadHHDialog> {
 class _HHDownloadButtonSet extends StatelessWidget {
   final GalleryHHArchive archive;
 
-  const _HHDownloadButtonSet({Key? key, required this.archive}) : super(key: key);
+  const _HHDownloadButtonSet({required this.archive});
 
   @override
   Widget build(BuildContext context) {

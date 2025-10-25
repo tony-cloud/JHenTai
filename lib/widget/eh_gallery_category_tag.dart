@@ -15,7 +15,7 @@ class EHGalleryCategoryTag extends StatelessWidget {
   final VoidCallback? onSecondaryTap;
 
   const EHGalleryCategoryTag({
-    Key? key,
+    super.key,
     required this.category,
     this.height,
     this.width,
@@ -28,7 +28,7 @@ class EHGalleryCategoryTag extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

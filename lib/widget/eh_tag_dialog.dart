@@ -37,13 +37,13 @@ class EHTagDialog extends StatefulWidget {
   final ValueChanged<bool>? onTagVoted;
 
   const EHTagDialog({
-    Key? key,
+    super.key,
     required this.tagData,
     required this.gid,
     required this.token,
     required this.apikey,
     this.onTagVoted,
-  }) : super(key: key);
+  });
 
   @override
   _EHTagDialogState createState() => _EHTagDialogState();

@@ -11,9 +11,6 @@ import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/pages/gallery_image/gallery_image_page_state.dart';
 import 'package:jhentai/routes/routes.dart';
-import 'package:jhentai/service/gallery_download_service.dart';
-import 'package:jhentai/service/storage_service.dart';
-import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/route_util.dart';
@@ -118,7 +115,7 @@ class GalleryImagePageLogic extends GetxController {
 
     await tagTranslationService.translateTagsIfNeeded(detailsPageInfo.galleryDetails.tags);
 
-    _addColor2WatchedTags(detailsPageInfo.galleryDetails!.tags);
+    _addColor2WatchedTags(detailsPageInfo.galleryDetails.tags);
 
     if (isClosed) {
       return;

@@ -1006,7 +1006,7 @@ class ArchiveDownloadService extends GetxController
 
     if (archiveDownloadInfo.parseSource == ArchiveParseSource.official.code) {
       archiveDownloadInfo.downloadUrl =
-          'https://' + Uri.parse(archiveDownloadInfo.downloadPageUrl!).host + downloadPath;
+          'https://${Uri.parse(archiveDownloadInfo.downloadPageUrl!).host}$downloadPath';
     } else {
       archiveDownloadInfo.downloadUrl = downloadPath;
     }

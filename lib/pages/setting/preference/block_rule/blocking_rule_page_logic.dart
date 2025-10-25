@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/service/local_config_service.dart';
-import 'package:jhentai/service/storage_service.dart';
 import 'package:jhentai/utils/snack_util.dart';
 
 import '../../../../service/local_block_rule_service.dart';

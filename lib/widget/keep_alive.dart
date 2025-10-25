@@ -3,10 +3,10 @@ import 'package:flutter/widgets.dart';
 /// KeepAliveWrapper can keep the item(s) of scrollview alive, **Not dispose**.
 class KeepAliveWrapper extends StatefulWidget {
   const KeepAliveWrapper({
-    Key? key,
+    super.key,
     this.keepAlive = true,
     required this.child,
-  }) : super(key: key);
+  });
   final bool keepAlive;
   final Widget child;
 

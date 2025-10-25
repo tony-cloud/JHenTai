@@ -24,12 +24,11 @@ class EHFavoriteDialog extends StatefulWidget {
   final GalleryNoteFetchFunction? initNoteFuture;
 
   const EHFavoriteDialog({
-    Key? key,
+    super.key,
     this.selectedIndex,
     this.needInitNote = false,
     this.initNoteFuture,
-  })  : assert(needInitNote == false || initNoteFuture != null),
-        super(key: key);
+  })  : assert(needInitNote == false || initNoteFuture != null);
 
   @override
   State<EHFavoriteDialog> createState() => _EHFavoriteDialogState();
@@ -68,6 +67,7 @@ class _EHFavoriteDialogState extends State<EHFavoriteDialog> {
   Widget build(BuildContext context) {
     return SimpleDialog(
       title: Center(child: Text('chooseFavorite'.tr)),
+      contentPadding: const EdgeInsets.only(top: 18, left: 12, right: 12, bottom: 12),
       children: [
         LoadingStateIndicator(
           loadingState: _loadingState,
@@ -105,7 +105,7 @@ class _EHFavoriteDialogState extends State<EHFavoriteDialog> {
                         },
                       ),
                     )
-                    .toList(),
+                    ,
                 const Divider(height: 12),
                 ListTile(
                   dense: true,
@@ -170,7 +170,6 @@ class _EHFavoriteDialogState extends State<EHFavoriteDialog> {
           ),
         ),
       ],
-      contentPadding: const EdgeInsets.only(top: 18, left: 12, right: 12, bottom: 12),
     );
   }
 

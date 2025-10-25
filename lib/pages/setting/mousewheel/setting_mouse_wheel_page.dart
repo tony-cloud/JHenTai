@@ -9,7 +9,7 @@ import '../../../utils/text_input_formatter.dart';
 import '../../../utils/toast_util.dart';
 
 class SettingMouseWheelPage extends StatelessWidget {
-  const SettingMouseWheelPage({Key? key}) : super(key: key);
+  const SettingMouseWheelPage({super.key});
 
   @override
   Widget build(BuildContext context) {

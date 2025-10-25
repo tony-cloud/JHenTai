@@ -203,7 +203,7 @@ class _ReadPageState extends State<ReadPage>
 
           return GetBuilder<ReadPageLogic>(
             id: logic.rightBottomInfoId,
-            builder: (_) => state.isMenuOpen ? child.fadeOut() : child.fadeIn(),
+            builder: (_) => state.isMenuOpen ? child.fadeOutWidget() : child.fadeInWidget(),
           );
         },
       ),
@@ -271,7 +271,6 @@ class _ReadPageState extends State<ReadPage>
           actions: [
             if (GetPlatform.isDesktop)
               ElevatedButton(
-                child: const Icon(Icons.help, color: UIConfig.readPageButtonColor),
                 onPressed: () => toast(
                   'PageDown、→、↓ 、D :  ${'toNext'.tr}'
                   '\n'
@@ -294,6 +293,7 @@ class _ReadPageState extends State<ReadPage>
                   shadowColor: Colors.transparent,
                   minimumSize: const Size(56, 56),
                 ),
+                child: const Icon(Icons.help, color: UIConfig.readPageButtonColor),
               ),
             if (GetPlatform.isDesktop &&
                 state.readPageInfo.gid != null &&
@@ -301,10 +301,14 @@ class _ReadPageState extends State<ReadPage>
                     state.readPageInfo.mode == ReadMode.archive) &&
                 state.readPageInfo.useSuperResolution)
               TextButton(
+                onPressed: logic.handleTapSuperResolutionButton,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(56, 56),
+                ),
                 child: GetBuilder<SuperResolutionService>(
                   id: '${SuperResolutionService.superResolutionId}::${state.readPageInfo.gid}',
                   builder: (_) => Text(
-                    'AI' + logic.getSuperResolutionProgress(),
+                    'AI${logic.getSuperResolutionProgress()}',
                     style: TextStyle(
                       fontSize: 18,
                       color: state.useSuperResolution
@@ -313,22 +317,12 @@ class _ReadPageState extends State<ReadPage>
                     ),
                   ),
                 ),
-                onPressed: logic.handleTapSuperResolutionButton,
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(56, 56),
-                ),
               ),
             Obx(() {
               if (!readSetting.isInDoubleColumnReadDirection) {
                 return const SizedBox();
               }
               return ElevatedButton(
-                child: Icon(
-                  Icons.looks_one,
-                  color: state.displayFirstPageAlone
-                      ? UIConfig.readPageActiveButtonColor(context)
-                      : UIConfig.readPageButtonColor,
-                ),
                 onPressed: logic.toggleDisplayFirstPageAlone,
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
@@ -338,15 +332,17 @@ class _ReadPageState extends State<ReadPage>
                   shadowColor: Colors.transparent,
                   minimumSize: const Size(56, 56),
                 ),
+                child: Icon(
+                  Icons.looks_one,
+                  color: state.displayFirstPageAlone
+                      ? UIConfig.readPageActiveButtonColor(context)
+                      : UIConfig.readPageButtonColor,
+                ),
               );
             }),
             GetBuilder<ReadPageLogic>(
               id: logic.autoModeId,
               builder: (_) => ElevatedButton(
-                child: Icon(Icons.schedule,
-                    color: state.autoMode
-                        ? UIConfig.readPageActiveButtonColor(context)
-                        : UIConfig.readPageButtonColor),
                 onPressed: logic.toggleAutoMode,
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
@@ -356,11 +352,14 @@ class _ReadPageState extends State<ReadPage>
                   shadowColor: Colors.transparent,
                   minimumSize: const Size(56, 56),
                 ),
+                child: Icon(Icons.schedule,
+                    color: state.autoMode
+                        ? UIConfig.readPageActiveButtonColor(context)
+                        : UIConfig.readPageButtonColor),
               ),
             ),
             if (readSetting.enableBottomMenu.isFalse)
               ElevatedButton(
-                child: const Icon(Icons.settings, color: UIConfig.readPageButtonColor),
                 onPressed: () {
                   logic.restoreImmersiveMode();
                   toRoute(Routes.settingRead, id: fullScreen)?.then((_) {
@@ -376,6 +375,7 @@ class _ReadPageState extends State<ReadPage>
                   shadowColor: Colors.transparent,
                   minimumSize: const Size(56, 56),
                 ),
+                child: const Icon(Icons.settings, color: UIConfig.readPageButtonColor),
               ),
           ],
         ),
@@ -593,7 +593,7 @@ class _ReadPageState extends State<ReadPage>
               icon: const Icon(Icons.height, color: UIConfig.readPageButtonColor),
               itemBuilder: (_) => ReadDirection.values
                   .map(
-                    (e) => PopupMenuItem<ReadDirection>(child: Text(e.name.tr), value: e),
+                    (e) => PopupMenuItem<ReadDirection>(value: e, child: Text(e.name.tr)),
                   )
                   .toList(),
               onSelected: (ReadDirection value) => readSetting.saveReadDirection(value),
@@ -606,7 +606,7 @@ class _ReadPageState extends State<ReadPage>
               icon: const Icon(Icons.screen_rotation, color: UIConfig.readPageButtonColor),
               itemBuilder: (_) => DeviceDirection.values
                   .map(
-                    (e) => PopupMenuItem<DeviceDirection>(child: Text(e.name.tr), value: e),
+                    (e) => PopupMenuItem<DeviceDirection>(value: e, child: Text(e.name.tr)),
                   )
                   .toList(),
               onSelected: (DeviceDirection value) => readSetting.saveDeviceDirection(value),

@@ -11,7 +11,6 @@ import 'package:jhentai/widget/eh_favorite_sort_order_dialog.dart';
 
 import '../../enum/config_enum.dart';
 import '../../exception/eh_site_exception.dart';
-import '../../model/gallery.dart';
 import '../../model/search_config.dart';
 import '../../service/local_config_service.dart';
 import '../../utils/eh_spider_parser.dart';

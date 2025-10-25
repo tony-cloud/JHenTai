@@ -7,7 +7,6 @@ import 'package:jhentai/pages/details/thumbnails/thumbnails_page_logic.dart';
 import 'package:jhentai/pages/details/thumbnails/thumbnails_page_state.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/widget/eh_image.dart';
-import 'package:jhentai/widget/keep_alive.dart';
 
 import '../../../config/ui_config.dart';
 import '../../../mixin/scroll_to_top_logic_mixin.dart';
@@ -28,7 +27,7 @@ class ThumbnailsPage extends StatelessWidget with Scroll2TopPageMixin {
   @override
   Scroll2TopStateMixin get scroll2TopState => state;
 
-  ThumbnailsPage({Key? key}) : super(key: key);
+  ThumbnailsPage({super.key});
 
   String get _mainTitleText =>
       logic.detailsPageState.gallery?.title ??

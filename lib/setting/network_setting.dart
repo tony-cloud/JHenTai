@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
-import 'package:jhentai/network/eh_request.dart';
 
 import '../service/jh_service.dart';
 import '../service/log.dart';

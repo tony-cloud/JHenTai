@@ -42,7 +42,7 @@ class LoadingStateIndicator extends StatelessWidget {
   final bool successWidgetSameWithIdle;
 
   const LoadingStateIndicator({
-    Key? key,
+    super.key,
     this.height,
     this.width,
     required this.loadingState,
@@ -59,7 +59,7 @@ class LoadingStateIndicator extends StatelessWidget {
     this.errorWidgetBuilder,
     this.errorWidgetSameWithIdle = false,
     this.successWidgetSameWithIdle = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

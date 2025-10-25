@@ -279,7 +279,7 @@ class TagSetsLogic extends GetxController with Scroll2TopLogicMixin {
             },
           ),
         ],
-        cancelButton: CupertinoActionSheetAction(child: Text('cancel'.tr), onPressed: backRoute),
+        cancelButton: CupertinoActionSheetAction(onPressed: backRoute, child: Text('cancel'.tr)),
       ),
     );
   }

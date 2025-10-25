@@ -6,16 +6,12 @@ import 'package:jhentai/pages/ranklist/ranklist_page_state.dart';
 
 class RanklistPage extends BasePage {
   const RanklistPage({
-    Key? key,
-    bool showMenuButton = false,
-    bool showTitle = false,
-    bool showScroll2TopButton = true,
+    super.key,
+    super.showMenuButton,
+    super.showTitle,
+    super.showScroll2TopButton = true,
   }) : super(
-          key: key,
-          showMenuButton: showMenuButton,
-          showTitle: showTitle,
           showJumpButton: true,
-          showScroll2TopButton: showScroll2TopButton,
         );
 
   @override

@@ -8,7 +8,7 @@ import 'package:jhentai/utils/search_util.dart';
 class QuickSearchPage extends StatelessWidget {
   final bool automaticallyImplyLeading;
 
-  const QuickSearchPage({Key? key, this.automaticallyImplyLeading = false}) : super(key: key);
+  const QuickSearchPage({super.key, this.automaticallyImplyLeading = false});
 
   @override
   Widget build(BuildContext context) {

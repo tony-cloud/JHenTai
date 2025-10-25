@@ -39,7 +39,7 @@ class ScrollOffsetToScrollController extends ScrollController {
 }
 
 abstract class BaseLayout extends StatelessWidget {
-  BaseLayout({Key? key}) : super(key: key);
+  BaseLayout({super.key});
 
   final ReadPageLogic readPageLogic = Get.find<ReadPageLogic>();
   final ReadPageState readPageState = Get.find<ReadPageLogic>().state;

@@ -7,11 +7,16 @@ Future<bool> extractZipArchive(String archivePath, String extractPath) {
       InputFileStream? inputStream;
       try {
         inputStream = InputFileStream(path[0]);
-        await extractArchiveToDisk(ZipDecoder().decodeBuffer(inputStream), path[1]);
+        await extractArchiveToDisk(
+          ZipDecoder().decodeStream(inputStream),
+          path[1],
+        );
       } on Exception catch (_) {
         return false;
       } finally {
-        inputStream?.close();
+        if (inputStream != null) {
+          await inputStream.close();
+        }
       }
       return true;
     },
@@ -24,11 +29,11 @@ Future<List<int>> extractGZipArchive(String archivePath) {
     (String path) async {
       InputFileStream inputStream = InputFileStream(path);
       try {
-        return GZipDecoder().decodeBuffer(inputStream);
+        return GZipDecoder().decodeBytes(inputStream.toUint8List());
       } on Exception catch (_) {
         return [];
       } finally {
-        inputStream.close();
+        await inputStream.close();
       }
     },
     archivePath,

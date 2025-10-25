@@ -97,7 +97,8 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin, S extends SearchPageStateM
               prefixIcon: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
-                    child: const Icon(Icons.search), onTap: logic.handleClearAndRefresh),
+                    onTap: logic.handleClearAndRefresh,
+                    child: const Icon(Icons.search)),
               ),
               prefixIconConstraints: BoxConstraints(
                 minHeight: styleSetting.isInDesktopLayout
@@ -108,7 +109,8 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin, S extends SearchPageStateM
               suffixIcon: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
-                    child: const Icon(Icons.cancel), onTap: logic.handleTapClearButton),
+                    onTap: logic.handleTapClearButton,
+                    child: const Icon(Icons.cancel)),
               ),
               suffixIconConstraints: BoxConstraints(
                 minHeight: styleSetting.isInDesktopLayout
@@ -214,7 +216,7 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin, S extends SearchPageStateM
           if (state.inDeleteSearchHistoryMode) {
             logic.handleDeleteSearchHistory(history);
           } else {
-            newSearch(keyword: history.rawKeyword + ' ');
+            newSearch(keyword: '${history.rawKeyword} ');
           }
         },
         onLongPress: state.inDeleteSearchHistoryMode
@@ -222,7 +224,7 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin, S extends SearchPageStateM
             : () {
                 if (state.searchConfigInitCompleter.isCompleted) {
                   state.searchConfig.keyword =
-                      (state.searchConfig.keyword ?? '').trimLeft() + ' ' + history.rawKeyword;
+                      '${(state.searchConfig.keyword ?? '').trimLeft()} ${history.rawKeyword}';
                   logic.update([logic.searchFieldId]);
                 }
               },
@@ -312,11 +314,9 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin, S extends SearchPageStateM
             visualDensity: const VisualDensity(vertical: -1),
             onTap: () {
               if (state.searchConfigInitCompleter.isCompleted) {
-                state.searchConfig.keyword = (state.searchConfig.keyword
+                state.searchConfig.keyword = '${state.searchConfig.keyword
                             ?.substring(0, state.suggestions[index].matchStart) ??
-                        '') +
-                    (state.suggestions[index].operator ?? '') +
-                    '${state.suggestions[index].tagData.namespace}:"${state.suggestions[index].tagData.key}\$" ';
+                        ''}${state.suggestions[index].operator ?? ''}${state.suggestions[index].tagData.namespace}:"${state.suggestions[index].tagData.key}\$" ';
                 state.searchFieldFocusNode.requestFocus();
                 logic.update([logic.searchFieldId]);
               }

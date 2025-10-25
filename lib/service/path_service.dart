@@ -27,13 +27,13 @@ class PathService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   @override
   Future<void> doInitBean() async {
-    await Future.wait([
-      getTemporaryDirectory().then((value) => tempDir = value),
-      getApplicationDocumentsDirectory().then((value) => appDocDir = value).catchError((error) => null),
-      getApplicationSupportDirectory().then((value) => appSupportDir = value).catchError((error) => null),
-      getExternalStorageDirectory().then((value) => externalStorageDir = value).catchError((error) => null),
-      getDownloadsDirectory().then((value) => systemDownloadDir = value).catchError((error) => null),
-    ]);
+    tempDir = await getTemporaryDirectory();
+    appDocDir = await _tryGetDirectory(getApplicationDocumentsDirectory);
+    appSupportDir = await _tryGetDirectory(getApplicationSupportDirectory);
+    externalStorageDir = await _tryGetDirectory(getExternalStorageDirectory);
+    systemDownloadDir = await _tryGetDirectory(getDownloadsDirectory);
+
+    systemDownloadDir ??= appDocDir ?? appSupportDir ?? tempDir;
   }
 
   @override
@@ -50,5 +50,13 @@ class PathService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       return appSupportDir!;
     }
     return appDocDir ?? appSupportDir ?? systemDownloadDir!;
+  }
+}
+
+Future<Directory?> _tryGetDirectory(Future<Directory?> Function() getter) async {
+  try {
+    return await getter();
+  } catch (_) {
+    return null;
   }
 }

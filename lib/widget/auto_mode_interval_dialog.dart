@@ -8,7 +8,7 @@ import '../config/ui_config.dart';
 import '../utils/route_util.dart';
 
 class AutoModeIntervalDialog extends StatefulWidget {
-  const AutoModeIntervalDialog({Key? key}) : super(key: key);
+  const AutoModeIntervalDialog({super.key});
 
   @override
   State<AutoModeIntervalDialog> createState() => _AutoModeIntervalDialogState();
@@ -39,7 +39,7 @@ class _AutoModeIntervalDialogState extends State<AutoModeIntervalDialog> {
         ),
       ),
       actions: [
-        TextButton(child: Text('cancel'.tr), onPressed: backRoute),
+        TextButton(onPressed: backRoute, child: Text('cancel'.tr)),
         TextButton(
           child: Text('OK'.tr),
           onPressed: () {

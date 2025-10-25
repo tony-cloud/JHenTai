@@ -5,7 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SettingAboutPage extends StatefulWidget {
-  const SettingAboutPage({Key? key}) : super(key: key);
+  const SettingAboutPage({super.key});
 
   @override
   _SettingAboutPageState createState() => _SettingAboutPageState();
@@ -54,7 +54,7 @@ class _SettingAboutPageState extends State<SettingAboutPage> {
           ),
           ListTile(
             title: const Text('Telegram(Chinese Mainly)'),
-            subtitle: Text('telegramHint'.tr + '\n' + telegram),
+            subtitle: Text('${'telegramHint'.tr}\n$telegram'),
             onTap: () => launchUrlString(telegram, mode: LaunchMode.externalApplication),
           ),
           ListTile(

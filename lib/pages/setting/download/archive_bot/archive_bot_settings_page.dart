@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/extension/widget_extension.dart';
@@ -19,7 +18,7 @@ import '../../../../model/archive_bot_response/archive_bot_response.dart';
 import '../../../../setting/preference_setting.dart';
 
 class ArchiveBotSettingsPage extends StatefulWidget {
-  const ArchiveBotSettingsPage({Key? key}) : super(key: key);
+  const ArchiveBotSettingsPage({super.key});
 
   @override
   State<ArchiveBotSettingsPage> createState() => _ArchiveBotSettingsPageState();
@@ -141,9 +140,7 @@ class _ArchiveBotSettingsPageState extends State<ArchiveBotSettingsPage> {
     );
 
     if (result == true) {
-      setStateSafely(() {
-        _checkBalance();
-      });
+      setStateSafely(_checkBalance);
     }
   }
 

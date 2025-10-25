@@ -8,12 +8,12 @@ class EHMouseButtonListener extends StatelessWidget {
   final GestureTapDownCallback? onFifthButtonTapDown;
 
   const EHMouseButtonListener({
-    Key? key,
+    super.key,
     required this.child,
     this.behavior,
     this.onForthButtonTapDown,
     this.onFifthButtonTapDown,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class EHMouseButtonListener extends StatelessWidget {
 
     if (onForthButtonTapDown != null || onFifthButtonTapDown != null) {
       gestures[ForthAndFifthButtonTapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<ForthAndFifthButtonTapGestureRecognizer>(
-        () => ForthAndFifthButtonTapGestureRecognizer(),
+        ForthAndFifthButtonTapGestureRecognizer.new,
         (ForthAndFifthButtonTapGestureRecognizer instance) {
           instance
             ..onForthTapDown = onForthButtonTapDown

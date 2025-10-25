@@ -5,7 +5,7 @@ class EHWheelListener extends StatelessWidget {
   final Widget child;
   final ValueChanged<PointerScrollEvent>? onPointerScroll;
 
-  const EHWheelListener({Key? key, required this.child, this.onPointerScroll}) : super(key: key);
+  const EHWheelListener({super.key, required this.child, this.onPointerScroll});
 
   @override
   Widget build(BuildContext context) {

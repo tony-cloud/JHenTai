@@ -6,7 +6,7 @@ import 'package:jhentai/utils/toast_util.dart';
 import '../../../../setting/network_setting.dart';
 
 class SettingProxyPage extends StatefulWidget {
-  const SettingProxyPage({Key? key}) : super(key: key);
+  const SettingProxyPage({super.key});
 
   @override
   State<SettingProxyPage> createState() => _SettingProxyPageState();
@@ -56,11 +56,11 @@ class _SettingProxyPageState extends State<SettingProxyPage> {
           value: networkSetting.proxyType.value,
           alignment: Alignment.center,
           items: [
-            DropdownMenuItem(child: Text('systemProxy'.tr), value: JProxyType.system),
-            DropdownMenuItem(child: Text('httpProxy'.tr), value: JProxyType.http),
-            DropdownMenuItem(child: Text('socks5Proxy'.tr), value: JProxyType.socks5),
-            DropdownMenuItem(child: Text('socks4Proxy'.tr), value: JProxyType.socks4),
-            DropdownMenuItem(child: Text('directProxy'.tr), value: JProxyType.direct),
+            DropdownMenuItem(value: JProxyType.system, child: Text('systemProxy'.tr)),
+            DropdownMenuItem(value: JProxyType.http, child: Text('httpProxy'.tr)),
+            DropdownMenuItem(value: JProxyType.socks5, child: Text('socks5Proxy'.tr)),
+            DropdownMenuItem(value: JProxyType.socks4, child: Text('socks4Proxy'.tr)),
+            DropdownMenuItem(value: JProxyType.direct, child: Text('directProxy'.tr)),
           ],
           onChanged: (JProxyType? value) {
             proxyType = value!;

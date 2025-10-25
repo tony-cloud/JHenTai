@@ -56,12 +56,10 @@ import '../../model/gallery_detail.dart';
 import '../../model/gallery_image.dart';
 import '../../model/gallery_metadata.dart';
 import '../../model/gallery_note.dart';
-import '../../model/search_config.dart';
 import '../../model/tag_set.dart';
 import '../../service/history_service.dart';
 import '../../service/gallery_download_service.dart';
 import '../../service/local_block_rule_service.dart';
-import '../../service/storage_service.dart';
 import '../../setting/eh_setting.dart';
 import '../../setting/read_setting.dart';
 import '../../setting/site_setting.dart';
@@ -889,7 +887,7 @@ class DetailsPageLogic extends GetxController
     bool? result = await showDialog(
       context: context,
       builder: (_) => EHDialog(
-        title: 'delete'.tr + '?',
+        title: '${'delete'.tr}?',
         content: isUpdatingDependent ? 'deleteUpdatingDependentHint'.tr : null,
       ),
     );

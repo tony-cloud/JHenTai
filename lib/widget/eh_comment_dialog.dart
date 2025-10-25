@@ -24,12 +24,12 @@ class EHCommentDialog extends StatefulWidget {
   final int? commentId;
 
   const EHCommentDialog({
-    Key? key,
+    super.key,
     required this.type,
     required this.title,
     this.initText = '',
     this.commentId,
-  }) : super(key: key);
+  });
 
   @override
   EHCommentDialogState createState() => EHCommentDialogState();
@@ -66,7 +66,7 @@ class EHCommentDialogState extends State<EHCommentDialog> {
       ),
       actions: [
         if (sendCommentState == LoadingState.loading) const CupertinoActivityIndicator(radius: 10),
-        TextButton(child: const Icon(Icons.send), onPressed: _sendComment)
+        TextButton(onPressed: _sendComment, child: const Icon(Icons.send))
       ],
     );
   }

@@ -568,7 +568,7 @@ class GalleryDownloadService extends GetxController
 
       GalleryDownloadedData gallery = GalleryDownloadedData.fromJson(metadata['gallery']);
       List<GalleryImage?> images = (jsonDecode(metadata['images']) as List)
-          .map((_map) => _map == null ? null : GalleryImage.fromJson(_map))
+          .map((map) => map == null ? null : GalleryImage.fromJson(map))
           .toList();
 
       /// skip if exists
@@ -807,6 +807,7 @@ class GalleryDownloadService extends GetxController
         log.error('Executor exception!', e, stackTrace);
         log.uploadError(e);
       }
+      return null;
     });
   }
 

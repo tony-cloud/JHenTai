@@ -39,15 +39,15 @@ class ConfigureBlockingRulePage extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 80, left: 8, right: 8),
           controller: state.scrollController,
           children: [
-            ...state.rules.map((rule) => _buildRuleForm(rule).marginOnly(bottom: 12)).toList(),
+            ...state.rules.map((rule) => _buildRuleForm(rule).marginOnly(bottom: 12)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton(
-                  child: const Icon(Icons.add),
                   style:
                       FilledButton.styleFrom(shape: const CircleBorder(), padding: EdgeInsets.zero),
                   onPressed: logic.addRuleForm,
+                  child: const Icon(Icons.add),
                 ),
               ],
             ).marginOnly(top: 12),
@@ -79,7 +79,8 @@ class ConfigureBlockingRulePage extends StatelessWidget {
                     },
                     items: LocalBlockTargetEnum.values
                         .map((e) => DropdownMenuItem(
-                            child: Text(e.desc.tr), value: e, alignment: Alignment.center))
+                            value: e, alignment: Alignment.center,
+                            child: Text(e.desc.tr)))
                         .toList(),
                   ),
                 ),
@@ -95,7 +96,8 @@ class ConfigureBlockingRulePage extends StatelessWidget {
                     },
                     items: LocalBlockAttributeEnum.withTarget(rule.target)
                         .map((e) => DropdownMenuItem(
-                            child: Text(e.desc.tr), value: e, alignment: Alignment.center))
+                            value: e, alignment: Alignment.center,
+                            child: Text(e.desc.tr)))
                         .toList(),
                   ),
                 ),
@@ -110,7 +112,8 @@ class ConfigureBlockingRulePage extends StatelessWidget {
                     },
                     items: LocalBlockPatternEnum.withAttribute(rule.attribute)
                         .map((e) => DropdownMenuItem(
-                            child: Text(e.desc.tr), value: e, alignment: Alignment.center))
+                            value: e, alignment: Alignment.center,
+                            child: Text(e.desc.tr)))
                         .toList(),
                   ),
                 ),
@@ -137,11 +140,11 @@ class ConfigureBlockingRulePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             OutlinedButton(
-              child: const Icon(Icons.remove),
               style: FilledButton.styleFrom(shape: const CircleBorder(), padding: EdgeInsets.zero),
               onPressed: () {
                 logic.removeRuleForm(rule);
               },
+              child: const Icon(Icons.remove),
             ),
           ],
         ),

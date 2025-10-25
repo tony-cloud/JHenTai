@@ -7,16 +7,14 @@ import '../config/ui_config.dart';
 
 import '../consts/locale_consts.dart';
 import '../model/gallery_image.dart';
-import '../model/gallery_tag.dart';
 import '../routes/routes.dart';
-import '../service/tag_translation_service.dart';
 import '../utils/route_util.dart';
 
 class EHDashboardCard extends StatefulWidget {
   final Gallery gallery;
   final String? badge;
 
-  const EHDashboardCard({Key? key, required this.gallery, this.badge}) : super(key: key);
+  const EHDashboardCard({super.key, required this.gallery, this.badge});
 
   @override
   State<EHDashboardCard> createState() => _EHDashboardCardState();
@@ -43,9 +41,10 @@ class _EHDashboardCardState extends State<EHDashboardCard> {
             _buildCover(widget.gallery.cover),
             if (loadSuccess)
               Positioned(
-                  child: _buildShade(), height: 60, width: UIConfig.dashboardCardSize, bottom: 0),
+                  height: 60, width: UIConfig.dashboardCardSize, bottom: 0,
+                  child: _buildShade()),
             if (loadSuccess)
-              Positioned(child: _buildGalleryDesc(), width: UIConfig.dashboardCardSize, bottom: 10),
+              Positioned(width: UIConfig.dashboardCardSize, bottom: 10, child: _buildGalleryDesc()),
           ],
         ),
       ),

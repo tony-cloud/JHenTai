@@ -14,7 +14,6 @@ import 'package:jhentai/pages/details/details_page.dart';
 import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/pages/details/details_page_state.dart';
 import 'package:html/dom.dart' as dom;
-import 'package:jhentai/widget/keep_alive.dart';
 
 import '../../../../../config/ui_config.dart';
 import '../../../../../widget/eh_thumbnail.dart';

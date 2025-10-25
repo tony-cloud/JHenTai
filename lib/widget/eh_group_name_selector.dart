@@ -14,8 +14,7 @@ class EHGroupNameSelector extends StatefulWidget {
   final List<String> candidates;
   final ValueChanged<String>? listener;
 
-  const EHGroupNameSelector({Key? key, this.currentGroup, required this.candidates, this.listener})
-      : super(key: key);
+  const EHGroupNameSelector({super.key, this.currentGroup, required this.candidates, this.listener});
 
   @override
   State<EHGroupNameSelector> createState() => _EHGroupNameSelectorState();
@@ -147,8 +146,7 @@ class GroupChip extends StatefulWidget {
   final bool selected;
   final VoidCallback? onTap;
 
-  const GroupChip({Key? key, required this.text, required this.selected, this.onTap})
-      : super(key: key);
+  const GroupChip({super.key, required this.text, required this.selected, this.onTap});
 
   @override
   State<GroupChip> createState() => _GroupChipState();

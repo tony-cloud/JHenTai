@@ -6,7 +6,7 @@ import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_app_password_setting_dialog.dart';
 
 class SettingSecurityPage extends StatelessWidget {
-  const SettingSecurityPage({Key? key}) : super(key: key);
+  const SettingSecurityPage({super.key});
 
   @override
   Widget build(BuildContext context) {

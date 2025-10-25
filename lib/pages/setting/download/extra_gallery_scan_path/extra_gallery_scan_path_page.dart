@@ -10,7 +10,7 @@ import '../../../../utils/permission_util.dart';
 import '../../../../utils/toast_util.dart';
 
 class ExtraGalleryScanPathPage extends StatelessWidget {
-  const ExtraGalleryScanPathPage({Key? key}) : super(key: key);
+  const ExtraGalleryScanPathPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class ExtraGalleryScanPathPage extends StatelessWidget {
   }
 
   Future<void> _handleDelete(String path) async {
-    bool? result = await Get.dialog(EHDialog(title: 'delete'.tr + '?'));
+    bool? result = await Get.dialog(EHDialog(title: '${'delete'.tr}?'));
 
     if (result == true) {
       downloadSetting.removeExtraGalleryScanPath(path);

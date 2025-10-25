@@ -10,9 +10,8 @@ import '../../../layout/mobile_v2/mobile_layout_page_v2_state.dart';
 
 /// For mobile v2 layout
 class SimpleDashboardPage extends BasePage {
-  const SimpleDashboardPage({Key? key})
+  const SimpleDashboardPage({super.key})
       : super(
-          key: key,
           showMenuButton: true,
           showTitle: true,
           showScroll2TopButton: true,

@@ -12,7 +12,7 @@ import 'local_gallery_grid_page_logic.dart';
 import 'local_gallery_grid_page_state.dart';
 
 class LocalGalleryGridPage extends StatelessWidget with Scroll2TopPageMixin, GridBasePage {
-  LocalGalleryGridPage({Key? key}) : super(key: key);
+  LocalGalleryGridPage({super.key});
 
   @override
   final DownloadPageGalleryType galleryType = DownloadPageGalleryType.local;

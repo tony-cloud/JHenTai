@@ -2,7 +2,6 @@ import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/path_service.dart';
 
-import '../main.dart';
 import 'log.dart';
 
 abstract interface class JHLifeCircleBean {

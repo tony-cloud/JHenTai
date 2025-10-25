@@ -18,7 +18,7 @@ class TagSetsPage extends StatelessWidget {
   final TagSetsLogic logic = Get.put<TagSetsLogic>(TagSetsLogic());
   final TagSetsState state = Get.find<TagSetsLogic>().state;
 
-  TagSetsPage({Key? key}) : super(key: key);
+  TagSetsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +159,6 @@ class _Tag extends StatelessWidget {
   final ValueChanged<TagSetStatus> onStatusUpdated;
 
   const _Tag({
-    Key? key,
     required this.tag,
     this.tagSetBackgroundColor,
     this.onTap,
@@ -167,7 +166,7 @@ class _Tag extends StatelessWidget {
     required this.onColorUpdated,
     required this.onWeightUpdated,
     required this.onStatusUpdated,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -253,7 +252,7 @@ enum TagSetStatus { watched, hidden, nope }
 class _ColorSettingDialog extends StatefulWidget {
   final Color initialColor;
 
-  const _ColorSettingDialog({Key? key, required this.initialColor}) : super(key: key);
+  const _ColorSettingDialog({required this.initialColor});
 
   @override
   State<_ColorSettingDialog> createState() => _ColorSettingDialogState();
@@ -303,7 +302,7 @@ class _ColorSettingDialogState extends State<_ColorSettingDialog> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            TextButton(child: Text('cancel'.tr), onPressed: backRoute),
+            TextButton(onPressed: backRoute, child: Text('cancel'.tr)),
             TextButton(
               child: Text('reset'.tr),
               onPressed: () {

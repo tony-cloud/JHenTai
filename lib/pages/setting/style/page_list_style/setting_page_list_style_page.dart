@@ -5,7 +5,7 @@ import '../../../../routes/routes.dart';
 import '../../../../setting/style_setting.dart';
 
 class SettingPageListStylePage extends StatelessWidget {
-  SettingPageListStylePage({Key? key}) : super(key: key);
+  SettingPageListStylePage({super.key});
 
   final List<PageListStyleItem> items = [
     PageListStyleItem(name: 'home'.tr, route: Routes.gallerys, show: () => styleSetting.isInDesktopLayout),
@@ -37,14 +37,14 @@ class SettingPageListStylePage extends StatelessWidget {
                     alignment: AlignmentDirectional.centerEnd,
                     onChanged: (value) => styleSetting.savePageListMode(item.route, value),
                     items: [
-                      DropdownMenuItem(child: Text('global'.tr), value: null),
-                      DropdownMenuItem(child: Text('flat'.tr), value: ListMode.flat),
-                      DropdownMenuItem(child: Text('flatWithoutTags'.tr), value: ListMode.flatWithoutTags),
-                      DropdownMenuItem(child: Text('listWithTags'.tr), value: ListMode.listWithTags),
-                      DropdownMenuItem(child: Text('listWithoutTags'.tr), value: ListMode.listWithoutTags),
-                      DropdownMenuItem(child: Text('waterfallFlowSmall'.tr), value: ListMode.waterfallFlowSmall),
-                      DropdownMenuItem(child: Text('waterfallFlowMedium'.tr), value: ListMode.waterfallFlowMedium),
-                      DropdownMenuItem(child: Text('waterfallFlowBig'.tr), value: ListMode.waterfallFlowBig),
+                      DropdownMenuItem(value: null, child: Text('global'.tr)),
+                      DropdownMenuItem(value: ListMode.flat, child: Text('flat'.tr)),
+                      DropdownMenuItem(value: ListMode.flatWithoutTags, child: Text('flatWithoutTags'.tr)),
+                      DropdownMenuItem(value: ListMode.listWithTags, child: Text('listWithTags'.tr)),
+                      DropdownMenuItem(value: ListMode.listWithoutTags, child: Text('listWithoutTags'.tr)),
+                      DropdownMenuItem(value: ListMode.waterfallFlowSmall, child: Text('waterfallFlowSmall'.tr)),
+                      DropdownMenuItem(value: ListMode.waterfallFlowMedium, child: Text('waterfallFlowMedium'.tr)),
+                      DropdownMenuItem(value: ListMode.waterfallFlowBig, child: Text('waterfallFlowBig'.tr)),
                     ],
                   ),
                 ),

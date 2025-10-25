@@ -98,15 +98,17 @@ class LocalGalleryService extends GetxController
         .where((image) => FileUtil.isImageExtension(image.path))
         .toList();
     if (allFiles.length == imageFiles.length) {
-      dir.delete(recursive: true).catchError((e) {
-        log.error('Delete local gallery error!', e);
-        log.uploadError(e);
+      dir.delete(recursive: true).catchError((error, stackTrace) {
+        log.error('Delete local gallery error!', error, stackTrace);
+        log.uploadError(error);
+        throw error;
       });
     } else {
       for (File file in imageFiles) {
-        file.delete().catchError((e) {
-          log.error('Delete local gallery error!', e);
-          log.uploadError(e);
+        file.delete().catchError((error, stackTrace) {
+          log.error('Delete local gallery error!', error, stackTrace);
+          log.uploadError(error);
+          throw error;
         });
       }
     }

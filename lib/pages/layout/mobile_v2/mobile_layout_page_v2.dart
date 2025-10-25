@@ -21,7 +21,7 @@ class MobileLayoutPageV2 extends StatelessWidget {
   final MobileLayoutPageV2Logic logic = Get.put(MobileLayoutPageV2Logic(), permanent: true);
   final MobileLayoutPageV2State state = Get.find<MobileLayoutPageV2Logic>().state;
 
-  MobileLayoutPageV2({Key? key}) : super(key: key);
+  MobileLayoutPageV2({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +147,7 @@ class MobileLayoutPageV2 extends StatelessWidget {
 }
 
 class EHUserAvatar extends StatelessWidget {
-  const EHUserAvatar({Key? key}) : super(key: key);
+  const EHUserAvatar({super.key});
 
   @override
   Widget build(BuildContext context) {

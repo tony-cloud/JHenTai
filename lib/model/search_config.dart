@@ -196,7 +196,7 @@ class SearchConfig {
 
   String computeFullKeywordsWithLanguage() {
     if (language != null) {
-      return 'language:"$language" ' + computeFullKeywords();
+      return 'language:"$language" ${computeFullKeywords()}';
     } else {
       return computeFullKeywords();
     }

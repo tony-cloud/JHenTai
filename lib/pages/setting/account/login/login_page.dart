@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
   final LoginPageLogic logic = Get.put<LoginPageLogic>(LoginPageLogic());
   final LoginPageState state = Get.find<LoginPageLogic>().state;
 
-  LoginPage({Key? key}) : super(key: key);
+  LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +290,7 @@ class LoginPage extends StatelessWidget {
 }
 
 class _TopArea extends StatelessWidget {
-  const _TopArea({Key? key}) : super(key: key);
+  const _TopArea();
 
   @override
   Widget build(BuildContext context) {

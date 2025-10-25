@@ -22,7 +22,7 @@ import '../details/details_page_logic.dart';
 import 'download_search_logic.dart';
 
 class DownloadSearchPage extends StatelessWidget {
-  DownloadSearchPage({Key? key}) : super(key: key);
+  DownloadSearchPage({super.key});
 
   final DownloadSearchLogic logic = Get.put(DownloadSearchLogic());
   final DownloadSearchState state = Get.find<DownloadSearchLogic>().state;
@@ -58,13 +58,14 @@ class DownloadSearchPage extends StatelessWidget {
             builder: (_, __) => !state.searchTypeCompleter.isCompleted
                 ? const SizedBox()
                 : TextButton(
-                    child: Text(state.searchType.desc.tr), onPressed: logic.toggleSearchType),
+                    onPressed: logic.toggleSearchType,
+                    child: Text(state.searchType.desc.tr)),
           ),
           prefixIconConstraints: const BoxConstraints(minWidth: 52),
           suffixIcon: MouseRegion(
             cursor: SystemMouseCursors.click,
             child:
-                GestureDetector(child: const Icon(Icons.cancel), onTap: logic.handleTapClearButton),
+                GestureDetector(onTap: logic.handleTapClearButton, child: const Icon(Icons.cancel)),
           ),
         ),
         onChanged: logic.handleSearchFieldChanged,

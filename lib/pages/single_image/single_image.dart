@@ -5,7 +5,7 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/widget/eh_image.dart';
 
 class SingleImagePage extends StatelessWidget {
-  const SingleImagePage({Key? key}) : super(key: key);
+  const SingleImagePage({super.key});
 
   @override
   Widget build(BuildContext context) {

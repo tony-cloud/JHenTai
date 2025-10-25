@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/utils/cookie_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/extension/widget_extension.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 typedef OnPageStartedCallback = Future<void> Function(String url, WebViewController controller);
 
 class WebviewPage extends StatefulWidget {
-  const WebviewPage({Key? key}) : super(key: key);
+  const WebviewPage({super.key});
 
   @override
   _WebviewPageState createState() => _WebviewPageState();

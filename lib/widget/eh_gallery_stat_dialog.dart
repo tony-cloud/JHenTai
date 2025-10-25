@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
-import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/extension/widget_extension.dart';
+import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/model/gallery_stats.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
@@ -22,7 +22,7 @@ class EHGalleryStatDialog extends StatefulWidget {
   final int gid;
   final String token;
 
-  const EHGalleryStatDialog({Key? key, required this.gid, required this.token}) : super(key: key);
+  const EHGalleryStatDialog({super.key, required this.gid, required this.token});
 
   @override
   State<EHGalleryStatDialog> createState() => _EHGalleryStatDialogState();
@@ -128,7 +128,7 @@ class _EHGalleryStatDialogState extends State<EHGalleryStatDialog> {
 class _AllTimeTable extends StatelessWidget {
   final GalleryStats galleryStats;
 
-  const _AllTimeTable({Key? key, required this.galleryStats}) : super(key: key);
+  const _AllTimeTable({required this.galleryStats});
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +214,7 @@ class _AllTimeTable extends StatelessWidget {
 class _LineGraph extends StatelessWidget {
   final List<VisitStat> datasource;
 
-  const _LineGraph({Key? key, required this.datasource}) : super(key: key);
+  const _LineGraph({required this.datasource});
 
   @override
   Widget build(BuildContext context) {

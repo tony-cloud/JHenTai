@@ -33,7 +33,7 @@ import 'archive_list_download_page_state.dart';
 
 class ArchiveListDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, ArchiveDownloadPageMixin {
-  ArchiveListDownloadPage({Key? key}) : super(key: key);
+  ArchiveListDownloadPage({super.key});
 
   final ArchiveListDownloadPageLogic logic =
       Get.put<ArchiveListDownloadPageLogic>(ArchiveListDownloadPageLogic(), permanent: true);
@@ -210,7 +210,7 @@ class ArchiveListDownloadPage extends StatelessWidget
                 width: UIConfig.downloadPageGroupHeaderWidth,
                 child: Center(child: Icon(Icons.folder_open))),
             Text(
-              '$groupName${'(' + archiveDownloadService.archivesWithGroup(groupName).length.toString() + ')'}',
+              '$groupName${'(${archiveDownloadService.archivesWithGroup(groupName).length})'}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

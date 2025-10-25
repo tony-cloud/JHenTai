@@ -8,7 +8,7 @@ class EHWarningImage extends StatefulWidget {
   final bool warning;
   final String src;
 
-  const EHWarningImage({Key? key, required this.warning, required this.src}) : super(key: key);
+  const EHWarningImage({super.key, required this.warning, required this.src});
 
   @override
   State<EHWarningImage> createState() => _EHWarningImageState();
@@ -36,7 +36,6 @@ class _EHWarningImageState extends State<EHWarningImage> {
               blur: 15,
               blurColor: UIConfig.warningImageBlurColor,
               colorOpacity: 0.75,
-              child: ExtendedImage.network(widget.src),
               overlay: Center(
                 child: Text(
                   'warningImageHint'.tr,
@@ -45,6 +44,7 @@ class _EHWarningImageState extends State<EHWarningImage> {
                   textAlign: TextAlign.center,
                 ),
               ),
+              child: ExtendedImage.network(widget.src),
             )
           : ExtendedImage.network(widget.src),
     );

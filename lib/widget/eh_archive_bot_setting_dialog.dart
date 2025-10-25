@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:jhentai/extension/widget_extension.dart';
 import 'package:telegram/telegram.dart';
+import 'package:jhentai/extension/widget_extension.dart';
 
 import '../setting/archive_bot_setting.dart';
 import '../utils/route_util.dart';
@@ -19,8 +19,8 @@ class EHArchiveBotSettingDialog extends StatefulWidget {
 }
 
 class _EHArchiveBotSettingDialogState extends State<EHArchiveBotSettingDialog> {
-  TextEditingController _apiAddressController = TextEditingController();
-  TextEditingController _apiKeyController = TextEditingController();
+  final TextEditingController _apiAddressController = TextEditingController();
+  final TextEditingController _apiKeyController = TextEditingController();
   late bool _useProxy;
 
   @override

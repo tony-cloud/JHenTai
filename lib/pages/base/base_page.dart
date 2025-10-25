@@ -27,14 +27,14 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
   final String? name;
 
   const BasePage({
-    Key? key,
+    super.key,
     this.showMenuButton = false,
     this.showJumpButton = false,
     this.showFilterButton = false,
     this.showScroll2TopButton = false,
     this.showTitle = false,
     this.name,
-  }) : super(key: key);
+  });
 
   L get logic;
 

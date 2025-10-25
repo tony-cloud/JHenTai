@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jhentai/config/ui_config.dart';
 
 class BlankPage extends StatelessWidget {
-  const BlankPage({Key? key}) : super(key: key);
+  const BlankPage({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -8,11 +8,11 @@ class EHDialog extends StatelessWidget {
   final bool showCancelButton;
 
   const EHDialog({
-    Key? key,
+    super.key,
     required this.title,
     this.content,
     this.showCancelButton = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

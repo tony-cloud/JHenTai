@@ -24,7 +24,7 @@ class EHKeyboardListener extends StatelessWidget {
   final VoidCallback? handleF11;
 
   const EHKeyboardListener({
-    Key? key,
+    super.key,
     required this.child,
     this.focusNode,
     this.handlePageUp,
@@ -44,7 +44,7 @@ class EHKeyboardListener extends StatelessWidget {
     this.handleVolumeUp,
     this.handleVolumeDown,
     this.handleF11,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -7,8 +7,7 @@ class JumpPageDialog extends StatefulWidget {
   final int totalPageNo;
   final int currentNo;
 
-  const JumpPageDialog({Key? key, required this.totalPageNo, required this.currentNo})
-      : super(key: key);
+  const JumpPageDialog({super.key, required this.totalPageNo, required this.currentNo});
 
   @override
   State<JumpPageDialog> createState() => _JumpPageDialogState();

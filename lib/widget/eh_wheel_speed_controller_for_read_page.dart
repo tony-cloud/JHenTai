@@ -9,10 +9,10 @@ class EHWheelSpeedControllerForReadPage extends StatelessWidget {
   final ScrollOffsetController scrollOffsetController;
 
   const EHWheelSpeedControllerForReadPage({
-    Key? key,
+    super.key,
     required this.child,
     required this.scrollOffsetController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

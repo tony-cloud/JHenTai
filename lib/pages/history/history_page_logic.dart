@@ -37,7 +37,7 @@ class HistoryPageLogic extends OldBasePageLogic {
   }
 
   Future<void> handleTapDeleteButton() async {
-    bool? result = await Get.dialog(EHDialog(title: 'delete'.tr + '?'));
+    bool? result = await Get.dialog(EHDialog(title: '${'delete'.tr}?'));
 
     if (result == true) {
       await historyService.deleteAll();
@@ -60,8 +60,8 @@ class HistoryPageLogic extends OldBasePageLogic {
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
+          onPressed: backRoute,
           child: Text('cancel'.tr),
-          onPressed: () => backRoute(),
         ),
       ),
     );

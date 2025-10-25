@@ -13,7 +13,7 @@ import '../../../../service/log.dart';
 import '../../../../widget/loading_state_indicator.dart';
 
 class SettingSuperResolutionPage extends StatelessWidget {
-  const SettingSuperResolutionPage({Key? key}) : super(key: key);
+  const SettingSuperResolutionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -111,10 +111,11 @@ class SettingSuperResolutionPage extends StatelessWidget {
             elevation: 4,
             onChanged: (ModelType? newValue) => superResolutionSetting.saveModel(newValue!),
             items: [
-              DropdownMenuItem(child: Text(ModelType.CUGAN.subType), value: ModelType.CUGAN),
-              DropdownMenuItem(child: Text(ModelType.ESRGAN.subType), value: ModelType.ESRGAN),
+              DropdownMenuItem(value: ModelType.CUGAN, child: Text(ModelType.CUGAN.subType)),
+              DropdownMenuItem(value: ModelType.ESRGAN, child: Text(ModelType.ESRGAN.subType)),
               DropdownMenuItem(
-                  child: Text(ModelType.ESRGAN_ANIME.subType), value: ModelType.ESRGAN_ANIME),
+                  value: ModelType.ESRGAN_ANIME,
+                  child: Text(ModelType.ESRGAN_ANIME.subType)),
             ],
           )
         ],
@@ -131,15 +132,15 @@ class SettingSuperResolutionPage extends StatelessWidget {
         alignment: AlignmentDirectional.centerEnd,
         onChanged: (int? newValue) => superResolutionSetting.saveGpuId(newValue!),
         items: const [
-          DropdownMenuItem(child: Text('-1'), value: -1),
-          DropdownMenuItem(child: Text('0'), value: 0),
-          DropdownMenuItem(child: Text('1'), value: 1),
-          DropdownMenuItem(child: Text('2'), value: 2),
-          DropdownMenuItem(child: Text('3'), value: 3),
-          DropdownMenuItem(child: Text('4'), value: 4),
-          DropdownMenuItem(child: Text('5'), value: 5),
-          DropdownMenuItem(child: Text('6'), value: 6),
-          DropdownMenuItem(child: Text('7'), value: 7),
+          DropdownMenuItem(value: -1, child: Text('-1')),
+          DropdownMenuItem(value: 0, child: Text('0')),
+          DropdownMenuItem(value: 1, child: Text('1')),
+          DropdownMenuItem(value: 2, child: Text('2')),
+          DropdownMenuItem(value: 3, child: Text('3')),
+          DropdownMenuItem(value: 4, child: Text('4')),
+          DropdownMenuItem(value: 5, child: Text('5')),
+          DropdownMenuItem(value: 6, child: Text('6')),
+          DropdownMenuItem(value: 7, child: Text('7')),
         ],
       ),
     );

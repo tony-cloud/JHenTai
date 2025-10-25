@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:jhentai/database/dao/gallery_history_dao.dart';
 import 'package:jhentai/enum/config_enum.dart';

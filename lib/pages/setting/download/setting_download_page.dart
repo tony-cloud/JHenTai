@@ -25,7 +25,7 @@ import '../../../utils/route_util.dart';
 import '../../../widget/eh_download_dialog.dart';
 
 class SettingDownloadPage extends StatefulWidget {
-  const SettingDownloadPage({Key? key}) : super(key: key);
+  const SettingDownloadPage({super.key});
 
   @override
   State<SettingDownloadPage> createState() => _SettingDownloadPageState();
@@ -192,11 +192,11 @@ class _SettingDownloadPageState extends State<SettingDownloadPage> {
         elevation: 4,
         onChanged: (int? newValue) => downloadSetting.saveDownloadTaskConcurrency(newValue!),
         items: const [
-          DropdownMenuItem(child: Text('2'), value: 2),
-          DropdownMenuItem(child: Text('4'), value: 4),
-          DropdownMenuItem(child: Text('6'), value: 6),
-          DropdownMenuItem(child: Text('8'), value: 8),
-          DropdownMenuItem(child: Text('10'), value: 10),
+          DropdownMenuItem(value: 2, child: Text('2')),
+          DropdownMenuItem(value: 4, child: Text('4')),
+          DropdownMenuItem(value: 6, child: Text('6')),
+          DropdownMenuItem(value: 8, child: Text('8')),
+          DropdownMenuItem(value: 10, child: Text('10')),
         ],
       ),
     );
@@ -227,12 +227,12 @@ class _SettingDownloadPageState extends State<SettingDownloadPage> {
               downloadSetting.saveMaximum(newValue!);
             },
             items: const [
-              DropdownMenuItem(child: Text('1'), value: 1),
-              DropdownMenuItem(child: Text('2'), value: 2),
-              DropdownMenuItem(child: Text('3'), value: 3),
-              DropdownMenuItem(child: Text('5'), value: 5),
-              DropdownMenuItem(child: Text('10'), value: 10),
-              DropdownMenuItem(child: Text('99'), value: 99),
+              DropdownMenuItem(value: 1, child: Text('1')),
+              DropdownMenuItem(value: 2, child: Text('2')),
+              DropdownMenuItem(value: 3, child: Text('3')),
+              DropdownMenuItem(value: 5, child: Text('5')),
+              DropdownMenuItem(value: 10, child: Text('10')),
+              DropdownMenuItem(value: 99, child: Text('99')),
             ],
           ),
           Text('${'images'.tr} ${'per'.tr}',
@@ -244,9 +244,9 @@ class _SettingDownloadPageState extends State<SettingDownloadPage> {
             alignment: AlignmentDirectional.bottomEnd,
             onChanged: (Duration? newValue) => downloadSetting.savePeriod(newValue!),
             items: const [
-              DropdownMenuItem(child: Text('1s'), value: Duration(seconds: 1)),
-              DropdownMenuItem(child: Text('2s'), value: Duration(seconds: 2)),
-              DropdownMenuItem(child: Text('3s'), value: Duration(seconds: 3)),
+              DropdownMenuItem(value: Duration(seconds: 1), child: Text('1s')),
+              DropdownMenuItem(value: Duration(seconds: 2), child: Text('2s')),
+              DropdownMenuItem(value: Duration(seconds: 3), child: Text('3s')),
             ],
           ),
         ],
@@ -280,16 +280,16 @@ class _SettingDownloadPageState extends State<SettingDownloadPage> {
         elevation: 4,
         onChanged: (int? newValue) => downloadSetting.saveArchiveDownloadIsolateCount(newValue!),
         items: const [
-          DropdownMenuItem(child: Text('1'), value: 1),
-          DropdownMenuItem(child: Text('2'), value: 2),
-          DropdownMenuItem(child: Text('3'), value: 3),
-          DropdownMenuItem(child: Text('4'), value: 4),
-          DropdownMenuItem(child: Text('5'), value: 5),
-          DropdownMenuItem(child: Text('6'), value: 6),
-          DropdownMenuItem(child: Text('7'), value: 7),
-          DropdownMenuItem(child: Text('8'), value: 8),
-          DropdownMenuItem(child: Text('9'), value: 9),
-          DropdownMenuItem(child: Text('10'), value: 10),
+          DropdownMenuItem(value: 1, child: Text('1')),
+          DropdownMenuItem(value: 2, child: Text('2')),
+          DropdownMenuItem(value: 3, child: Text('3')),
+          DropdownMenuItem(value: 4, child: Text('4')),
+          DropdownMenuItem(value: 5, child: Text('5')),
+          DropdownMenuItem(value: 6, child: Text('6')),
+          DropdownMenuItem(value: 7, child: Text('7')),
+          DropdownMenuItem(value: 8, child: Text('8')),
+          DropdownMenuItem(value: 9, child: Text('9')),
+          DropdownMenuItem(value: 10, child: Text('10')),
         ],
       ),
     );

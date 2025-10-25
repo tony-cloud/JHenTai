@@ -5,7 +5,7 @@ import 'package:pinput/pinput.dart';
 import '../config/ui_config.dart';
 
 class EHAppPasswordSettingDialog extends StatefulWidget {
-  const EHAppPasswordSettingDialog({Key? key}) : super(key: key);
+  const EHAppPasswordSettingDialog({super.key});
 
   @override
   State<EHAppPasswordSettingDialog> createState() => _EHAppPasswordSettingDialogState();

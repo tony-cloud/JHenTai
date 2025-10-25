@@ -231,7 +231,7 @@ class EHSpiderParser {
 
         /// remove ad and table header
         .where((element) => element.children.length != 1 && element.querySelector('th') == null)
-        .map((e) => _parseCompactGallery(e))
+        .map(_parseCompactGallery)
         .toList();
 
     int pageCount = _ranklistPageDocument2TotalPageCount(document);
@@ -1773,7 +1773,7 @@ class EHSpiderParser {
     List<String> hits =
         tbody.querySelectorAll('tr:nth-child(8) > .stdv').map((e) => e.text).toList();
 
-    double _parseNumber(String s) {
+    double parseNumber(String s) {
       if (s.endsWith('K')) {
         return double.parse(s.substring(0, s.length - 1)) * 1000;
       }
@@ -1787,8 +1787,8 @@ class EHSpiderParser {
         .mapIndexed(
           (index, period) => VisitStat(
             period: period,
-            visits: _parseNumber(visits[index]),
-            hits: _parseNumber(hits[index]),
+            visits: parseNumber(visits[index]),
+            hits: parseNumber(hits[index]),
           ),
         )
         .toList();

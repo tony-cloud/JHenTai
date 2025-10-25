@@ -32,7 +32,6 @@ import '../../model/detail_page_info.dart';
 import '../../model/gallery_image.dart';
 import '../../model/read_page_info.dart';
 import '../../network/eh_request.dart';
-import '../../service/storage_service.dart';
 import '../../setting/read_setting.dart';
 import '../../utils/eh_spider_parser.dart';
 import '../../service/log.dart';

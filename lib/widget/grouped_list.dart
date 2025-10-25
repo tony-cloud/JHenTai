@@ -27,7 +27,7 @@ class GroupedList<G, E> extends StatefulWidget {
   final GroupedListController? controller;
 
   const GroupedList({
-    Key? key,
+    super.key,
     required this.groups,
     required this.elements,
     required this.elementGroup,
@@ -38,7 +38,7 @@ class GroupedList<G, E> extends StatefulWidget {
     required this.maxGalleryNum4Animation,
     this.scrollController,
     this.controller,
-  }) : super(key: key);
+  });
 
   @override
   State<GroupedList<G, E>> createState() => _GroupedListState<G, E>();
@@ -257,11 +257,11 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
   }
 
   void _initGroupsAndElements(GroupedList<G, E> widget) {
-    this._groups.clear();
-    this._group2Elements.clear();
+    _groups.clear();
+    _group2Elements.clear();
 
-    this._groups.addAll(widget.groups);
-    this._group2Elements = widget.elements.groupListsBy<G>((e) => widget.elementGroup(e));
+    _groups.addAll(widget.groups);
+    _group2Elements = widget.elements.groupListsBy<G>((e) => widget.elementGroup(e));
   }
 }
 

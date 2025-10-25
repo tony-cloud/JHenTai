@@ -24,7 +24,7 @@ class FadeSlideWidget extends StatefulWidget {
   final AfterAnimationCallBack? afterAnimation;
 
   const FadeSlideWidget({
-    Key? key,
+    super.key,
     required this.show,
     required this.child,
     this.animateWhenInitialization = false,
@@ -39,7 +39,7 @@ class FadeSlideWidget extends StatefulWidget {
     this.slideCurve = Curves.linear,
     this.axis = Axis.vertical,
     this.afterAnimation,
-  }) : super(key: key);
+  });
 
   @override
   State<FadeSlideWidget> createState() => _FadeSlideWidgetState();

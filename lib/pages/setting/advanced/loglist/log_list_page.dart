@@ -11,7 +11,7 @@ import '../../../../routes/routes.dart';
 import '../../../../utils/route_util.dart';
 
 class LogListPage extends StatefulWidget {
-  const LogListPage({Key? key}) : super(key: key);
+  const LogListPage({super.key});
 
   @override
   _LogListPageState createState() => _LogListPageState();

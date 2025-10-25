@@ -18,7 +18,7 @@ import '../../../utils/uuid_util.dart';
 import '../../../widget/eh_comment_dialog.dart';
 
 class CommentPage extends StatefulWidget {
-  const CommentPage({Key? key}) : super(key: key);
+  const CommentPage({super.key});
 
   @override
   _CommentPageState createState() => _CommentPageState();

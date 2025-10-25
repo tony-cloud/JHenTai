@@ -22,8 +22,7 @@ class EHGalleryTorrentsDialog extends StatefulWidget {
   final int gid;
   final String token;
 
-  const EHGalleryTorrentsDialog({Key? key, required this.gid, required this.token})
-      : super(key: key);
+  const EHGalleryTorrentsDialog({super.key, required this.gid, required this.token});
 
   @override
   _EHGalleryTorrentsDialogState createState() => _EHGalleryTorrentsDialogState();
@@ -96,7 +95,7 @@ class _EHGalleryTorrentsDialogState extends State<EHGalleryTorrentsDialog> {
 class _TorrentList extends StatelessWidget {
   final List<GalleryTorrent> galleryTorrents;
 
-  const _TorrentList({Key? key, required this.galleryTorrents}) : super(key: key);
+  const _TorrentList({required this.galleryTorrents});
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +127,7 @@ class _TorrentList extends StatelessWidget {
       height: 24,
       margin: const EdgeInsets.only(top: 8, bottom: 8),
       alignment: Alignment.center,
-      child: Text('outdated'.tr + '↓'),
+      child: Text('${'outdated'.tr}↓'),
     );
   }
 

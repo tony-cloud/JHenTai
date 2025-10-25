@@ -8,18 +8,14 @@ import 'favorite_page_state.dart';
 
 class FavoritePage extends BasePage {
   const FavoritePage({
-    Key? key,
-    bool showMenuButton = false,
-    bool showTitle = false,
-    String? name,
+    super.key,
+    super.showMenuButton,
+    super.showTitle,
+    super.name,
   }) : super(
-          key: key,
-          showMenuButton: showMenuButton,
           showJumpButton: true,
           showFilterButton: true,
           showScroll2TopButton: true,
-          showTitle: showTitle,
-          name: name,
         );
 
   @override

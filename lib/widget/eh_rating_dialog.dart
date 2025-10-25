@@ -12,7 +12,7 @@ class EHRatingDialog extends StatefulWidget {
   final double rating;
   final bool hasRated;
 
-  const EHRatingDialog({Key? key, required this.rating, required this.hasRated}) : super(key: key);
+  const EHRatingDialog({super.key, required this.rating, required this.hasRated});
 
   @override
   _EHRatingDialogState createState() => _EHRatingDialogState();

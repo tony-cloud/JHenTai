@@ -9,14 +9,14 @@ class IconTextButton extends StatelessWidget {
   final VoidCallback? onLongPress;
 
   const IconTextButton({
-    Key? key,
+    super.key,
     this.height,
     this.width,
     required this.icon,
     required this.text,
     this.onPressed,
     this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

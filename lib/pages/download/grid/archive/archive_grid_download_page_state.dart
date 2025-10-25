@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:jhentai/service/archive_download_service.dart';
 
 import '../../../../database/database.dart';

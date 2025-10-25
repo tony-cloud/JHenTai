@@ -6,7 +6,7 @@ class EHAsset extends StatelessWidget {
   final int gpCount;
   final int creditCount;
 
-  const EHAsset({Key? key, required this.gpCount, required this.creditCount}) : super(key: key);
+  const EHAsset({super.key, required this.gpCount, required this.creditCount});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class EHAsset extends StatelessWidget {
 class _CircleAssetChip extends StatelessWidget {
   final String str;
 
-  const _CircleAssetChip({Key? key, required this.str}) : super(key: key);
+  const _CircleAssetChip({required this.str});
 
   @override
   Widget build(BuildContext context) {

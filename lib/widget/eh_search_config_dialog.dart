@@ -34,8 +34,7 @@ class EHSearchConfigDialog extends StatefulWidget {
   final SearchConfig? searchConfig;
 
   const EHSearchConfigDialog(
-      {Key? key, required this.type, this.quickSearchName, this.searchConfig})
-      : super(key: key);
+      {super.key, required this.type, this.quickSearchName, this.searchConfig});
 
   @override
   _EHSearchConfigDialogState createState() => _EHSearchConfigDialogState();
@@ -327,7 +326,7 @@ class _EHSearchConfigDialogState extends State<EHSearchConfigDialog> {
                   addSearchTag(tagData);
                 },
               ),
-            ).fadeIn(),
+            ).fadeInWidget(),
           ),
         ),
       ),
@@ -555,12 +554,12 @@ class _EHSearchConfigDialogState extends State<EHSearchConfigDialog> {
         onChanged: (String? newValue) => setState(() => searchConfig.language = newValue),
         menuMaxHeight: 200,
         items: [
-          DropdownMenuItem(child: Text('nope'.tr), value: null),
+          DropdownMenuItem(value: null, child: Text('nope'.tr)),
           ...LocaleConsts.language2Abbreviation.keys
               .where((language) => language != 'japanese')
               .map((language) =>
-                  DropdownMenuItem(child: Text(language.capitalizeFirst!), value: language))
-              .toList(),
+                  DropdownMenuItem(value: language, child: Text(language.capitalizeFirst!)))
+              ,
         ],
       ),
     );
@@ -655,11 +654,11 @@ class _EHSearchConfigDialogState extends State<EHSearchConfigDialog> {
             });
           },
           items: const [
-            DropdownMenuItem(child: Text('1'), value: 1),
-            DropdownMenuItem(child: Text('2'), value: 2),
-            DropdownMenuItem(child: Text('3'), value: 3),
-            DropdownMenuItem(child: Text('4'), value: 4),
-            DropdownMenuItem(child: Text('5'), value: 5),
+            DropdownMenuItem(value: 1, child: Text('1')),
+            DropdownMenuItem(value: 2, child: Text('2')),
+            DropdownMenuItem(value: 3, child: Text('3')),
+            DropdownMenuItem(value: 4, child: Text('4')),
+            DropdownMenuItem(value: 5, child: Text('5')),
           ],
         ),
       ),
@@ -733,7 +732,7 @@ class _EHSearchConfigDialogState extends State<EHSearchConfigDialog> {
   }
 
   Future<void> _handleDeleteConfig() async {
-    bool? result = await Get.dialog(EHDialog(title: 'delete'.tr + '?'));
+    bool? result = await Get.dialog(EHDialog(title: '${'delete'.tr}?'));
 
     if (result == true) {
       quickSearchService.removeQuickSearch(quickSearchName!);
@@ -869,12 +868,12 @@ class SearchSuggestionList extends StatelessWidget {
   final ScrollController scrollController;
 
   const SearchSuggestionList({
-    Key? key,
+    super.key,
     required this.currentKeyword,
     required this.suggestions,
     required this.onTapSuggestion,
     required this.scrollController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -100,7 +100,7 @@ class EHAddTagDialog extends StatelessWidget {
             prefixIcon: MouseRegion(
               cursor: SystemMouseCursors.click,
               child:
-                  GestureDetector(child: const Icon(Icons.search), onTap: logic.waitAndSearchTags),
+                  GestureDetector(onTap: logic.waitAndSearchTags, child: const Icon(Icons.search)),
             ),
             suffixIcon: _buildLoadingIndicator(),
           ),

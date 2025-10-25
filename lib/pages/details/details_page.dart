@@ -26,7 +26,6 @@ import 'package:jhentai/widget/eh_tag.dart';
 import 'package:jhentai/widget/eh_thumbnail.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:jhentai/widget/icon_text_button.dart';
-import 'package:jhentai/widget/keep_alive.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
 import '../../database/database.dart';
@@ -420,7 +419,7 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
               : () async {
                   bool? result = await showDialog(
                       context: context,
-                      builder: (_) => EHDialog(title: 'blockUploaderLocally'.tr + '?'));
+                      builder: (_) => EHDialog(title: '${'blockUploaderLocally'.tr}?'));
                   if (result == true) {
                     logic.blockUploader(logic.uploader);
                   }
@@ -1316,7 +1315,7 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
             alignment: Alignment.center,
             child: Text(state.copyRighter!,
                 style: const TextStyle(fontSize: UIConfig.detailsPageCopyRightRemovedHintTextSize)),
-          ).fadeIn().marginSymmetric(horizontal: UIConfig.detailPagePadding);
+          ).fadeInWidget().marginSymmetric(horizontal: UIConfig.detailPagePadding);
         },
       ),
     );
@@ -1352,7 +1351,7 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                   ).marginOnly(top: 10),
                 )
                 .toList(),
-          ).fadeIn().marginSymmetric(horizontal: UIConfig.detailPagePadding);
+          ).fadeInWidget().marginSymmetric(horizontal: UIConfig.detailPagePadding);
         },
       ),
     );
@@ -1439,7 +1438,7 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                   ),
                 ),
             ],
-          ).fadeIn().marginSymmetric(horizontal: UIConfig.detailPagePadding);
+          ).fadeInWidget().marginSymmetric(horizontal: UIConfig.detailPagePadding);
         },
       ),
     );

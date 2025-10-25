@@ -18,9 +18,9 @@ mixin Scroll2TopPageMixin on Widget {
           duration: const Duration(milliseconds: 200),
           child: scroll2TopLogic.shouldDisplayFAB
               ? FloatingActionButton(
-                  child: const Icon(Icons.arrow_upward),
                   heroTag: null,
                   onPressed: scroll2TopLogic.scroll2Top,
+                  child: const Icon(Icons.arrow_upward),
                 )
               : null,
         );

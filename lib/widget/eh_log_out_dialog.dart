@@ -6,14 +6,14 @@ import '../network/eh_request.dart';
 import '../utils/route_util.dart';
 
 class LogoutDialog extends StatelessWidget {
-  const LogoutDialog({Key? key}) : super(key: key);
+  const LogoutDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
     return CupertinoAlertDialog(
-      title: Text('logout'.tr + ' ?'),
+      title: Text('${'logout'.tr} ?'),
       actions: [
-        CupertinoDialogAction(child: Text('cancel'.tr), onPressed: backRoute),
+        CupertinoDialogAction(onPressed: backRoute, child: Text('cancel'.tr)),
         CupertinoDialogAction(
           child: Text('OK'.tr, style: TextStyle(color: UIConfig.alertColor(context))),
           onPressed: () async {

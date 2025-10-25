@@ -122,7 +122,7 @@ class JHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
           JHConsts.TIMESTAMP_HEADER: timestamp,
           JHConsts.NONCE_HEADER: timestamp,
           JHConsts.SIGNATURE_HEADER: HmacUtil.hmacSha256(
-              JHConsts.APP_ID + '-' + timestamp + '-' + timestamp, JHApiSecretConfig.secret),
+              '${JHConsts.APP_ID}-$timestamp-$timestamp', JHApiSecretConfig.secret),
         },
       ),
       cancelToken: cancelToken,

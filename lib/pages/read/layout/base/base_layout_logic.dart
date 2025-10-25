@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:clipboard/clipboard.dart';
 import 'package:dio/dio.dart';
@@ -28,7 +27,6 @@ import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../exception/eh_image_exception.dart';
 import '../../../../model/gallery_image.dart';
-import '../../../../service/path_service.dart';
 import '../../../../setting/read_setting.dart';
 import '../../../../service/log.dart';
 import '../../../../utils/route_util.dart';
@@ -158,7 +156,7 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
               },
             ),
         ],
-        cancelButton: CupertinoActionSheetAction(child: Text('cancel'.tr), onPressed: backRoute),
+        cancelButton: CupertinoActionSheetAction(onPressed: backRoute, child: Text('cancel'.tr)),
       ),
     );
   }
@@ -196,7 +194,7 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
             },
           ),
         ],
-        cancelButton: CupertinoActionSheetAction(child: Text('cancel'.tr), onPressed: backRoute),
+        cancelButton: CupertinoActionSheetAction(onPressed: backRoute, child: Text('cancel'.tr)),
       ),
     );
   }

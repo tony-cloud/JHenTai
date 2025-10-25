@@ -50,15 +50,13 @@ class _EHTagSetDialogState extends State<EHTagSetDialog> {
                 size: 24, color: UIConfig.loadingStateIndicatorButtonColor(context)),
           ),
         if (_loadingState == LoadingState.success)
-          ..._tagSets
-              .map(
-                (tagSet) => ListTile(
-                  title: Text(tagSet.name),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  onTap: () => backRoute(result: (tagSetNo: tagSet.number, remember: remember)),
-                ),
-              )
-              .toList(),
+          ..._tagSets.map(
+            (tagSet) => ListTile(
+              title: Text(tagSet.name),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              onTap: () => backRoute(result: (tagSetNo: tagSet.number, remember: remember)),
+            ),
+          ),
         if (_loadingState == LoadingState.success && preferenceSetting.enableDefaultTagSet.isTrue)
           ListTile(
             dense: true,

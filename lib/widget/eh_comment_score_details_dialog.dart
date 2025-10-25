@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class EHCommentScoreDetailsDialog extends StatelessWidget {
   final List<String> scoreDetails;
 
-  const EHCommentScoreDetailsDialog({Key? key, required this.scoreDetails}) : super(key: key);
+  const EHCommentScoreDetailsDialog({super.key, required this.scoreDetails});
 
   @override
   Widget build(BuildContext context) {

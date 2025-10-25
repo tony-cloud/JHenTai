@@ -12,12 +12,12 @@ class EHThumbnail extends StatelessWidget {
   final BorderRadius borderRadius;
 
   const EHThumbnail({
-    Key? key,
+    super.key,
     required this.thumbnail,
     this.containerHeight,
     this.containerWidth,
     this.borderRadius = BorderRadius.zero,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

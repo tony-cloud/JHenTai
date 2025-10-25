@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
-import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/model/gallery_archive.dart';
 import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/widget/eh_asset.dart';
 import 'package:jhentai/widget/eh_group_name_selector.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/extension/widget_extension.dart';
 
 import '../exception/eh_site_exception.dart';
 import '../network/eh_request.dart';
@@ -24,12 +24,12 @@ class EHArchiveDialog extends StatefulWidget {
   final String archivePageUrl;
 
   const EHArchiveDialog({
-    Key? key,
+    super.key,
     required this.title,
     this.currentGroup,
     required this.candidates,
     required this.archivePageUrl,
-  }) : super(key: key);
+  });
 
   @override
   _EHArchiveDialogState createState() => _EHArchiveDialogState();
@@ -222,13 +222,12 @@ class _ArchiveButtonSet extends StatelessWidget {
   final VoidCallback? callback;
 
   const _ArchiveButtonSet({
-    Key? key,
     this.cost,
     this.size,
     this.text,
     this.icon,
     this.callback,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -60,12 +60,12 @@ class BlockingRulePage extends StatelessWidget {
                       controller: state.groupedListController,
                       groups: state.groupedRules.map(
                         (groupId, rules) => MapEntry(
-                            '${rules.first.target.desc.tr}${rules.length > 1 ? '' : ' - ' + rules.first.attribute.desc.tr}',
+                            '${rules.first.target.desc.tr}${rules.length > 1 ? '' : ' - ${rules.first.attribute.desc.tr}'}',
                             true),
                       ),
                       elements: state.groupedRules.values.toList(),
                       elementGroup: (List<LocalBlockRule> rules) =>
-                          '${rules.first.target.desc.tr}${rules.length > 1 ? '' : ' - ' + rules.first.attribute.desc.tr}',
+                          '${rules.first.target.desc.tr}${rules.length > 1 ? '' : ' - ${rules.first.attribute.desc.tr}'}',
                       groupBuilder: (context, group, isOpen) =>
                           _groupBuilder(context, group, isOpen).marginAll(5),
                       elementBuilder: (BuildContext context, String group,
@@ -177,7 +177,7 @@ class BlockingRulePage extends StatelessWidget {
           icon: const Icon(Icons.delete, size: 24),
           onPressed: () async {
             bool? result = await showDialog(
-                context: context, builder: (_) => EHDialog(title: 'delete'.tr + '?'));
+                context: context, builder: (_) => EHDialog(title: '${'delete'.tr}?'));
             if (result == true) {
               await logic.removeLocalBlockRulesByGroupId(groupId);
               logic.getBlockRules();
@@ -191,7 +191,7 @@ class BlockingRulePage extends StatelessWidget {
   void _showOperationBottomSheet(BuildContext context, String groupId, List<LocalBlockRule> rules) {
     showCupertinoModalPopup(
       context: context,
-      builder: (BuildContext _context) => CupertinoActionSheet(
+      builder: (BuildContext context) => CupertinoActionSheet(
         actions: <CupertinoActionSheetAction>[
           CupertinoActionSheetAction(
             child: Row(
@@ -230,7 +230,7 @@ class BlockingRulePage extends StatelessWidget {
             },
           ),
         ],
-        cancelButton: CupertinoActionSheetAction(child: Text('cancel'.tr), onPressed: backRoute),
+        cancelButton: CupertinoActionSheetAction(onPressed: backRoute, child: Text('cancel'.tr)),
       ),
     );
   }

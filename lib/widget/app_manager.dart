@@ -28,7 +28,7 @@ class AppManager extends StatefulWidget {
 
   final Widget child;
 
-  const AppManager({Key? key, required this.child}) : super(key: key);
+  const AppManager({super.key, required this.child});
 
   @override
   State<AppManager> createState() => _AppManagerState();

@@ -24,12 +24,11 @@ import '../../../enum/config_type_enum.dart';
 import '../../../routes/routes.dart';
 import '../../../service/isolate_service.dart';
 import '../../../utils/byte_util.dart';
-import '../../../utils/permission_util.dart';
 import '../../../utils/route_util.dart';
 import '../../../widget/eh_config_type_select_dialog.dart';
 
 class SettingAdvancedPage extends StatefulWidget {
-  const SettingAdvancedPage({Key? key}) : super(key: key);
+  const SettingAdvancedPage({super.key});
 
   @override
   _SettingAdvancedPageState createState() => _SettingAdvancedPageState();
@@ -62,7 +61,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
           padding: const EdgeInsets.only(top: 16),
           children: [
             _buildEnableLogging(),
-            if (advancedSetting.enableLogging.isTrue) _buildRecordAllLogs().fadeIn(),
+            if (advancedSetting.enableLogging.isTrue) _buildRecordAllLogs().fadeInWidget(),
             _buildOpenLogs(),
             _buildClearLogs(context),
             _buildClearImageCache(context),

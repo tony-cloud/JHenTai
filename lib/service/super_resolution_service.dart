@@ -72,7 +72,7 @@ class SuperResolutionService extends GetxController
           SuperResolutionStatus.values[data.status],
           data.imageStatuses
               .split(SuperResolutionInfo.imageStatusesSeparator)
-              .map((e) => int.parse(e))
+              .map(int.parse)
               .map((index) => SuperResolutionStatus.values[index])
               .toList(),
         ),
@@ -123,7 +123,7 @@ class SuperResolutionService extends GetxController
           path: modelDownloadPath,
           receiveTimeout: 10 * 60 * 1000,
           onReceiveProgress: (count, total) {
-            downloadProgress = (count / total * 100).toStringAsFixed(2) + '%';
+            downloadProgress = '${(count / total * 100).toStringAsFixed(2)}%';
             updateSafely([downloadId]);
           },
         ),

@@ -9,7 +9,7 @@ import '../layout/mobile_v2/notification/tap_menu_button_notification.dart';
 class SettingPage extends StatelessWidget {
   final bool showMenuButton;
 
-  const SettingPage({Key? key, this.showMenuButton = false}) : super(key: key);
+  const SettingPage({super.key, this.showMenuButton = false});
 
   @override
   Widget build(BuildContext context) {
@@ -30,53 +30,53 @@ class SettingPage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.account_circle),
               title: Text('account'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'account'),
+              onTap: () => toRoute('${Routes.settingPrefix}account'),
             ),
             if (userSetting.hasLoggedIn())
               ListTile(
                 leading: const Icon(Icons.mood),
                 title: Text('EH'.tr),
-                onTap: () => toRoute(Routes.settingPrefix + 'EH'),
+                onTap: () => toRoute('${Routes.settingPrefix}EH'),
               ),
             ListTile(
               leading: const Icon(Icons.style),
               title: Text('style'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'style'),
+              onTap: () => toRoute('${Routes.settingPrefix}style'),
             ),
             ListTile(
               leading: const Icon(Icons.local_library),
               title: Text('read'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'read'),
+              onTap: () => toRoute('${Routes.settingPrefix}read'),
             ),
             ListTile(
               leading: const Icon(Icons.stars),
               title: Text('preference'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'preference'),
+              onTap: () => toRoute('${Routes.settingPrefix}preference'),
             ),
             ListTile(
               leading: const Icon(Icons.wifi),
               title: Text('network'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'network'),
+              onTap: () => toRoute('${Routes.settingPrefix}network'),
             ),
             ListTile(
               leading: const Icon(Icons.download),
               title: Text('download'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'download'),
+              onTap: () => toRoute('${Routes.settingPrefix}download'),
             ),
             ListTile(
               leading: const Icon(Icons.electric_bolt),
               title: Text('performance'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'performance'),
+              onTap: () => toRoute('${Routes.settingPrefix}performance'),
             ),
             ListTile(
               leading: const Icon(Icons.mouse),
               title: Text('mouseWheel'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'mouse_wheel'),
+              onTap: () => toRoute('${Routes.settingPrefix}mouse_wheel'),
             ),
             ListTile(
               leading: const Icon(Icons.settings_suggest),
               title: Text('advanced'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'advanced'),
+              onTap: () => toRoute('${Routes.settingPrefix}advanced'),
             ),
             // ListTile(
             //   leading: const Icon(Icons.cloud),
@@ -86,12 +86,12 @@ class SettingPage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.security),
               title: Text('security'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'security'),
+              onTap: () => toRoute('${Routes.settingPrefix}security'),
             ),
             ListTile(
               leading: const Icon(Icons.info),
               title: Text('about'.tr),
-              onTap: () => toRoute(Routes.settingPrefix + 'about'),
+              onTap: () => toRoute('${Routes.settingPrefix}about'),
             ),
           ],
         ),

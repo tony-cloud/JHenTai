@@ -15,7 +15,7 @@ class FocusWidget extends StatefulWidget {
   final VoidCallback? handleTapArrowRight;
 
   const FocusWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.enableFocus = true,
     this.focusedDecoration,
@@ -23,7 +23,7 @@ class FocusWidget extends StatefulWidget {
     this.handleTapEnter,
     this.handleTapArrowLeft,
     this.handleTapArrowRight,
-  }) : super(key: key);
+  });
 
   @override
   State<FocusWidget> createState() => _FocusWidgetState();

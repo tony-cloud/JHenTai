@@ -16,7 +16,7 @@ import 'desktop_search_page_state.dart';
 import 'desktop_search_page_tab_logic.dart';
 
 class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
-  const DesktopSearchPage({Key? key}) : super(key: key);
+  const DesktopSearchPage({super.key});
 
   DesktopSearchPageLogic get logic =>
       Get.put<DesktopSearchPageLogic>(DesktopSearchPageLogic(), permanent: true);
@@ -155,7 +155,6 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
 /// imitate chrome style
 class _SearchTab extends StatefulWidget {
   const _SearchTab({
-    Key? key,
     required this.name,
     required this.selected,
     required this.selectedColor,
@@ -164,7 +163,7 @@ class _SearchTab extends StatefulWidget {
     required this.unSelectedTextColor,
     required this.onTap,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   final String name;
   final bool selected;
@@ -232,7 +231,6 @@ class _SearchTabState extends State<_SearchTab> {
 /// implemented by 5 container
 class _SearchTabDivider extends StatelessWidget {
   const _SearchTabDivider({
-    Key? key,
     required this.hasLeftTab,
     required this.hasRightTab,
     required this.leftTabIsSelected,
@@ -240,7 +238,7 @@ class _SearchTabDivider extends StatelessWidget {
     required this.selectedColor,
     required this.unSelectedColor,
     required this.backgroundColor,
-  }) : super(key: key);
+  });
 
   final bool hasLeftTab;
 

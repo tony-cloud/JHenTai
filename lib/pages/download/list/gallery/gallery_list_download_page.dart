@@ -3,7 +3,6 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
-import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_mixin.dart';
 import 'package:jhentai/service/super_resolution_service.dart' as srs;
@@ -34,7 +33,7 @@ import 'gallery_list_download_page_state.dart';
 
 class GalleryListDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, GalleryDownloadPageMixin {
-  GalleryListDownloadPage({Key? key}) : super(key: key);
+  GalleryListDownloadPage({super.key});
 
   final GalleryListDownloadPageLogic logic =
       Get.put<GalleryListDownloadPageLogic>(GalleryListDownloadPageLogic(), permanent: true);
@@ -217,7 +216,7 @@ class GalleryListDownloadPage extends StatelessWidget
                 width: UIConfig.downloadPageGroupHeaderWidth,
                 child: Center(child: Icon(Icons.folder_open))),
             Text(
-              '$groupName${'(' + logic.downloadService.gallerysWithGroup(groupName).length.toString() + ')'}',
+              '$groupName${'(${logic.downloadService.gallerysWithGroup(groupName).length})'}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

@@ -42,7 +42,7 @@ class EHImage extends StatelessWidget {
   final CompletedWidgetBuilder? completedWidgetBuilder;
 
   const EHImage({
-    Key? key,
+    super.key,
     required this.galleryImage,
     this.autoLayout = false,
     this.containerHeight,
@@ -62,10 +62,10 @@ class EHImage extends StatelessWidget {
     this.pausedWidgetBuilder,
     this.loadingWidgetBuilder,
     this.completedWidgetBuilder,
-  }) : super(key: key);
+  });
 
   const EHImage.autoLayout({
-    Key? key,
+    super.key,
     required this.galleryImage,
     this.autoLayout = true,
     this.containerHeight,
@@ -85,7 +85,7 @@ class EHImage extends StatelessWidget {
     this.pausedWidgetBuilder,
     this.loadingWidgetBuilder,
     this.completedWidgetBuilder,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +139,8 @@ class EHImage extends StatelessWidget {
             return failedWidgetBuilder?.call(state) ??
                 Center(
                   child: GestureDetector(
-                      child: const Icon(Icons.sentiment_very_dissatisfied),
-                      onTap: state.reLoadImage),
+                      onTap: state.reLoadImage,
+                      child: const Icon(Icons.sentiment_very_dissatisfied)),
                 );
           case LoadState.completed:
             state.returnLoadStateChangedWidget = true;
@@ -148,12 +148,13 @@ class EHImage extends StatelessWidget {
             Widget child = completedWidgetBuilder?.call(state) ?? _buildExtendedRawImage(state);
 
             if (borderRadius != BorderRadius.zero) {
-              child = ClipRRect(child: child, borderRadius: borderRadius);
+              child = ClipRRect(borderRadius: borderRadius, child: child);
             }
 
             if (state.slidePageState != null) {
               child = ExtendedImageSlidePageHandler(
-                  child: child, extendedImageSlidePageState: state.slidePageState);
+                  extendedImageSlidePageState: state.slidePageState,
+                  child: child);
             }
 
             child = Center(
@@ -163,7 +164,7 @@ class EHImage extends StatelessWidget {
               ),
             );
 
-            return forceFadeIn || !state.wasSynchronouslyLoaded ? child.fadeIn() : child;
+            return forceFadeIn || !state.wasSynchronouslyLoaded ? child.fadeInWidget() : child;
         }
       },
       maxBytes: maxBytes,
@@ -190,7 +191,7 @@ class EHImage extends StatelessWidget {
           completedWidgetBuilder != null,
       enableSlideOutPage: enableSlideOutPage,
       borderRadius: borderRadius,
-      shape: borderRadius != null ? BoxShape.rectangle : null,
+      shape: BoxShape.rectangle,
       clearMemoryCacheWhenDispose: clearMemoryCacheWhenDispose,
       loadStateChanged: (ExtendedImageState state) {
         switch (state.extendedImageLoadState) {
@@ -202,21 +203,20 @@ class EHImage extends StatelessWidget {
             return failedWidgetBuilder?.call(state) ??
                 Center(
                   child: GestureDetector(
-                      child: const Icon(Icons.sentiment_very_dissatisfied),
-                      onTap: state.reLoadImage),
+                      onTap: state.reLoadImage,
+                      child: const Icon(Icons.sentiment_very_dissatisfied)),
                 );
           case LoadState.completed:
             state.returnLoadStateChangedWidget = true;
 
             Widget child = completedWidgetBuilder?.call(state) ?? _buildExtendedRawImage(state);
 
-            if (borderRadius != null) {
-              child = ClipRRect(child: child, borderRadius: borderRadius);
-            }
-
+            child = ClipRRect(borderRadius: borderRadius, child: child);
+          
             if (state.slidePageState != null) {
               child = ExtendedImageSlidePageHandler(
-                  child: child, extendedImageSlidePageState: state.slidePageState);
+                  extendedImageSlidePageState: state.slidePageState,
+                  child: child);
             }
 
             return FadeIn(

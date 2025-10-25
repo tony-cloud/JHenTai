@@ -10,7 +10,7 @@ import 'horizontal_page_layout_logic.dart';
 import 'horizontal_page_layout_state.dart';
 
 class HorizontalPageLayout extends BaseLayout {
-  HorizontalPageLayout({Key? key}) : super(key: key);
+  HorizontalPageLayout({super.key});
 
   @override
   final HorizontalPageLayoutLogic logic =

@@ -796,7 +796,7 @@ packages:
     source: hosted
     version: "3.2.2"
   http_parser:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http_parser
       sha256: "178d74305e7866013777bab2c3d8726205dc5a4dd935297175b19a23a2e66571"
@@ -870,7 +870,7 @@ packages:
     source: hosted
     version: "0.6.7"
   json_annotation:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: json_annotation
       sha256: "1ce844379ca14835a50d2f019a3099f419082cfdd231cd86a142af94dd5c6bb1"
@@ -975,7 +975,7 @@ packages:
     source: hosted
     version: "3.0.0"
   local_auth_android:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: local_auth_android
       sha256: d836715ed95b16b2de3a8c47a88ba5e607976bb1e27c9446d193152ea1429fae
@@ -983,7 +983,7 @@ packages:
     source: hosted
     version: "2.0.0"
   local_auth_darwin:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: local_auth_darwin
       sha256: "15d9db4ad4d58a11d7269e55d46ff8d49ed5e856226c8a5a91280f0d7c37b3a6"
@@ -999,7 +999,7 @@ packages:
     source: hosted
     version: "1.1.0"
   local_auth_windows:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: local_auth_windows
       sha256: d95535a73eddf57ce5930d5e78a0fa4f294c31981fdeeee83325b797302be454
@@ -1623,7 +1623,7 @@ packages:
     source: hosted
     version: "2.4.0"
   sqlite3:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3
       sha256: c284434c408d207863800341298cadfde23abe074a0f01b19c9d8cce4edb8eaa
