@@ -144,11 +144,11 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   }
 
   Future<void> _initLogDir() async {
-    if (logDirPath == null) {
-      logDirPath = path.join(pathService.getVisibleDir().path, 'logs');
-      if (!await Directory(logDirPath!).exists()) {
-        await Directory(logDirPath!).create();
-      }
+    logDirPath ??= path.join(pathService.getVisibleDir().path, 'logs');
+
+    final Directory logDirectory = Directory(logDirPath!);
+    if (!await logDirectory.exists()) {
+      await logDirectory.create(recursive: true);
     }
   }
 
