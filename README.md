@@ -182,15 +182,15 @@ mush thanks to these projects and people🙇‍
 >
 > [countryCode](https://github.com/unicode-org/cldr/blob/master/common/validity/region.xml)
 
-1. Copy `/lib/src/l18n/en_US.dart ` and rename to `{your_languageCode}_{your_countryCode}.dart`
+1. Copy `/lib/l18n/en_US.dart ` and rename to `{your_languageCode}_{your_countryCode}.dart`
 2. Rename classname in new file(optional)
 3. Modify k-v pairs in method `keys` ,translate values to your language
 
 Now you can submit your PR, I'll do the remaining things. Or you can go on with:
 
-4. Enter `/lib/src/l18n/locale_text.dart ` , add a new k-v pair in method `keys`
+4. Enter `/lib/l18n/locale_text.dart ` , add a new k-v pair in method `keys`
    => `{your_languageCode}_{your_countryCode} : {your_className}.keys()`
-5. Enter `/lib/src/consts/locale_consts.dart`, add a new k-v pair in
+5. Enter `/lib/consts/locale_consts.dart`, add a new k-v pair in
    property `localeCode2Description`: `{your_languageCode}_{your_countryCode} : {languageDescription}` to describe your
    language.
 

@@ -75,7 +75,7 @@ jobs:
       # Add JHenTai api serret
       - name: Setup JHenTai API Secret
         run: |
-          echo "${{ secrets.JH_API_SECRET_CONFIG }}" > lib/src/config/jh_api_secret_config.dart
+          echo "${{ secrets.JH_API_SECRET_CONFIG }}" > lib/config/jh_api_secret_config.dart
       # Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -122,7 +122,7 @@ jobs:
       - name: Build Android
         if: matrix.target == 'Android'
         run: |
-          flutter build apk -t lib/src/main.dart --release --split-per-abi
+          flutter build apk --release --split-per-abi
           cd build/app/outputs/apk/release
           mv app-arm64-v8a-release.apk JHenTai-${{ steps.get_version.outputs.version }}-arm64-v8a.apk
           mv app-armeabi-v7a-release.apk JHenTai-${{ steps.get_version.outputs.version }}-armeabi-v7a.apk
@@ -135,7 +135,7 @@ jobs:
           cd ios
           pod update
           cd ..
-          flutter build ios -t lib/src/main.dart --release --no-codesign
+          flutter build ios --release --no-codesign
           sh thin-payload.sh build/ios/iphoneos/*.app
           cd build
           mkdir -p Payload
@@ -154,7 +154,7 @@ jobs:
       - name: Build Windows
         if: matrix.target == 'Windows'
         run: |
-          flutter build windows -t lib/src/main.dart --release
+          flutter build windows --release
           $DestDir = "build\windows\JHenTai_${{ steps.get_version.outputs.version }}"
           $SrcDir = "build\windows\x64\runner\Release"
           New-Item -Path $DestDir -ItemType Directory
@@ -170,7 +170,7 @@ jobs:
           sudo apt-get install -y ninja-build libfuse2 webkit2gtk-4.1
           
           # Compile
-          flutter build linux --release -t lib/src/main.dart
+          flutter build linux --release
 
           # Build debian package
           mkdir -p build/linux/JHenTai-${{ steps.get_version.outputs.version }}-Linux-${{ steps.get_version.outputs.arch }}
@@ -202,7 +202,7 @@ jobs:
           sudo apt-get install -y ninja-build libfuse2 webkit2gtk-4.1
           
           # Compile
-          flutter build linux --release -t lib/src/main.dart
+          flutter build linux --release
           
           cd build/linux
           

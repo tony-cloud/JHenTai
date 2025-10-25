@@ -168,15 +168,15 @@ App翻译：
 >
 > [countryCode](https://github.com/unicode-org/cldr/blob/master/common/validity/region.xml)
 
-1. 复制 `/lib/src/l18n/en_US.dart` 一份并重命名为`{your_languageCode}_{your_countryCode}.dart`
+1. 复制 `/lib/l18n/en_US.dart` 一份并重命名为`{your_languageCode}_{your_countryCode}.dart`
 2. 更改新文件的class name(可选)
 3. 修改keys方法返回的所有键值对，将value翻译为你的语言
 
 你可以只做以上步骤然后提交PR，我会补充其他的步骤，或者你自己可以继续：
 
-4. 在 `/lib/src/l18n/locale_text.dart`
+4. 在 `/lib/l18n/locale_text.dart`
    的keys方法中增加一条键值对`{your_languageCode}_{your_countryCode} : {your_className}.keys()`
-5. 在 `/lib/src/consts/locale_consts.dart` 的 `localeCode2Description`
+5. 在 `/lib/consts/locale_consts.dart` 的 `localeCode2Description`
    属性中增加一条键值对`{your_languageCode}_{your_countryCode} : {languageDescription}`，用于描述你的语言
 
 ## 项目编译相关

@@ -1,6 +1,6 @@
 version=$(head -n 5 pubspec.yaml | tail -n 1 | cut -d ' ' -f 2)
 
-flutter build macos --release -t lib/src/main.dart \
+flutter build macos --release \
 && hdiutil create -size 150m -fs HFS+ -volname JHenTai JHenTai.dmg \
 && hdiutil attach JHenTai.dmg \
 && cp -R build/macos/Build/Products/Release/jhentai.app /Volumes/JHenTai \
