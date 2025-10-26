@@ -62,6 +62,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       FLUTTER_VERSION: 3.35.4
+      JH_API_SECRET_CONFIG: ${{ secrets.JH_API_SECRET_CONFIG }}
     steps:
       # Checkout branch
       - name: Checkout
@@ -72,8 +73,9 @@ jobs:
         run: |
           echo "${{ secrets.ENCODED_KEYSTORE }}" | base64 -di > android/app/upload-keystore.jks
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-      # Add JHenTai api serret
+      # Add JHenTai api secret
       - name: Setup JHenTai API Secret
+        if: env.JH_API_SECRET_CONFIG != ''
         run: |
           echo "${{ secrets.JH_API_SECRET_CONFIG }}" > lib/config/jh_api_secret_config.dart
       # Setup Flutter
