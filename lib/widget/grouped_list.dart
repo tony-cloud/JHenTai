@@ -84,10 +84,9 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
 
   @override
   void dispose() {
-    super.dispose();
-
     logic.dispose();
-    controller.detach();
+    controller.detach(this);
+    super.dispose();
   }
 
   @override
@@ -271,16 +270,13 @@ class GroupedListController<G, E> {
   _GroupedListState<G, E>? _groupedListState;
 
   void attach(_GroupedListState<G, E> state) {
-    /// todo
-    assert(_groupedListState == null);
-
     _groupedListState = state;
   }
 
-  void detach() {
-    assert(_groupedListState != null);
-
-    _groupedListState = null;
+  void detach(_GroupedListState<G, E> state) {
+    if (identical(_groupedListState, state)) {
+      _groupedListState = null;
+    }
   }
 
   Future<void> removeElement(E element) {
