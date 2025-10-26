@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
@@ -1039,8 +1041,12 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     if (parser == null) {
       return response as T;
     }
-    return isolateService
-        .run((list) => parser(list[0], list[1]), [response.headers, response.data]);
+    RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
+    return isolateService.run((list) async {
+      await EHSpiderParser.ensureSettingsLoadedForIsolate(
+          rootIsolateToken: list.length > 2 ? list[2] as RootIsolateToken? : null);
+      return parser(list[0] as Headers, list[1]);
+    }, [response.headers, response.data, rootIsolateToken]);
   }
 
   Future<Response> _getWithErrorHandler<T>(

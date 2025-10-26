@@ -1093,6 +1093,7 @@ class GalleryDownloadService extends GetxController
             cancelToken: galleryDownloadInfo.cancelToken,
             parser: EHSpiderParser.detailPage2RangeAndThumbnails,
           ),
+          delayFactor: const Duration(milliseconds: 500),
           retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
           onRetry: (e) => log.download(
               'Parse image hrefs failed, retry. Reason: ${(e as DioException).toString()}'),
@@ -1288,6 +1289,7 @@ class GalleryDownloadService extends GetxController
           retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
           onRetry: (e) => log
               .download('Parse image url failed, retry. Reason: ${(e as DioException).errorMsg}'),
+          delayFactor: const Duration(milliseconds: 500),
           maxAttempts: _maxRetryTimes,
         );
       } on DioException catch (e) {
@@ -1465,6 +1467,7 @@ class GalleryDownloadService extends GetxController
             onReceiveProgress: (int count, int total) =>
                 galleryDownloadInfo.speedComputer.updateProgress(count, total, serialNo),
           ),
+          delayFactor: const Duration(milliseconds: 500),
           maxAttempts: _maxRetryTimes,
 
           /// 403 or 5xx indicate broken H@H nodes, so we should re-parse instead of retrying
@@ -1560,35 +1563,45 @@ class GalleryDownloadService extends GetxController
     String? reloadKey = existingImage?.reloadKey;
     String? previousUrl = existingImage?.url;
 
-    if (preferOriginalImage && existingImage != null && reloadKey != null && previousUrl != null) {
-      existingImage.originalImageUrl ??= previousUrl;
-      String urlWithReload =
-          _appendReloadKeyToOriginalUrl(existingImage.originalImageUrl!, reloadKey);
-      existingImage.url = urlWithReload;
-      existingImage.downloadStatus = DownloadStatus.downloading;
-
-      galleryDownloadInfo.images[serialNo] = existingImage;
-
-      bool updated = await _updateImageInDatabase(
-        ImageCompanion(
-          gid: Value(gallery.gid),
-          serialNo: Value(serialNo),
-          url: Value(existingImage.url),
-          downloadStatusIndex: Value(DownloadStatus.downloading.index),
-        ),
+    if (preferOriginalImage && existingImage != null && previousUrl != null) {
+      String? legacyReloadKey = await _fetchLegacyReloadKeyForOriginalImage(
+        gallery,
+        galleryDownloadInfo,
+        serialNo,
+        reloadKey,
       );
-      if (!updated) {
-        await GalleryImageDao.deleteImage(gallery.gid, serialNo);
-        await _saveNewImageInfoInDatabase(existingImage, serialNo, gallery.gid);
+
+      if (legacyReloadKey != null) {
+        existingImage.originalImageUrl ??= previousUrl;
+        existingImage.url =
+            _appendReloadKeyToOriginalUrl(existingImage.originalImageUrl!, legacyReloadKey);
+        existingImage.reloadKey = legacyReloadKey;
+        existingImage.downloadStatus = DownloadStatus.downloading;
+
+        galleryDownloadInfo.images[serialNo] = existingImage;
+        galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = legacyReloadKey;
+
+        bool updated = await _updateImageInDatabase(
+          ImageCompanion(
+            gid: Value(gallery.gid),
+            serialNo: Value(serialNo),
+            url: Value(existingImage.url),
+            downloadStatusIndex: Value(DownloadStatus.downloading.index),
+          ),
+        );
+        if (!updated) {
+          await GalleryImageDao.deleteImage(gallery.gid, serialNo);
+          await _saveNewImageInfoInDatabase(existingImage, serialNo, gallery.gid);
+        }
+
+        _saveGalleryMetadataInDisk(gallery);
+
+        return _submitTask(
+          gid: gallery.gid,
+          priority: _computeImageTaskPriority(gallery, serialNo),
+          task: _downloadImageTask(gallery, serialNo),
+        );
       }
-
-      _saveGalleryMetadataInDisk(gallery);
-
-      return _submitTask(
-        gid: gallery.gid,
-        priority: _computeImageTaskPriority(gallery, serialNo),
-        task: _downloadImageTask(gallery, serialNo),
-      );
     }
 
     galleryDownloadInfo.images[serialNo] = null;
@@ -1697,8 +1710,54 @@ class GalleryDownloadService extends GetxController
     }
   }
 
+  Future<String?> _fetchLegacyReloadKeyForOriginalImage(
+    GalleryDownloadedData gallery,
+    GalleryDownloadInfo galleryDownloadInfo,
+    int serialNo,
+    String? currentReloadKey,
+  ) async {
+    GalleryThumbnail? thumbnail = galleryDownloadInfo.imageHrefs[serialNo];
+    if (thumbnail == null) {
+      return null;
+    }
+
+    try {
+      GalleryImage legacyImage = await retry(
+        () => ehRequest.requestImagePage(
+          thumbnail.replacedMPVHref(serialNo + 1),
+          reloadKey: currentReloadKey,
+          cancelToken: galleryDownloadInfo.cancelToken,
+          useCacheIfAvailable: false,
+          parser: EHSpiderParser.imagePage2GalleryImage,
+        ),
+        retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
+        onRetry: (e) => log.download(
+            'Fetch legacy reload key failed, retry. Reason: ${(e as DioException).errorMsg}'),
+        delayFactor: const Duration(milliseconds: 500),
+        maxAttempts: _maxRetryTimes,
+      );
+
+      return legacyImage.reloadKey;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        return null;
+      }
+      log.download(
+          'Fetch legacy reload key failed. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.errorMsg}');
+      return null;
+    } on EHParseException catch (e) {
+      log.download(
+          'Fetch legacy reload key parse error. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.message.tr}');
+      return null;
+    } on EHSiteException catch (e) {
+      log.download(
+          'Fetch legacy reload key site error. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.message.tr}');
+      return null;
+    }
+  }
+
   String _appendReloadKeyToOriginalUrl(String url, String reloadKey) {
-    String reloadValue = '$reloadKey-489299';
+    String reloadValue = reloadKey;
     try {
       Uri uri = Uri.parse(url);
       Map<String, String> query = Map<String, String>.from(uri.queryParameters);

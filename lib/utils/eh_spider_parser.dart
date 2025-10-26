@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
@@ -26,7 +28,11 @@ import 'package:jhentai/model/gallery_torrent.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/model/profile.dart';
 import 'package:jhentai/model/tag_set.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/setting/eh_setting.dart';
 import 'package:jhentai/setting/site_setting.dart';
+import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/color_util.dart';
 import 'package:jhentai/utils/string_uril.dart';
 
@@ -47,6 +53,53 @@ typedef HtmlParser<T> = T Function(Headers headers, dynamic data);
 HtmlParser<String> simpleParser = (headers, data) => data as String;
 
 class EHSpiderParser {
+  static Future<void>? _dependencyInitFuture;
+
+  /// Ensures config-driven singletons are ready inside background isolates.
+  static Future<void> ensureSettingsLoadedForIsolate({RootIsolateToken? rootIsolateToken}) async {
+    await _ensureDependenciesReady(rootIsolateToken: rootIsolateToken);
+    await userSetting.refreshBean();
+    await ehSetting.refreshBean();
+  }
+
+  static Future<void> _ensureDependenciesReady({RootIsolateToken? rootIsolateToken}) {
+    final Future<void>? initialized = _dependencyInitFuture;
+    if (initialized != null) {
+      return initialized;
+    }
+
+    final Completer<void> completer = Completer<void>();
+    _dependencyInitFuture = completer.future;
+
+    () async {
+      if (rootIsolateToken != null) {
+        BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+      }
+
+      try {
+        await pathService.initBean();
+      } on MissingPluginException catch (_) {
+        if (rootIsolateToken == null) {
+          throw StateError(
+              'RootIsolateToken is required to initialize pathService in a background isolate.');
+        }
+        rethrow;
+      }
+      await log.initBean();
+      await localConfigService.initBean();
+      await userSetting.initBean();
+      await ehSetting.initBean();
+    }()
+        .then((_) {
+      completer.complete();
+    }).catchError((Object error, StackTrace stackTrace) {
+      _dependencyInitFuture = null;
+      completer.completeError(error, stackTrace);
+    });
+
+    return completer.future;
+  }
+
   static Map<String, dynamic> loginPage2UserInfoOrErrorMsg(Headers headers, dynamic data) {
     Map<String, dynamic> map = {};
 
