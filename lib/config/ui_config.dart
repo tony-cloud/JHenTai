@@ -743,6 +743,10 @@ class EHScrollBehaviourWithScrollBar extends MaterialScrollBehavior {
       case Axis.horizontal:
         return child;
       case Axis.vertical:
+        final ScrollController? controller = details.controller;
+        final bool canUseInteractiveScrollbar =
+            controller == null || controller.positions.length <= 1;
+
         return ScrollbarTheme(
           data: ScrollbarThemeData(
             radius: styleSetting.isInMobileLayout
@@ -751,7 +755,11 @@ class EHScrollBehaviourWithScrollBar extends MaterialScrollBehavior {
             thickness: WidgetStateProperty.all(
                 styleSetting.isInMobileLayout ? CupertinoScrollbar.defaultThickness : 8),
           ),
-          child: Scrollbar(controller: details.controller, child: child),
+          child: Scrollbar(
+            controller: canUseInteractiveScrollbar ? controller : null,
+            interactive: canUseInteractiveScrollbar,
+            child: child,
+          ),
         );
     }
   }
