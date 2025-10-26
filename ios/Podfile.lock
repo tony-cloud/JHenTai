@@ -47,6 +47,8 @@ PODS:
   - just_audio (0.0.1):
     - Flutter
     - FlutterMacOS
+  - listen_sharing_intent (1.9.2):
+    - Flutter
   - local_auth_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -56,8 +58,6 @@ PODS:
     - Flutter
     - FlutterMacOS
   - permission_handler_apple (9.3.0):
-    - Flutter
-  - receive_sharing_intent (1.8.1):
     - Flutter
   - saver_gallery (0.0.1):
     - Flutter
@@ -119,11 +119,11 @@ DEPENDENCIES:
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - http_proxy (from `.symlinks/plugins/http_proxy/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
+  - listen_sharing_intent (from `.symlinks/plugins/listen_sharing_intent/ios`)
   - local_auth_darwin (from `.symlinks/plugins/local_auth_darwin/darwin`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
-  - receive_sharing_intent (from `.symlinks/plugins/receive_sharing_intent/ios`)
   - saver_gallery (from `.symlinks/plugins/saver_gallery/ios`)
   - screen_brightness_ios (from `.symlinks/plugins/screen_brightness_ios/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -160,6 +160,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/http_proxy/ios"
   just_audio:
     :path: ".symlinks/plugins/just_audio/darwin"
+  listen_sharing_intent:
+    :path: ".symlinks/plugins/listen_sharing_intent/ios"
   local_auth_darwin:
     :path: ".symlinks/plugins/local_auth_darwin/darwin"
   package_info_plus:
@@ -168,8 +170,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
-  receive_sharing_intent:
-    :path: ".symlinks/plugins/receive_sharing_intent/ios"
   saver_gallery:
     :path: ".symlinks/plugins/saver_gallery/ios"
   screen_brightness_ios:
@@ -202,11 +202,11 @@ SPEC CHECKSUMS:
   fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
   http_proxy: 6e9876b8b0d8bd9378a526bf49c51d8df64e891e
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
+  listen_sharing_intent: fe0b9a59913cc124dd6cbd55cd9f881de5f75759
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
-  receive_sharing_intent: 222384f00ffe7e952bbfabaa9e3967cb87e5fe00
   saver_gallery: af2d0c762dafda254e0ad025ef0dabd6506cd490
   screen_brightness_ios: 9953fd7da5bd480f1a93990daeec2eb42d4f3b52
   SDWebImage: a3ba0b8faac7228c3c8eadd1a55c9c9fe5e16457
