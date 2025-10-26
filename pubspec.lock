@@ -949,6 +949,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  listen_sharing_intent:
+    dependency: "direct main"
+    description:
+      name: listen_sharing_intent
+      sha256: df12e6c78666018985c39df494fc12412ece6510c38c79fe1230f2abef0965fa
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.9.2"
   loading_animation_widget:
     dependency: "direct main"
     description:
@@ -1325,14 +1333,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
-  receive_sharing_intent:
-    dependency: "direct main"
-    description:
-      name: receive_sharing_intent
-      sha256: ec76056e4d258ad708e76d85591d933678625318e411564dcb9059048ca3a593
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.8.1"
   retry:
     dependency: "direct main"
     description:

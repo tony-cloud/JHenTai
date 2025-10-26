@@ -14,7 +14,7 @@ import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/toast_util.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../mixin/window_widget_mixin.dart';

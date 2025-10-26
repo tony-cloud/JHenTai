@@ -24,7 +24,7 @@ subprojects {
                                 + " to increase their compileSdk to the latest (otherwise try updating to the latest version)."
                 )
                 project.android {
-                    compileSdk 31
+                    compileSdk 36
                 }
             }
         }
