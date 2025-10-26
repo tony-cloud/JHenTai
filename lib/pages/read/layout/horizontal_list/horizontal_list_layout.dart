@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/pages/read/layout/horizontal_list/horizontal_list_layout_state.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../../../model/read_page_info.dart';
 import '../../../../setting/read_setting.dart';
 import '../../../../utils/screen_size_util.dart';
 import '../../../../widget/eh_wheel_speed_controller_for_read_page.dart';
+import '../../../../widget/photo_view/j_photo_view_gallery.dart';
 import '../base/base_layout.dart';
 import 'horizontal_list_layout_logic.dart';
 
@@ -22,10 +22,10 @@ class HorizontalListLayout extends BaseLayout {
 
   @override
   Widget buildBody(BuildContext context) {
-    /// user PhotoViewGallery to scale up the whole gallery list, so set itemCount to 1
-    return PhotoViewGallery.builder(
+    /// Use JPhotoViewGallery to scale up the whole gallery list, so set itemCount to 1
+    return JPhotoViewGallery.builder(
       itemCount: 1,
-      builder: (_, __) => PhotoViewGalleryPageOptions.customChild(
+      builder: (_, __) => JPhotoViewGalleryPageOptions.customChild(
         controller: state.photoViewController,
         initialScale: 1.0,
         minScale: 1.0,

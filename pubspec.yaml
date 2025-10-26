@@ -13,12 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  # rewrite file mode
-  dio:
-    git:
-      url: https://github.com/jiangtian616/dio
-      path: dio
-      ref: append-mode
+  dio: ^5.9.0
   get: ^4.7.2
   get_storage: ^2.1.1
   extended_nested_scroll_view: ^6.2.1
@@ -31,10 +26,8 @@ dependencies:
   intl: 0.20.2
   collection: 1.19.0
   clipboard: ^2.0.2
-  scrollable_positioned_list: 
-    git:
-      url: https://github.com/jiangtian616/flutter.widgets
-      path: packages/scrollable_positioned_list
+  # add _scrollToEnd and jumpTo
+  scrollable_positioned_list: ^0.3.8
   flutter_list_view: ^1.1.29
   executor: ^2.2.5
   retry: 3.1.2
@@ -42,29 +35,13 @@ dependencies:
   drift: ^2.29.0
   sqlite3_flutter_libs: ^0.5.40
   path_provider: ^2.1.5
-  # https://github.com/letsar/flutter_slidable/issues/488
-  flutter_slidable:
-    git:
-      url: https://github.com/letsar/flutter_slidable.git
-      ref: master
+  flutter_slidable: ^3.1.2
   flutter_widget_from_html: ^0.17.1
   url_launcher: ^6.3.2
-  # add onLongPress
-  like_button:
-    git: https://github.com/jiangtian616/like_button
   webview_flutter: ^4.13.0
-  desktop_webview_window:
-    git:
-      url: https://github.com/MixinNetwork/flutter-plugins
-      path: packages/desktop_webview_window
-      ref: d0c91d9c3ea12883d38215adc48586753fb41dde
-  # rewrite double tap & tap drag gesture
-  photo_view:
-    git:
-      url: https://github.com/jiangtian616/photo_view
-      ref: separate
-  zoom_view: 
-    git: https://github.com/jiangtian616/zoom_view
+  desktop_webview_window: ^0.2.3
+  photo_view: ^0.15.0
+  zoom_view: ^0.0.24
   package_info_plus: ^9.0.0
   file_picker: ^10.3.3
   local_auth: ^3.0.0
@@ -74,15 +51,10 @@ dependencies:
   share_plus: ^12.0.1
   syncfusion_flutter_charts: ^31.2.3
   archive: ^4.0.7
-  # https://github.com/ponnamkarthik/FlutterToast/pull/542
-  fluttertoast: 
-    git: 
-      url: https://github.com/MarlonJD/FlutterToast
-      ref: patch-1
+  fluttertoast: ^9.0.0
   battery_plus: ^7.0.0
   throttling: ^2.0.1
-  receive_sharing_intent: 
-    git: https://github.com/KasemJaffer/receive_sharing_intent
+  receive_sharing_intent: ^1.8.1
   window_manager: ^0.5.1
   permission_handler: ^12.0.1
   grouped_list: ^6.0.0
@@ -91,19 +63,13 @@ dependencies:
   simple_animations: ^5.2.0
   animated_flip_counter: ^0.3.4
   saver_gallery: ^3.0.6
+  # fix build and namespace on android
   system_network_proxy: 
     git: 
       url: https://github.com/jiangtian616/system_network_proxy
       path: system_network_proxy
-  http_proxy: 
-    git: https://github.com/jiangtian616/http_proxy
-  flutter_socks_proxy:
-    # https://github.com/tayoji-io/socks_proxy/issues/7
-    git: https://github.com/jiangtian616/socks_proxy
-  flutter_draggable_gridview:
-    # remove assert
-    git:
-      url: https://github.com/jiangtian616/flutter_draggable_gridview
+  http_proxy: ^1.2.3
+  flutter_draggable_gridview: ^0.0.13
   flutter_displaymode: ^0.7.0
   pinput: ^5.0.2
   wakelock_plus: ^1.4.0
@@ -116,8 +82,6 @@ dependencies:
   csv: ^6.0.0
   dotted_border: ^3.1.0
   http_parser: ^4.1.2
-  j_downloader:
-    git: https://github.com/jiangtian616/JDownloader
   device_info_plus: ^12.2.0
   template_expressions: ^3.3.1+2
   uuid: 4.4.0
@@ -128,6 +92,7 @@ dependencies:
   local_auth_android: ^2.0.0
   local_auth_darwin: ^2.0.0
   local_auth_windows: ^2.0.0
+  socks5_proxy: ^2.1.1
   
 dependency_overrides:
   test_api: 0.6.0
@@ -135,11 +100,6 @@ dependency_overrides:
   chewie: 1.7.0
   http: 1.1.0
   cached_network_image: 3.3.0
-  dio:
-    git:
-      url: https://github.com/jiangtian616/dio
-      path: dio
-      ref: append-mode
   collection: 1.19.0
     
 dev_dependencies:

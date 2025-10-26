@@ -80,7 +80,8 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
     super.jump2ImageIndex(imageIndex);
 
     /// Method [jumpTo] leads to redrawing, so wo use scrollTo
-    state.itemScrollController.scrollTo(index: imageIndex, duration: const Duration(milliseconds: 1));
+    state.itemScrollController
+        .scrollTo(index: imageIndex, duration: const Duration(milliseconds: 1));
   }
 
   /// scroll to a certain image
@@ -100,7 +101,8 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
       return;
     }
 
-    int targetIndex = firstPosition.itemLeadingEdge < 0 ? firstPosition.index : firstPosition.index - 1;
+    int targetIndex =
+        firstPosition.itemLeadingEdge < 0 ? firstPosition.index : firstPosition.index - 1;
     toImageIndex(max(targetIndex, 0));
   }
 
@@ -152,14 +154,23 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
   }
 
   void _enterAutoModeByScroll() {
-    int restPageCount = readPageState.readPageInfo.pageCount - readPageState.readPageInfo.currentImageIndex - 1;
+    int restPageCount =
+        readPageState.readPageInfo.pageCount - readPageState.readPageInfo.currentImageIndex - 1;
     double totalTime = restPageCount * readSetting.autoModeInterval.value;
 
     readPageLogic.toggleMenu();
 
-    state.scrollOffsetController
-        .scrollToEnd(
-          duration: Duration(milliseconds: (totalTime * 1000).toInt()),
+    if (readPageState.readPageInfo.pageCount == 0) {
+      readPageLogic.closeAutoMode();
+      return;
+    }
+
+    Duration duration = Duration(milliseconds: max((totalTime * 1000).toInt(), 1));
+    state.itemScrollController
+        .scrollTo(
+          index: readPageState.readPageInfo.pageCount - 1,
+          duration: duration,
+          alignment: readSetting.isInRight2LeftDirection ? 0 : 1,
         )
         .then((_) => readPageLogic.closeAutoMode());
   }
@@ -171,7 +182,8 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
       Duration(milliseconds: (readSetting.autoModeInterval.value * 1000).toInt()),
       (_) {
         /// changed read setting
-        if (readSetting.readDirection.value != ReadDirection.left2rightList && readSetting.readDirection.value != ReadDirection.right2leftList) {
+        if (readSetting.readDirection.value != ReadDirection.left2rightList &&
+            readSetting.readDirection.value != ReadDirection.right2leftList) {
           Get.engine.addPostFrameCallback((_) {
             readPageLogic.closeAutoMode();
           });
@@ -191,7 +203,8 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
         }
 
         /// sometimes itemTrailingEdge is not equal to 1.0
-        if (lastPosition.index == readPageState.readPageInfo.pageCount - 1 && lastPosition.itemTrailingEdge <= 1.2) {
+        if (lastPosition.index == readPageState.readPageInfo.pageCount - 1 &&
+            lastPosition.itemTrailingEdge <= 1.2) {
           Get.engine.addPostFrameCallback((_) {
             readPageLogic.closeAutoMode();
           });

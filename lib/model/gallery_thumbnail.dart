@@ -60,11 +60,7 @@ class GalleryThumbnail {
 
   @override
   String toString() {
-    return 'GalleryThumbnail{' ' href: $href,' ' isLarge: $isLarge,' ' thumbUrl: $thumbUrl,' ' thumbHeight: $thumbHeight,' +
-        ' thumbWidth: $thumbWidth,' +
-        ' offSet: $offSet,' +
-        ' originImageHash: $originImageHash,' +
-        '}';
+    return 'GalleryThumbnail{' ' href: $href,' ' isLarge: $isLarge,' ' thumbUrl: $thumbUrl,' ' thumbHeight: $thumbHeight,' ' thumbWidth: $thumbWidth,' ' offSet: $offSet,' ' originImageHash: $originImageHash,' '}';
   }
 
   GalleryThumbnail copyWith({

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/pages/read/layout/vertical_list/vertical_list_layout_state.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../../../setting/read_setting.dart';
 import '../../../../utils/screen_size_util.dart';
 import '../../../../widget/eh_wheel_speed_controller_for_read_page.dart';
+import '../../../../widget/photo_view/j_photo_view_gallery.dart';
 import '../base/base_layout.dart';
 import 'vertical_list_layout_logic.dart';
 
@@ -23,10 +23,10 @@ class VerticalListLayout extends BaseLayout {
   Widget buildBody(BuildContext context) {
     return GetBuilder<VerticalListLayoutLogic>(
       id: logic.verticalLayoutId,
-      builder: (_) => PhotoViewGallery.builder(
+      builder: (_) => JPhotoViewGallery.builder(
         scrollDirection: Axis.vertical,
         itemCount: 1,
-        builder: (_, __) => PhotoViewGalleryPageOptions.customChild(
+        builder: (_, __) => JPhotoViewGalleryPageOptions.customChild(
           controller: state.photoViewController,
           initialScale: 1.0,
           minScale: 1.0,

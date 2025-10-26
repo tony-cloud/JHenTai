@@ -11,7 +11,7 @@ import 'package:get/get_rx/get_rx.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:intl/intl.dart';
-import 'package:j_downloader/j_downloader.dart';
+import 'package:jhentai/downloader/j_downloader.dart';
 import 'package:jhentai/database/dao/archive_group_dao.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';

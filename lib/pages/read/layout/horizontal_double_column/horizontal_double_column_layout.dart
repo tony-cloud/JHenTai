@@ -6,10 +6,10 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/pages/read/layout/horizontal_double_column/horizontal_double_column_layout_state.dart';
 import 'package:jhentai/widget/eh_wheel_scroll_listener.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../../../service/gallery_download_service.dart';
 import '../../../../setting/read_setting.dart';
+import '../../../../widget/photo_view/j_photo_view_gallery.dart';
 import '../base/base_layout.dart';
 import 'horizontal_double_column_layout_logic.dart';
 
@@ -32,15 +32,12 @@ class HorizontalDoubleColumnLayout extends BaseLayout {
         future: logic.initCompleter.future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return PhotoViewGallery.builder(
+            return JPhotoViewGallery.builder(
               scrollPhysics: const ClampingScrollPhysics(),
               pageController: state.pageController,
-              cacheExtent: readPageState.readPageInfo.mode == ReadMode.online
-                  ? (readSetting.preloadPageCount.value.toDouble() + 1) / 2
-                  : (readSetting.preloadPageCountLocal.value.toDouble() + 1) / 2,
               reverse: readSetting.isInRight2LeftDirection,
               itemCount: state.pageCount,
-              builder: (context, index) => PhotoViewGalleryPageOptions.customChild(
+              builder: (context, index) => JPhotoViewGalleryPageOptions.customChild(
                 initialScale: 1.0,
                 minScale: 1.0,
                 maxScale: 2.5,

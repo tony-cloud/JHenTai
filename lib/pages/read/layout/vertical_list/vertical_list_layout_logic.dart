@@ -176,9 +176,17 @@ class VerticalListLayoutLogic extends BaseLayoutLogic {
 
     readPageLogic.toggleMenu();
 
-    state.scrollOffsetController
-        .scrollToEnd(
-          duration: Duration(milliseconds: (totalTime * 1000).toInt()),
+    if (readPageState.readPageInfo.pageCount == 0) {
+      readPageLogic.closeAutoMode();
+      return;
+    }
+
+    Duration duration = Duration(milliseconds: max((totalTime * 1000).toInt(), 1));
+    state.itemScrollController
+        .scrollTo(
+          index: readPageState.readPageInfo.pageCount - 1,
+          duration: duration,
+          alignment: 1,
         )
         .then((_) => readPageLogic.closeAutoMode());
   }

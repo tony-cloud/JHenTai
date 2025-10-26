@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_socks_proxy/socks_proxy.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_rx/src/rx_workers/rx_workers.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:get/get_utils/src/platform/platform.dart';
 import 'package:intl/intl.dart';
-import 'package:j_downloader/j_downloader.dart';
+import 'package:jhentai/downloader/j_downloader.dart';
 import 'package:jhentai/consts/eh_consts.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
@@ -26,6 +25,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/proxy_util.dart';
 import 'package:jhentai/utils/string_uril.dart';
+import 'package:jhentai/utils/socks_proxy.dart';
 import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:path/path.dart';
 import 'package:webview_flutter/webview_flutter.dart' show WebViewCookieManager;
@@ -88,12 +88,46 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   Future<void> doAfterBeanReady() async {}
 
   Future<void> _initProxy() async {
+    final String Function(Uri) baseFindProxy = await findProxySettingFunc(() => systemProxyAddress);
+
     SocksProxy.initProxy(
       onCreate: (client) => client.badCertificateCallback = (_, String host, __) {
         return networkSetting.allIPs.contains(host);
       },
-      findProxy: await findProxySettingFunc(() => systemProxyAddress),
+      findProxy: (uri) {
+        if (_buildSocksProxyConfiguration() != null) {
+          return 'DIRECT';
+        }
+        if (networkSetting.proxyType.value == JProxyType.socks4) {
+          _maybeLogUnsupportedSocksVariant();
+          return 'DIRECT';
+        }
+        return baseFindProxy(uri);
+      },
+      socksConfig: _buildSocksProxyConfiguration,
     );
+  }
+
+  SocksProxyConfiguration? _buildSocksProxyConfiguration() {
+    if (networkSetting.proxyType.value != JProxyType.socks5) {
+      return null;
+    }
+
+    return parseSocksProxyConfiguration(
+      networkSetting.proxyAddress.value,
+      username: networkSetting.proxyUsername.value,
+      password: networkSetting.proxyPassword.value,
+    );
+  }
+
+  bool _hasLoggedUnsupportedSocks = false;
+
+  void _maybeLogUnsupportedSocksVariant() {
+    if (_hasLoggedUnsupportedSocks) {
+      return;
+    }
+    _hasLoggedUnsupportedSocks = true;
+    log.warning('SOCKS4 proxy is not supported, falling back to direct connection.');
   }
 
   Future<void> _initCookieManager() async {
@@ -430,8 +464,6 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       case RanklistType.allTime:
         tl = 11;
         break;
-      default:
-        tl = 15;
     }
 
     Response response = await _getWithErrorHandler('${EHConsts.ERanklist}?tl=$tl&p=$pageNo');
@@ -736,7 +768,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       url,
       path,
       onReceiveProgress: onReceiveProgress,
-      shouldAppendFile: appendMode,
+      fileAccessMode: appendMode ? FileAccessMode.append : FileAccessMode.write,
       cancelToken: cancelToken,
       deleteOnError: deleteOnError,
       options: Options(

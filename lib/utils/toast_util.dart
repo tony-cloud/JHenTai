@@ -27,7 +27,7 @@ void toast(String msg, {bool isCenter = true, bool isShort = true}) {
   _fToast.showToast(
     child: toast,
     toastDuration: Duration(seconds: isShort ? 1 : 2),
-    positionedToastBuilder: (context, child) {
+    positionedToastBuilder: (context, child, gravity) {
       if (isCenter) {
         return Positioned(
           top: 50,

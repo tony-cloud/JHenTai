@@ -17,7 +17,7 @@ import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_tag_set_dialog.dart';
 import 'package:jhentai/widget/eh_warning_image.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
-import 'package:like_button/like_button.dart';
+import 'package:jhentai/widget/like_button.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../config/ui_config.dart';

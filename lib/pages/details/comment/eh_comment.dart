@@ -20,7 +20,7 @@ import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/eh_comment_score_details_dialog.dart';
-import 'package:like_button/like_button.dart';
+import 'package:jhentai/widget/like_button.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../exception/eh_site_exception.dart';
