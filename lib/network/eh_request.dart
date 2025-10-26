@@ -579,6 +579,44 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     return _parseResponse(response, parser);
   }
 
+  Future<T> requestMpvPage<T>(
+    String mpvUrl, {
+    CancelToken? cancelToken,
+    required HtmlParser<T> parser,
+  }) async {
+    Response response = await _getWithErrorHandler(
+      mpvUrl,
+      cancelToken: cancelToken,
+      options: CacheOptions.cacheOptionsIgnoreParams.toOptions(),
+    );
+    return _parseResponse(response, parser);
+  }
+
+  Future<T> requestMpvImage<T>({
+    required int gid,
+    required int page,
+    required String imgKey,
+    required String mpvKey,
+    String? reloadKey,
+    CancelToken? cancelToken,
+    required HtmlParser<T> parser,
+  }) async {
+    Response response = await _postWithErrorHandler(
+      EHConsts.EApi,
+      options: Options(contentType: Headers.jsonContentType),
+      cancelToken: cancelToken,
+      data: {
+        'method': 'imagedispatch',
+        'gid': gid,
+        'page': page,
+        'imgkey': imgKey,
+        'mpvkey': mpvKey,
+        if (reloadKey != null) 'nl': reloadKey,
+      },
+    );
+    return _parseResponse(response, parser);
+  }
+
   Future<T> requestTorrentPage<T>(int gid, String token, HtmlParser<T> parser) async {
     Response response = await _getWithErrorHandler(
       EHConsts.ETorrent,

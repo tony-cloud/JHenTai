@@ -439,6 +439,54 @@ class EHSpiderParser {
     );
   }
 
+  static ({String mpvKey, Map<int, String> imageKeys}) mpvPage2MpvKeyAndImageKeys(
+      Headers headers, dynamic data) {
+    String html = data as String;
+
+    String? mpvKey = RegExp(r'var\s+mpvkey\s*=\s*"([^"\\]+)"').firstMatch(html)?.group(1);
+    if (mpvKey == null || mpvKey.isEmpty) {
+      throw EHParseException(
+        type: EHParseExceptionType.unsupportedImagePageStyle,
+        message: 'unsupportedImagePageStyle'.tr,
+        shouldPauseAllDownloadTasks: false,
+      );
+    }
+
+    RegExpMatch? imagelistMatch = RegExp(r'var\s+imagelist\s*=\s*(\[[\s\S]*?\]);').firstMatch(html);
+    if (imagelistMatch == null) {
+      throw EHParseException(
+        type: EHParseExceptionType.unsupportedImagePageStyle,
+        message: 'unsupportedImagePageStyle'.tr,
+        shouldPauseAllDownloadTasks: false,
+      );
+    }
+
+    String imagelistRaw = imagelistMatch.group(1)!;
+    String sanitizedImagelist = imagelistRaw.replaceAll(RegExp(r'//.*?(?=\n|\r|$)'), '');
+    List<dynamic> imagelist = jsonDecode(sanitizedImagelist) as List<dynamic>;
+
+    Map<int, String> imageKeys = {};
+    for (int index = 0; index < imagelist.length; index++) {
+      dynamic entry = imagelist[index];
+      if (entry is Map) {
+        String? imgKey = entry['k']?.toString();
+        if (imgKey != null && imgKey.isNotEmpty) {
+          imageKeys[index + 1] = imgKey;
+        }
+      }
+    }
+
+    if (imageKeys.isEmpty) {
+      throw EHParseException(
+        type: EHParseExceptionType.unsupportedImagePageStyle,
+        message: 'unsupportedImagePageStyle'.tr,
+        shouldPauseAllDownloadTasks: false,
+      );
+    }
+
+    return (mpvKey: mpvKey, imageKeys: imageKeys);
+  }
+
   static List<GalleryThumbnail> _detailPageDocument2Thumbnails(Document document) {
     // 2024-10-15 update
     Element thumbNailRoot = document.querySelector('#gdt')!;
@@ -589,10 +637,6 @@ class EHSpiderParser {
 
     String note = document.querySelector('#galpop > div > div:nth-child(3) > textarea')!.text;
 
-    /// 1 / 1000 favorite note slots used. [?]
-    String usedSlotDesc =
-        document.querySelector('#galpop > div > div:nth-child(3) > div:nth-child(6)')!.text;
-
     return GalleryNote(note: note);
   }
 
@@ -640,7 +684,49 @@ class EHSpiderParser {
   }
 
   static GalleryImage imagePage2GalleryImage(Headers headers, dynamic data) {
-    String html = data as String;
+    return _parseImagePage(headers, data, preferOriginal: false);
+  }
+
+  static GalleryImage imagePage2OriginalGalleryImage(Headers headers, dynamic data) {
+    return _parseImagePage(headers, data, preferOriginal: true);
+  }
+
+  static GalleryImage _parseImagePage(
+    Headers headers,
+    dynamic data, {
+    required bool preferOriginal,
+  }) {
+    Map<String, dynamic>? json;
+
+    if (data is Map<String, dynamic>) {
+      json = Map<String, dynamic>.from(data);
+    } else if (data is String) {
+      String trimmed = data.trim();
+      String? contentType = headers.value(Headers.contentTypeHeader);
+      bool looksJson = (contentType?.contains('application/json') ?? false) ||
+          (trimmed.startsWith('{') && trimmed.endsWith('}'));
+      if (looksJson) {
+        try {
+          json = jsonDecode(trimmed) as Map<String, dynamic>;
+        } catch (_) {
+          json = null;
+        }
+      }
+
+      if (json == null) {
+        return _parseImagePageFromHtml(trimmed, preferOriginal: preferOriginal);
+      }
+    } else {
+      return _parseImagePageFromHtml(data.toString(), preferOriginal: preferOriginal);
+    }
+
+    return _parseImagePageFromJson(json, preferOriginal: preferOriginal);
+  }
+
+  static GalleryImage _parseImagePageFromHtml(
+    String html, {
+    required bool preferOriginal,
+  }) {
     Document document = parse(html);
     Element? img = document.querySelector('#img');
     if (img == null && document.querySelector('#pane_images') != null) {
@@ -648,69 +734,33 @@ class EHSpiderParser {
           type: EHParseExceptionType.unsupportedImagePageStyle,
           message: 'unsupportedImagePageStyle'.tr);
     }
-
-    /// height: 1600px; width: 1124px;
-    String style = img!.attributes['style']!;
-    String url = img.attributes['src']!;
-    if (url == EHConsts.EH509ImageUrl || url == EHConsts.EX509ImageUrl) {
-      throw EHParseException(
-          type: EHParseExceptionType.exceedLimit, message: 'exceedImageLimits'.tr);
-    }
-    double height = double.parse(RegExp(r'height:(\d+)px').firstMatch(style)!.group(1)!);
-    double width = double.parse(RegExp(r'width:(\d+)px').firstMatch(style)!.group(1)!);
-
-    Element hashElement = document.querySelector('#i6 div a')!;
-    String imageHash =
-        RegExp(r'f_shash=(\w+)').firstMatch(hashElement.attributes['href']!)!.group(1)!;
-
-    Element? originalImg =
-        document.querySelector('#i6 a[id]')?.parent?.nextElementSibling?.querySelector('a');
-    String? originalImgHref = originalImg?.attributes['href'];
-    RegExpMatch? originalImgWidthAndHeight =
-        RegExp(r'(\d+) x (\d+)').firstMatch(originalImg?.text ?? '');
-    double? originalImgWidth = double.tryParse(originalImgWidthAndHeight?.group(1) ?? '');
-    double? originalImgHeight = double.tryParse(originalImgWidthAndHeight?.group(2) ?? '');
-
-    /// return nl('WZG-474997')
-    Element reloadKeyElement = document.querySelector('#loadfail')!;
-    String reloadKey = RegExp(r"return nl\('(.*)'\)")
-        .firstMatch(reloadKeyElement.attributes['onclick']!)!
-        .group(1)!;
-
-    return GalleryImage(
-      url: url,
-      height: height,
-      width: width,
-      originalImageUrl: originalImgHref,
-      originalImageWidth: originalImgWidth,
-      originalImageHeight: originalImgHeight,
-      reloadKey: reloadKey,
-      imageHash: imageHash,
-    );
-  }
-
-  static GalleryImage imagePage2OriginalGalleryImage(Headers headers, dynamic data) {
-    Document document = parse(data as String);
-    Element? img = document.querySelector('#img');
-    if (img == null && document.querySelector('#pane_images') != null) {
+    if (img == null) {
       throw EHParseException(
           type: EHParseExceptionType.unsupportedImagePageStyle,
           message: 'unsupportedImagePageStyle'.tr);
     }
 
-    /// height: 1600px; width: 1124px;
-    String style = img!.attributes['style']!;
-    String url = img.attributes['src']!;
+    String? style = img.attributes['style'];
+    RegExpMatch? heightMatch = style == null ? null : RegExp(r'height:(\d+)px').firstMatch(style);
+    RegExpMatch? widthMatch = style == null ? null : RegExp(r'width:(\d+)px').firstMatch(style);
+    double? height = double.tryParse(heightMatch?.group(1) ?? '');
+    double? width = double.tryParse(widthMatch?.group(1) ?? '');
+
+    String? url = img.attributes['src'];
+    if (isEmptyOrNull(url)) {
+      throw EHParseException(
+          type: EHParseExceptionType.unsupportedImagePageStyle,
+          message: 'unsupportedImagePageStyle'.tr);
+    }
     if (url == EHConsts.EH509ImageUrl || url == EHConsts.EX509ImageUrl) {
       throw EHParseException(
           type: EHParseExceptionType.exceedLimit, message: 'exceedImageLimits'.tr);
     }
-    double height = double.parse(RegExp(r'height:(\d+)px').firstMatch(style)!.group(1)!);
-    double width = double.parse(RegExp(r'width:(\d+)px').firstMatch(style)!.group(1)!);
 
-    Element hashElement = document.querySelector('#i6 div a')!;
-    String imageHash =
-        RegExp(r'f_shash=(\w+)').firstMatch(hashElement.attributes['href']!)!.group(1)!;
+    Element? hashElement = document.querySelector('#i6 div a');
+    String? imageHash = hashElement == null
+        ? null
+        : RegExp(r'f_shash=(\w+)').firstMatch(hashElement.attributes['href'] ?? '')?.group(1);
 
     Element? originalImg =
         document.querySelector('#i6 a[id]')?.parent?.nextElementSibling?.querySelector('a');
@@ -720,21 +770,130 @@ class EHSpiderParser {
     double? originalImgWidth = double.tryParse(originalImgWidthAndHeight?.group(1) ?? '');
     double? originalImgHeight = double.tryParse(originalImgWidthAndHeight?.group(2) ?? '');
 
-    /// return nl('WZG-474997')
-    Element reloadKeyElement = document.querySelector('#loadfail')!;
-    String reloadKey = RegExp(r"return nl\('(.*)'\)")
-        .firstMatch(reloadKeyElement.attributes['onclick']!)!
-        .group(1)!;
+    Element? reloadKeyElement = document.querySelector('#loadfail');
+    String? reloadKey = reloadKeyElement == null
+        ? null
+        : RegExp(r"return nl\('(.*)'\)")
+            .firstMatch(reloadKeyElement.attributes['onclick'] ?? '')
+            ?.group(1);
+
+    String effectiveUrl =
+        preferOriginal && !isEmptyOrNull(originalImgHref) ? originalImgHref! : url!;
+    double? effectiveWidth = preferOriginal && originalImgWidth != null ? originalImgWidth : width;
+    double? effectiveHeight =
+        preferOriginal && originalImgHeight != null ? originalImgHeight : height;
+    String? effectiveReloadKey =
+        preferOriginal && !isEmptyOrNull(originalImgHref) ? null : reloadKey;
 
     return GalleryImage(
-      url: originalImgHref ?? url,
-      height: originalImgHeight ?? height,
-      width: originalImgWidth ?? width,
-
-      /// reload is not available for original image
-      reloadKey: originalImgHref == null ? reloadKey : null,
+      url: effectiveUrl,
+      height: effectiveHeight,
+      width: effectiveWidth,
+      originalImageUrl: preferOriginal ? (originalImgHref ?? effectiveUrl) : originalImgHref,
+      originalImageWidth: originalImgWidth,
+      originalImageHeight: originalImgHeight,
+      reloadKey: effectiveReloadKey,
       imageHash: imageHash,
     );
+  }
+
+  static GalleryImage _parseImagePageFromJson(
+    Map<String, dynamic> json, {
+    required bool preferOriginal,
+  }) {
+    String? url = json['i']?.toString();
+    String? originalUrl = json['lf']?.toString();
+    String? isOriginalFlag = json['o']?.toString();
+    bool isOriginal = isOriginalFlag == 'org';
+    originalUrl = isEmptyOrNull(originalUrl) ? null : "${EHConsts.EIndex}/${originalUrl!}";
+    if (isEmptyOrNull(url)) {
+      throw EHParseException(
+          type: EHParseExceptionType.unsupportedImagePageStyle,
+          message: 'unsupportedImagePageStyle'.tr);
+    }
+
+    double? width = _parseImageDimension(json['xres']);
+    double? height = _parseImageDimension(json['yres']);
+    if ((width == null || height == null) && json['d'] is String) {
+      RegExpMatch? dimensions = RegExp(r'(\d+)\s*x\s*(\d+)').firstMatch(json['d']);
+      width ??= double.tryParse(dimensions?.group(1) ?? '');
+      height ??= double.tryParse(dimensions?.group(2) ?? '');
+    }
+
+    String? reloadKey = json['s']?.toString();
+    if (reloadKey != null && reloadKey.isEmpty) {
+      reloadKey = null;
+    }
+
+    String? imageHash = _extractImageHashFromJson(json);
+
+    double? originalWidth = isOriginal ? width : null;
+    double? originalHeight = isOriginal ? height : null;
+    if (!isOriginal && json['o'] is String) {
+      Map<String, double?> resolution = _extractOriginalImageResolution(json['o']!.toString());
+      originalWidth = resolution['width'];
+      originalHeight = resolution['height'];
+    }
+
+    return GalleryImage(
+      url: preferOriginal && !isEmptyOrNull(originalUrl) ? originalUrl! : url!,
+      height: height,
+      width: width,
+      originalImageUrl: originalUrl,
+      originalImageWidth: originalWidth,
+      originalImageHeight: originalHeight,
+      reloadKey: reloadKey,
+      imageHash: imageHash,
+    );
+  }
+
+  static double? _parseImageDimension(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is num) {
+      return value.toDouble();
+    }
+    if (value is String && value.isNotEmpty) {
+      return double.tryParse(value);
+    }
+    return null;
+  }
+
+  // extract original image resolution from 'o' comment: "Download original 4441 x 6213 6.52 MiB source"
+  static Map<String, double?> _extractOriginalImageResolution(String comment) {
+    RegExpMatch? match = RegExp(r'original\s+(\d+)\s*x\s*(\d+)').firstMatch(comment);
+    if (match != null) {
+      double? width = double.tryParse(match.group(1)!);
+      double? height = double.tryParse(match.group(2)!);
+      return {'width': width, 'height': height};
+    }
+    return {'width': null, 'height': null};
+  }
+
+  static String? _extractImageHashFromJson(Map<String, dynamic> json) {
+    String? ls = json['ls']?.toString();
+    if (!isEmptyOrNull(ls)) {
+      RegExpMatch? match = RegExp(r'f_shash=([0-9a-fA-F]+)').firstMatch(ls!);
+      if (match != null) {
+        return match.group(1);
+      }
+    }
+
+    String? ll = json['ll']?.toString();
+    if (!isEmptyOrNull(ll)) {
+      return ll!.split('-').first;
+    }
+
+    return null;
+  }
+
+  static String? _extractMpvKeyFromHref(String href) {
+    if (href.isEmpty) {
+      return null;
+    }
+    RegExpMatch? match = RegExp(r'/mpv/\d+/([^/]+)/').firstMatch(href);
+    return match?.group(1);
   }
 
   static String? sendComment2ErrorMsg(Headers headers, dynamic data) {
@@ -1728,6 +1887,7 @@ class EHSpiderParser {
             double.parse(RegExp(r'height:(\d+)?px').firstMatch(style)?.group(1) ?? '0') - 1,
         offSet: offset,
         originImageHash: originImageHash,
+        mpvKey: _extractMpvKeyFromHref(href),
       );
     }).toList();
   }
@@ -1746,6 +1906,7 @@ class EHSpiderParser {
         thumbHeight:
             double.parse(RegExp(r'height:(\d+)?px').firstMatch(style)?.group(1) ?? '0') - 1,
         offSet: double.parse(RegExp(r'\) -(\d+)?px ').firstMatch(style)?.group(1) ?? '0'),
+        mpvKey: _extractMpvKeyFromHref(href),
       );
     }).toList();
   }
@@ -1761,6 +1922,7 @@ class EHSpiderParser {
         isLarge: true,
         thumbWidth: double.parse(parts[2]),
         thumbHeight: double.parse(parts[3]),
+        mpvKey: _extractMpvKeyFromHref(element.querySelector('a')?.attributes['href'] ?? ''),
       );
     }).toList();
   }

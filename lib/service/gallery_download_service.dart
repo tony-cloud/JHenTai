@@ -82,6 +82,7 @@ class GalleryDownloadService extends GetxController
 
   static const int _maxRetryTimes = 3;
   static const int _maxRetryTimes4FetchImageHashes = 1;
+  static const int _maxReparseImageUrlAttempts = 3;
   static const String metadataFileName = 'metadata';
   static const int _maxTitleLength = 85;
 
@@ -571,6 +572,16 @@ class GalleryDownloadService extends GetxController
           .map((map) => map == null ? null : GalleryImage.fromJson(map))
           .toList();
 
+      String? mpvKey = metadata['mpvKey'] as String?;
+      List<String?>? mpvImageKeys = metadata['mpvImageKeys'] == null
+          ? null
+          : (jsonDecode(metadata['mpvImageKeys']) as List).map((e) => e as String?).toList();
+      List<String?>? mpvSkipServerIdentifiers = metadata['mpvSkipServerIdentifiers'] == null
+          ? null
+          : (jsonDecode(metadata['mpvSkipServerIdentifiers']) as List)
+              .map((e) => e as String?)
+              .toList();
+
       /// skip if exists
       if (galleryDownloadInfos.containsKey(gallery.gid)) {
         continue;
@@ -601,7 +612,14 @@ class GalleryDownloadService extends GetxController
         continue;
       }
 
-      _initGalleryInfoInMemory(gallery, images: images, sort: false);
+      _initGalleryInfoInMemory(
+        gallery,
+        images: images,
+        mpvKey: mpvKey,
+        mpvImageKeys: mpvImageKeys,
+        mpvSkipServerIdentifiers: mpvSkipServerIdentifiers,
+        sort: false,
+      );
 
       restoredCount++;
     }
@@ -784,6 +802,7 @@ class GalleryDownloadService extends GetxController
   }
 
   /// shutdown executor
+  // ignore: unused_element
   Future<void> _shutdownExecutor() async {
     log.info('Shutdown download executor');
 
@@ -1046,7 +1065,13 @@ class GalleryDownloadService extends GetxController
     );
   }
 
-  AsyncTask<void> _parseImageHrefTask(GalleryDownloadedData gallery, int serialNo) {
+  AsyncTask<void> _parseImageHrefTask(
+    GalleryDownloadedData gallery,
+    int serialNo, {
+    String? previousFailedUrl,
+    int reParseDepth = 0,
+    bool forceRefresh = false,
+  }) {
     return () async {
       if (_taskHasBeenPausedOrRemoved(gallery)) {
         return;
@@ -1054,6 +1079,10 @@ class GalleryDownloadService extends GetxController
 
       GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
       int requestPageIndex = serialNo ~/ galleryDownloadInfo.thumbnailsCountPerPage;
+
+      if (forceRefresh) {
+        await ehRequest.removeCacheByGalleryUrlAndPage(gallery.galleryUrl, requestPageIndex);
+      }
 
       DetailPageInfo detailPageInfo;
       try {
@@ -1076,7 +1105,12 @@ class GalleryDownloadService extends GetxController
         return _submitTask(
           gid: gallery.gid,
           priority: _computeImageTaskPriority(gallery, serialNo),
-          task: _parseImageHrefTask(gallery, serialNo),
+          task: _parseImageHrefTask(
+            gallery,
+            serialNo,
+            previousFailedUrl: previousFailedUrl,
+            reParseDepth: reParseDepth,
+          ),
         );
       } on EHSiteException catch (e) {
         log.download(
@@ -1111,7 +1145,13 @@ class GalleryDownloadService extends GetxController
         return _submitTask(
           gid: gallery.gid,
           priority: _computeImageTaskPriority(gallery, serialNo),
-          task: _parseImageHrefTask(gallery, serialNo),
+          task: _parseImageHrefTask(
+            gallery,
+            serialNo,
+            previousFailedUrl: previousFailedUrl,
+            reParseDepth: reParseDepth + 1,
+            forceRefresh: forceRefresh,
+          ),
         );
       }
 
@@ -1119,13 +1159,25 @@ class GalleryDownloadService extends GetxController
       _submitTask(
         gid: gallery.gid,
         priority: _computeImageTaskPriority(gallery, serialNo),
-        task: _parseImageUrlTask(gallery, serialNo),
+        task: _parseImageUrlTask(
+          gallery,
+          serialNo,
+          previousFailedUrl: previousFailedUrl,
+          reParseDepth: reParseDepth,
+        ),
       );
     };
   }
 
-  AsyncTask<void> _parseImageUrlTask(GalleryDownloadedData gallery, int serialNo,
-      {bool reParse = false, String? reloadKey}) {
+  AsyncTask<void> _parseImageUrlTask(
+    GalleryDownloadedData gallery,
+    int serialNo, {
+    bool reParse = false,
+    String? reloadKey,
+    String? previousFailedUrl,
+    int reParseDepth = 0,
+    bool? preferOriginalOverride,
+  }) {
     return () async {
       if (_taskHasBeenPausedOrRemoved(gallery)) {
         return;
@@ -1142,18 +1194,97 @@ class GalleryDownloadService extends GetxController
         }
       }
 
+      bool preferOriginal =
+          preferOriginalOverride ?? galleryDownloadInfo.preferOriginalImages[serialNo];
+      if (preferOriginal != galleryDownloadInfo.preferOriginalImages[serialNo]) {
+        galleryDownloadInfo.preferOriginalImages[serialNo] = preferOriginal;
+      }
+
+      bool useOriginal = preferOriginal && userSetting.hasLoggedIn();
+      if (preferOriginal && !userSetting.hasLoggedIn()) {
+        useOriginal = false;
+        galleryDownloadInfo.preferOriginalImages[serialNo] = false;
+      }
+
+      GalleryThumbnail? thumbnail = galleryDownloadInfo.imageHrefs[serialNo];
+      if (thumbnail == null) {
+        log.download(
+            'Image href missing when parsing image url, re-parse href. Gid: ${gallery.gid}, index: $serialNo');
+        return _submitTask(
+          gid: gallery.gid,
+          priority: _computeImageTaskPriority(gallery, serialNo),
+          task: _parseImageHrefTask(
+            gallery,
+            serialNo,
+            previousFailedUrl: previousFailedUrl,
+            reParseDepth: reParseDepth + 1,
+            forceRefresh: true,
+          ),
+        );
+      }
+
+      bool usedMpvFlow = false;
+      String? mpvKeyForRequest;
+      String? mpvImageKeyForRequest;
+      String? mpvReloadKeyForRequest;
       GalleryImage image;
       try {
+        Future<GalleryImage> Function()? requestImageFactory;
+
+        if (thumbnail.isMPV) {
+          galleryDownloadInfo.mpvKey ??= thumbnail.mpvKey;
+
+          try {
+            await _ensureMpvImageKeys(
+              gallery,
+              galleryDownloadInfo,
+              thumbnail,
+              serialNo,
+            );
+          } on EHParseException catch (e) {
+            if (e.type != EHParseExceptionType.unsupportedImagePageStyle) {
+              rethrow;
+            }
+            log.download(
+                'MPV page unsupported, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo');
+          }
+
+          mpvKeyForRequest = galleryDownloadInfo.mpvKey ?? thumbnail.mpvKey;
+          mpvImageKeyForRequest = galleryDownloadInfo.mpvImageKeys[serialNo];
+
+          if (mpvKeyForRequest != null && mpvImageKeyForRequest != null) {
+            usedMpvFlow = true;
+            mpvReloadKeyForRequest =
+                reloadKey ?? galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo];
+            requestImageFactory = () => ehRequest.requestMpvImage(
+                  gid: gallery.gid,
+                  page: serialNo + 1,
+                  imgKey: mpvImageKeyForRequest!,
+                  mpvKey: mpvKeyForRequest!,
+                  reloadKey: mpvReloadKeyForRequest,
+                  cancelToken: galleryDownloadInfo.cancelToken,
+                  parser: useOriginal
+                      ? EHSpiderParser.imagePage2OriginalGalleryImage
+                      : EHSpiderParser.imagePage2GalleryImage,
+                );
+          } else {
+            log.download(
+                'MPV imagelist missing key, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo');
+          }
+        }
+
+        requestImageFactory ??= () => ehRequest.requestImagePage(
+              thumbnail.replacedMPVHref(serialNo + 1),
+              reloadKey: reloadKey,
+              cancelToken: galleryDownloadInfo.cancelToken,
+              useCacheIfAvailable: !reParse,
+              parser: useOriginal
+                  ? EHSpiderParser.imagePage2OriginalGalleryImage
+                  : EHSpiderParser.imagePage2GalleryImage,
+            );
+
         image = await retry(
-          () => ehRequest.requestImagePage(
-            galleryDownloadInfo.imageHrefs[serialNo]!.replacedMPVHref(serialNo + 1),
-            reloadKey: reloadKey,
-            cancelToken: galleryDownloadInfo.cancelToken,
-            useCacheIfAvailable: !reParse,
-            parser: gallery.downloadOriginalImage && userSetting.hasLoggedIn()
-                ? EHSpiderParser.imagePage2OriginalGalleryImage
-                : EHSpiderParser.imagePage2GalleryImage,
-          ),
+          requestImageFactory,
           retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
           onRetry: (e) => log
               .download('Parse image url failed, retry. Reason: ${(e as DioException).errorMsg}'),
@@ -1166,7 +1297,14 @@ class GalleryDownloadService extends GetxController
         return _submitTask(
           gid: gallery.gid,
           priority: _computeImageTaskPriority(gallery, serialNo),
-          task: _parseImageUrlTask(gallery, serialNo, reParse: true),
+          task: _parseImageUrlTask(
+            gallery,
+            serialNo,
+            reParse: true,
+            reloadKey: reloadKey,
+            previousFailedUrl: previousFailedUrl,
+            reParseDepth: reParseDepth,
+          ),
         );
       } on EHParseException catch (e) {
         log.download('Parse image url error, reason: ${e.message.tr}');
@@ -1192,6 +1330,80 @@ class GalleryDownloadService extends GetxController
           pauseDownloadGallery(gallery);
         }
 
+        return;
+      }
+
+      if (usedMpvFlow && mpvKeyForRequest != null && mpvImageKeyForRequest != null) {
+        bool metadataChanged = false;
+        if (galleryDownloadInfo.mpvKey != mpvKeyForRequest) {
+          galleryDownloadInfo.mpvKey = mpvKeyForRequest;
+          metadataChanged = true;
+        }
+        if (galleryDownloadInfo.mpvImageKeys[serialNo] != mpvImageKeyForRequest) {
+          galleryDownloadInfo.mpvImageKeys[serialNo] = mpvImageKeyForRequest;
+          metadataChanged = true;
+        }
+        if (galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] != image.reloadKey) {
+          galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = image.reloadKey;
+          metadataChanged = true;
+        }
+        if (metadataChanged) {
+          _saveGalleryMetadataInDisk(gallery);
+        }
+      }
+
+      if (previousFailedUrl != null && image.url == previousFailedUrl) {
+        if (reParseDepth < _maxReparseImageUrlAttempts) {
+          log.download(
+              'Parse image url returned identical url, wait and retry. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}');
+          await Future.delayed(const Duration(milliseconds: 1000), () {});
+          if (image.reloadKey != null) {
+            log.download(
+                'Parse image url returned identical url, retry with new reload key. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${image.reloadKey}, attempt: ${reParseDepth + 1}');
+            return _submitTask(
+              gid: gallery.gid,
+              priority: _computeImageTaskPriority(gallery, serialNo),
+              task: _parseImageUrlTask(
+                gallery,
+                serialNo,
+                reParse: true,
+                reloadKey: image.reloadKey,
+                previousFailedUrl: previousFailedUrl,
+                reParseDepth: reParseDepth + 1,
+              ),
+            );
+          }
+
+          log.download(
+              'Parse image url returned identical url, force re-parse href. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}');
+          GalleryThumbnail? thumbnail = galleryDownloadInfo.imageHrefs[serialNo];
+          if (thumbnail != null) {
+            await ehRequest.removeCacheByUrl(thumbnail.replacedMPVHref(serialNo + 1));
+          }
+          return _submitTask(
+            gid: gallery.gid,
+            priority: _computeImageTaskPriority(gallery, serialNo),
+            task: _parseImageHrefTask(
+              gallery,
+              serialNo,
+              previousFailedUrl: previousFailedUrl,
+              reParseDepth: reParseDepth + 1,
+              forceRefresh: true,
+            ),
+          );
+        }
+      }
+
+      if (previousFailedUrl != null && image.url == previousFailedUrl) {
+        log.download(
+            'Parse image url returned identical url after all retries, mark as failed. Gid: ${gallery.gid}, index: $serialNo');
+        image.path =
+            _computeImageDownloadRelativePath(gallery.title, gallery.gid, image.url, serialNo);
+        image.downloadStatus = DownloadStatus.downloadFailed;
+        galleryDownloadInfo.images[serialNo] = image;
+        await _saveNewImageInfoInDatabase(image, serialNo, gallery.gid);
+        await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloadFailed);
+        snack('error'.tr, 'downloadFailed'.tr, isShort: true);
         return;
       }
 
@@ -1255,13 +1467,27 @@ class GalleryDownloadService extends GetxController
           ),
           maxAttempts: _maxRetryTimes,
 
-          /// 403 is due to broken H@H node, we should re-parse
-          /// If we have not downloaded any bytes, we should re-parse because we might encounter a death H@H node
-          retryIf: (e) =>
-              e is DioException &&
-              e.type != DioExceptionType.cancel &&
-              (e.response == null || e.response!.statusCode != 403) &&
-              galleryDownloadInfo.speedComputer.getImageDownloadedBytes(serialNo) > 0,
+          /// 403 or 5xx indicate broken H@H nodes, so we should re-parse instead of retrying
+          /// If we have not downloaded any bytes, skip retry to trigger re-parse for dead nodes
+          retryIf: (e) {
+            if (e is! DioException || e.type == DioExceptionType.cancel) {
+              return false;
+            }
+
+            int? statusCode = e.response?.statusCode;
+            if (statusCode == 403) {
+              return false;
+            }
+            if (statusCode != null && statusCode >= 500 && statusCode < 600) {
+              return false;
+            }
+
+            if (e.error is io.HttpException || e.error is io.SocketException) {
+              return false;
+            }
+
+            return galleryDownloadInfo.speedComputer.getImageDownloadedBytes(serialNo) > 0;
+          },
           onRetry: (e) {
             log.download(
                 'Download ${gallery.title} image: $serialNo failed, retry. Reason: ${(e as DioException).errorMsg}. Url:${image.url}');
@@ -1328,7 +1554,43 @@ class GalleryDownloadService extends GetxController
 
     GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
 
-    String? reloadKey = galleryDownloadInfo.images[serialNo]?.reloadKey;
+    GalleryImage? existingImage = galleryDownloadInfo.images[serialNo];
+    bool preferOriginalImage = galleryDownloadInfo.preferOriginalImages[serialNo];
+
+    String? reloadKey = existingImage?.reloadKey;
+    String? previousUrl = existingImage?.url;
+
+    if (preferOriginalImage && existingImage != null && reloadKey != null && previousUrl != null) {
+      existingImage.originalImageUrl ??= previousUrl;
+      String urlWithReload =
+          _appendReloadKeyToOriginalUrl(existingImage.originalImageUrl!, reloadKey);
+      existingImage.url = urlWithReload;
+      existingImage.downloadStatus = DownloadStatus.downloading;
+
+      galleryDownloadInfo.images[serialNo] = existingImage;
+
+      bool updated = await _updateImageInDatabase(
+        ImageCompanion(
+          gid: Value(gallery.gid),
+          serialNo: Value(serialNo),
+          url: Value(existingImage.url),
+          downloadStatusIndex: Value(DownloadStatus.downloading.index),
+        ),
+      );
+      if (!updated) {
+        await GalleryImageDao.deleteImage(gallery.gid, serialNo);
+        await _saveNewImageInfoInDatabase(existingImage, serialNo, gallery.gid);
+      }
+
+      _saveGalleryMetadataInDisk(gallery);
+
+      return _submitTask(
+        gid: gallery.gid,
+        priority: _computeImageTaskPriority(gallery, serialNo),
+        task: _downloadImageTask(gallery, serialNo),
+      );
+    }
+
     galleryDownloadInfo.images[serialNo] = null;
     await GalleryImageDao.deleteImage(gallery.gid, serialNo);
 
@@ -1337,7 +1599,13 @@ class GalleryDownloadService extends GetxController
       return _submitTask(
         gid: gallery.gid,
         priority: _computeImageTaskPriority(gallery, serialNo),
-        task: _parseImageUrlTask(gallery, serialNo, reParse: true, reloadKey: reloadKey),
+        task: _parseImageUrlTask(
+          gallery,
+          serialNo,
+          reParse: true,
+          reloadKey: reloadKey,
+          previousFailedUrl: previousUrl,
+        ),
       );
     }
 
@@ -1345,8 +1613,116 @@ class GalleryDownloadService extends GetxController
     return _submitTask(
       gid: gallery.gid,
       priority: _computeImageTaskPriority(gallery, serialNo),
-      task: _parseImageHrefTask(gallery, serialNo),
+      task: _parseImageHrefTask(
+        gallery,
+        serialNo,
+        previousFailedUrl: previousUrl,
+      ),
     );
+  }
+
+  Future<void> _ensureMpvImageKeys(
+    GalleryDownloadedData gallery,
+    GalleryDownloadInfo galleryDownloadInfo,
+    GalleryThumbnail thumbnail,
+    int serialNo,
+  ) async {
+    if (galleryDownloadInfo.mpvImageKeys[serialNo] != null &&
+        (galleryDownloadInfo.mpvKey ?? thumbnail.mpvKey) != null) {
+      return;
+    }
+
+    Future<void>? inFlight = galleryDownloadInfo.mpvKeysFuture;
+    if (inFlight != null) {
+      await inFlight;
+    }
+
+    if (galleryDownloadInfo.mpvImageKeys[serialNo] != null &&
+        (galleryDownloadInfo.mpvKey ?? thumbnail.mpvKey) != null) {
+      return;
+    }
+
+    Future<void> fetchFuture = _fetchMpvKeys(gallery, galleryDownloadInfo, thumbnail);
+    galleryDownloadInfo.mpvKeysFuture = fetchFuture;
+    try {
+      await fetchFuture;
+    } finally {
+      if (identical(galleryDownloadInfo.mpvKeysFuture, fetchFuture)) {
+        galleryDownloadInfo.mpvKeysFuture = null;
+      }
+    }
+
+    galleryDownloadInfo.mpvKey ??= thumbnail.mpvKey;
+  }
+
+  Future<void> _fetchMpvKeys(
+    GalleryDownloadedData gallery,
+    GalleryDownloadInfo galleryDownloadInfo,
+    GalleryThumbnail thumbnail,
+  ) async {
+    String mpvUrl = thumbnail.href.split('#').first;
+    if (mpvUrl.isEmpty) {
+      throw EHParseException(
+        type: EHParseExceptionType.unsupportedImagePageStyle,
+        message: 'unsupportedImagePageStyle'.tr,
+        shouldPauseAllDownloadTasks: false,
+      );
+    }
+
+    final result = await ehRequest.requestMpvPage(
+      mpvUrl,
+      cancelToken: galleryDownloadInfo.cancelToken,
+      parser: EHSpiderParser.mpvPage2MpvKeyAndImageKeys,
+    );
+
+    bool metadataChanged = false;
+    if (galleryDownloadInfo.mpvKey != result.mpvKey) {
+      galleryDownloadInfo.mpvKey = result.mpvKey;
+      metadataChanged = true;
+    }
+
+    result.imageKeys.forEach((page, key) {
+      int index = page - 1;
+      if (index < 0 || index >= galleryDownloadInfo.mpvImageKeys.length) {
+        return;
+      }
+      if (galleryDownloadInfo.mpvImageKeys[index] != key) {
+        galleryDownloadInfo.mpvImageKeys[index] = key;
+        metadataChanged = true;
+      }
+    });
+
+    if (metadataChanged) {
+      _saveGalleryMetadataInDisk(gallery);
+    }
+  }
+
+  String _appendReloadKeyToOriginalUrl(String url, String reloadKey) {
+    String reloadValue = '$reloadKey-489299';
+    try {
+      Uri uri = Uri.parse(url);
+      Map<String, String> query = Map<String, String>.from(uri.queryParameters);
+      if (query['nl'] == reloadValue) {
+        return uri.toString();
+      }
+      query['nl'] = reloadValue;
+      return uri.replace(queryParameters: query).toString();
+    } catch (_) {
+      int questionMarkIndex = url.indexOf('?');
+      if (questionMarkIndex == -1) {
+        return '$url?nl=$reloadValue';
+      }
+
+      String base = url.substring(0, questionMarkIndex);
+      String query = url.substring(questionMarkIndex + 1);
+      List<String> params = query
+          .split('&')
+          .where((segment) => segment.isNotEmpty && !segment.startsWith('nl='))
+          .toList();
+      params.add('nl=$reloadValue');
+
+      return '$base?${params.join('&')}';
+    }
   }
 
   Future<void> _tryCopyImageInfoFromHref(
@@ -1620,30 +1996,68 @@ class GalleryDownloadService extends GetxController
 
   // MEMORY
 
-  void _initGalleryInfoInMemory(GalleryDownloadedData gallery,
-      {List<GalleryImage?>? images, bool sort = true}) {
+  void _initGalleryInfoInMemory(
+    GalleryDownloadedData gallery, {
+    List<GalleryImage?>? images,
+    List<String?>? mpvImageKeys,
+    List<String?>? mpvSkipServerIdentifiers,
+    String? mpvKey,
+    bool sort = true,
+  }) {
     if (!allGroups.contains(gallery.groupName)) {
       allGroups.add(gallery.groupName);
     }
     gallerys.add(gallery);
+
+    List<GalleryImage?> resolvedImages = images ?? List.generate(gallery.pageCount, (_) => null);
+    if (resolvedImages.length != gallery.pageCount) {
+      resolvedImages = List<GalleryImage?>.from(resolvedImages)..length = gallery.pageCount;
+    }
+
+    List<String?> resolvedMpvImageKeys = mpvImageKeys == null
+        ? List<String?>.filled(gallery.pageCount, null, growable: false)
+        : List<String?>.from(mpvImageKeys);
+    if (resolvedMpvImageKeys.length != gallery.pageCount) {
+      resolvedMpvImageKeys = List<String?>.from(resolvedMpvImageKeys)..length = gallery.pageCount;
+    }
+
+    List<String?> resolvedMpvSkipServerIdentifiers = mpvSkipServerIdentifiers == null
+        ? List<String?>.filled(gallery.pageCount, null, growable: false)
+        : List<String?>.from(mpvSkipServerIdentifiers);
+    if (resolvedMpvSkipServerIdentifiers.length != gallery.pageCount) {
+      resolvedMpvSkipServerIdentifiers = List<String?>.from(resolvedMpvSkipServerIdentifiers)
+        ..length = gallery.pageCount;
+    }
+
+    List<bool> hasDownloadedFlags = List.generate(
+      gallery.pageCount,
+      (index) => resolvedImages[index]?.downloadStatus == DownloadStatus.downloaded,
+    );
+
+    List<bool> preferOriginalImages = List.generate(gallery.pageCount, (index) {
+      GalleryImage? image = resolvedImages[index];
+      if (image == null) {
+        return gallery.downloadOriginalImage;
+      }
+      if (image.originalImageUrl != null && image.originalImageUrl != image.url) {
+        return false;
+      }
+      return gallery.downloadOriginalImage;
+    });
+
     galleryDownloadInfos[gallery.gid] = GalleryDownloadInfo(
       thumbnailsCountPerPage: SiteSetting.thumbnailsCountPerPage.value,
       tasks: [],
       cancelToken: CancelToken(),
       downloadProgress: GalleryDownloadProgress(
-        curCount: images?.fold<int>(
-                0,
-                (total, image) =>
-                    total + (image?.downloadStatus == DownloadStatus.downloaded ? 1 : 0)) ??
-            0,
+        curCount: hasDownloadedFlags.where((flag) => flag).length,
         totalCount: gallery.pageCount,
         downloadStatus: DownloadStatus.values[gallery.downloadStatusIndex],
-        hasDownloaded:
-            images?.map((image) => image?.downloadStatus == DownloadStatus.downloaded).toList() ??
-                List.generate(gallery.pageCount, (_) => false),
+        hasDownloaded: hasDownloadedFlags,
       ),
       imageHrefs: List.generate(gallery.pageCount, (_) => null),
-      images: images ?? List.generate(gallery.pageCount, (_) => null),
+      images: resolvedImages,
+      preferOriginalImages: preferOriginalImages,
       speedComputer: GalleryDownloadSpeedComputer(
         gallery.pageCount,
         () => update(['$galleryDownloadSpeedComputerId::${gallery.gid}']),
@@ -1651,6 +2065,9 @@ class GalleryDownloadService extends GetxController
       priority: gallery.priority,
       sortOrder: gallery.sortOrder,
       group: gallery.groupName,
+      mpvKey: mpvKey,
+      mpvImageKeys: resolvedMpvImageKeys,
+      mpvSkipServerIdentifiers: resolvedMpvSkipServerIdentifiers,
     );
 
     if (sort) {
@@ -1769,7 +2186,7 @@ class GalleryDownloadService extends GetxController
   void _saveGalleryMetadataInDisk(GalleryDownloadedData gallery) {
     GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
 
-    Map<String, Object> metadata = {
+    Map<String, Object?> metadata = {
       'gallery': gallery
           .copyWith(
             downloadStatusIndex: galleryDownloadInfo.downloadProgress.downloadStatus.index,
@@ -1779,6 +2196,10 @@ class GalleryDownloadService extends GetxController
           .toJson(),
       'images': jsonEncode(galleryDownloadInfo.images),
     };
+
+    metadata['mpvKey'] = galleryDownloadInfo.mpvKey;
+    metadata['mpvImageKeys'] = jsonEncode(galleryDownloadInfo.mpvImageKeys);
+    metadata['mpvSkipServerIdentifiers'] = jsonEncode(galleryDownloadInfo.mpvSkipServerIdentifiers);
 
     io.File file = io.File(path.join(
         computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid), metadataFileName));
@@ -1854,6 +2275,9 @@ class GalleryDownloadInfo {
 
   List<GalleryImage?> images;
 
+  /// Track whether each image should still prefer original assets.
+  List<bool> preferOriginalImages;
+
   GalleryDownloadSpeedComputer speedComputer;
 
   int priority;
@@ -1862,6 +2286,14 @@ class GalleryDownloadInfo {
 
   String group;
 
+  String? mpvKey;
+
+  List<String?> mpvImageKeys;
+
+  List<String?> mpvSkipServerIdentifiers;
+
+  Future<void>? mpvKeysFuture;
+
   GalleryDownloadInfo({
     required this.thumbnailsCountPerPage,
     required this.tasks,
@@ -1869,10 +2301,15 @@ class GalleryDownloadInfo {
     required this.downloadProgress,
     required this.imageHrefs,
     required this.images,
+    required this.preferOriginalImages,
     required this.speedComputer,
     required this.priority,
     required this.sortOrder,
     required this.group,
+    this.mpvKey,
+    required this.mpvImageKeys,
+    required this.mpvSkipServerIdentifiers,
+    this.mpvKeysFuture,
   });
 }
 

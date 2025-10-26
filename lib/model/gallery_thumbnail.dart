@@ -22,6 +22,11 @@ class GalleryThumbnail {
   /// 4e6f3ee6fd4ea261c11e11d6091b41a9a68503b6
   String? originImageHash;
 
+  /// Key required by MPV's imagedispatch API
+  String? mpvKey;
+
+  bool get isMPV => mpvKey != null;
+
   /// Large image
   bool isLarge;
 
@@ -39,6 +44,7 @@ class GalleryThumbnail {
     this.thumbWidth,
     this.offSet,
     this.originImageHash,
+    this.mpvKey,
   });
 
   @override
@@ -52,15 +58,32 @@ class GalleryThumbnail {
           thumbHeight == other.thumbHeight &&
           thumbWidth == other.thumbWidth &&
           offSet == other.offSet &&
-          originImageHash == other.originImageHash);
+          originImageHash == other.originImageHash &&
+          mpvKey == other.mpvKey);
 
   @override
   int get hashCode =>
-      href.hashCode ^ isLarge.hashCode ^ thumbUrl.hashCode ^ thumbHeight.hashCode ^ thumbWidth.hashCode ^ offSet.hashCode ^ originImageHash.hashCode;
+      href.hashCode ^
+      isLarge.hashCode ^
+      thumbUrl.hashCode ^
+      (thumbHeight?.hashCode ?? 0) ^
+      (thumbWidth?.hashCode ?? 0) ^
+      (offSet?.hashCode ?? 0) ^
+      (originImageHash?.hashCode ?? 0) ^
+      (mpvKey?.hashCode ?? 0);
 
   @override
   String toString() {
-    return 'GalleryThumbnail{' ' href: $href,' ' isLarge: $isLarge,' ' thumbUrl: $thumbUrl,' ' thumbHeight: $thumbHeight,' ' thumbWidth: $thumbWidth,' ' offSet: $offSet,' ' originImageHash: $originImageHash,' '}';
+    return 'GalleryThumbnail{'
+        ' href: $href,'
+        ' isLarge: $isLarge,'
+        ' thumbUrl: $thumbUrl,'
+        ' thumbHeight: $thumbHeight,'
+        ' thumbWidth: $thumbWidth,'
+        ' offSet: $offSet,'
+        ' originImageHash: $originImageHash,'
+        ' mpvKey: $mpvKey,'
+        '}';
   }
 
   GalleryThumbnail copyWith({
@@ -71,6 +94,7 @@ class GalleryThumbnail {
     double? thumbWidth,
     double? offSet,
     String? originImageHash,
+    String? mpvKey,
   }) {
     return GalleryThumbnail(
       href: href ?? this.href,
@@ -80,6 +104,7 @@ class GalleryThumbnail {
       thumbWidth: thumbWidth ?? this.thumbWidth,
       offSet: offSet ?? this.offSet,
       originImageHash: originImageHash ?? this.originImageHash,
+      mpvKey: mpvKey ?? this.mpvKey,
     );
   }
 
@@ -92,6 +117,7 @@ class GalleryThumbnail {
       'thumbWidth': thumbWidth,
       'offSet': offSet,
       'originImageHash': originImageHash,
+      'mpvKey': mpvKey,
     };
   }
 
@@ -100,10 +126,11 @@ class GalleryThumbnail {
       href: map['href'] as String,
       isLarge: map['isLarge'] as bool,
       thumbUrl: map['thumbUrl'] as String,
-      thumbHeight: map['thumbHeight'] as double,
-      thumbWidth: map['thumbWidth'] as double,
-      offSet: map['offSet'] as double,
-      originImageHash: map['originImageHash'] as String,
+      thumbHeight: (map['thumbHeight'] as num?)?.toDouble(),
+      thumbWidth: (map['thumbWidth'] as num?)?.toDouble(),
+      offSet: (map['offSet'] as num?)?.toDouble(),
+      originImageHash: map['originImageHash'] as String?,
+      mpvKey: map['mpvKey'] as String?,
     );
   }
 }
