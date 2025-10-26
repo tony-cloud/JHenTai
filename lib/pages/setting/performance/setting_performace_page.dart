@@ -21,9 +21,21 @@ class SettingPerformancePage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(top: 16),
         children: [
+          _buildDisableAllLoadingAnimations(context),
           _buildMaxGalleryNum4Animation(context),
         ],
       ).withListTileTheme(context),
+    );
+  }
+
+  Widget _buildDisableAllLoadingAnimations(BuildContext context) {
+    return Obx(
+      () => SwitchListTile(
+        title: Text('disableLoadingAnimations'.tr),
+        subtitle: Text('disableLoadingAnimationsHint'.tr),
+        value: performanceSetting.disableAllLoadingAnimations.value,
+        onChanged: performanceSetting.setDisableAllLoadingAnimations,
+      ).fadeInWidget(),
     );
   }
 

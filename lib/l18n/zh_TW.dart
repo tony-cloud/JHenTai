@@ -377,6 +377,8 @@ class zh_TW {
       'custom': '自訂',
 
       /// performance setting page
+    'disableLoadingAnimations': '停用所有載入動畫',
+    'disableLoadingAnimationsHint': '以靜態圖片取代載入動畫來降低耗電',
       'maxGalleryNum4Animation': '下載頁支援列表動畫的最大畫廊個數',
       'maxGalleryNum4AnimationHint': '列表模式下，擁有超過此設定個數畫廊的分組在展開/收起時取消動畫效果',
 

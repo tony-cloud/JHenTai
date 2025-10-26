@@ -377,6 +377,8 @@ class zh_CN {
       'custom': '自定义',
 
       /// performance setting page
+    'disableLoadingAnimations': '禁用所有加载动画',
+    'disableLoadingAnimationsHint': '使用静态图像替换加载动画以降低功耗',
       'maxGalleryNum4Animation': '下载页支持列表动画的最大画廊个数',
       'maxGalleryNum4AnimationHint': '列表模式下，拥有超过此配置个数画廊的分组在展开/收起时取消动画效果',
 

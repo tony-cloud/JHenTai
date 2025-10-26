@@ -57,7 +57,6 @@ class pt_BR {
       'CurrentVersion': 'Current Ver',
       'check': 'Checar',
       'dismiss': 'Dispensar',
-
       /// login page
       'login': 'Login',
       'notLoggedIn': 'Login',
@@ -378,6 +377,9 @@ class pt_BR {
       'custom': 'Custom',
 
       /// performance setting page
+    'disableLoadingAnimations': 'Desativar todas as animações de carregamento',
+    'disableLoadingAnimationsHint':
+      'Substitui animações de carregamento por uma imagem estática para reduzir o consumo de energia',
       'maxGalleryNum4Animation': 'Max Gallery Num For List Animation in Download page',
       'maxGalleryNum4AnimationHint': 'Disable animation for groups which have more gallerys than this value(for list style)',
 

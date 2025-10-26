@@ -38,7 +38,7 @@ class ru_RU {
       'setting': 'Настройки',
 
       /// schedule
-      'dawnOfaNewDay': 'Наступил рассвет нового дня!',
+  'dawnOfaNewDay': 'Наступил рассвет нового дня!',
       'encounterMonster': 'Вы встретили монстра!',
       'encounterMonsterHint': 'Нажмите, чтобы сразиться в HentaiVerse.',
 
@@ -384,6 +384,9 @@ class ru_RU {
       /// performance setting page
       'maxGalleryNum4Animation': 'Макс. кол-во галерей для анимации списка на стр. загрузок',
       'maxGalleryNum4AnimationHint': 'Отключить анимацию для групп с большим кол-вом галерей (для стиля списка)',
+    'disableLoadingAnimations': 'Отключить все анимации загрузки',
+    'disableLoadingAnimationsHint':
+      'Заменяет анимацию загрузки статичным изображением для снижения энергопотребления',
 
       /// mouse wheel setting page
       'wheelScrollSpeed': 'Скорость прокрутки колесом',

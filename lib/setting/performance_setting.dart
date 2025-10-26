@@ -10,6 +10,7 @@ PerformanceSetting performanceSetting = PerformanceSetting();
 
 class PerformanceSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxInt maxGalleryNum4Animation = 30.obs;
+  RxBool disableAllLoadingAnimations = false.obs;
 
   @override
   ConfigEnum get configEnum => ConfigEnum.performanceSetting;
@@ -19,12 +20,15 @@ class PerformanceSetting with JHLifeCircleBeanWithConfigStorage implements JHLif
     Map map = jsonDecode(configString);
 
     maxGalleryNum4Animation.value = map['maxGalleryNum4Animation'] ?? maxGalleryNum4Animation.value;
+    disableAllLoadingAnimations.value =
+        map['disableAllLoadingAnimations'] ?? disableAllLoadingAnimations.value;
   }
 
   @override
   String toConfigString() {
     return jsonEncode({
       'maxGalleryNum4Animation': maxGalleryNum4Animation.value,
+      'disableAllLoadingAnimations': disableAllLoadingAnimations.value,
     });
   }
 
@@ -37,6 +41,12 @@ class PerformanceSetting with JHLifeCircleBeanWithConfigStorage implements JHLif
   Future<void> setMaxGalleryNum4Animation(int value) async {
     log.debug('setMaxGalleryNum4Animation:$value');
     maxGalleryNum4Animation.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> setDisableAllLoadingAnimations(bool value) async {
+    log.debug('setDisableAllLoadingAnimations:$value');
+    disableAllLoadingAnimations.value = value;
     await saveBeanConfig();
   }
 }

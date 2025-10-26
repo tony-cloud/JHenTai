@@ -15,7 +15,6 @@ import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_state
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/utils/route_util.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../../../config/ui_config.dart';
 import '../../../../model/gallery_image.dart';
@@ -167,8 +166,11 @@ class GalleryGridDownloadPage extends StatelessWidget
 
                   if (image == null) {
                     return Center(
-                      child: LoadingAnimationWidget.horizontalRotatingDots(
-                          color: UIConfig.downloadPageLoadingIndicatorColor(context), size: 16),
+                      child: UIConfig.loadingAnimation(
+                        context,
+                        size: 16,
+                        color: UIConfig.downloadPageLoadingIndicatorColor(context),
+                      ),
                     );
                   }
 

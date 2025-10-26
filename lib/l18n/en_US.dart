@@ -377,6 +377,9 @@ class en_US {
       'custom': 'Custom',
 
       /// performance setting page
+      'disableLoadingAnimations': 'Disable All Loading Animations',
+      'disableLoadingAnimationsHint':
+          'Replace loader animations with a static image to reduce power usage',
       'maxGalleryNum4Animation': 'Max Gallery Num For List Animation in Download page',
       'maxGalleryNum4AnimationHint': 'Disable animation for groups which have more gallerys than this value(for list style)',
 

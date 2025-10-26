@@ -3,10 +3,12 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../utils/screen_size_util.dart';
+import '../setting/performance_setting.dart';
 
 class UIConfig {
   /// common
@@ -128,9 +130,35 @@ class UIConfig {
     Color(0xfffe93ff),
   ];
 
-  static Widget loadingAnimation(BuildContext context) =>
-      LoadingAnimationWidget.horizontalRotatingDots(
-          color: Theme.of(context).colorScheme.onSurfaceVariant, size: 32);
+            static Widget loadingAnimation(BuildContext context, {double size = 32, Color? color}) => Obx(() {
+                        final Color resolvedColor = color ?? Theme.of(context).colorScheme.onSurfaceVariant;
+
+                        if (performanceSetting.disableAllLoadingAnimations.isTrue) {
+                            return _staticLoadingImage(size: size, color: resolvedColor);
+                    }
+
+                    return LoadingAnimationWidget.horizontalRotatingDots(color: resolvedColor, size: size);
+            });
+
+            static Widget _staticLoadingImage({
+                required double size,
+                required Color color,
+            }) {
+                final Widget image = Image.asset(
+                'assets/icon/JHenTai_512.png',
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.none,
+            );
+
+            return SizedBox(
+                width: size,
+                height: size,
+                    child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                        child: image,
+                    ),
+            );
+        }
 
   static Color alertColor(BuildContext context) => Theme.of(context).colorScheme.error;
 
