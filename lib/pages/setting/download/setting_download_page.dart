@@ -67,6 +67,7 @@ class _SettingDownloadPageState extends State<SettingDownloadPage> {
               _buildUseJH2UpdateGallery(),
               _buildArchiveDownloadIsolateCount(),
               _buildManageArchiveDownloadConcurrency(),
+              _buildKeepScreenOnWhileDownloading(),
               _buildDeleteArchiveFileAfterDownload(),
               _buildRestore(),
               _buildRestoreTasksAutomatically(),
@@ -301,6 +302,15 @@ class _SettingDownloadPageState extends State<SettingDownloadPage> {
       subtitle: Text('manageArchiveDownloadConcurrencyHint'.tr),
       value: downloadSetting.manageArchiveDownloadConcurrency.value,
       onChanged: downloadSetting.saveManageArchiveDownloadConcurrency,
+    );
+  }
+
+  Widget _buildKeepScreenOnWhileDownloading() {
+    return SwitchListTile(
+      title: Text('keepScreenOnWhileDownloading'.tr),
+      subtitle: Text('keepScreenOnWhileDownloadingHint'.tr),
+      value: downloadSetting.keepScreenOnWhileDownloading.value,
+      onChanged: downloadSetting.saveKeepScreenOnWhileDownloading,
     );
   }
 

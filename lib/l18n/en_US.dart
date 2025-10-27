@@ -757,6 +757,9 @@ class en_US {
       'manageArchiveDownloadConcurrency': 'Manage Archive Download Concurrency',
       'manageArchiveDownloadConcurrencyHint':
           'Archive will wait until there are enough threads to download',
+      'keepScreenOnWhileDownloading': 'Keep Screen Awake While Downloading',
+      'keepScreenOnWhileDownloadingHint':
+          'Prevent the device from sleeping when downloads are running',
       'deleteArchiveFileAfterDownload': 'Delete Archive .zip File After Download',
       'restoreDownloadTasks': 'Restore Download Tasks',
       'restoreDownloadTasksHint': 'Restore download tasks by metadata',

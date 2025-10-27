@@ -736,6 +736,8 @@ favnote：配對收藏備註
       'archiveDownloadIsolateCountHint': '所有任務同時下載數總和若超過10將導致下載失敗',
       'manageArchiveDownloadConcurrency': '控制歸檔下載並發數',
       'manageArchiveDownloadConcurrencyHint': '在有足夠的同時下載數之前，歸檔任務會保持等待狀態',
+      'keepScreenOnWhileDownloading': '下載時保持螢幕常亮',
+      'keepScreenOnWhileDownloadingHint': '下載過程中防止裝置進入休眠',
       'deleteArchiveFileAfterDownload': '歸檔下載完成後刪除原壓縮檔',
       'restoreDownloadTasksHint': '透過下載中繼資料來復原下載記錄',
       'restoreDownloadTasksSuccess': '復原下載任務成功',

@@ -45,6 +45,7 @@ import 'jh_service.dart';
 import 'log.dart';
 import '../utils/snack_util.dart';
 import 'gallery_download_service.dart';
+import 'download_wakelock_service.dart';
 
 ArchiveDownloadService archiveDownloadService = ArchiveDownloadService();
 
@@ -73,6 +74,19 @@ class ArchiveDownloadService extends GetxController
   late Worker isolateCountListener;
   late Worker proxyConfigListener;
   late Worker timeoutListener;
+
+  bool _isArchiveStatusActive(ArchiveStatus status) {
+    return status.code >= ArchiveStatus.unlocking.code &&
+        status.code < ArchiveStatus.completed.code;
+  }
+
+  bool _hasActiveArchiveDownloads() {
+    return archiveDownloadInfos.values.any((info) => _isArchiveStatusActive(info.archiveStatus));
+  }
+
+  void _notifyDownloadActivityChanged() {
+    downloadWakelockService.updateArchiveActive(_hasActiveArchiveDownloads());
+  }
 
   @override
   Future<void> doInitBean() async {
@@ -244,6 +258,8 @@ class ArchiveDownloadService extends GetxController
 
       await _updateArchiveInDatabase(archive.gid);
       update(['$archiveStatusId::${archive.gid}']);
+
+      _notifyDownloadActivityChanged();
 
       /// skip when use bot
       if (archiveDownloadInfo.parseSource == ArchiveParseSource.official.code) {
@@ -763,6 +779,8 @@ class ArchiveDownloadService extends GetxController
       await _updateArchiveInDatabase(gid);
       update(['$archiveStatusId::$gid']);
     }
+
+    _notifyDownloadActivityChanged();
   }
 
   // TASKS
@@ -775,10 +793,12 @@ class ArchiveDownloadService extends GetxController
     }
     if (archiveDownloadInfo.downloadPageUrl != null) {
       archiveDownloadInfo.archiveStatus = ArchiveStatus.unlocked;
+      _notifyDownloadActivityChanged();
       return;
     }
     if (archiveDownloadInfo.parseSource == ArchiveParseSource.bot.code) {
       archiveDownloadInfo.archiveStatus = ArchiveStatus.unlocked;
+      _notifyDownloadActivityChanged();
       return;
     }
 
@@ -835,10 +855,12 @@ class ArchiveDownloadService extends GetxController
     }
     if (archiveDownloadInfo.downloadPageUrl != null) {
       archiveDownloadInfo.archiveStatus = ArchiveStatus.parsedDownloadPageUrl;
+      _notifyDownloadActivityChanged();
       return;
     }
     if (archiveDownloadInfo.parseSource == ArchiveParseSource.bot.code) {
       archiveDownloadInfo.archiveStatus = ArchiveStatus.parsedDownloadPageUrl;
+      _notifyDownloadActivityChanged();
       return;
     }
 
@@ -902,6 +924,7 @@ class ArchiveDownloadService extends GetxController
     }
     if (archiveDownloadInfo.downloadUrl != null) {
       archiveDownloadInfo.archiveStatus = ArchiveStatus.parsedDownloadUrl;
+      _notifyDownloadActivityChanged();
       return;
     }
 
@@ -909,6 +932,7 @@ class ArchiveDownloadService extends GetxController
     if (archiveDownloadInfo.parseSource == ArchiveParseSource.official.code &&
         archiveDownloadInfo.downloadPageUrl == null) {
       archiveDownloadInfo.archiveStatus = ArchiveStatus.unlocked;
+      _notifyDownloadActivityChanged();
       return downloadArchive(archive);
     }
 
@@ -1128,6 +1152,7 @@ class ArchiveDownloadService extends GetxController
       await archiveDownloadInfo.downloadTask!.dispose();
       archiveDownloadInfo.downloadTask = null;
       await _deletePackingFileInDisk(archive);
+      _notifyDownloadActivityChanged();
       return pauseDownloadArchive(archive.gid);
     }
 
@@ -1270,6 +1295,8 @@ class ArchiveDownloadService extends GetxController
       _sortArchives();
     }
     update([galleryCountChangedId, '$archiveStatusId::${archive.gid}']);
+
+    _notifyDownloadActivityChanged();
   }
 
   Future<void> _deleteArchiveInMemory(int gid) async {
@@ -1281,6 +1308,8 @@ class ArchiveDownloadService extends GetxController
     await archiveDownloadInfo?.downloadTask?.dispose();
 
     update([galleryCountChangedId]);
+
+    _notifyDownloadActivityChanged();
   }
 
   // DISK

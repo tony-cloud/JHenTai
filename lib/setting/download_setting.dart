@@ -32,6 +32,7 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   RxBool manageArchiveDownloadConcurrency = true.obs;
   RxBool deleteArchiveFileAfterDownload = true.obs;
   RxBool restoreTasksAutomatically = false.obs;
+  RxBool keepScreenOnWhileDownloading = false.obs;
 
   @override
   ConfigEnum get configEnum => ConfigEnum.downloadSetting;
@@ -69,6 +70,8 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
         map['deleteArchiveFileAfterDownload'] ?? deleteArchiveFileAfterDownload.value;
     restoreTasksAutomatically.value =
         map['restoreTasksAutomatically'] ?? restoreTasksAutomatically.value;
+    keepScreenOnWhileDownloading.value =
+        map['keepScreenOnWhileDownloading'] ?? keepScreenOnWhileDownloading.value;
   }
 
   @override
@@ -89,6 +92,7 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
       'manageArchiveDownloadConcurrency': manageArchiveDownloadConcurrency.value,
       'deleteArchiveFileAfterDownload': deleteArchiveFileAfterDownload.value,
       'restoreTasksAutomatically': restoreTasksAutomatically.value,
+      'keepScreenOnWhileDownloading': keepScreenOnWhileDownloading.value,
     });
   }
 
@@ -201,6 +205,12 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   Future<void> saveRestoreTasksAutomatically(bool value) async {
     log.debug('saveRestoreTasksAutomatically:$value');
     restoreTasksAutomatically.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveKeepScreenOnWhileDownloading(bool value) async {
+    log.debug('saveKeepScreenOnWhileDownloading:$value');
+    keepScreenOnWhileDownloading.value = value;
     await saveBeanConfig();
   }
 

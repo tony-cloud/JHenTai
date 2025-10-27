@@ -58,6 +58,7 @@ import 'path_service.dart';
 import '../utils/eh_executor.dart';
 import '../utils/eh_spider_parser.dart';
 import '../utils/snack_util.dart';
+import 'download_wakelock_service.dart';
 
 /// Responsible for local images meta-data and download all images of a gallery
 GalleryDownloadService galleryDownloadService = GalleryDownloadService();
@@ -94,6 +95,15 @@ class GalleryDownloadService extends GetxController
   Future<bool> get completed => _completer.future;
 
   Worker? _downloadSettingListener;
+
+  bool _hasActiveGalleryDownloads() {
+    return galleryDownloadInfos.values
+        .any((info) => info.downloadProgress.downloadStatus == DownloadStatus.downloading);
+  }
+
+  void _notifyDownloadActivityChanged() {
+    downloadWakelockService.updateGalleryActive(_hasActiveGalleryDownloads());
+  }
 
   @override
   Future<void> doInitBean() async {
@@ -156,6 +166,8 @@ class GalleryDownloadService extends GetxController
       priority: _computeGalleryTaskPriority(gallery),
       task: _downloadGalleryTask(gallery),
     );
+
+    _notifyDownloadActivityChanged();
   }
 
   Future<void> pauseAllDownloadGallery() async {
@@ -206,6 +218,8 @@ class GalleryDownloadService extends GetxController
     _saveGalleryMetadataInDisk(gallery);
 
     log.info('Pause download gallery: ${gallery.title}');
+
+    _notifyDownloadActivityChanged();
   }
 
   Future<void> resumeAllDownloadGallery() async {
@@ -254,6 +268,8 @@ class GalleryDownloadService extends GetxController
     _saveGalleryMetadataInDisk(gallery);
 
     downloadGallery(gallery, resume: true);
+
+    _notifyDownloadActivityChanged();
   }
 
   Future<void> deleteGalleryByGid(int gid) async {
@@ -2020,6 +2036,8 @@ class GalleryDownloadService extends GetxController
     galleryDownloadInfos[gallery.gid]!.downloadProgress.downloadStatus = downloadStatus;
 
     _saveGalleryMetadataInDisk(gallery);
+
+    _notifyDownloadActivityChanged();
   }
 
   Future<bool> _updateImageStatus(GalleryDownloadedData gallery, GalleryImage image, int serialNo,
@@ -2147,6 +2165,10 @@ class GalleryDownloadService extends GetxController
     }
 
     update([galleryCountChangedId, '$galleryDownloadProgressId::${gallery.gid}']);
+
+    _notifyDownloadActivityChanged();
+
+    _notifyDownloadActivityChanged();
   }
 
   void _clearGalleryInfoInMemory(GalleryDownloadedData gallery) {

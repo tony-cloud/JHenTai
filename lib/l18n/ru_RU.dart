@@ -766,6 +766,9 @@ class ru_RU {
       'manageArchiveDownloadConcurrency': 'Управлять параллелизмом загрузки архивов',
       'manageArchiveDownloadConcurrencyHint':
           'Архив будет ждать, пока не освободятся потоки для загрузки',
+      'keepScreenOnWhileDownloading': 'Не выключать экран при загрузке',
+      'keepScreenOnWhileDownloadingHint':
+          'Не позволяйте устройству переходить в сон во время загрузок',
       'deleteArchiveFileAfterDownload': 'Удалять ZIP-файл архива после загрузки',
       'restoreDownloadTasks': 'Восстановить задачи загрузки',
       'restoreDownloadTasksHint': 'Восстановить задачи загрузки по метаданным',

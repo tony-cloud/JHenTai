@@ -736,6 +736,8 @@ favnote：匹配收藏备注
       'archiveDownloadIsolateCountHint': '所有任务活跃线程数之和若超过10将导致下载失败',
       'manageArchiveDownloadConcurrency': '控制归档下载并发数',
       'manageArchiveDownloadConcurrencyHint': '在有足够的线程下载之前，归档任务会保持等待状态',
+      'keepScreenOnWhileDownloading': '下载时保持屏幕常亮',
+      'keepScreenOnWhileDownloadingHint': '下载过程中防止设备进入休眠',
       'deleteArchiveFileAfterDownload': '归档下载完成后删除原压缩包',
       'restoreDownloadTasksHint': '通过下载元数据来恢复下载记录',
       'restoreDownloadTasksSuccess': '恢复下载任务成功',

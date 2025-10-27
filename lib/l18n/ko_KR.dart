@@ -752,6 +752,8 @@ class ko_KR {
       'manageArchiveDownloadConcurrency': 'Manage Archive Download Concurrency',
       'manageArchiveDownloadConcurrencyHint':
           'Archive will wait until there are enough threads to download',
+      'keepScreenOnWhileDownloading': '다운로드 중 화면 켜짐 유지',
+      'keepScreenOnWhileDownloadingHint': '다운로드하는 동안 기기가 절전 모드로 전환되지 않도록 합니다',
       'deleteArchiveFileAfterDownload': '다운로드 완료 후 아카이브 .zip 파일 삭제',
       'restoreDownloadTasks': '다운로드 작업 복원',
       'restoreDownloadTasksHint': '메타데이터로 다운로드 작업 복원',
