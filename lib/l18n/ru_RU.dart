@@ -1,3 +1,5 @@
+// ignore_for_file: equal_keys_in_map
+
 import 'dart:core';
 
 class ru_RU {
@@ -38,7 +40,7 @@ class ru_RU {
       'setting': 'Настройки',
 
       /// schedule
-  'dawnOfaNewDay': 'Наступил рассвет нового дня!',
+      'dawnOfaNewDay': 'Наступил рассвет нового дня!',
       'encounterMonster': 'Вы встретили монстра!',
       'encounterMonsterHint': 'Нажмите, чтобы сразиться в HentaiVerse.',
 
@@ -84,7 +86,8 @@ class ru_RU {
       'refreshIgneousFailed': 'Не удалось обновить Igneous',
 
       /// request
-      'sadPanda': 'Sad Panda (нет данных). См.: https://github.com/jiangtian616/JHenTai/wiki/Common-Questions',
+      'sadPanda':
+          'Sad Panda (нет данных). См.: https://github.com/jiangtian616/JHenTai/wiki/Common-Questions',
       // Оставляем Sad Panda
       'sadPandaReferLink': 'https://github.com/jiangtian616/JHenTai/wiki/Common-Questions',
       // URL не переводим
@@ -136,7 +139,8 @@ class ru_RU {
       'removeFavoriteSuccess': "Успешно удалено из избранного",
       'removeFavoriteFailed': "Не удалось удалить из избранного",
       'getGalleryFavoriteInfoFailed': 'Не удалось получить информацию об избранном для галереи',
-      'favoriteNoteSlotFullHint': 'Слоты заметок избранного заполнены, пожалуйста, сначала удалите некоторые заметки',
+      'favoriteNoteSlotFullHint':
+          'Слоты заметок избранного заполнены, пожалуйста, сначала удалите некоторые заметки',
       'ratingSuccess': 'Рейтинг успешно выставлен',
       'ratingFailed': 'Не удалось выставить рейтинг',
       'voteTagFailed': 'Не удалось проголосовать за тег',
@@ -149,7 +153,8 @@ class ru_RU {
       'addNewTagSetSuccessHint': 'Вы можете проверить свои теги в Настройки -> EH -> Мои теги',
       'addNewTagSetFailed': 'Не удалось добавить новый набор тегов',
       'VisitorStatistics': 'Статистика посетителей',
-      'invisible2UserWithoutDonation': 'Статистика этой галереи невидима для пользователей без доната',
+      'invisible2UserWithoutDonation':
+          'Статистика этой галереи невидима для пользователей без доната',
       'getGalleryStatisticsFailed': 'Не удалось получить статистику галереи',
       'totalVisits': 'Всего посещений',
       'visits': 'Посещений',
@@ -171,9 +176,12 @@ class ru_RU {
       'unpackingArchiveError': 'Ошибка распаковки архива',
       'failedToDealWith': 'Не удалось обработать',
       'hasDownloaded': 'Уже загружено',
-      '410Hints': 'Вы скачали слишком много байт из этого архива, и требуется повторная разблокировка для возобновления.',
-      '429Hints': 'Слишком много запросов на загрузку! Вам лучше уменьшить количество одновременных загрузок архивов.',
-      'getUnpackedImagesFailedMsg': 'JHenTai не может загрузить изображения этого архива, пожалуйста, проверьте локальный файл.',
+      '410Hints':
+          'Вы скачали слишком много байт из этого архива, и требуется повторная разблокировка для возобновления.',
+      '429Hints':
+          'Слишком много запросов на загрузку! Вам лучше уменьшить количество одновременных загрузок архивов.',
+      'getUnpackedImagesFailedMsg':
+          'JHenTai не может загрузить изображения этого архива, пожалуйста, проверьте локальный файл.',
       // Оставляем JHenTai
       'getGalleryTorrentsFailed': 'Не удалось получить торренты',
       'chooseArchive': 'Выбрать архив',
@@ -218,7 +226,8 @@ class ru_RU {
       'paused': 'На паузе',
       'exceedImageLimits': "Превышен лимит изображений",
       'ehServerError': 'Произошла ошибка на сервере EH, попробуйте позже',
-      'unsupportedImagePageStyle': "JHenTai не поддерживает Multi-Page Viewer(MPV), пожалуйста, измените стиль на стандартный на e-hentai.org",
+      'unsupportedImagePageStyle':
+          "JHenTai не поддерживает Multi-Page Viewer(MPV), пожалуйста, измените стиль на стандартный на e-hentai.org",
       // Оставляем JHenTai, MPV, e-hentai.org
       'toNext': 'К следующей',
       'toPrev': 'К предыдущей',
@@ -254,9 +263,11 @@ class ru_RU {
       /// eh setting page
       'site': 'Сайт',
       'redirect2Eh': 'Перенаправлять на EH, если доступно',
-      'redirect2EhHint': 'Сначала пытаться загрузить страницу с деталями галереи с сайта EH для лучшей производительности сети',
+      'redirect2EhHint':
+          'Сначала пытаться загрузить страницу с деталями галереи с сайта EH для лучшей производительности сети',
       'redirectAllGallery': 'Перенаправлять все галереи на EH',
-      'imDonorHint': 'Если вы донор, вы можете включить это, чтобы получить доступ к галереям на сайте EX',
+      'imDonorHint':
+          'Если вы донор, вы можете включить это, чтобы получить доступ к галереям на сайте EX',
       'profileSetting': 'Настройка профиля',
       'chooseProfileHint': 'Выберите профиль для использования в JHenTai',
       'siteSetting': 'Настройки сайта',
@@ -312,7 +323,8 @@ class ru_RU {
       'version': 'Версия',
       'downloadTagTranslationHint': 'Загрузка данных..., загружено: ',
       'zhTagSearchOrderOptimization': 'Правило сортировки автодополнения китайских тегов',
-      'zhTagSearchOrderOptimizationHint': 'Интеллектуальная сортировка по умолчанию, по частоте, если включено',
+      'zhTagSearchOrderOptimizationHint':
+          'Интеллектуальная сортировка по умолчанию, по частоте, если включено',
       'themeMode': 'Тема оформления',
       'dark': 'Темная',
       'light': 'Светлая',
@@ -383,10 +395,11 @@ class ru_RU {
 
       /// performance setting page
       'maxGalleryNum4Animation': 'Макс. кол-во галерей для анимации списка на стр. загрузок',
-      'maxGalleryNum4AnimationHint': 'Отключить анимацию для групп с большим кол-вом галерей (для стиля списка)',
-    'disableLoadingAnimations': 'Отключить все анимации загрузки',
-    'disableLoadingAnimationsHint':
-      'Заменяет анимацию загрузки статичным изображением для снижения энергопотребления',
+      'maxGalleryNum4AnimationHint':
+          'Отключить анимацию для групп с большим кол-вом галерей (для стиля списка)',
+      'disableLoadingAnimations': 'Отключить все анимации загрузки',
+      'disableLoadingAnimationsHint':
+          'Заменяет анимацию загрузки статичным изображением для снижения энергопотребления',
 
       /// mouse wheel setting page
       'wheelScrollSpeed': 'Скорость прокрутки колесом',
@@ -407,7 +420,8 @@ class ru_RU {
       'pageCacheMaxAge': 'Время жизни кэша страниц',
       'pageCacheMaxAgeHint': 'Вы можете обновить кэш, обновив страницу',
       'cacheImageExpireDuration': 'Время жизни кэша изображений',
-      'cacheImageExpireDurationHint': 'Автоматически удалять кэш изображений после запуска приложения',
+      'cacheImageExpireDurationHint':
+          'Автоматически удалять кэш изображений после запуска приложения',
       'oneMinute': '1 минута',
       'tenMinute': '10 минут',
       'oneHour': '1 час',
@@ -420,22 +434,27 @@ class ru_RU {
       'clearImagesCache': 'Очистить кэш изображений',
       'longPress2Clear': 'Долгий тап для очистки',
       'checkUpdateAfterLaunchingApp': 'Проверять обновления при запуске',
+      'refreshGalleryTagsAutomatically': 'Автоматически обновлять теги галерей',
+      'refreshArchiveTagsAutomatically': 'Автоматически обновлять теги архивов',
       'checkClipboard': 'Проверять URL галереи в буфере обмена',
       'clearPageCache': 'Очистить кэш страниц',
       'clearSuccess': 'Успешно очищено',
       'superResolution': 'Супер-разрешение изображений',
       'stopSuperResolution': 'Остановить супер-разрешение',
       'deleteSuperResolvedImage': 'Удалить обработанное изображение',
-      'superResolveOriginalImageHint': 'Обработка оригинального изображения требует больше времени, места и ресурсов. Продолжить?',
+      'superResolveOriginalImageHint':
+          'Обработка оригинального изображения требует больше времени, места и ресурсов. Продолжить?',
       'verityAppLinks4Android12': 'Проверка ссылок приложений (Android 12+)',
-      'verityAppLinks4Android12Hint': 'Для Android 12+ нужно вручную добавить ссылки в проверенные, чтобы открывать JHenTai из сторонних приложений',
+      'verityAppLinks4Android12Hint':
+          'Для Android 12+ нужно вручную добавить ссылки в проверенные, чтобы открывать JHenTai из сторонних приложений',
       // Оставляем JHenTai
       'noImageMode': 'Режим без изображений',
       'exportData': 'Экспорт данных',
       'exportDataHint': 'Экспорт настроек, правил блокировки и истории',
       'selectExportItems': 'Выбрать элементы для экспорта',
       'importData': 'Импорт данных',
-      'importDataHint': 'Приложение автоматически закроется после импорта для применения конфигурации',
+      'importDataHint':
+          'Приложение автоматически закроется после импорта для применения конфигурации',
 
       /// host mapping page
       'hostDataSource': 'По умолчанию менять не нужно.\nИсточник данных: https://dns.google/',
@@ -458,7 +477,8 @@ class ru_RU {
       'enableAuthOnResumeHints': 'Задержка 3 секунды',
       'enableBlurBackgroundApp': 'Размывать фон при сворачивании',
       'hideImagesInAlbum': 'Скрывать изображения в альбоме',
-      'hideImagesInAlbumHints': 'Если изменен путь загрузки по умолчанию, нужно создать .nomedia вручную',
+      'hideImagesInAlbumHints':
+          'Если изменен путь загрузки по умолчанию, нужно создать .nomedia вручную',
 
       /// read setting page
       'enableImmersiveMode': 'Включить иммерсивный режим',
@@ -472,7 +492,8 @@ class ru_RU {
       'portrait': 'Портретная',
       'readDirection': 'Направление чтения',
       'notchOptimization': 'Оптимизация под вырез',
-      'notchOptimizationHint': 'Добавить отступ перед первым изображением, чтобы избежать выреза и строки состояния',
+      'notchOptimizationHint':
+          'Добавить отступ перед первым изображением, чтобы избежать выреза и строки состояния',
       'imageRegionWidthRatio': 'Соотношение ширины области изображения',
       'gestureRegionWidthRatio': 'Соотношение ширины области жестов',
       'useThirdPartyViewer': 'Использовать сторонний просмотрщик',
@@ -561,9 +582,12 @@ class ru_RU {
       'needReUnlock': 'Нужна повторная разблокировка',
       'reUnlock': 'Разблокировать заново',
       'reUnlockHint': 'Внимание! Повторная разблокировка требует повторной покупки архива.',
-      'downloadHelpInfo': 'Если вы не можете скачать и видите ошибки типа "table doesn\'t exist" в логах, удалите и переустановите приложение.',
-      'localGalleryHelpInfo': 'Загрузка галерей, скачанных не через JHenTai. Добавьте путь в Настройки загрузки -> Доп. путь сканирования, затем обновите.',
-      'localGalleryHelpInfo4iOSAndMacOS': 'Загрузка галерей, скачанных не через JHenTai. Поместите галереи в путь загрузки по умолчанию, затем обновите.',
+      'downloadHelpInfo':
+          'Если вы не можете скачать и видите ошибки типа "table doesn\'t exist" в логах, удалите и переустановите приложение.',
+      'localGalleryHelpInfo':
+          'Загрузка галерей, скачанных не через JHenTai. Добавьте путь в Настройки загрузки -> Доп. путь сканирования, затем обновите.',
+      'localGalleryHelpInfo4iOSAndMacOS':
+          'Загрузка галерей, скачанных не через JHenTai. Поместите галереи в путь загрузки по умолчанию, затем обновите.',
       'deleteLocalGalleryHint': 'Удалить ваши локальные файлы',
       'priority': 'Приоритет',
       'highest': 'Высший',
@@ -591,13 +615,16 @@ class ru_RU {
       'multiChangeGroupHint': 'Вы измените группу для всех выбранных галерей.',
       'multiDeleteHint': 'Вы удалите все выбранные галереи.',
       'blankImageHint': 'Downloading the image returned an empty result, trying to re-parse.',
-      'peakHoursHint': 'Загрузка оригинальных файлов в часы пик требует GP, у вас недостаточно. Загрузка приостановлена.',
+      'peakHoursHint':
+          'Загрузка оригинальных файлов в часы пик требует GP, у вас недостаточно. Загрузка приостановлена.',
       // GP - термин EH
       'oldGalleryHint': 'Загрузка оригинальных файлов этой галереи требует GP, у вас недостаточно.',
       // GP - термин EH
-      'exceedLimitHint': 'Вы достигли лимита изображений и не имеете достаточно GP для покупки квоты.',
+      'exceedLimitHint':
+          'Вы достигли лимита изображений и не имеете достаточно GP для покупки квоты.',
       // GP - термин EH
-      'deleteUpdatingDependentHint': 'Обновление другой галереи зависит от текущей, лучше удалить после завершения обновления.',
+      'deleteUpdatingDependentHint':
+          'Обновление другой галереи зависит от текущей, лучше удалить после завершения обновления.',
       'migrateToDownload': 'Перенести в 「Загрузки」',
       'refresh': 'Обновить',
 
@@ -698,7 +725,8 @@ class ru_RU {
       'always': 'Всегда',
       'longPress2Reset': 'Долгий тап для сброса',
       'needPermissionToChangeDownloadPath': 'Нужно разрешение для изменения пути загрузки',
-      'invalidPath': 'Недопустимый путь. Избегайте SD-карт, системных путей или корневого каталога.',
+      'invalidPath':
+          'Недопустимый путь. Избегайте SD-карт, системных путей или корневого каталога.',
       'downloadTaskConcurrency': 'Параллельные загрузки',
       'needRestart': 'Требуется перезапуск',
       'speedLimit': 'Ограничение скорости',
@@ -707,14 +735,18 @@ class ru_RU {
       'images': 'изображений',
       'downloadTimeout': 'Тайм-аут загрузки',
       'downloadAllGallerysOfSamePriority': 'Загружать все галереи одного приоритета',
-      'downloadAllGallerysOfSamePriorityHint': 'По умолчанию загружать только 1 галерею одновременно в 1 группе с высшим приоритетом',
+      'downloadAllGallerysOfSamePriorityHint':
+          'По умолчанию загружать только 1 галерею одновременно в 1 группе с высшим приоритетом',
       'alwaysUseDefaultGroup': 'Всегда использовать группу по умолчанию',
       'enableStoreMetadataForRestore': 'Включить сохранение метаданных для восстановления',
-      'enableStoreMetadataForRestoreHint': 'Если отключено, вы не сможете восстановить задачи загрузки',
+      'enableStoreMetadataForRestoreHint':
+          'Если отключено, вы не сможете восстановить задачи загрузки',
       'archiveDownloadIsolateCount': 'Кол-во потоков загрузки архивов',
-      'archiveDownloadIsolateCountHint': 'Сумма потоков для всех задач должна быть < 10, иначе загрузка не удастся',
+      'archiveDownloadIsolateCountHint':
+          'Сумма потоков для всех задач должна быть < 10, иначе загрузка не удастся',
       'manageArchiveDownloadConcurrency': 'Управлять параллелизмом загрузки архивов',
-      'manageArchiveDownloadConcurrencyHint': 'Архив будет ждать, пока не освободятся потоки для загрузки',
+      'manageArchiveDownloadConcurrencyHint':
+          'Архив будет ждать, пока не освободятся потоки для загрузки',
       'deleteArchiveFileAfterDownload': 'Удалять ZIP-файл архива после загрузки',
       'restoreDownloadTasks': 'Восстановить задачи загрузки',
       'restoreDownloadTasksHint': 'Восстановить задачи загрузки по метаданным',
@@ -723,9 +755,12 @@ class ru_RU {
       'restoredGalleryCount': 'Восстановлено галерей',
       'restoredArchiveCount': 'Восстановлено архивов',
       'restoreTasksAutomatically': 'Восстанавливать задачи автоматически',
-      'restoreTasksAutomaticallyHint': 'Восстанавливать задачи автоматически при запуске приложения',
-      'brokenDownloadPathHint': 'Похоже, ваш путь загрузки поврежден, функция загрузки может не работать',
-      'brokenExtraScanPathHint': 'Похоже, ваш путь к локальным галереям поврежден, локальные галереи могут не распознаваться',
+      'restoreTasksAutomaticallyHint':
+          'Восстанавливать задачи автоматически при запуске приложения',
+      'brokenDownloadPathHint':
+          'Похоже, ваш путь загрузки поврежден, функция загрузки может не работать',
+      'brokenExtraScanPathHint':
+          'Похоже, ваш путь к локальным галереям поврежден, локальные галереи могут не распознаваться',
       'useJH2UpdateGallery': 'Use JH server to accelerate gallery updates',
 
       /// archive bot settings

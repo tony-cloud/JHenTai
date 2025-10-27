@@ -15,6 +15,8 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   RxBool enableCheckUpdate = true.obs;
   RxBool enableCheckClipboard = true.obs;
   RxBool inNoImageMode = false.obs;
+  RxBool enableRefreshGalleryTags = true.obs;
+  RxBool enableRefreshArchiveTags = true.obs;
 
   @override
   ConfigEnum get configEnum => ConfigEnum.advancedSetting;
@@ -28,6 +30,10 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
     enableCheckUpdate.value = map['enableCheckUpdate'] ?? enableCheckUpdate.value;
     enableCheckClipboard.value = map['enableCheckClipboard'] ?? enableCheckClipboard.value;
     inNoImageMode.value = map['inNoImageMode'] ?? inNoImageMode.value;
+    enableRefreshGalleryTags.value =
+        map['enableRefreshGalleryTags'] ?? enableRefreshGalleryTags.value;
+    enableRefreshArchiveTags.value =
+        map['enableRefreshArchiveTags'] ?? enableRefreshArchiveTags.value;
   }
 
   @override
@@ -38,6 +44,8 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
       'enableCheckUpdate': enableCheckUpdate.value,
       'enableCheckClipboard': enableCheckClipboard.value,
       'inNoImageMode': inNoImageMode.value,
+      'enableRefreshGalleryTags': enableRefreshGalleryTags.value,
+      'enableRefreshArchiveTags': enableRefreshArchiveTags.value,
     });
   }
 
@@ -74,6 +82,18 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   Future<void> saveInNoImageMode(bool inNoImageMode) async {
     log.debug('saveInNoImageMode:$inNoImageMode');
     this.inNoImageMode.value = inNoImageMode;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEnableRefreshGalleryTags(bool enableRefreshGalleryTags) async {
+    log.debug('saveEnableRefreshGalleryTags:$enableRefreshGalleryTags');
+    this.enableRefreshGalleryTags.value = enableRefreshGalleryTags;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEnableRefreshArchiveTags(bool enableRefreshArchiveTags) async {
+    log.debug('saveEnableRefreshArchiveTags:$enableRefreshArchiveTags');
+    this.enableRefreshArchiveTags.value = enableRefreshArchiveTags;
     await saveBeanConfig();
   }
 }

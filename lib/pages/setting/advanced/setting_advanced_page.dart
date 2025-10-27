@@ -68,6 +68,8 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildClearNetworkCache(),
             if (GetPlatform.isDesktop) _buildSuperResolution(),
             _buildCheckUpdate(),
+            _buildRefreshGalleryTags(),
+            _buildRefreshArchiveTags(),
             _buildCheckClipboard(),
             if (GetPlatform.isAndroid) _buildVerifyAppLinks(),
             _buildInNoImageMode(),
@@ -175,6 +177,22 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       title: Text('checkUpdateAfterLaunchingApp'.tr),
       value: advancedSetting.enableCheckUpdate.value,
       onChanged: advancedSetting.saveEnableCheckUpdate,
+    );
+  }
+
+  Widget _buildRefreshGalleryTags() {
+    return SwitchListTile(
+      title: Text('refreshGalleryTagsAutomatically'.tr),
+      value: advancedSetting.enableRefreshGalleryTags.value,
+      onChanged: advancedSetting.saveEnableRefreshGalleryTags,
+    );
+  }
+
+  Widget _buildRefreshArchiveTags() {
+    return SwitchListTile(
+      title: Text('refreshArchiveTagsAutomatically'.tr),
+      value: advancedSetting.enableRefreshArchiveTags.value,
+      onChanged: advancedSetting.saveEnableRefreshArchiveTags,
     );
   }
 

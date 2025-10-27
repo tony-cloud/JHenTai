@@ -1,3 +1,5 @@
+// ignore_for_file: equal_keys_in_map
+
 import 'dart:core';
 
 class zh_CN {
@@ -84,8 +86,10 @@ class zh_CN {
       'refreshIgneousFailed': '刷新Igneous失败',
 
       /// request
-      'sadPanda': 'Sad Panda(无响应数据). 解决参考Github Wiki: https://github.com/jiangtian616/JHenTai/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98',
-      'sadPandaReferLink': 'https://github.com/jiangtian616/JHenTai/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98',
+      'sadPanda':
+          'Sad Panda(无响应数据). 解决参考Github Wiki: https://github.com/jiangtian616/JHenTai/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98',
+      'sadPandaReferLink':
+          'https://github.com/jiangtian616/JHenTai/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98',
 
       /// gallery card
       'filtered': '已过滤',
@@ -157,7 +161,8 @@ class zh_CN {
       'score': '分数',
       'NotOnTheList': '未上榜',
       'getGalleryArchiveFailed': '获取归档数据失败',
-      'parseGalleryArchiveFailed': '解析错误，确保你e站的[Archiver Settings]设置的是[Manual Select, Manual Start (Default)]',
+      'parseGalleryArchiveFailed':
+          '解析错误，确保你e站的[Archiver Settings]设置的是[Manual Select, Manual Start (Default)]',
       'original': '原图',
       'resample': '压缩',
       'beginToDownloadArchive': '开始下载归档',
@@ -377,8 +382,8 @@ class zh_CN {
       'custom': '自定义',
 
       /// performance setting page
-    'disableLoadingAnimations': '禁用所有加载动画',
-    'disableLoadingAnimationsHint': '使用静态图像替换加载动画以降低功耗',
+      'disableLoadingAnimations': '禁用所有加载动画',
+      'disableLoadingAnimationsHint': '使用静态图像替换加载动画以降低功耗',
       'maxGalleryNum4Animation': '下载页支持列表动画的最大画廊个数',
       'maxGalleryNum4AnimationHint': '列表模式下，拥有超过此配置个数画廊的分组在展开/收起时取消动画效果',
 
@@ -414,6 +419,8 @@ class zh_CN {
       'clearImagesCache': '清除图片缓存',
       'longPress2Clear': '长按清除',
       'checkUpdateAfterLaunchingApp': '启动应用时检查更新',
+      'refreshGalleryTagsAutomatically': '自动刷新画廊标签',
+      'refreshArchiveTagsAutomatically': '自动刷新归档标签',
       'checkClipboard': '检测剪切板中的画廊链接',
       'clearPageCache': '清除页面缓存',
       'clearSuccess': '清除成功',

@@ -1,3 +1,5 @@
+// ignore_for_file: equal_keys_in_map
+
 import 'dart:core';
 
 class ko_KR {
@@ -386,8 +388,8 @@ class ko_KR {
       'custom': '커스텀',
 
       /// performance setting page
-    'disableLoadingAnimations': '모든 로딩 애니메이션 비활성화',
-    'disableLoadingAnimationsHint': '전력 소비를 줄이기 위해 로딩 애니메이션 대신 정적 이미지를 사용합니다',
+      'disableLoadingAnimations': '모든 로딩 애니메이션 비활성화',
+      'disableLoadingAnimationsHint': '전력 소비를 줄이기 위해 로딩 애니메이션 대신 정적 이미지를 사용합니다',
       'maxGalleryNum4Animation': 'Max Gallery Num For List Animation in Download page',
       'maxGalleryNum4AnimationHint':
           'Disable animation for groups which have more gallerys than this value(for list style)',
@@ -426,6 +428,8 @@ class ko_KR {
       'clearImagesCache': '이미지 캐시 삭제',
       'longPress2Clear': '길게 눌러 삭제하기',
       'checkUpdateAfterLaunchingApp': '앱 실행 후 업데이트 확인',
+      'refreshGalleryTagsAutomatically': '갤러리 태그 자동 새로고침',
+      'refreshArchiveTagsAutomatically': '아카이브 태그 자동 새로고침',
       'checkClipboard': '클립보드에서 갤러리 주소 검사',
       'clearPageCache': '페이지 캐시 삭제',
       'clearSuccess': '삭제 완료',

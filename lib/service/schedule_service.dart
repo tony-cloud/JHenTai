@@ -101,6 +101,9 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> refreshGalleryTags() async {
+    if (advancedSetting.enableRefreshGalleryTags.isFalse) {
+      return;
+    }
     int pageNo = 1;
     List<GalleryDownloadedData> gallerys = await GalleryDao.selectGallerysForTagRefresh(pageNo, 25);
     while (gallerys.isNotEmpty) {
@@ -140,6 +143,9 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> refreshArchiveTags() async {
+    if (advancedSetting.enableRefreshArchiveTags.isFalse) {
+      return;
+    }
     int pageNo = 1;
     List<ArchiveDownloadedData> archives = await ArchiveDao.selectArchivesForTagRefresh(pageNo, 25);
     while (archives.isNotEmpty) {
