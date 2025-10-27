@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -40,6 +41,112 @@ class ReadPage extends StatefulWidget {
 
   @override
   State<ReadPage> createState() => _ReadPageState();
+}
+
+class _ReadTapRegions extends StatefulWidget {
+  const _ReadTapRegions({
+    required this.centerRegionRatio,
+    required this.onTapLeft,
+    required this.onTapCenter,
+    required this.onTapRight,
+  });
+
+  final double centerRegionRatio;
+  final VoidCallback onTapLeft;
+  final VoidCallback onTapCenter;
+  final VoidCallback onTapRight;
+
+  @override
+  State<_ReadTapRegions> createState() => _ReadTapRegionsState();
+}
+
+class _ReadTapRegionsState extends State<_ReadTapRegions> {
+  final Map<int, _PointerTracker> _activePointers = {};
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _handlePointerDown,
+      onPointerMove: _handlePointerMove,
+      onPointerCancel: _handlePointerCancel,
+      onPointerUp: _handlePointerUp,
+      child: const SizedBox.expand(),
+    );
+  }
+
+  void _handlePointerDown(PointerDownEvent event) {
+    _activePointers[event.pointer] = _PointerTracker(
+      initialPosition: event.localPosition,
+    );
+
+    if (_activePointers.length > 1) {
+      for (final tracker in _activePointers.values) {
+        tracker.hasExceededSlop = true;
+      }
+    }
+  }
+
+  void _handlePointerMove(PointerMoveEvent event) {
+    final tracker = _activePointers[event.pointer];
+    if (tracker == null) {
+      return;
+    }
+
+    if (!tracker.hasExceededSlop) {
+      final Offset delta = event.localPosition - tracker.initialPosition;
+      if (delta.distance > kTouchSlop) {
+        tracker.hasExceededSlop = true;
+      }
+    }
+  }
+
+  void _handlePointerCancel(PointerCancelEvent event) {
+    _activePointers.remove(event.pointer);
+  }
+
+  void _handlePointerUp(PointerUpEvent event) {
+    final tracker = _activePointers.remove(event.pointer);
+    if (tracker == null) {
+      return;
+    }
+
+    if (tracker.hasExceededSlop) {
+      return;
+    }
+
+    _dispatchTap(event.localPosition);
+  }
+
+  void _dispatchTap(Offset localPosition) {
+    final Size? size = context.size;
+    if (size == null || size.width == 0) {
+      return;
+    }
+
+    final double ratio = widget.centerRegionRatio.clamp(0.0, 1.0);
+    final double centerWidth = size.width * ratio;
+    final double sideWidth = (size.width - centerWidth) / 2;
+
+    if (localPosition.dx < sideWidth) {
+      widget.onTapLeft();
+      return;
+    }
+
+    if (localPosition.dx > size.width - sideWidth) {
+      widget.onTapRight();
+      return;
+    }
+
+    widget.onTapCenter();
+  }
+}
+
+class _PointerTracker {
+  _PointerTracker({required this.initialPosition});
+
+  final Offset initialPosition;
+  bool hasExceededSlop = false;
 }
 
 class _ReadPageState extends State<ReadPage>
@@ -234,26 +341,14 @@ class _ReadPageState extends State<ReadPage>
 
   /// gesture for turn page and pop menu
   Widget buildGestureRegion() {
-    return Row(
-      children: [
-        /// left region
-        Expanded(
-          flex: (100 - readSetting.gestureRegionWidthRatio.value) ~/ 2,
-          child: GestureDetector(onTap: logic.tapLeftRegion, behavior: HitTestBehavior.opaque),
-        ),
-
-        /// center region
-        Expanded(
-          flex: readSetting.gestureRegionWidthRatio.value,
-          child: GestureDetector(onTap: logic.tapCenterRegion, behavior: HitTestBehavior.opaque),
-        ),
-
-        /// right region: toRight
-        Expanded(
-            flex: (100 - readSetting.gestureRegionWidthRatio.value) ~/ 2,
-            child: GestureDetector(onTap: logic.tapRightRegion, behavior: HitTestBehavior.opaque)),
-      ],
-    );
+    return Obx(() {
+      return _ReadTapRegions(
+        centerRegionRatio: readSetting.gestureRegionWidthRatio.value / 100,
+        onTapLeft: logic.tapLeftRegion,
+        onTapCenter: logic.tapCenterRegion,
+        onTapRight: logic.tapRightRegion,
+      );
+    });
   }
 
   /// top menu
