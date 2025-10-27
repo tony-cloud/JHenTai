@@ -413,7 +413,14 @@ LazyDatabase _openConnection() {
 
     sqlite3.tempDirectory = pathService.tempDir.path;
 
-    return NativeDatabase(file);
+    return NativeDatabase(
+      file,
+      setup: (database) {
+        // Allow SQLite to wait for a short period instead of throwing SQLITE_BUSY immediately.
+        database.execute('PRAGMA busy_timeout = 1000');
+        database.execute('PRAGMA journal_mode = WAL');
+      },
+    );
   });
 }
 
