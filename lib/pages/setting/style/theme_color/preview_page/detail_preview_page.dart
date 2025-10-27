@@ -266,10 +266,7 @@ class DetailPreviewPage extends DetailsPage {
 }
 
 class DetailsPreviewPageLogic extends DetailsPageLogic {
-  @override
-  final DetailsPageState state = DetailsPreviewPageState();
-
-  DetailsPreviewPageLogic() : super.preview();
+  DetailsPreviewPageLogic() : super.preview(state: DetailsPreviewPageState());
 
   @override
   void onReady() async {}

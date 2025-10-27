@@ -6,8 +6,9 @@ import '../../../routes/routes.dart';
 import '../../../widget/loading_state_indicator.dart';
 
 class DashboardPageState extends BasePageState {
-  @override
-  SearchConfig searchConfig = SearchConfig.nonHOnly();
+  DashboardPageState() {
+    searchConfig = SearchConfig.nonHOnly();
+  }
 
   @override
   String get route => Routes.dashboard;

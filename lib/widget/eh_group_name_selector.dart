@@ -14,7 +14,8 @@ class EHGroupNameSelector extends StatefulWidget {
   final List<String> candidates;
   final ValueChanged<String>? listener;
 
-  const EHGroupNameSelector({super.key, this.currentGroup, required this.candidates, this.listener});
+  const EHGroupNameSelector(
+      {super.key, this.currentGroup, required this.candidates, this.listener});
 
   @override
   State<EHGroupNameSelector> createState() => _EHGroupNameSelectorState();
@@ -100,7 +101,7 @@ class _EHGroupNameSelectorState extends State<EHGroupNameSelector> {
     );
   }
 
-  Widget _chipBuilder(_, int index) {
+  Widget _chipBuilder(BuildContext context, int index) {
     return GroupChip(
       text: widget.candidates[index],
       selected: textEditingController.value.text == widget.candidates[index],

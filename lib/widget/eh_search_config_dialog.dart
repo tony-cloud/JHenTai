@@ -37,7 +37,7 @@ class EHSearchConfigDialog extends StatefulWidget {
       {super.key, required this.type, this.quickSearchName, this.searchConfig});
 
   @override
-  _EHSearchConfigDialogState createState() => _EHSearchConfigDialogState();
+  State<EHSearchConfigDialog> createState() => _EHSearchConfigDialogState();
 }
 
 class _EHSearchConfigDialogState extends State<EHSearchConfigDialog> {
@@ -558,8 +558,7 @@ class _EHSearchConfigDialogState extends State<EHSearchConfigDialog> {
           ...LocaleConsts.language2Abbreviation.keys
               .where((language) => language != 'japanese')
               .map((language) =>
-                  DropdownMenuItem(value: language, child: Text(language.capitalizeFirst!)))
-              ,
+                  DropdownMenuItem(value: language, child: Text(language.capitalizeFirst!))),
         ],
       ),
     );

@@ -4,6 +4,8 @@ extension FileExtension on File {
   void deleteSyncIgnoreError({bool recursive = false}) {
     try {
       deleteSync(recursive: recursive);
-    } catch (e) {}
+    } catch (e) {
+      // ignore errors
+    }
   }
 }

@@ -114,6 +114,7 @@ class _ProxyOverrides extends HttpOverrides {
 class _PassthroughHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
+    // This is a passthrough HttpClient that does not modify requests.
     return super.createHttpClient(context);
   }
 }

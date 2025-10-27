@@ -58,8 +58,7 @@ class DownloadSearchPage extends StatelessWidget {
             builder: (_, __) => !state.searchTypeCompleter.isCompleted
                 ? const SizedBox()
                 : TextButton(
-                    onPressed: logic.toggleSearchType,
-                    child: Text(state.searchType.desc.tr)),
+                    onPressed: logic.toggleSearchType, child: Text(state.searchType.desc.tr)),
           ),
           prefixIconConstraints: const BoxConstraints(minWidth: 52),
           suffixIcon: MouseRegion(
@@ -106,7 +105,6 @@ class DownloadSearchPage extends StatelessWidget {
       child: GetBuilder<GalleryDownloadService>(
         id: '${galleryDownloadService.galleryDownloadProgressId}::${gallery.gid}',
         builder: (_) {
-          GalleryImage? cover = galleryDownloadService.galleryDownloadInfos[gallery.gid]?.images[0];
           GalleryDownloadProgress? downloadProgress =
               galleryDownloadService.galleryDownloadInfos[gallery.gid]?.downloadProgress;
           String? groupName = galleryDownloadService.galleryDownloadInfos[gallery.gid]?.group;

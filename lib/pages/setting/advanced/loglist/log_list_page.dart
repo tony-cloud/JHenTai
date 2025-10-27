@@ -14,7 +14,7 @@ class LogListPage extends StatefulWidget {
   const LogListPage({super.key});
 
   @override
-  _LogListPageState createState() => _LogListPageState();
+  State<LogListPage> createState() => _LogListPageState();
 }
 
 class _LogListPageState extends State<LogListPage> {

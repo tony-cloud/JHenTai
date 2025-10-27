@@ -31,7 +31,7 @@ class SettingAdvancedPage extends StatefulWidget {
   const SettingAdvancedPage({super.key});
 
   @override
-  _SettingAdvancedPageState createState() => _SettingAdvancedPageState();
+  State<SettingAdvancedPage> createState() => _SettingAdvancedPageState();
 }
 
 class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
@@ -351,8 +351,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
-        allowCompression: false,
-        compressionQuality: 0,
+        compressionQuality: 100,
       );
     } on Exception catch (e) {
       log.error('Pick import data file failed', e);

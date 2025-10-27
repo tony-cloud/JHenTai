@@ -25,7 +25,7 @@ class EHGalleryTorrentsDialog extends StatefulWidget {
   const EHGalleryTorrentsDialog({super.key, required this.gid, required this.token});
 
   @override
-  _EHGalleryTorrentsDialogState createState() => _EHGalleryTorrentsDialogState();
+  State<EHGalleryTorrentsDialog> createState() => _EHGalleryTorrentsDialogState();
 }
 
 class _EHGalleryTorrentsDialogState extends State<EHGalleryTorrentsDialog> {

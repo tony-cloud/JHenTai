@@ -97,8 +97,7 @@ mixin SearchPageLogicMixin on BasePageLogic {
     try {
       result = await FilePicker.platform.pickFiles(
         type: FileType.image,
-        allowCompression: false,
-        compressionQuality: 0,
+        compressionQuality: 100,
       );
     } on Exception catch (e) {
       log.error('Pick file failed', e);

@@ -9,7 +9,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
-import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/get_utils/get_utils.dart';
@@ -224,11 +223,13 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
     String fileName =
         '${readPageState.readPageInfo.gid!}_${readPageState.readPageInfo.token!}_$index$ext';
 
-    Share.shareXFiles(
-      [XFile.fromData(data)],
-      sharePositionOrigin:
-          Rect.fromLTWH(0, 0, fullScreenWidth, readPageState.displayRegionSize.height * 2 / 3),
-      fileNameOverrides: [fileName],
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile.fromData(data)],
+        sharePositionOrigin:
+            Rect.fromLTWH(0, 0, fullScreenWidth, readPageState.displayRegionSize.height * 2 / 3),
+        fileNameOverrides: [fileName],
+      ),
     );
   }
 
@@ -239,17 +240,19 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
       return;
     }
 
-    Share.shareXFiles(
-      [
-        XFile(
-          GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
-            galleryDownloadService
-                .galleryDownloadInfos[readPageState.readPageInfo.gid!]!.images[index]!.path!,
-          ),
-        )
-      ],
-      sharePositionOrigin:
-          Rect.fromLTWH(0, 0, fullScreenWidth, readPageState.displayRegionSize.height * 2 / 3),
+    SharePlus.instance.share(
+      ShareParams(
+        files: [
+          XFile(
+            GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
+              galleryDownloadService
+                  .galleryDownloadInfos[readPageState.readPageInfo.gid!]!.images[index]!.path!,
+            ),
+          )
+        ],
+        sharePositionOrigin:
+            Rect.fromLTWH(0, 0, fullScreenWidth, readPageState.displayRegionSize.height * 2 / 3),
+      ),
     );
   }
 
@@ -416,26 +419,6 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
       Size(imageSize.width, imageSize.height),
       Size(readPageState.displayRegionSize.width, double.infinity),
     );
-  }
-
-  Alignment _computeAlignmentByTapOffset(Offset offset) {
-    return Alignment((offset.dx - Get.size.width / 2) / (Get.size.width / 2),
-        (offset.dy - Get.size.height / 2) / (Get.size.height / 2));
-  }
-
-  Future<bool> _saveImage2Album(Uint8List imageData, String fileName) async {
-    await requestAlbumPermission();
-
-    SaveResult saveResult = await SaverGallery.saveImage(
-      imageData,
-      name: fileName,
-      androidRelativePath: "Pictures/JHenTai",
-      androidExistNotSave: false,
-    );
-
-    log.info('Save image to album: $saveResult');
-
-    return saveResult.isSuccess;
   }
 
   Future<bool> _saveFile2Album(String filePath, String fileName) async {

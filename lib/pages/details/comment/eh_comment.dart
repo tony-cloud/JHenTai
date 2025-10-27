@@ -52,7 +52,7 @@ class EHComment extends StatefulWidget {
   });
 
   @override
-  _EHCommentState createState() => _EHCommentState();
+  State<EHComment> createState() => _EHCommentState();
 }
 
 class _EHCommentState extends State<EHComment> {

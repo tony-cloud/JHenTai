@@ -21,7 +21,7 @@ class CommentPage extends StatefulWidget {
   const CommentPage({super.key});
 
   @override
-  _CommentPageState createState() => _CommentPageState();
+  State<CommentPage> createState() => _CommentPageState();
 }
 
 class _CommentPageState extends State<CommentPage> with LoginRequiredMixin {

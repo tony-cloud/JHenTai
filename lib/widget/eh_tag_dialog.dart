@@ -46,7 +46,7 @@ class EHTagDialog extends StatefulWidget {
   });
 
   @override
-  _EHTagDialogState createState() => _EHTagDialogState();
+  State<EHTagDialog> createState() => _EHTagDialogState();
 }
 
 class _EHTagDialogState extends State<EHTagDialog> with LoginRequiredMixin {

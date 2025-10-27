@@ -96,7 +96,9 @@ class _EHExecutor implements EHExecutor {
 
   @override
   set concurrency(int value) {
-    if (_concurrency == value) return;
+    if (_concurrency == value) {
+      return;
+    }
     assert(value > 0);
     _concurrency = value;
     _trigger();
@@ -107,14 +109,18 @@ class _EHExecutor implements EHExecutor {
 
   @override
   set rate(Rate? value) {
-    if (_rate == value) return;
+    if (_rate == value) {
+      return;
+    }
     _rate = value;
     _trigger();
   }
 
   @override
   Future<R> scheduleTask<R>(int priority, AsyncTask<R> task) async {
-    if (isClosing) throw Exception('Executor doesn\'t accept tasks.');
+    if (isClosing) {
+      throw Exception('Executor doesn\'t accept tasks.');
+    }
     final item = _PriorityItem<R>(priority);
     _waiting.add(item);
     task2WaitingItem[task] = item;
@@ -173,7 +179,9 @@ class _EHExecutor implements EHExecutor {
       ..onPause = (() => streamSubscription?.pause())
       ..onResume = () => streamSubscription?.resume();
     scheduleTask(priority, () {
-      if (resourceCompleter.isCompleted) return null;
+      if (resourceCompleter.isCompleted) {
+        return null;
+      }
       try {
         final stream = task();
         if (stream == null) {
@@ -201,7 +209,9 @@ class _EHExecutor implements EHExecutor {
         futures.add(item.result.future.catchError((_) async => null));
       }
     }
-    if (futures.isEmpty) return Future.value();
+    if (futures.isEmpty) {
+      return Future.value();
+    }
     return Future.wait(futures);
   }
 

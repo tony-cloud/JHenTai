@@ -54,19 +54,19 @@ class HorizontalPageLayoutLogic extends BaseLayoutLogic {
   }
 
   @override
-  void jump2ImageIndex(int pageIndex) {
-    pageController.jumpToPage(pageIndex);
-    super.jump2ImageIndex(pageIndex);
+  void jump2ImageIndex(int imageIndex) {
+    pageController.jumpToPage(imageIndex);
+    super.jump2ImageIndex(imageIndex);
   }
 
   @override
-  void scroll2ImageIndex(int pageIndex, [Duration? duration]) {
+  void scroll2ImageIndex(int imageIndex, [Duration? duration]) {
     pageController.animateToPage(
-      pageIndex,
+      imageIndex,
       duration: duration ?? const Duration(milliseconds: 200),
       curve: Curves.ease,
     );
-    super.scroll2ImageIndex(pageIndex, duration);
+    super.scroll2ImageIndex(imageIndex, duration);
   }
 
   @override

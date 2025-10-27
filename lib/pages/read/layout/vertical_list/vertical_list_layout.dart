@@ -56,7 +56,7 @@ class VerticalListLayout extends BaseLayout {
     );
   }
 
-  Widget _imageBuilder(context, index) {
+  Widget _imageBuilder(BuildContext context, int index) {
     Widget child = Row(
       children: [
         Expanded(

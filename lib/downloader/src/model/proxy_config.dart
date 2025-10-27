@@ -18,10 +18,12 @@ class ProxyConfig {
       }
 
       String proxyAddress;
-      if ((proxyConfig.username?.trim().isEmpty ?? true) && (proxyConfig.password?.trim().isEmpty ?? true)) {
+      if ((proxyConfig.username?.trim().isEmpty ?? true) &&
+          (proxyConfig.password?.trim().isEmpty ?? true)) {
         proxyAddress = proxyConfig.address;
       } else {
-        proxyAddress = '${proxyConfig.username ?? ''}:${proxyConfig.password ?? ''}@${proxyConfig.address}';
+        proxyAddress =
+            '${proxyConfig.username ?? ''}:${proxyConfig.password ?? ''}@${proxyConfig.address}';
       }
 
       switch (proxyConfig.type) {
@@ -32,7 +34,6 @@ class ProxyConfig {
         case ProxyType.socks4:
           return 'SOCKS4 $proxyAddress; DIRECT';
         case ProxyType.direct:
-        default:
           return 'DIRECT';
       }
     };

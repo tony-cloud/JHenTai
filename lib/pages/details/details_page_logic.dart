@@ -113,16 +113,21 @@ class DetailsPageLogic extends GetxController
 
   static DetailsPageLogic? get current => _stack.isEmpty ? null : _stack.last;
 
-  final DetailsPageState state = DetailsPageState();
+  final DetailsPageState state;
 
   @override
   Scroll2TopStateMixin get scroll2TopState => state;
 
-  DetailsPageLogic() {
-    _stack.add(this);
-  }
+  DetailsPageLogic() : this._internal(state: DetailsPageState(), addToStack: true);
 
-  DetailsPageLogic.preview();
+  DetailsPageLogic.preview({DetailsPageState? state})
+      : this._internal(state: state ?? DetailsPageState(), addToStack: false);
+
+  DetailsPageLogic._internal({required this.state, required bool addToStack}) {
+    if (addToStack) {
+      _stack.add(this);
+    }
+  }
 
   @override
   void onInit() {
@@ -874,9 +879,11 @@ class DetailsPageLogic extends GetxController
       return;
     }
 
-    Share.share(
-      state.galleryUrl.url,
-      sharePositionOrigin: Rect.fromLTWH(0, 0, fullScreenWidth, screenHeight * 2 / 3),
+    await SharePlus.instance.share(
+      ShareParams(
+        text: state.galleryUrl.url,
+        sharePositionOrigin: Rect.fromLTWH(0, 0, fullScreenWidth, screenHeight * 2 / 3),
+      ),
     );
   }
 

@@ -44,7 +44,14 @@ class GroupedList<G, E> extends StatefulWidget {
   State<GroupedList<G, E>> createState() => _GroupedListState<G, E>();
 }
 
-class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
+abstract class GroupedListDelegate<G, E> {
+  Future<void> removeElement(E element);
+
+  void toggleGroup(G group);
+}
+
+class _GroupedListState<G, E> extends State<GroupedList<G, E>>
+    implements GroupedListDelegate<G, E> {
   late GroupedListLogic logic;
 
   late int maxGalleryNum4Animation;
@@ -105,42 +112,6 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
     return _buildInCustomScrollView(context);
   }
 
-  EHWheelSpeedController _buildInListView() {
-    return EHWheelSpeedController(
-      controller: scrollController,
-      child: ListView.builder(
-        controller: scrollController,
-        cacheExtent: 200,
-        itemCount: _groups.length + widget.elements.length,
-        itemBuilder: (context, index) {
-          int i = 0;
-          int groupIndex = 0;
-          while (true) {
-            G group = _groups.keys.elementAt(groupIndex);
-
-            if (i == index) {
-              return _buildGroup(group, context);
-            }
-
-            List<E> elements = _group2Elements[group] ?? [];
-
-            if (i + 1 + elements.length > index) {
-              return _buildElement(
-                context,
-                elements[index - i - 1],
-                group,
-                elements.length <= maxGalleryNum4Animation,
-              );
-            }
-
-            i += 1 + elements.length;
-            groupIndex++;
-          }
-        },
-      ),
-    );
-  }
-
   EHWheelSpeedController _buildInCustomScrollView(BuildContext context) {
     return EHWheelSpeedController(
       controller: scrollController,
@@ -193,7 +164,7 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
     );
   }
 
-  GetBuilder<GroupedListLogic> _buildGroup(group, BuildContext context) {
+  GetBuilder<GroupedListLogic> _buildGroup(G group, BuildContext context) {
     return GetBuilder<GroupedListLogic>(
       id: 'group::${widget.groupUniqueKey(group)}',
       global: false,
@@ -235,6 +206,7 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
     );
   }
 
+  @override
   Future<void> removeElement(E element) {
     Completer<void> completer = Completer();
     String elementKey = widget.elementUniqueKey(element);
@@ -247,6 +219,7 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
     return completer.future;
   }
 
+  @override
   void toggleGroup(G group) {
     if (!_groups.containsKey(group)) {
       return;
@@ -265,29 +238,29 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>> {
 }
 
 class GroupedListController<G, E> {
-  bool get isAttached => _groupedListState != null;
+  bool get isAttached => _delegate != null;
 
-  _GroupedListState<G, E>? _groupedListState;
+  GroupedListDelegate<G, E>? _delegate;
 
-  void attach(_GroupedListState<G, E> state) {
-    _groupedListState = state;
+  void attach(GroupedListDelegate<G, E> delegate) {
+    _delegate = delegate;
   }
 
-  void detach(_GroupedListState<G, E> state) {
-    if (identical(_groupedListState, state)) {
-      _groupedListState = null;
+  void detach(GroupedListDelegate<G, E> delegate) {
+    if (identical(_delegate, delegate)) {
+      _delegate = null;
     }
   }
 
   Future<void> removeElement(E element) {
     assert(isAttached);
 
-    return _groupedListState!.removeElement(element);
+    return _delegate!.removeElement(element);
   }
 
   void toggleGroup(G group) {
     assert(isAttached);
 
-    return _groupedListState!.toggleGroup(group);
+    _delegate!.toggleGroup(group);
   }
 }

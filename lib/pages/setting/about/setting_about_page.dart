@@ -8,7 +8,7 @@ class SettingAboutPage extends StatefulWidget {
   const SettingAboutPage({super.key});
 
   @override
-  _SettingAboutPageState createState() => _SettingAboutPageState();
+  State<SettingAboutPage> createState() => _SettingAboutPageState();
 }
 
 class _SettingAboutPageState extends State<SettingAboutPage> {

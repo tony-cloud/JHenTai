@@ -32,7 +32,7 @@ class EHArchiveDialog extends StatefulWidget {
   });
 
   @override
-  _EHArchiveDialogState createState() => _EHArchiveDialogState();
+  State<EHArchiveDialog> createState() => _EHArchiveDialogState();
 }
 
 class _EHArchiveDialogState extends State<EHArchiveDialog> {

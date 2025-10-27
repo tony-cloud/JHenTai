@@ -117,18 +117,6 @@ class _ArchiveBotSettingsPageState extends State<ArchiveBotSettingsPage> {
     );
   }
 
-  Widget _buildUseProxyServer() {
-    return SwitchListTile(
-      title: Text('useProxyServer'.tr),
-      subtitle: Text('useProxyServerHint'.tr),
-      value: archiveBotSetting.useProxyServer.value,
-      onChanged: (bool value) async {
-        await archiveBotSetting.saveUseProxyServer(value);
-        setStateSafely(() {});
-      },
-    );
-  }
-
   Future<void> _showApiKeyDialog() async {
     bool? result = await showDialog(
       context: context,

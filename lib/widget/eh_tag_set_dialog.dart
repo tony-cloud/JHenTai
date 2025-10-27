@@ -46,7 +46,7 @@ class _EHTagSetDialogState extends State<EHTagSetDialog> {
         if (_loadingState == LoadingState.error)
           GestureDetector(
             onTap: _getTagSet,
-            child: Icon(FontAwesomeIcons.redoAlt,
+            child: Icon(FontAwesomeIcons.rotateRight,
                 size: 24, color: UIConfig.loadingStateIndicatorButtonColor(context)),
           ),
         if (_loadingState == LoadingState.success)

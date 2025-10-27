@@ -39,28 +39,10 @@ class FileManager {
     await _closeWrite();
   }
 
-  Future<T> _readOperation<T>(AsyncValueCallback<T> operation) async {
-    await _initRead();
-    return _readLock!.lock(operation);
-  }
-
   Future<T> _writeOperation<T>(AsyncValueCallback<T> operation) async {
     await _initWrite();
     T result = await _writeLock!.lock(operation);
     return result;
-  }
-
-  Future<void> _initRead() async {
-    if (_readReady) {
-      return;
-    }
-
-    _logger.d('init read file');
-
-    _file ??= File(path);
-    _readRaf = await File(path).open(mode: FileMode.read);
-    _readLock = Lock();
-    _readReady = true;
   }
 
   Future<void> _initWrite() async {
