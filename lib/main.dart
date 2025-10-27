@@ -10,6 +10,7 @@ import 'package:jhentai/service/archive_download_service.dart';
 import 'package:jhentai/service/built_in_blocked_user_service.dart';
 import 'package:jhentai/service/cloud_service.dart';
 import 'package:jhentai/service/frame_rate_service.dart';
+import 'package:jhentai/service/ftp_server_service.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/history_service.dart';
 import 'package:jhentai/service/isolate_service.dart';
@@ -33,6 +34,7 @@ import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/setting/download_setting.dart';
 import 'package:jhentai/setting/eh_setting.dart';
 import 'package:jhentai/setting/favorite_setting.dart';
+import 'package:jhentai/setting/ftp_server_setting.dart';
 import 'package:jhentai/setting/mouse_setting.dart';
 import 'package:jhentai/setting/my_tags_setting.dart';
 import 'package:jhentai/setting/network_setting.dart';
@@ -63,6 +65,7 @@ List<JHLifeCircleBean> lifeCircleBeans = [
   localGalleryService,
   cloudConfigService,
   frameRateService,
+  ftpServerService,
   historyService,
   isolateService,
   localBlockRuleService,
@@ -81,6 +84,7 @@ List<JHLifeCircleBean> lifeCircleBeans = [
   windowService,
   advancedSetting,
   downloadSetting,
+  ftpServerSetting,
   archiveBotSetting,
   ehSetting,
   favoriteSetting,

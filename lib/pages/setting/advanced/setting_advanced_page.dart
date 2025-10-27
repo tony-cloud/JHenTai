@@ -18,6 +18,8 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
+import 'package:jhentai/service/ftp_server_service.dart';
+import 'package:jhentai/setting/ftp_server_setting.dart';
 
 import '../../../config/ui_config.dart';
 import '../../../enum/config_type_enum.dart';
@@ -26,6 +28,7 @@ import '../../../service/isolate_service.dart';
 import '../../../utils/byte_util.dart';
 import '../../../utils/route_util.dart';
 import '../../../widget/eh_config_type_select_dialog.dart';
+import 'ftp_server_dialog.dart';
 
 class SettingAdvancedPage extends StatefulWidget {
   const SettingAdvancedPage({super.key});
@@ -66,6 +69,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildClearLogs(context),
             _buildClearImageCache(context),
             _buildClearNetworkCache(),
+            _buildFtpServer(context),
             if (GetPlatform.isDesktop) _buildSuperResolution(),
             _buildCheckUpdate(),
             _buildRefreshGalleryTags(),
@@ -164,11 +168,48 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
     );
   }
 
+  Widget _buildFtpServer(BuildContext context) {
+    final bool enabled = ftpServerSetting.enableServer.value;
+    final bool running = ftpServerService.serverRunning.value;
+    final String summary = enabled
+        ? 'ftpServerRunningSummary'
+            .tr
+            .replaceAll('@port', ftpServerSetting.port.value.toString())
+            .replaceAll(
+                '@access',
+                ftpServerSetting.allowReadAndWrite.isTrue
+                    ? 'ftpServerAccessReadWrite'.tr
+                    : 'ftpServerAccessReadOnly'.tr)
+        : 'ftpServerDisabledSummary'.tr;
+
+    return ListTile(
+      title: Text('ftpServer'.tr),
+      subtitle: Text(summary),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (running)
+            Icon(Icons.wifi_tethering, color: UIConfig.resumePauseButtonColor(context))
+                .marginOnly(right: 8),
+          const Icon(Icons.keyboard_arrow_right).marginOnly(right: 4),
+        ],
+      ),
+      onTap: () => _showFtpServerDialog(context),
+    );
+  }
+
   Widget _buildSuperResolution() {
     return ListTile(
       title: Text('superResolution'.tr),
       trailing: const Icon(Icons.keyboard_arrow_right).marginOnly(right: 4),
       onTap: () => toRoute(Routes.superResolution),
+    );
+  }
+
+  Future<void> _showFtpServerDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (_) => const FtpServerDialog(),
     );
   }
 

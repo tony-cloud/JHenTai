@@ -9,6 +9,7 @@ enum ConfigEnum {
   favoriteSetting('favoriteSetting'),
   advancedSetting('advancedSetting'),
   downloadSetting('downloadSetting'),
+  ftpServerSetting('ftpServerSetting'),
   EHSetting('EHSetting'),
   mouseSetting('mouseSetting'),
   networkSetting('networkSetting'),
