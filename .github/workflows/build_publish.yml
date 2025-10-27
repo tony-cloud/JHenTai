@@ -232,7 +232,7 @@ jobs:
           APP_PATH="build/macos/Build/Products/Release/jhentai.app"
           security default-keychain -s build.keychain
           security unlock-keychain -p "${MACOS_P12_PASSWORD}" build.keychain
-          codesign --force --options runtime --sign "${MACOS_CODESIGN_IDENTITY}" --deep --strict "$APP_PATH" -vvv
+          codesign --force --options runtime -s "${MACOS_CODESIGN_IDENTITY}" --deep --strict "$APP_PATH" -vvv
       - name: Create macOS DMG
         if: matrix.target == 'macOS'
         run: |
