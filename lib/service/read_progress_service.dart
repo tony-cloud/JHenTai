@@ -38,7 +38,7 @@ class ReadProgressService with JHLifeCircleBeanErrorCatch implements JHLifeCircl
   /// Update read progress and notify listeners
   void updateReadProgress(int gid, int index) {
     _progressCache[gid] = index;
-    Get.find<ReadProgressController>().update(['$readProgressUpdateId::$gid']);
+    ReadProgressController.instance.update(['$readProgressUpdateId::$gid']);
   }
 
   /// Clear a specific gallery's cache
