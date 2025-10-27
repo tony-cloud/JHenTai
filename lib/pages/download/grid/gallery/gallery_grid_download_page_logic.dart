@@ -70,9 +70,13 @@ class GalleryGridDownloadPageLogic extends GetxController
       }
     }
 
-    downloadService
-        .deleteGallery(gallery, deleteImages: deleteImages)
-        .then((_) => super.handleRemoveItem(gallery, deleteImages, context));
+    await downloadService.deleteGallery(gallery, deleteImages: deleteImages);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    super.handleRemoveItem(gallery, deleteImages, context);
   }
 
   void goToDetailPage(GalleryDownloadedData gallery) {

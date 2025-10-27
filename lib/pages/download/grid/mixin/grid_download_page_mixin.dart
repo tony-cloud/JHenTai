@@ -80,71 +80,75 @@ mixin GridBasePage on StatelessWidget implements Scroll2TopPageMixin {
           onNotification: logic.onUserScroll,
           child: EHWheelSpeedController(
             controller: state.scrollController,
-            child: Obx(
-              () => DraggableGridViewBuilder(
-                key: PageStorageKey(state.currentGroup),
-                controller: state.scrollController,
-                padding: const EdgeInsets.only(left: 12, right: 16, bottom: 24),
-                children: getChildren(context),
-                dragFeedback: (List<DraggableGridItem> list, int index) {
-                  return SizedBox(
-                    width: 150,
-                    height: 200,
-                    child: Center(
-                        child: DefaultTextStyle(
-                            style: DefaultTextStyle.of(context).style, child: list[index].child)),
-                  );
-                },
-                dragPlaceHolder: (_, __) {
-                  return PlaceHolderWidget(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: UIConfig.downloadPageGridViewCardDragBorderColor(context),
-                            width: 1.2),
+            child: Obx(() {
+              final ScrollController controller = state.scrollController;
+              return PrimaryScrollController(
+                controller: controller,
+                child: DraggableGridViewBuilder(
+                  key: PageStorageKey(state.currentGroup),
+                  controller: controller,
+                  padding: const EdgeInsets.only(left: 12, right: 16, bottom: 24),
+                  children: getChildren(context),
+                  dragFeedback: (List<DraggableGridItem> list, int index) {
+                    return SizedBox(
+                      width: 150,
+                      height: 200,
+                      child: Center(
+                          child: DefaultTextStyle(
+                              style: DefaultTextStyle.of(context).style, child: list[index].child)),
+                    );
+                  },
+                  dragPlaceHolder: (_, __) {
+                    return PlaceHolderWidget(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: UIConfig.downloadPageGridViewCardDragBorderColor(context),
+                              width: 1.2),
+                        ),
                       ),
-                    ),
-                  );
-                },
-                dragCompletion: (_, int beforeIndex, int afterIndex) async {
-                  if (state.isAtRoot) {
-                    await logic.saveGroupOrderAfterDrag(beforeIndex, afterIndex);
-                  } else {
-                    await logic.saveGalleryOrderAfterDrag(beforeIndex - 1, afterIndex - 1);
-                  }
-                },
-                gridDelegate: state.isAtRoot
-                    ? styleSetting.crossAxisCountInGridDownloadPageForGroup.value == null
-                        ? const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: UIConfig.downloadPageGridViewCardWidth,
-                            mainAxisSpacing: 24,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
-                          )
-                        : SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount:
-                                styleSetting.crossAxisCountInGridDownloadPageForGroup.value!,
-                            mainAxisSpacing: 24,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
-                          )
-                    : styleSetting.crossAxisCountInGridDownloadPageForGallery.value == null
-                        ? const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: UIConfig.downloadPageGridViewCardWidth,
-                            mainAxisSpacing: 24,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
-                          )
-                        : SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount:
-                                styleSetting.crossAxisCountInGridDownloadPageForGallery.value!,
-                            mainAxisSpacing: 24,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
-                          ),
-              ),
-            ),
+                    );
+                  },
+                  dragCompletion: (_, int beforeIndex, int afterIndex) async {
+                    if (state.isAtRoot) {
+                      await logic.saveGroupOrderAfterDrag(beforeIndex, afterIndex);
+                    } else {
+                      await logic.saveGalleryOrderAfterDrag(beforeIndex - 1, afterIndex - 1);
+                    }
+                  },
+                  gridDelegate: state.isAtRoot
+                      ? styleSetting.crossAxisCountInGridDownloadPageForGroup.value == null
+                          ? const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: UIConfig.downloadPageGridViewCardWidth,
+                              mainAxisSpacing: 24,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
+                            )
+                          : SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount:
+                                  styleSetting.crossAxisCountInGridDownloadPageForGroup.value!,
+                              mainAxisSpacing: 24,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
+                            )
+                      : styleSetting.crossAxisCountInGridDownloadPageForGallery.value == null
+                          ? const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: UIConfig.downloadPageGridViewCardWidth,
+                              mainAxisSpacing: 24,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
+                            )
+                          : SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount:
+                                  styleSetting.crossAxisCountInGridDownloadPageForGallery.value!,
+                              mainAxisSpacing: 24,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
+                            ),
+                ),
+              );
+            }),
           ),
         ),
       ),

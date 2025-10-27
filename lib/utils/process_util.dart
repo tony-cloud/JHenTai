@@ -8,22 +8,17 @@ import 'package:path/path.dart';
 import '../setting/read_setting.dart';
 import '../service/log.dart';
 
-void openThirdPartyViewer(String dirPath) {
+Future<void> openThirdPartyViewer(String dirPath) async {
   String viewerPath = readSetting.thirdPartyViewerPath.value!;
 
-  Process.run(
-    basename(viewerPath),
-    [dirPath],
-    workingDirectory: dirname(viewerPath),
-    runInShell: true,
-  ).catchError((e) {
-    toast('internalError'.tr + e.toString());
-    log.error(e);
-    log.uploadError(
-      e,
-      extraInfos: {'viewerPath': viewerPath, 'dirPath': dirPath},
+  try {
+    final ProcessResult result = await Process.run(
+      basename(viewerPath),
+      [dirPath],
+      workingDirectory: dirname(viewerPath),
+      runInShell: true,
     );
-  }).then((result) {
+
     if (!isEmptyOrNull(result.stderr)) {
       toast('internalError'.tr + result.stderr);
       log.error(result.stderr);
@@ -37,5 +32,12 @@ void openThirdPartyViewer(String dirPath) {
         },
       );
     }
-  });
+  } on Object catch (e) {
+    toast('internalError'.tr + e.toString());
+    log.error(e);
+    log.uploadError(
+      e,
+      extraInfos: {'viewerPath': viewerPath, 'dirPath': dirPath},
+    );
+  }
 }

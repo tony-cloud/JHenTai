@@ -46,7 +46,7 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
     }
     if (map['extraGalleryScanPath'] != null) {
       extraGalleryScanPath.addAll(map['extraGalleryScanPath'].cast<String>());
-      extraGalleryScanPath.value = extraGalleryScanPath.toSet().toList();
+      extraGalleryScanPath.assignAll(extraGalleryScanPath.toSet().toList());
     }
     downloadOriginalImageByDefault.value =
         map['downloadOriginalImageByDefault'] ?? downloadOriginalImageByDefault.value;
@@ -75,7 +75,7 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   String toConfigString() {
     return jsonEncode({
       'downloadPath': downloadPath.value,
-      'extraGalleryScanPath': extraGalleryScanPath.value,
+      'extraGalleryScanPath': extraGalleryScanPath.toList(),
       'singleImageSavePath': singleImageSavePath.value,
       'downloadOriginalImageByDefault': downloadOriginalImageByDefault.value,
       'defaultGalleryGroup': defaultGalleryGroup.value,
