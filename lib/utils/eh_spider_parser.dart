@@ -887,7 +887,9 @@ class EHSpiderParser {
       originalWidth = resolution['width'];
       originalHeight = resolution['height'];
     }
-
+    log.download('Parse image page from json: url=$url, originalUrl=$originalUrl, '
+        'width=$width, height=$height, originalWidth=$originalWidth, originalHeight=$originalHeight, '
+        'reloadKey=$reloadKey, imageHash=$imageHash');
     return GalleryImage(
       url: preferOriginal && !isEmptyOrNull(originalUrl) ? originalUrl! : url!,
       height: height,
