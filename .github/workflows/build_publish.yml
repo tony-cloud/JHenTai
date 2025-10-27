@@ -89,7 +89,7 @@ jobs:
             echo "storePassword=${ANDROID_KEY_STORE_PASSWORD}"
             echo "keyPassword=${ANDROID_KEY_PASSWORD}"
             echo "keyAlias=${ANDROID_ALIAS}"
-            echo "storeFile=app/upload-keystore.jks"
+            echo "storeFile=upload-keystore.jks"
           } > android/key.properties
       # Add JHenTai api secret
       - name: Setup JHenTai API Secret
