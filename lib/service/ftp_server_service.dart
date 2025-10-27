@@ -104,7 +104,9 @@ class FtpServerService extends GetxService
       fileOperations: PhysicalFileOperations(rootPath),
       serverType:
           ftpServerSetting.allowReadAndWrite.isTrue ? ServerType.readAndWrite : ServerType.readOnly,
-      logFunction: (message) => log.info('[FTP] $message'),
+      logFunction: (message) {
+        _logFtpMessage(message);
+      },
     );
 
     try {
@@ -180,5 +182,40 @@ class FtpServerService extends GetxService
     _keepScreenWorker?.dispose();
     _server?.stop().ignore();
     super.onClose();
+  }
+
+  void _logFtpMessage(String message) {
+    final String normalized = message.trimLeft();
+
+    if (normalized.contains('error') || normalized.contains('fail')) {
+      log.error('FTP Server: $message');
+      return;
+    }
+    if (normalized.contains('warn')) {
+      log.warning('FTP Server: $message');
+      return;
+    }
+    if (normalized.contains('Listing directory')) {
+      // Strip dir listing messages
+      String stripped = normalized.replaceAll(RegExp(r'dir contents: (.*)'), '');
+      log.info('FTP Server: $stripped');
+      return;
+    }
+    if (normalized.contains('Response: 250 Directory changed to')) {
+      return;
+    }
+    if (normalized.contains('Response: 226 Transfer complete')) {
+      return;
+    }
+    if (normalized.contains('Response: 200 Type set to')) {
+      return;
+    }
+    if (normalized.contains('Command: PWD, Argument:')) {
+      return;
+    }
+    if (normalized.contains('Command: CWD, Argument:')) {
+      return;
+    }
+    log.debug('FTP Server: $message');
   }
 }
