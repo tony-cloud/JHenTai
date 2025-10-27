@@ -57,3 +57,11 @@ double alpha = color.a;
 final faded = color.withValues(alpha: 0.5);
 ```
 
+## 2025-10-27
+- Replaced `Color.withOpacity(...)` calls with `Color.withValues(alpha: ...)` to follow the updated `Color` channel API.
+- Use `Color.toARGB32()` instead of the deprecated `Color.value` when serializing theme and tag colors.
+- Migrated `Share.share`/`Share.shareXFiles` usage to `SharePlus.instance.share` with `ShareParams` (Share Plus 12.x API).
+- Updated `ScreenBrightness` calls to `setApplicationScreenBrightness`/`resetApplicationScreenBrightness`.
+- Removed the deprecated `allowCompression` flag from `FilePicker.platform.pickFiles`; rely on `compressionQuality` (set to 100 for lossless imports).
+- Replaced `FontAwesomeIcons.redoAlt` with the new `FontAwesomeIcons.rotateRight`.
+- Wrapped `RadioListTile` sets in `RadioGroup` to eliminate deprecated `groupValue`/`onChanged` parameters.
