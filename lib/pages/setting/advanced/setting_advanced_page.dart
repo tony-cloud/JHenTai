@@ -15,6 +15,7 @@ import 'package:jhentai/service/cloud_service.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/read_progress_service.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
@@ -69,6 +70,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildClearLogs(context),
             _buildClearImageCache(context),
             _buildClearNetworkCache(),
+            _buildClearReadProgress(),
             _buildFtpServer(context),
             if (GetPlatform.isDesktop) _buildSuperResolution(),
             _buildCheckUpdate(),
@@ -164,6 +166,22 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       onLongPress: () async {
         await ehRequest.removeAllCache();
         toast('clearSuccess'.tr, isCenter: false);
+      },
+    );
+  }
+
+  Widget _buildClearReadProgress() {
+    return ListTile(
+      title: Text('clearReadProgress'.tr),
+      subtitle: Text('longPress2Clear'.tr),
+      onLongPress: () async {
+        try {
+          await readProgressService.clearAllProgress();
+          toast('clearSuccess'.tr, isCenter: false);
+        } on Exception catch (e, s) {
+          log.error('Clear read progress failed', e, s);
+          toast('internalError'.tr);
+        }
       },
     );
   }

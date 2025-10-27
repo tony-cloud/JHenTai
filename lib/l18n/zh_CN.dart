@@ -423,6 +423,7 @@ class zh_CN {
       'refreshArchiveTagsAutomatically': '自动刷新归档标签',
       'checkClipboard': '检测剪切板中的画廊链接',
       'clearPageCache': '清除页面缓存',
+      'clearReadProgress': '清除阅读进度',
       'clearSuccess': '清除成功',
       'superResolution': '图片超分辨率',
       'stopSuperResolution': '停止图片超分辨率',

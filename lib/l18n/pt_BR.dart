@@ -457,6 +457,7 @@ class pt_BR {
       'refreshArchiveTagsAutomatically': 'Atualizar tags de arquivos automaticamente',
       'checkClipboard': 'Verificar se há URL de Galeria na área de transferência',
       'clearPageCache': 'Limpar cache de página',
+      'clearReadProgress': 'Limpar progresso de leitura',
       'clearSuccess': 'Limpado com Sucesso',
       'superResolution': 'Image Super Resolution',
       'stopSuperResolution': 'Stop Super Resolution',

@@ -451,6 +451,7 @@ class ko_KR {
       'refreshArchiveTagsAutomatically': '아카이브 태그 자동 새로고침',
       'checkClipboard': '클립보드에서 갤러리 주소 검사',
       'clearPageCache': '페이지 캐시 삭제',
+      'clearReadProgress': '읽기 진행 초기화',
       'clearSuccess': '삭제 완료',
       'superResolution': '초고해상도 이미지 생성',
       'stopSuperResolution': '초고해상도 이미지 생성 취소',

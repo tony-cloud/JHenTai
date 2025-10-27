@@ -442,6 +442,7 @@ class zh_TW {
       'refreshArchiveTagsAutomatically': '自動刷新存檔標籤',
       'checkClipboard': '讀取剪貼簿中的畫廊連結',
       'clearPageCache': '清除頁面快取',
+      'clearReadProgress': '清除閱讀進度',
       'clearSuccess': '清除成功',
       'superResolution': '圖片超解析度',
       'stopSuperResolution': '停止圖片超解析度',

@@ -106,4 +106,10 @@ class LocalConfigService with JHLifeCircleBeanErrorCatch implements JHLifeCircle
         .delete()
         .then((value) => value > 0);
   }
+
+  Future<int> deleteAll({required ConfigEnum configKey}) {
+    return appDb.managers.localConfig
+        .filter((config) => config.configKey.equals(configKey.key))
+        .delete();
+  }
 }

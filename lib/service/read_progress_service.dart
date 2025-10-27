@@ -51,6 +51,12 @@ class ReadProgressService with JHLifeCircleBeanErrorCatch implements JHLifeCircl
     _progressCache.clear();
   }
 
+  Future<void> clearAllProgress() async {
+    await localConfigService.deleteAll(configKey: ConfigEnum.readIndexRecord);
+    clearAllCache();
+    ReadProgressController.instance.update();
+  }
+
   /// Preload read progress for multiple galleries
   Future<void> preloadProgress(List<int> gids) async {
     final missingGids = gids.where((gid) => !_progressCache.containsKey(gid)).toList();

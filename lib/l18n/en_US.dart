@@ -435,6 +435,7 @@ class en_US {
       'refreshArchiveTagsAutomatically': 'Refresh archive tags automatically',
       'checkClipboard': 'Check Gallery URL in Clipboard',
       'clearPageCache': 'Clear Page Cache',
+      'clearReadProgress': 'Clear Read Progress',
       'clearSuccess': 'Clear Success',
       'superResolution': 'Image Super Resolution',
       'stopSuperResolution': 'Stop Super Resolution',

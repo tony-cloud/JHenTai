@@ -457,6 +457,7 @@ class ru_RU {
       'refreshArchiveTagsAutomatically': 'Автоматически обновлять теги архивов',
       'checkClipboard': 'Проверять URL галереи в буфере обмена',
       'clearPageCache': 'Очистить кэш страниц',
+      'clearReadProgress': 'Очистить прогресс чтения',
       'clearSuccess': 'Успешно очищено',
       'superResolution': 'Супер-разрешение изображений',
       'stopSuperResolution': 'Остановить супер-разрешение',
