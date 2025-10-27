@@ -481,7 +481,7 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                 children: [
                   Expanded(flex: 9, child: _buildLanguage(iconSize, space, context)),
                   Expanded(flex: 7, child: _buildFavoriteCount(iconSize, space, context)),
-                  Expanded(flex: 10, child: _buildSize(iconSize, space, context)),
+                  Expanded(flex: 12, child: _buildSize(iconSize, space, context)),
                 ],
               ),
               SizedBox(height: space),
@@ -489,7 +489,7 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                 children: [
                   Expanded(flex: 9, child: _buildPageCount(iconSize, space, context)),
                   Expanded(flex: 7, child: _buildRatingCount(iconSize, space, context)),
-                  Expanded(flex: 10, child: _buildPublishTime(iconSize, space, context)),
+                  Expanded(flex: 12, child: _buildPublishTime(iconSize, space, context)),
                 ],
               ),
             ],
