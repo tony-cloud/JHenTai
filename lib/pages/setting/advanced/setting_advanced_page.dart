@@ -16,6 +16,7 @@ import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/read_progress_service.dart';
+import 'package:jhentai/service/schedule_service.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
@@ -47,6 +48,8 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
 
   LoadingState _exportDataLoadingState = LoadingState.idle;
   LoadingState _importDataLoadingState = LoadingState.idle;
+  LoadingState _refreshGalleryTagsState = LoadingState.idle;
+  LoadingState _refreshArchiveTagsState = LoadingState.idle;
 
   @override
   void initState() {
@@ -240,18 +243,42 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
   }
 
   Widget _buildRefreshGalleryTags() {
-    return SwitchListTile(
-      title: Text('refreshGalleryTagsAutomatically'.tr),
-      value: advancedSetting.enableRefreshGalleryTags.value,
-      onChanged: advancedSetting.saveEnableRefreshGalleryTags,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onLongPress: _refreshGalleryTagsManually,
+      child: SwitchListTile(
+        title: Text('refreshGalleryTagsAutomatically'.tr),
+        subtitle: Text('longPress2Refresh'.tr),
+        value: advancedSetting.enableRefreshGalleryTags.value,
+        onChanged: advancedSetting.saveEnableRefreshGalleryTags,
+        secondary: Builder(
+          builder: (tileContext) => _buildManualRefreshIndicator(
+            tileContext,
+            _refreshGalleryTagsState,
+            _refreshGalleryTagsManually,
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildRefreshArchiveTags() {
-    return SwitchListTile(
-      title: Text('refreshArchiveTagsAutomatically'.tr),
-      value: advancedSetting.enableRefreshArchiveTags.value,
-      onChanged: advancedSetting.saveEnableRefreshArchiveTags,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onLongPress: _refreshArchiveTagsManually,
+      child: SwitchListTile(
+        title: Text('refreshArchiveTagsAutomatically'.tr),
+        subtitle: Text('longPress2Refresh'.tr),
+        value: advancedSetting.enableRefreshArchiveTags.value,
+        onChanged: advancedSetting.saveEnableRefreshArchiveTags,
+        secondary: Builder(
+          builder: (tileContext) => _buildManualRefreshIndicator(
+            tileContext,
+            _refreshArchiveTagsState,
+            _refreshArchiveTagsManually,
+          ),
+        ),
+      ),
     );
   }
 
@@ -548,5 +575,94 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       setStateSafely(() => _exportDataLoadingState = LoadingState.error);
       file.delete().ignore();
     }
+  }
+
+  Widget _buildManualRefreshIndicator(
+    BuildContext tileContext,
+    LoadingState state,
+    Future<void> Function() runTask,
+  ) {
+    final Color accent = UIConfig.resumePauseButtonColor(tileContext);
+    return SizedBox(
+      height: 24,
+      width: 24,
+      child: LoadingStateIndicator(
+        height: 24,
+        width: 24,
+        loadingState: state,
+        useCupertinoIndicator: true,
+        indicatorRadius: 10,
+        idleWidgetBuilder: () => Icon(Icons.refresh, color: accent, size: 20),
+        successWidgetBuilder: () => Icon(Icons.check, color: accent, size: 20),
+        errorWidgetBuilder: () =>
+            Icon(Icons.error_outline, color: Theme.of(tileContext).colorScheme.error, size: 20),
+        errorTapCallback: () {
+          runTask();
+        },
+      ),
+    );
+  }
+
+  Future<void> _refreshGalleryTagsManually() async {
+    if (_refreshGalleryTagsState == LoadingState.loading) {
+      return;
+    }
+
+    setStateSafely(() => _refreshGalleryTagsState = LoadingState.loading);
+
+    try {
+      await scheduleService.refreshGalleryTags(ignoreSetting: true);
+      setStateSafely(() => _refreshGalleryTagsState = LoadingState.success);
+      toast('success'.tr, isCenter: false);
+    } catch (e, s) {
+      log.error('Manual refresh gallery tags failed', e, s);
+      toast('internalError'.tr);
+      setStateSafely(() => _refreshGalleryTagsState = LoadingState.error);
+    }
+
+    _resetManualRefreshStateAfterDelay(isGallery: true);
+  }
+
+  Future<void> _refreshArchiveTagsManually() async {
+    if (_refreshArchiveTagsState == LoadingState.loading) {
+      return;
+    }
+
+    setStateSafely(() => _refreshArchiveTagsState = LoadingState.loading);
+
+    try {
+      await scheduleService.refreshArchiveTags(ignoreSetting: true);
+      setStateSafely(() => _refreshArchiveTagsState = LoadingState.success);
+      toast('success'.tr, isCenter: false);
+    } catch (e, s) {
+      log.error('Manual refresh archive tags failed', e, s);
+      toast('internalError'.tr);
+      setStateSafely(() => _refreshArchiveTagsState = LoadingState.error);
+    }
+
+    _resetManualRefreshStateAfterDelay(isGallery: false);
+  }
+
+  void _resetManualRefreshStateAfterDelay({required bool isGallery}) {
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) {
+        return;
+      }
+
+      final bool shouldSkip = isGallery
+          ? _refreshGalleryTagsState == LoadingState.loading
+          : _refreshArchiveTagsState == LoadingState.loading;
+      if (shouldSkip) {
+        return;
+      }
+
+      setStateSafely(() {
+        if (isGallery) {
+          _refreshGalleryTagsState = LoadingState.idle;
+        } else {
+          _refreshArchiveTagsState = LoadingState.idle;
+        }
+      });
+    });
   }
 }

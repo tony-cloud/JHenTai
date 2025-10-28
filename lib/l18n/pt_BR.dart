@@ -67,6 +67,7 @@ class pt_BR {
       'localizedReason': 'Por favor, autentique-se para continuar',
       'tap2Auth': 'Toque para autentique-se',
       'authHint': 'Auth to continue',
+      'longPress2Refresh': 'Pressione e segure para atualizar',
       'passwordErrorHint': 'Password error, please try again',
 
       /// start page

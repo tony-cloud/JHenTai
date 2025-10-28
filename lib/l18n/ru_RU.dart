@@ -454,6 +454,7 @@ class ru_RU {
       'clearLogs': 'Очистить логи',
       'clearImagesCache': 'Очистить кэш изображений',
       'longPress2Clear': 'Долгий тап для очистки',
+      'longPress2Refresh': 'Долгий тап для обновления',
       'checkUpdateAfterLaunchingApp': 'Проверять обновления при запуске',
       'refreshGalleryTagsAutomatically': 'Автоматически обновлять теги галерей',
       'refreshArchiveTagsAutomatically': 'Автоматически обновлять теги архивов',

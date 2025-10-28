@@ -420,6 +420,7 @@ class zh_CN {
       'clearLogs': '清除日志',
       'clearImagesCache': '清除图片缓存',
       'longPress2Clear': '长按清除',
+      'longPress2Refresh': '长按刷新',
       'checkUpdateAfterLaunchingApp': '启动应用时检查更新',
       'refreshGalleryTagsAutomatically': '自动刷新画廊标签',
       'refreshArchiveTagsAutomatically': '自动刷新归档标签',

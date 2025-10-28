@@ -439,6 +439,7 @@ class zh_TW {
       'clearLogs': '清除日誌',
       'clearImagesCache': '清除圖片快取',
       'longPress2Clear': '長按清除',
+      'longPress2Refresh': '長按刷新',
       'checkUpdateAfterLaunchingApp': '啟動程式時檢查更新',
       'refreshGalleryTagsAutomatically': '自動刷新畫廊標籤',
       'refreshArchiveTagsAutomatically': '自動刷新存檔標籤',

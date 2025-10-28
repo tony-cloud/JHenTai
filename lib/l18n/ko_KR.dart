@@ -448,6 +448,7 @@ class ko_KR {
       'clearLogs': '로그 삭제',
       'clearImagesCache': '이미지 캐시 삭제',
       'longPress2Clear': '길게 눌러 삭제하기',
+      'longPress2Refresh': '길게 눌러 새로고침',
       'checkUpdateAfterLaunchingApp': '앱 실행 후 업데이트 확인',
       'refreshGalleryTagsAutomatically': '갤러리 태그 자동 새로고침',
       'refreshArchiveTagsAutomatically': '아카이브 태그 자동 새로고침',

@@ -100,8 +100,8 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
     });
   }
 
-  Future<void> refreshGalleryTags() async {
-    if (advancedSetting.enableRefreshGalleryTags.isFalse) {
+  Future<void> refreshGalleryTags({bool ignoreSetting = false}) async {
+    if (!ignoreSetting && advancedSetting.enableRefreshGalleryTags.isFalse) {
       return;
     }
     int pageNo = 1;
@@ -142,8 +142,8 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
     }
   }
 
-  Future<void> refreshArchiveTags() async {
-    if (advancedSetting.enableRefreshArchiveTags.isFalse) {
+  Future<void> refreshArchiveTags({bool ignoreSetting = false}) async {
+    if (!ignoreSetting && advancedSetting.enableRefreshArchiveTags.isFalse) {
       return;
     }
     int pageNo = 1;
