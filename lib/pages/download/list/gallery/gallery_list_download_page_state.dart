@@ -14,4 +14,6 @@ class GalleryListDownloadPageState
 
   final GroupedListController<String, GalleryDownloadedData> groupedListController =
       GroupedListController<String, GalleryDownloadedData>();
+
+  List<GalleryDownloadedData> visibleGallerys = [];
 }

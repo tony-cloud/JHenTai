@@ -310,8 +310,9 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
         operator: operator,
         score: tagCountMap[tagData]!.toDouble(),
         namespaceMatch: sNamespace != null ? (start: 0, end: tagData.namespace.length) : null,
-        translatedNamespaceMatch:
-            sNamespace != null ? (start: 0, end: tagData.translatedNamespace!.length) : null,
+        translatedNamespaceMatch: sNamespace != null && tagData.translatedNamespace != null
+            ? (start: 0, end: tagData.translatedNamespace!.length)
+            : null,
         keyMatch: keyIndex != -1 ? (start: keyIndex, end: keyIndex + sKey.length) : null,
         tagNameMatch:
             tagNameIndex != -1 ? (start: tagNameIndex, end: tagNameIndex + sKey.length) : null
@@ -342,19 +343,19 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
     String? operator = firstChar == '-' || firstChar == '~' ? firstChar : null;
 
     return tagDatas.map((tagData) {
+      final EHNamespace? namespaceEnum = EHNamespace.findNameSpaceFromDescOrAbbr(tagData.namespace);
+      final double namespaceScore = namespaceScoreMap[namespaceEnum ?? EHNamespace.other] ?? 0;
+
       double score = 0;
 
       int keyIndex = tagData.key.indexOf(sKey.toLowerCase());
       if (keyIndex != -1) {
-        score += namespaceScoreMap[EHNamespace.findNameSpaceFromDescOrAbbr(tagData.namespace)]! *
-            (sKey.length + 1) /
-            tagData.key.length *
-            (keyIndex == 0 ? 2 : 1);
+        score += namespaceScore * (sKey.length + 1) / tagData.key.length * (keyIndex == 0 ? 2 : 1);
       }
 
       int tagNameIndex = tagData.tagName?.indexOf(sKey) ?? -1;
       if (tagNameIndex != -1) {
-        score += namespaceScoreMap[EHNamespace.findNameSpaceFromDescOrAbbr(tagData.namespace)]! *
+        score += namespaceScore *
             (sKey.length + 1) /
             tagData.tagName!.length *
             (tagNameIndex == 0 ? 2 : 1);
@@ -362,10 +363,7 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
 
       bool introContains = tagData.intro?.contains(sKey.toLowerCase()) ?? false;
       if (introContains) {
-        score += namespaceScoreMap[EHNamespace.findNameSpaceFromDescOrAbbr(tagData.namespace)]! *
-            (sKey.length + 1) /
-            tagData.intro!.length *
-            0.5;
+        score += namespaceScore * (sKey.length + 1) / tagData.intro!.length * 0.5;
       }
 
       return (
@@ -376,8 +374,9 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
         operator: operator,
         score: score,
         namespaceMatch: sNamespace != null ? (start: 0, end: tagData.namespace.length) : null,
-        translatedNamespaceMatch:
-            sNamespace != null ? (start: 0, end: tagData.translatedNamespace!.length) : null,
+        translatedNamespaceMatch: sNamespace != null && tagData.translatedNamespace != null
+            ? (start: 0, end: tagData.translatedNamespace!.length)
+            : null,
         keyMatch: keyIndex != -1 ? (start: keyIndex, end: keyIndex + sKey.length) : null,
         tagNameMatch:
             tagNameIndex != -1 ? (start: tagNameIndex, end: tagNameIndex + sKey.length) : null,

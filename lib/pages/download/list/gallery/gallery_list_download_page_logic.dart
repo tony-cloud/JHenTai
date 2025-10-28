@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
+import 'package:jhentai/pages/download/filter/download_filter.dart';
 import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_logic_mixin.dart';
+import 'package:jhentai/service/download_filter_service.dart';
 import 'package:jhentai/setting/performance_setting.dart';
 
 import '../../../../database/database.dart';
@@ -15,6 +17,7 @@ import '../../../../service/local_config_service.dart';
 import '../../../../widget/eh_alert_dialog.dart';
 import '../../mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
 import '../../mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
+import '../../widget/download_filter_dialog.dart';
 import 'gallery_list_download_page_state.dart';
 
 class GalleryListDownloadPageLogic extends GetxController
@@ -109,13 +112,46 @@ class GalleryListDownloadPageLogic extends GetxController
   Future<void> selectAllItem() async {
     await state.displayGroupsCompleter.future;
 
-    List<GalleryDownloadedData> gallerys = [];
-    for (String group in state.displayGroups) {
-      gallerys.addAll(downloadService.gallerysWithGroup(group));
+    for (GalleryDownloadedData gallery in state.visibleGallerys) {
+      String? group = downloadService.galleryDownloadInfos[gallery.gid]?.group;
+      if (group != null && state.displayGroups.contains(group)) {
+        multiSelectDownloadPageState.selectedGids.add(gallery.gid);
+      }
     }
-
-    multiSelectDownloadPageState.selectedGids.addAll(gallerys.map((gallery) => gallery.gid));
     updateSafely(
         multiSelectDownloadPageState.selectedGids.map((gid) => '$itemCardId::$gid').toList());
+  }
+
+  List<GalleryDownloadedData> computeVisibleGallerys() {
+    return downloadFilterService.filterGalleries(downloadService.gallerys);
+  }
+
+  List<String> computeVisibleGroups(List<GalleryDownloadedData> visibleGallerys) {
+    final Set<String> groups = downloadFilterService.visibleGroups(visibleGallerys);
+    return downloadService.allGroups.where(groups.contains).toList();
+  }
+
+  int visibleGalleryCount(String groupName) {
+    int count = 0;
+    for (GalleryDownloadedData gallery in state.visibleGallerys) {
+      if (downloadService.galleryDownloadInfos[gallery.gid]?.group == groupName) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  Future<void> handleTapFilterButton(BuildContext context) async {
+    DownloadFilter? result = await showDownloadFilterDialog(
+      context: context,
+      initialFilter: downloadFilterService.currentFilter,
+      availableGroups: downloadService.allGroups,
+    );
+    if (result == null) {
+      return;
+    }
+
+    await downloadFilterService.applyFilter(result);
+    updateSafely([bodyId]);
   }
 }

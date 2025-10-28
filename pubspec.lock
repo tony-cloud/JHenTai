@@ -1642,6 +1642,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.40"
+  sqlite3_simple:
+    dependency: "direct main"
+    description:
+      name: sqlite3_simple
+      sha256: d73595acb051fa567cfc25f8b2a816602644df5e377b1b0a93ba366c8f780026
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.6"
   sqlparser:
     dependency: transitive
     description:

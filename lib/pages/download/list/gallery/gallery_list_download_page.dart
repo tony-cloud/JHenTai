@@ -5,9 +5,15 @@ import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_mixin.dart';
+import 'package:jhentai/service/download_filter_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart' as srs;
+import 'package:jhentai/setting/performance_setting.dart';
 import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/utils/date_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/eh_gallery_category_tag.dart';
+import 'package:jhentai/widget/eh_image.dart';
 import 'package:jhentai/widget/grouped_list.dart';
 import '../../../../database/database.dart';
 import '../../../../mixin/scroll_to_top_page_mixin.dart';
@@ -15,11 +21,6 @@ import '../../../../model/gallery_image.dart';
 import '../../../../routes/routes.dart';
 import '../../../../service/gallery_download_service.dart';
 import '../../../../service/super_resolution_service.dart';
-import '../../../../setting/performance_setting.dart';
-import '../../../../utils/date_util.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../widget/eh_gallery_category_tag.dart';
-import '../../../../widget/eh_image.dart';
 import '../../../details/details_page_logic.dart';
 import '../../../layout/mobile_v2/notification/tap_menu_button_notification.dart';
 import '../../download_base_page.dart';
@@ -81,6 +82,17 @@ class GalleryListDownloadPage extends StatelessWidget
       titleSpacing: 0,
       title: const DownloadPageSegmentControl(galleryType: DownloadPageGalleryType.download),
       actions: [
+        GetBuilder<DownloadFilterService>(
+          init: downloadFilterService,
+          builder: (_) => IconButton(
+            icon: const Icon(Icons.filter_alt_outlined, size: 28),
+            color: downloadFilterService.hasActiveFilter
+                ? Theme.of(context).colorScheme.primary
+                : null,
+            tooltip: 'filter'.tr,
+            onPressed: () => logic.handleTapFilterButton(context),
+          ),
+        ),
         PopupMenuButton(
           itemBuilder: (context) {
             return [
@@ -91,7 +103,7 @@ class GalleryListDownloadPage extends StatelessWidget
                   children: [
                     const Icon(Icons.grid_view),
                     const SizedBox(width: 12),
-                    Text('switch2GridMode'.tr)
+                    Text('switch2GridMode'.tr),
                   ],
                 ),
               ),
@@ -102,7 +114,7 @@ class GalleryListDownloadPage extends StatelessWidget
                   children: [
                     const Icon(Icons.done_all),
                     const SizedBox(width: 12),
-                    Text('multiSelect'.tr)
+                    Text('multiSelect'.tr),
                   ],
                 ),
               ),
@@ -113,7 +125,7 @@ class GalleryListDownloadPage extends StatelessWidget
                   children: [
                     const Icon(Icons.play_arrow),
                     const SizedBox(width: 12),
-                    Text('resumeAllTasks'.tr)
+                    Text('resumeAllTasks'.tr),
                   ],
                 ),
               ),
@@ -124,7 +136,7 @@ class GalleryListDownloadPage extends StatelessWidget
                   children: [
                     const Icon(Icons.pause),
                     const SizedBox(width: 12),
-                    Text('pauseAllTasks'.tr)
+                    Text('pauseAllTasks'.tr),
                   ],
                 ),
               ),
@@ -135,7 +147,7 @@ class GalleryListDownloadPage extends StatelessWidget
                   children: [
                     const Icon(Icons.search),
                     const SizedBox(width: 12),
-                    Text('search'.tr)
+                    Text('search'.tr),
                   ],
                 ),
               ),
@@ -167,34 +179,64 @@ class GalleryListDownloadPage extends StatelessWidget
   Widget buildBody(BuildContext context) {
     return GetBuilder<GalleryDownloadService>(
       id: logic.downloadService.galleryCountChangedId,
-      builder: (_) => GetBuilder<GalleryListDownloadPageLogic>(
-        id: logic.bodyId,
-        builder: (_) => NotificationListener<UserScrollNotification>(
-          onNotification: logic.onUserScroll,
-          child: FutureBuilder(
-            future: state.displayGroupsCompleter.future,
-            builder: (_, __) => !state.displayGroupsCompleter.isCompleted
-                ? const Center()
-                : GroupedList<String, GalleryDownloadedData>(
-                    maxGalleryNum4Animation: performanceSetting.maxGalleryNum4Animation.value,
-                    scrollController: state.scrollController,
-                    controller: state.groupedListController,
-                    groups: Map.fromEntries(logic.downloadService.allGroups
-                        .map((e) => MapEntry(e, state.displayGroups.contains(e)))),
-                    elements: logic.downloadService.gallerys,
-                    elementGroup: (GalleryDownloadedData gallery) =>
-                        logic.downloadService.galleryDownloadInfos[gallery.gid]!.group,
-                    groupBuilder: (context, groupName, isOpen) =>
-                        _groupBuilder(context, groupName, isOpen).marginAll(5),
-                    elementBuilder: (BuildContext context, String group,
-                            GalleryDownloadedData gallery, isOpen) =>
-                        _itemBuilder(context, gallery),
-                    groupUniqueKey: (String group) => group,
-                    elementUniqueKey: (GalleryDownloadedData gallery) => gallery.gid.toString(),
-                  ),
+      builder: (_) {
+        downloadFilterService.refreshIndexIfNeeded();
+        return GetBuilder<GalleryListDownloadPageLogic>(
+          id: logic.bodyId,
+          builder: (_) => NotificationListener<UserScrollNotification>(
+            onNotification: logic.onUserScroll,
+            child: FutureBuilder(
+              future: state.displayGroupsCompleter.future,
+              builder: (_, __) {
+                if (!state.displayGroupsCompleter.isCompleted) {
+                  return const Center();
+                }
+                return GetBuilder<DownloadFilterService>(
+                  init: downloadFilterService,
+                  builder: (_) {
+                    final List<GalleryDownloadedData> visibleGallerys =
+                        logic.computeVisibleGallerys();
+                    state.visibleGallerys = List<GalleryDownloadedData>.from(visibleGallerys);
+                    final List<String> visibleGroups =
+                        logic.computeVisibleGroups(state.visibleGallerys);
+                    final Map<String, bool> groups = {
+                      for (final String group in visibleGroups)
+                        group: state.displayGroups.contains(group),
+                    };
+
+                    if (state.visibleGallerys.isEmpty) {
+                      return Center(
+                        child: Text(
+                          downloadFilterService.hasActiveFilter
+                              ? 'downloadFilterNoMatch'.tr
+                              : 'noData'.tr,
+                        ),
+                      );
+                    }
+
+                    return GroupedList<String, GalleryDownloadedData>(
+                      maxGalleryNum4Animation: performanceSetting.maxGalleryNum4Animation.value,
+                      scrollController: state.scrollController,
+                      controller: state.groupedListController,
+                      groups: groups,
+                      elements: state.visibleGallerys,
+                      elementGroup: (GalleryDownloadedData gallery) =>
+                          logic.downloadService.galleryDownloadInfos[gallery.gid]!.group,
+                      groupBuilder: (context, groupName, isOpen) =>
+                          _groupBuilder(context, groupName, isOpen).marginAll(5),
+                      elementBuilder: (BuildContext context, String group,
+                              GalleryDownloadedData gallery, bool isOpen) =>
+                          _itemBuilder(context, gallery),
+                      groupUniqueKey: (String group) => group,
+                      elementUniqueKey: (GalleryDownloadedData gallery) => gallery.gid.toString(),
+                    );
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -216,7 +258,7 @@ class GalleryListDownloadPage extends StatelessWidget
                 width: UIConfig.downloadPageGroupHeaderWidth,
                 child: Center(child: Icon(Icons.folder_open))),
             Text(
-              '$groupName${'(${logic.downloadService.gallerysWithGroup(groupName).length})'}',
+              '$groupName${'(${logic.visibleGalleryCount(groupName)})'}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -260,7 +302,7 @@ class GalleryListDownloadPage extends StatelessWidget
           foregroundColor: UIConfig.alertColor(context),
           backgroundColor: UIConfig.downloadPageActionBackGroundColor(context),
           onPressed: (BuildContext context) => logic.handleRemoveItem(gallery, true, context),
-        )
+        ),
       ],
     );
   }
@@ -298,7 +340,7 @@ class GalleryListDownloadPage extends StatelessWidget
         builder: (_) {
           GalleryImage? image = logic.downloadService.galleryDownloadInfos[gallery.gid]?.images[0];
 
-          /// cover is the first image, if we haven't downloaded first image, then return a [UIConfig.loadingAnimation]
+          // Cover is the first image; show a loader until it has been downloaded.
           if (image?.downloadStatus != DownloadStatus.downloaded) {
             return SizedBox(
               width: UIConfig.downloadPageCoverWidth,
