@@ -114,6 +114,7 @@ class DetailsPageLogic extends GetxController
   static DetailsPageLogic? get current => _stack.isEmpty ? null : _stack.last;
 
   final DetailsPageState state;
+  bool _isUpdatingFromHistory = false;
 
   @override
   Scroll2TopStateMixin get scroll2TopState => state;
@@ -853,6 +854,126 @@ class DetailsPageLogic extends GetxController
         childrenGallerys: state.galleryDetails?.childrenGallerys,
       ),
     );
+  }
+
+  Future<void> handleTapUpdateGalleryFromHistory() async {
+    if (_isUpdatingFromHistory) {
+      return;
+    }
+
+    if (state.galleryDetails == null) {
+      return;
+    }
+
+    bool hasHistory = state.galleryDetails!.parentGalleryUrl != null ||
+        (state.galleryDetails!.childrenGallerys?.isNotEmpty ?? false);
+    if (!hasHistory) {
+      return;
+    }
+
+    if (galleryDownloadService.gallerys.isEmpty) {
+      toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
+      return;
+    }
+
+    _isUpdatingFromHistory = true;
+
+    try {
+      await galleryDownloadService.completed;
+
+      toast('updateGallerySearchingHistory'.tr, isCenter: false);
+
+      Set<int> visitedGids = <int>{state.galleryDetails!.galleryUrl.gid};
+
+      GalleryDetail? latestDetail =
+          await _resolveLatestGalleryDetail(state.galleryDetails!, visitedGids);
+      if (latestDetail == null) {
+        return;
+      }
+
+      GalleryDownloadedData? downloadedGallery = galleryDownloadService.gallerys
+          .firstWhereOrNull((g) => g.gid == latestDetail.galleryUrl.gid);
+      GalleryDetail currentDetail = latestDetail;
+
+      while (downloadedGallery == null) {
+        GalleryUrl? parentUrl = currentDetail.parentGalleryUrl;
+        if (parentUrl == null || visitedGids.contains(parentUrl.gid)) {
+          break;
+        }
+
+        visitedGids.add(parentUrl.gid);
+
+        GalleryDetail? parentDetail = await _fetchGalleryDetailForHistory(parentUrl);
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (parentDetail == null) {
+          return;
+        }
+
+        currentDetail = parentDetail;
+        downloadedGallery = galleryDownloadService.gallerys
+            .firstWhereOrNull((g) => g.gid == currentDetail.galleryUrl.gid);
+      }
+
+      if (downloadedGallery == null) {
+        toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
+        return;
+      }
+
+      if (downloadedGallery.gid == latestDetail.galleryUrl.gid) {
+        toast('updateGalleryAlreadyLatest'.tr, isCenter: false);
+        return;
+      }
+
+      galleryDownloadService.updateGallery(downloadedGallery, latestDetail.galleryUrl);
+      toast('updateGalleryStarted'.trArgs([downloadedGallery.gid.toString()]), isCenter: false);
+    } finally {
+      _isUpdatingFromHistory = false;
+    }
+  }
+
+  Future<GalleryDetail?> _resolveLatestGalleryDetail(
+      GalleryDetail baseDetail, Set<int> visitedGids) async {
+    GalleryDetail currentDetail = baseDetail;
+
+    while (currentDetail.childrenGallerys?.isNotEmpty ?? false) {
+      GalleryUrl nextUrl = currentDetail.childrenGallerys!.last.galleryUrl;
+      if (visitedGids.contains(nextUrl.gid)) {
+        break;
+      }
+      visitedGids.add(nextUrl.gid);
+
+      GalleryDetail? nextDetail = await _fetchGalleryDetailForHistory(nextUrl);
+      if (nextDetail == null) {
+        return null;
+      }
+
+      currentDetail = nextDetail;
+    }
+
+    return currentDetail;
+  }
+
+  Future<GalleryDetail?> _fetchGalleryDetailForHistory(GalleryUrl galleryUrl) async {
+    try {
+      ({GalleryDetail galleryDetails, String apikey}) detailPageInfo =
+          await ehRequest.requestDetailPage<({GalleryDetail galleryDetails, String apikey})>(
+        galleryUrl: galleryUrl.url,
+        parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey,
+        useCacheIfAvailable: false,
+      );
+      return detailPageInfo.galleryDetails;
+    } on DioException catch (e) {
+      log.error('updateGalleryError'.tr, e.errorMsg);
+      snack('updateGalleryError'.tr, e.errorMsg ?? '', isShort: true);
+    } on EHSiteException catch (e) {
+      log.error('updateGalleryError'.tr, e.message);
+      snack('updateGalleryError'.tr, e.message, isShort: true);
+    } catch (e, s) {
+      log.error('updateGalleryError'.tr, e, s);
+      snack('updateGalleryError'.tr, e.toString(), isShort: true);
+    }
+
+    return null;
   }
 
   void onCommentVoted(GalleryComment comment, bool isVotingUp, String score) {

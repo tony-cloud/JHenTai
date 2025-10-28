@@ -109,6 +109,8 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
 
               return PopupMenuButton(
                 itemBuilder: (context) {
+                  bool hasHistory = state.galleryDetails?.parentGalleryUrl != null ||
+                      (state.galleryDetails?.childrenGallerys?.isNotEmpty ?? false);
                   return [
                     if (state.galleryDetails != null)
                       PopupMenuItem(
@@ -144,10 +146,17 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                           children: [Text('delete'.tr), const Icon(Icons.delete)],
                         ),
                       ),
-                    if (state.galleryDetails?.parentGalleryUrl != null ||
-                        (state.galleryDetails?.childrenGallerys?.isNotEmpty ?? false))
+                    if (hasHistory)
                       PopupMenuItem(
                         value: 4,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [Text('updateGallery'.tr), const Icon(Icons.update)],
+                        ),
+                      ),
+                    if (hasHistory)
+                      PopupMenuItem(
+                        value: 5,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [Text('history'.tr), const Icon(Icons.history)],
@@ -175,6 +184,9 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                     );
                   }
                   if (value == 4) {
+                    logic.handleTapUpdateGalleryFromHistory();
+                  }
+                  if (value == 5) {
                     logic.handleTapHistoryButton(context);
                   }
                 },
