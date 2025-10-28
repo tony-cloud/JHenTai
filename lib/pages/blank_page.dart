@@ -6,16 +6,20 @@ class BlankPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Material(
       color: UIConfig.backGroundColor(context),
       child: Center(
-        child: Text(
-          'J',
-          style: TextStyle(
-              color: UIConfig.jHentaiIconColor(context),
-              fontSize: 120,
-              fontWeight: FontWeight.w600),
-        ),
+        child: isDarkMode
+            ? const SizedBox.shrink()
+            : Text(
+                'J',
+                style: TextStyle(
+                    color: UIConfig.jHentaiIconColor(context),
+                    fontSize: 120,
+                    fontWeight: FontWeight.w600),
+              ),
       ),
     );
   }

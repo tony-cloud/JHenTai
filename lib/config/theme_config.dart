@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 
 class ThemeConfig {
   static ThemeData theme(Color color, Brightness brightness) {
+    ColorScheme colorScheme = ColorScheme.fromSeed(seedColor: color, brightness: brightness);
+
+    if (brightness == Brightness.dark) {
+      colorScheme = colorScheme.copyWith(
+        surface: Colors.black,
+        surfaceTint: Colors.transparent,
+        surfaceContainerHighest: const Color(0xFF1A1A1A),
+      );
+    }
+
     ThemeData themeData = ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorSchemeSeed: color,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorScheme.surface,
 
       /// default w500 is not supported for chinese characters in some devices
       textTheme: const TextTheme(titleMedium: TextStyle(fontWeight: FontWeight.w400)),
@@ -19,8 +30,8 @@ class ThemeConfig {
     );
 
     return themeData.copyWith(
-      appBarTheme: themeData.appBarTheme.copyWith(backgroundColor: themeData.colorScheme.surface),
-      dialogTheme: DialogThemeData(backgroundColor: themeData.colorScheme.surface),
+      appBarTheme: themeData.appBarTheme.copyWith(backgroundColor: colorScheme.surface),
+      dialogTheme: DialogThemeData(backgroundColor: colorScheme.surface),
     );
   }
 }

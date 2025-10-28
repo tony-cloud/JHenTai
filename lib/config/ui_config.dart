@@ -144,18 +144,11 @@ class UIConfig {
     required double size,
     required Color color,
   }) {
-    final Widget image = Image.asset(
-      'assets/icon/JHenTai_512.png',
-      fit: BoxFit.contain,
-      filterQuality: FilterQuality.none,
-    );
-
     return SizedBox(
       width: size,
       height: size,
-      child: ColorFiltered(
-        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-        child: image,
+      child: Center(
+        child: Icon(Icons.circle_outlined, size: size, color: color),
       ),
     );
   }
