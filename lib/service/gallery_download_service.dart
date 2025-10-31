@@ -1543,11 +1543,34 @@ class GalleryDownloadService extends GetxController
         return;
       }
 
+      final int? statusCode = response.statusCode;
+      if (statusCode == 403) {
+        log.download(
+            'Download ${gallery.title} image: $serialNo failed with status 403, try re-parse. Url:${image.url}');
+        galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+        return _reParseImageUrlAndDownload(gallery, serialNo);
+      }
+
+      io.File downloadedFile = io.File(path);
+      if (!downloadedFile.existsSync() || downloadedFile.lengthSync() == 0) {
+        log.download(
+            'Download ${gallery.title} image: $serialNo returned empty content, try re-parse. Url:${image.url}');
+        galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+        if (downloadedFile.existsSync()) {
+          try {
+            downloadedFile.deleteSync();
+          } catch (e, stack) {
+            log.error('Delete empty image file failed', e, stack);
+          }
+        }
+        return _reParseImageUrlAndDownload(gallery, serialNo);
+      }
+
       /// what we downloaded is not an valid image
       if (!response.isRedirect &&
           (response.headers[Headers.contentTypeHeader]?.contains("text/html; charset=UTF-8") ??
               false)) {
-        String data = io.File(path).readAsStringSync();
+        String data = downloadedFile.readAsStringSync();
 
         EHImageException? exception = imageData2Exception(data);
         log.error('Download ${gallery.title} image: $serialNo failed: $exception');
