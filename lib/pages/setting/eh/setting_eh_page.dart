@@ -64,6 +64,7 @@ class _SettingEHPageState extends State<SettingEHPage> {
             _buildRedirect2EH(),
             _buildProfile(),
             _buildSiteSetting(),
+            _buildHentaiVerse(),
             _buildImageLimit(),
             _buildAssets(),
             _buildMyTags(),
@@ -135,6 +136,30 @@ class _SettingEHPageState extends State<SettingEHPage> {
     );
   }
 
+  Widget _buildHentaiVerse() {
+    return ListTile(
+      title: Text('openHentaiVerse'.tr),
+      subtitle: Text('openHentaiVerseHint'.tr),
+      trailing: const Icon(Icons.keyboard_arrow_right),
+      onTap: () async {
+        if (GetPlatform.isDesktop) {
+          launchUrlString(EHConsts.hentaiVerse);
+          return;
+        }
+
+        await toRoute(
+          Routes.webview,
+          arguments: {
+            'title': 'openHentaiVerse'.tr,
+            'url': EHConsts.hentaiVerse,
+            'cookies': CookieUtil.parse2String(ehRequest.cookies),
+          },
+          preventDuplicates: false,
+        );
+      },
+    );
+  }
+
   Widget _buildImageLimit() {
     return GestureDetector(
       onLongPress: resetLimit,
@@ -159,8 +184,9 @@ class _SettingEHPageState extends State<SettingEHPage> {
               indicatorRadius: 10,
               idleWidgetBuilder: () => const SizedBox(),
               errorWidgetSameWithIdle: true,
-              successWidgetBuilder: () =>
-                  isDonator ? Text('$currentConsumption / $totalLimit').fadeInWidget() : const Text(''),
+              successWidgetBuilder: () => isDonator
+                  ? Text('$currentConsumption / $totalLimit').fadeInWidget()
+                  : const Text(''),
             ).marginOnly(right: 4),
             const Icon(Icons.keyboard_arrow_right),
           ],

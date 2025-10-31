@@ -62,6 +62,8 @@ class ko_KR {
       'dawnOfaNewDay': 'It is the dawn of a new day!',
       'encounterMonster': 'You have encountered a monster!',
       'encounterMonsterHint': 'Click to fight in the HentaiVerse.',
+      'openHentaiVerse': 'HentaiVerse',
+      'openHentaiVerseHint': 'Open HentaiVerse in the built-in browser.',
 
       /// unlock page
       'localizedReason': '입장하려면 인증을 진행하세요.',

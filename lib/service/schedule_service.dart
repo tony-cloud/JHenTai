@@ -24,7 +24,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:retry/retry.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import '../database/database.dart';
 import '../enum/config_enum.dart';
@@ -36,9 +35,12 @@ import '../setting/advanced_setting.dart';
 import '../utils/archive_bot_response_parser.dart';
 import '../utils/version_util.dart';
 import '../widget/update_dialog.dart';
+import '../routes/routes.dart';
 import 'jh_service.dart';
 import 'local_config_service.dart';
 import 'log.dart';
+import '../utils/cookie_util.dart';
+import '../utils/route_util.dart';
 
 ScheduleService scheduleService = ScheduleService();
 
@@ -241,7 +243,17 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
       snack(
         'encounterMonster'.tr,
         'encounterMonsterHint'.tr,
-        onPressed: () => launchUrlString(eventInfo.hvUrl!, mode: LaunchMode.externalApplication),
+        onPressed: () {
+          toRoute(
+            Routes.webview,
+            arguments: {
+              'title': 'openHentaiVerse'.tr,
+              'url': eventInfo.hvUrl!,
+              'cookies': CookieUtil.parse2String(ehRequest.cookies),
+            },
+            preventDuplicates: false,
+          );
+        },
         isShort: false,
       );
     }

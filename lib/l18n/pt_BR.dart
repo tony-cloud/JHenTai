@@ -62,6 +62,8 @@ class pt_BR {
       'dawnOfaNewDay': 'It is the dawn of a new day!',
       'encounterMonster': 'You have encountered a monster!',
       'encounterMonsterHint': 'Click to fight in the HentaiVerse.',
+      'openHentaiVerse': 'HentaiVerse',
+      'openHentaiVerseHint': 'Open HentaiVerse in the built-in browser.',
 
       /// unlock page
       'localizedReason': 'Por favor, autentique-se para continuar',

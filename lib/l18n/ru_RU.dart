@@ -62,6 +62,8 @@ class ru_RU {
       'dawnOfaNewDay': 'Наступил рассвет нового дня!',
       'encounterMonster': 'Вы встретили монстра!',
       'encounterMonsterHint': 'Нажмите, чтобы сразиться в HentaiVerse.',
+      'openHentaiVerse': 'HentaiVerse',
+      'openHentaiVerseHint': 'Открыть HentaiVerse во встроенном браузере.',
 
       /// unlock page
       'localizedReason': 'Пожалуйста, пройдите аутентификацию для продолжения',

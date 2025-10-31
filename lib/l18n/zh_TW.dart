@@ -67,6 +67,8 @@ class zh_TW {
       'dawnOfaNewDay': '黎明之時',
       'encounterMonster': '你遭遇了一隻怪獸！',
       'encounterMonsterHint': '點擊跳轉至HentaiVerse戰鬥。',
+      'openHentaiVerse': 'HentaiVerse',
+      'openHentaiVerseHint': '在內建瀏覽器中開啟HentaiVerse。',
 
       /// start page
       'TapAgainToExit': '再按一次退出',

@@ -43,6 +43,8 @@ class en_US {
       'dawnOfaNewDay': 'It is the dawn of a new day!',
       'encounterMonster': 'You have encountered a monster!',
       'encounterMonsterHint': 'Click to fight in the HentaiVerse.',
+      'openHentaiVerse': 'HentaiVerse',
+      'openHentaiVerseHint': 'Open HentaiVerse in the built-in browser.',
 
       /// unlock page
       'localizedReason': 'Please authenticate to continue',
