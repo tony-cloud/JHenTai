@@ -3,6 +3,8 @@ PODS:
     - Flutter
   - battery_plus (1.0.0):
     - Flutter
+  - clipboard_detect (0.0.1):
+    - Flutter
   - device_info_plus (0.0.1):
     - Flutter
   - DKImagePickerController/Core (4.3.4):
@@ -96,6 +98,9 @@ PODS:
     - sqlite3/perf-threadsafe
     - sqlite3/rtree
     - sqlite3/session
+  - sqlite3_simple (1.0.6):
+    - Flutter
+    - FlutterMacOS
   - SwiftyGif (5.4.4)
   - system_network_proxy (0.0.1):
     - Flutter
@@ -113,6 +118,7 @@ PODS:
 DEPENDENCIES:
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
   - battery_plus (from `.symlinks/plugins/battery_plus/ios`)
+  - clipboard_detect (from `.symlinks/plugins/clipboard_detect/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
@@ -129,6 +135,7 @@ DEPENDENCIES:
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - sqlite3_flutter_libs (from `.symlinks/plugins/sqlite3_flutter_libs/darwin`)
+  - sqlite3_simple (from `.symlinks/plugins/sqlite3_simple/darwin`)
   - system_network_proxy (from `.symlinks/plugins/system_network_proxy/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
@@ -148,6 +155,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/audio_session/ios"
   battery_plus:
     :path: ".symlinks/plugins/battery_plus/ios"
+  clipboard_detect:
+    :path: ".symlinks/plugins/clipboard_detect/ios"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
   file_picker:
@@ -180,6 +189,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   sqlite3_flutter_libs:
     :path: ".symlinks/plugins/sqlite3_flutter_libs/darwin"
+  sqlite3_simple:
+    :path: ".symlinks/plugins/sqlite3_simple/darwin"
   system_network_proxy:
     :path: ".symlinks/plugins/system_network_proxy/ios"
   url_launcher_ios:
@@ -194,6 +205,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
   battery_plus: b42253f6d2dde71712f8c36fef456d99121c5977
+  clipboard_detect: e9bb53eb844ccc5c6f891e63b0e89c4b2e220106
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   DKImagePickerController: b512c28220a2b8ac7419f21c491fc8534b7601ac
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
@@ -214,6 +226,7 @@ SPEC CHECKSUMS:
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   sqlite3: 73513155ec6979715d3904ef53a8d68892d4032b
   sqlite3_flutter_libs: 83f8e9f5b6554077f1d93119fe20ebaa5f3a9ef1
+  sqlite3_simple: 049e2193fa9dc4501aba67ab8aea61ffa1f69f66
   SwiftyGif: 93a1cc87bf3a51916001cf8f3d63835fb64c819f
   system_network_proxy: c0b2ba3a6d877b4861e22300ecfb60df4d200382
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
