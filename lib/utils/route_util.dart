@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/list_extension.dart';
@@ -66,7 +68,7 @@ Future<T?>? toRoute<T>(
       id: styleSetting.isInV2Layout ? rightV2 : right,
     );
 
-    Get.engine.addPostFrameCallback((_) {
+    Future.microtask(() {
       Get.toNamed(
         routeName,
         arguments: arguments,
