@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/database/database.dart';
@@ -7,7 +8,10 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/model/gallery_tag.dart';
 import 'package:jhentai/pages/download/filter/download_filter.dart';
 import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
+import 'package:jhentai/model/eh_raw_tag.dart';
+import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
 
 import '../../../service/log.dart';
 
@@ -343,7 +347,7 @@ class _TagSelectorState extends State<_TagSelector> {
     _debounce?.cancel();
 
     final String query = rawQuery.trim();
-    if (query.isEmpty || tagTranslationService.isReady == false) {
+    if (query.isEmpty) {
       _suggestions = <TagAutoCompletionMatch>[];
       _hideOverlay();
       return;
@@ -354,26 +358,131 @@ class _TagSelectorState extends State<_TagSelector> {
 
   Future<void> _searchSuggestions(String query) async {
     final int captured = ++_requestId;
-    List<TagAutoCompletionMatch> matches = await tagTranslationService.searchTags(query, limit: 50);
+    List<TagAutoCompletionMatch> translationMatches = <TagAutoCompletionMatch>[];
+    if (tagTranslationService.isReady) {
+      translationMatches = await tagTranslationService.searchTags(query, limit: 50);
+      if (!mounted || captured != _requestId) {
+        return;
+      }
+    }
+
+    List<TagAutoCompletionMatch> rawMatches = await _fetchRawTagSuggestions(query);
+    if (!mounted || captured != _requestId) {
+      return;
+    }
+
+    final List<TagAutoCompletionMatch> matches = _mergeMatches(translationMatches, rawMatches);
     if (!mounted || captured != _requestId) {
       return;
     }
 
     final Set<String> existing = _tags.map((tag) => tag.normalized).toSet();
-    matches = matches.where((TagAutoCompletionMatch match) {
-      final String normalized =
-          '${match.tagData.namespace}:${match.tagData.key}'.trim().toLowerCase();
+    final List<TagAutoCompletionMatch> filtered = matches.where((TagAutoCompletionMatch match) {
+      final String normalized = _normalizeMatch(match);
       return !existing.contains(normalized);
     }).toList();
 
-    if (matches.isEmpty) {
+    if (filtered.isEmpty) {
       _suggestions = <TagAutoCompletionMatch>[];
       _hideOverlay();
       return;
     }
 
-    _suggestions = matches;
+    _suggestions = filtered;
     _showOverlay();
+  }
+
+  Future<List<TagAutoCompletionMatch>> _fetchRawTagSuggestions(String rawQuery) async {
+    final String trimmed = rawQuery.trim();
+    if (trimmed.isEmpty) {
+      return <TagAutoCompletionMatch>[];
+    }
+
+    String searchTerm = trimmed;
+    String? operator;
+    if (searchTerm.startsWith('-') || searchTerm.startsWith('~')) {
+      operator = searchTerm[0];
+      searchTerm = searchTerm.substring(1).trimLeft();
+    }
+
+    if (searchTerm.isEmpty) {
+      return <TagAutoCompletionMatch>[];
+    }
+
+    final int colonIndex = searchTerm.indexOf(':');
+    final String namespaceTerm = colonIndex == -1 ? '' : searchTerm.substring(0, colonIndex).trim();
+    final String keyTerm =
+        colonIndex == -1 ? searchTerm : searchTerm.substring(colonIndex + 1).trim();
+
+    try {
+      final List<EHRawTag> tags =
+          await ehRequest.requestTagSuggestion(searchTerm, EHSpiderParser.tagSuggestion2TagList);
+      return tags
+          .map(
+            (EHRawTag tag) => (
+              searchText: trimmed,
+              matchStart: trimmed.length - searchTerm.length,
+              matchEnd: trimmed.length,
+              tagData: TagData(namespace: tag.namespace, key: tag.key),
+              operator: operator,
+              namespaceMatch: namespaceTerm.isEmpty
+                  ? null
+                  : _matchRangeIgnoreCase(tag.namespace, namespaceTerm),
+              translatedNamespaceMatch: null,
+              keyMatch: keyTerm.isEmpty ? null : _matchRangeIgnoreCase(tag.key, keyTerm),
+              tagNameMatch: null,
+              score: 0.0,
+            ),
+          )
+          .toList();
+    } on DioException catch (e) {
+      log.error('Request download tag suggestion failed', e);
+      return <TagAutoCompletionMatch>[];
+    }
+  }
+
+  List<TagAutoCompletionMatch> _mergeMatches(
+    List<TagAutoCompletionMatch> translationMatches,
+    List<TagAutoCompletionMatch> rawMatches,
+  ) {
+    final List<TagAutoCompletionMatch> merged = <TagAutoCompletionMatch>[];
+    final Set<String> seen = <String>{};
+
+    for (final TagAutoCompletionMatch match in translationMatches) {
+      final String normalized = _normalizeMatch(match);
+      if (seen.add(normalized)) {
+        merged.add(match);
+      }
+    }
+
+    for (final TagAutoCompletionMatch match in rawMatches) {
+      final String normalized = _normalizeMatch(match);
+      if (seen.add(normalized)) {
+        merged.add(match);
+      }
+    }
+
+    return merged;
+  }
+
+  String _normalizeMatch(TagAutoCompletionMatch match) {
+    final String prefix = match.operator ?? '';
+    final TagData data = match.tagData;
+    final String raw = data.namespace.isEmpty ? data.key : '${data.namespace}:${data.key}';
+    return '$prefix$raw'.trim().toLowerCase();
+  }
+
+  ({int start, int end})? _matchRangeIgnoreCase(String source, String term) {
+    if (term.isEmpty) {
+      return null;
+    }
+    final String lowerSource = source.toLowerCase();
+    final String lowerTerm = term.toLowerCase();
+    final int index = lowerSource.indexOf(lowerTerm);
+    if (index == -1) {
+      return null;
+    }
+    return (start: index, end: index + term.length);
   }
 
   void _showOverlay() {
