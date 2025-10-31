@@ -45,7 +45,7 @@ class DownloadWakelockService extends GetxService
       return;
     }
     _galleryActive.value = active;
-    _syncWakelock();
+    _syncWakelock(_galleryActive.value || _archiveActive.value);
   }
 
   void updateArchiveActive(bool active) {
@@ -53,13 +53,14 @@ class DownloadWakelockService extends GetxService
       return;
     }
     _archiveActive.value = active;
-    _syncWakelock();
+    _syncWakelock(_galleryActive.value || _archiveActive.value);
   }
 
-  Future<void> _syncWakelock() {
+  Future<void> _syncWakelock([bool? forcedActive]) {
     return _enqueue(() async {
-      final bool shouldKeepAwake = downloadSetting.keepScreenOnWhileDownloading.isTrue &&
-          (_galleryActive.value || _archiveActive.value);
+      // Preserve the activity snapshot that triggered this sync to avoid racing during fast copies.
+      final bool isActive = forcedActive ?? (_galleryActive.value || _archiveActive.value);
+      final bool shouldKeepAwake = downloadSetting.keepScreenOnWhileDownloading.isTrue && isActive;
 
       if (shouldKeepAwake) {
         try {
