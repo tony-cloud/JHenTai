@@ -504,6 +504,8 @@ class ko_KR {
       /// read setting page
       'enableImmersiveMode': '몰입형 모드 사용',
       'keepScreenAwakeWhenReading': '읽는 중에 화면 꺼짐 방지하기',
+      'wakelockTimeLimitWhenReading': '읽기 화면 켜짐 시간 제한',
+      'wakelockTimeLimitWhenReadingHint': '설정한 시간이 지나면 화면 항상 켜짐을 자동으로 해제합니다',
       'enableCustomReadBrightness': 'Enable Custom Brightness When Reading',
       'spaceBetweenImages': '이미지 간격',
       'enableImmersiveHint': '시스템 바를 숨김',
@@ -563,6 +565,7 @@ class ko_KR {
       'toggleFullScreen': 'Toggle Full Screen',
       'enableAutoScaleUp': '긴 이미지 자동 확대 사용',
       'enableAutoScaleUpHints': '이미지 너비를 화면 너비와 동일하게 함',
+      'minutes': '분',
 
       /// preference setting page
       'showR18GImageDirectly': 'R18G 이미지 표시',

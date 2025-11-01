@@ -512,6 +512,9 @@ class pt_BR {
       /// read setting page
       'enableImmersiveMode': 'Habilitar modo imersivo',
       'keepScreenAwakeWhenReading': 'Keep Screen Awake When Reading',
+      'wakelockTimeLimitWhenReading': 'Limite de tempo da tela ativa',
+      'wakelockTimeLimitWhenReadingHint':
+          'Desativa o wakelock automaticamente após o período selecionado',
       'enableCustomReadBrightness': 'Enable Custom Brightness When Reading',
       'spaceBetweenImages': 'Space Between Images',
       'enableImmersiveHint': 'Esconder barra do sistema',
@@ -571,6 +574,7 @@ class pt_BR {
       'toggleFullScreen': 'Toggle Full Screen',
       'enableAutoScaleUp': 'Ativar dimensionamento automático de imagens grandes',
       'enableAutoScaleUpHints': 'Tornar a largura da imagem igual à largura da tela',
+      'minutes': 'minutos',
 
       /// preference setting page
       'showR18GImageDirectly': 'Show R18G Image Directly',

@@ -492,6 +492,8 @@ class zh_CN {
       /// read setting page
       'enableImmersiveMode': '开启沉浸模式',
       'keepScreenAwakeWhenReading': '阅读时屏幕不自动锁定',
+      'wakelockTimeLimitWhenReading': '常亮时长限制',
+      'wakelockTimeLimitWhenReadingHint': '到达设置时长后自动关闭常亮',
       'enableCustomReadBrightness': '阅读页自定义亮度',
       'spaceBetweenImages': '图片间隔',
       'enableImmersiveHint': '隐藏系统状态栏和底部导航栏',
@@ -550,6 +552,7 @@ class zh_CN {
       'toggleFullScreen': '切换全屏',
       'enableAutoScaleUp': '自动放大长图片',
       'enableAutoScaleUpHints': '优先使图片宽度占满屏幕',
+      'minutes': '分钟',
 
       /// preference setting page
       'showR18GImageDirectly': '标签数据中直接显示R18G图片',

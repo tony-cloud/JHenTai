@@ -12,6 +12,7 @@ ReadSetting readSetting = ReadSetting();
 class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxBool enableImmersiveMode = true.obs;
   RxBool keepScreenAwakeWhenReading = true.obs;
+  RxInt wakelockTimeLimitMinutes = 0.obs;
   RxBool enableCustomReadBrightness = false.obs;
   RxInt customBrightness = 50.obs;
   RxInt imageSpace = 6.obs;
@@ -94,6 +95,8 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
     enableImmersiveMode.value = map['enableImmersiveMode'];
     keepScreenAwakeWhenReading.value =
         map['keepScreenAwakeWhenReading'] ?? keepScreenAwakeWhenReading.value;
+    wakelockTimeLimitMinutes.value =
+        map['wakelockTimeLimitMinutes'] ?? wakelockTimeLimitMinutes.value;
     enableCustomReadBrightness.value =
         map['enableCustomReadBrightness'] ?? enableCustomReadBrightness.value;
     customBrightness.value = map['customBrightness'] ?? customBrightness.value;
@@ -136,6 +139,7 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
     return jsonEncode({
       'enableImmersiveMode': enableImmersiveMode.value,
       'keepScreenAwakeWhenReading': keepScreenAwakeWhenReading.value,
+      'wakelockTimeLimitMinutes': wakelockTimeLimitMinutes.value,
       'enableCustomReadBrightness': enableCustomReadBrightness.value,
       'customBrightness': customBrightness.value,
       'imageSpace': imageSpace.value,
@@ -184,6 +188,12 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
   Future<void> saveKeepScreenAwakeWhenReading(bool value) async {
     log.debug('saveKeepScreenAwakeWhenReading:$value');
     keepScreenAwakeWhenReading.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveWakelockTimeLimitMinutes(int value) async {
+    log.debug('saveWakelockTimeLimitMinutes:$value');
+    wakelockTimeLimitMinutes.value = value;
     await saveBeanConfig();
   }
 

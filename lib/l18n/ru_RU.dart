@@ -513,6 +513,9 @@ class ru_RU {
       /// read setting page
       'enableImmersiveMode': 'Включить иммерсивный режим',
       'keepScreenAwakeWhenReading': 'Не выключать экран при чтении',
+      'wakelockTimeLimitWhenReading': 'Ограничение времени удержания экрана',
+      'wakelockTimeLimitWhenReadingHint':
+          'Автоматически отключать удержание экрана по истечении выбранного времени',
       'enableCustomReadBrightness': 'Включить пользовательскую яркость при чтении',
       'spaceBetweenImages': 'Пространство между изображениями',
       'enableImmersiveHint': 'Скрыть системную панель',
@@ -572,6 +575,7 @@ class ru_RU {
       'toggleFullScreen': 'Переключить полноэкранный режим',
       'enableAutoScaleUp': 'Включить авто-масштабирование длинных изображений',
       'enableAutoScaleUpHints': 'Сделать ширину изображения равной ширине экрана',
+      'minutes': 'минут',
 
       /// preference setting page
       'showR18GImageDirectly': 'Показывать R18G изображения сразу',

@@ -67,6 +67,7 @@ class ReadPageLogic extends GetxController {
 
   late Timer refreshCurrentTimeAndBatteryLevelTimer;
   late Timer flushReadProgressTimer;
+  Timer? _wakelockTimeoutTimer;
 
   late Worker toggleTurnPageByVolumeKeyLister;
   late Worker toggleCurrentImmersiveModeLister;
@@ -77,6 +78,8 @@ class ReadPageLogic extends GetxController {
   late Worker enableCustomBrightnessListener;
   late Worker customBrightnessListener;
   late Worker preloadListener;
+  late Worker keepScreenAwakeListener;
+  late Worker wakelockTimeLimitListener;
 
   /// limit the rate of parsing to decrease the lagging of build
   final EHExecutor executor = EHExecutor(
@@ -138,6 +141,11 @@ class ReadPageLogic extends GetxController {
       }
     });
 
+    keepScreenAwakeListener =
+        ever(readSetting.keepScreenAwakeWhenReading, (_) => _syncWakelockSetting());
+    wakelockTimeLimitListener =
+        ever(readSetting.wakelockTimeLimitMinutes, (_) => _rescheduleWakelockTimer());
+
     if (!GetPlatform.isDesktop) {
       state.battery.batteryLevel.then((value) => state.batteryLevel = value);
     }
@@ -159,9 +167,7 @@ class ReadPageLogic extends GetxController {
     flushReadProgressTimer =
         Timer.periodic(const Duration(seconds: 5), (_) => _flushReadProgress());
 
-    if (readSetting.keepScreenAwakeWhenReading.isTrue) {
-      WakelockPlus.enable();
-    }
+    _syncWakelockSetting();
 
     if (GetPlatform.isMobile && readSetting.enableCustomReadBrightness.isTrue) {
       applyCurrentBrightness();
@@ -207,6 +213,8 @@ class ReadPageLogic extends GetxController {
     enableCustomBrightnessListener.dispose();
     customBrightnessListener.dispose();
     preloadListener.dispose();
+    keepScreenAwakeListener.dispose();
+    wakelockTimeLimitListener.dispose();
 
     restoreVolumeListener();
 
@@ -227,6 +235,7 @@ class ReadPageLogic extends GetxController {
 
     executor.close();
 
+    _cancelWakelockTimer();
     WakelockPlus.disable();
   }
 
@@ -644,6 +653,41 @@ class ReadPageLogic extends GetxController {
         state.readPageInfo.currentImageIndex,
       );
     }
+  }
+
+  void _syncWakelockSetting() {
+    if (readSetting.keepScreenAwakeWhenReading.isFalse) {
+      _cancelWakelockTimer();
+      WakelockPlus.disable();
+      return;
+    }
+
+    WakelockPlus.enable();
+    _rescheduleWakelockTimer();
+  }
+
+  void _rescheduleWakelockTimer() {
+    _cancelWakelockTimer();
+
+    if (readSetting.keepScreenAwakeWhenReading.isFalse) {
+      return;
+    }
+
+    final int limitMinutes = readSetting.wakelockTimeLimitMinutes.value;
+    if (limitMinutes <= 0) {
+      return;
+    }
+
+    _wakelockTimeoutTimer = Timer(Duration(minutes: limitMinutes), () {
+      _wakelockTimeoutTimer = null;
+      WakelockPlus.disable();
+      log.info('Wakelock disabled after $limitMinutes minutes due to time limit');
+    });
+  }
+
+  void _cancelWakelockTimer() {
+    _wakelockTimeoutTimer?.cancel();
+    _wakelockTimeoutTimer = null;
   }
 
   void clearImageContainerSized() {

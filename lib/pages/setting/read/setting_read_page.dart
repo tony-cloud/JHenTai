@@ -11,6 +11,8 @@ import '../../../utils/text_input_formatter.dart';
 import '../../../utils/toast_util.dart';
 
 class SettingReadPage extends StatelessWidget {
+  static const List<int> _wakelockTimeLimitOptions = <int>[0, 5, 10, 15, 20, 30, 45, 60];
+
   final TextEditingController imageRegionWidthRatioController =
       TextEditingController(text: readSetting.imageRegionWidthRatio.value.toString());
   final TextEditingController gestureRegionWidthRatioController =
@@ -32,6 +34,7 @@ class SettingReadPage extends StatelessWidget {
               if (GetPlatform.isMobile || GetPlatform.isWindows)
                 _buildEnableImmersiveMode().center(),
               _buildKeepScreenAwake().center(),
+              if (readSetting.keepScreenAwakeWhenReading.isTrue) _buildWakelockTimeLimit().center(),
               if (GetPlatform.isMobile) _buildEnableCustomReadBrightness().center(),
               if (GetPlatform.isMobile) _buildCustomReadBrightness().center(),
               _buildShowThumbnails().center(),
@@ -46,7 +49,9 @@ class SettingReadPage extends StatelessWidget {
               _buildDisableTurnPageOnTap().center(),
               _buildEnableImageMaxKilobytes().center(),
               if (readSetting.enableMaxImageKilobyte.isTrue)
-                _buildImageMaxKilobytes(context).fadeInWidget(const Key('imageMaxKilobytes')).center(),
+                _buildImageMaxKilobytes(context)
+                    .fadeInWidget(const Key('imageMaxKilobytes'))
+                    .center(),
               _buildGestureRegionWidthRatio(context).center(),
               if (GetPlatform.isDesktop) _buildUseThirdPartyViewer().center(),
               if (GetPlatform.isDesktop) _buildThirdPartyViewerPath().center(),
@@ -104,6 +109,38 @@ class SettingReadPage extends StatelessWidget {
       value: readSetting.keepScreenAwakeWhenReading.value,
       onChanged: readSetting.saveKeepScreenAwakeWhenReading,
     );
+  }
+
+  Widget _buildWakelockTimeLimit() {
+    final List<int> options = List<int>.from(_wakelockTimeLimitOptions);
+    final int currentValue = readSetting.wakelockTimeLimitMinutes.value;
+    if (!options.contains(currentValue)) {
+      options.add(currentValue);
+      options.sort();
+    }
+
+    return ListTile(
+      title: Text('wakelockTimeLimitWhenReading'.tr),
+      subtitle: Text('wakelockTimeLimitWhenReadingHint'.tr),
+      trailing: DropdownButton<int>(
+        value: currentValue,
+        elevation: 4,
+        onChanged: (int? newValue) {
+          if (newValue == null) {
+            return;
+          }
+          readSetting.saveWakelockTimeLimitMinutes(newValue);
+        },
+        items: options
+            .map(
+              (int value) => DropdownMenuItem<int>(
+                value: value,
+                child: Text(value == 0 ? 'never'.tr : '$value ${'minutes'.tr}'),
+              ),
+            )
+            .toList(),
+      ),
+    ).marginOnly(right: 12);
   }
 
   Widget _buildEnableCustomReadBrightness() {
