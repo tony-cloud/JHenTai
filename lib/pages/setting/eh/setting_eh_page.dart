@@ -148,7 +148,7 @@ class _SettingEHPageState extends State<SettingEHPage> {
         }
 
         await toRoute(
-          Routes.webview,
+          Routes.webviewFullscreen,
           arguments: {
             'title': 'openHentaiVerse'.tr,
             'url': EHConsts.hentaiVerse,

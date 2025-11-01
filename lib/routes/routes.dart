@@ -86,7 +86,8 @@ class Routes {
   static const String comment = "/comment";
   static const String thumbnails = "/thumbnails";
   static const String webview = "/webview";
-  static const String quickSearch = "/qucik_search";
+  static const String webviewFullscreen = "/webview_fullscreen";
+  static const String quickSearch = "/quick_search";
   static const String imagePage = "/image_page";
 
   static const String settingPrefix = "/setting_";
@@ -263,6 +264,13 @@ class Routes {
       page: () => const WebviewPage(),
       transition: defaultTransition,
       offAllBefore: false,
+    ),
+    EHPage(
+      name: webviewFullscreen,
+      page: () => const WebviewPage(),
+      transition: defaultTransition,
+      offAllBefore: false,
+      side: Side.fullScreen,
     ),
     EHPage(
       name: quickSearch,

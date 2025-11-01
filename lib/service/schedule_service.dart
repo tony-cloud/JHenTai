@@ -245,7 +245,7 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
         'encounterMonsterHint'.tr,
         onPressed: () {
           toRoute(
-            Routes.webview,
+            Routes.webviewFullscreen,
             arguments: {
               'title': 'openHentaiVerse'.tr,
               'url': eventInfo.hvUrl!,
