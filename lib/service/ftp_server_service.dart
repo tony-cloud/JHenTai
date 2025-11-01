@@ -5,7 +5,6 @@ import 'package:ftp_server/ftp_server.dart';
 import 'package:ftp_server/file_operations/physical_file_operations.dart';
 import 'package:ftp_server/server_type.dart';
 import 'package:get/get.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../setting/download_setting.dart';
 import '../setting/ftp_server_setting.dart';
@@ -13,6 +12,7 @@ import '../utils/toast_util.dart';
 import 'jh_service.dart';
 import 'log.dart';
 import 'path_service.dart';
+import 'wakelock_service.dart';
 
 FtpServerService ftpServerService = FtpServerService();
 
@@ -28,11 +28,11 @@ class FtpServerService extends GetxService
   Worker? _keepScreenWorker;
 
   Future<void> _serialTask = Future.value();
-  bool _wakelockEnabledByService = false;
+  static const String _wakelockName = 'ftp-server';
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
-      [pathService, log, ftpServerSetting, downloadSetting];
+      [pathService, log, ftpServerSetting, downloadSetting, wakelockService];
 
   Future<void> _enqueue(Future<void> Function() action) {
     _serialTask = _serialTask.then((_) => action()).catchError((error, stack) {
@@ -150,28 +150,12 @@ class FtpServerService extends GetxService
   Future<void> _syncWakelock() async {
     final bool shouldKeepAwake = ftpServerSetting.keepScreenOn.isTrue && serverRunning.isTrue;
 
-    if (shouldKeepAwake && !_wakelockEnabledByService) {
-      try {
-        final bool alreadyEnabled = await WakelockPlus.enabled;
-        if (!alreadyEnabled) {
-          await WakelockPlus.enable();
-          _wakelockEnabledByService = true;
-        }
-      } on Exception catch (e, stack) {
-        log.error('Enable wakelock for FTP server failed', e, stack);
-      }
+    if (shouldKeepAwake) {
+      await wakelockService.acquire(_wakelockName);
       return;
     }
 
-    if (!shouldKeepAwake && _wakelockEnabledByService) {
-      try {
-        await WakelockPlus.disable();
-      } on Exception catch (e, stack) {
-        log.error('Disable wakelock for FTP server failed', e, stack);
-      }
-      _wakelockEnabledByService = false;
-      return;
-    }
+    await wakelockService.release(_wakelockName);
   }
 
   @override

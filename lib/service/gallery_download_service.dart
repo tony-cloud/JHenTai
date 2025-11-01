@@ -58,7 +58,7 @@ import 'path_service.dart';
 import '../utils/eh_executor.dart';
 import '../utils/eh_spider_parser.dart';
 import '../utils/snack_util.dart';
-import 'download_wakelock_service.dart';
+import 'wakelock_service.dart';
 
 /// Responsible for local images meta-data and download all images of a gallery
 GalleryDownloadService galleryDownloadService = GalleryDownloadService();
@@ -95,14 +95,44 @@ class GalleryDownloadService extends GetxController
   Future<bool> get completed => _completer.future;
 
   Worker? _downloadSettingListener;
+  Worker? _downloadKeepScreenListener;
+
+  bool _galleryDownloadsActive = false;
+  bool _archiveDownloadsActive = false;
+  static const String _downloadLockName = 'download';
 
   bool _hasActiveGalleryDownloads() {
-    return galleryDownloadInfos.values
-        .any((info) => info.downloadProgress.downloadStatus == DownloadStatus.downloading);
+    return galleryDownloadInfos.values.any((info) =>
+        info.downloadProgress.downloadStatus == DownloadStatus.downloading ||
+        info.tasks.isNotEmpty);
   }
 
   void _notifyDownloadActivityChanged() {
-    downloadWakelockService.updateGalleryActive(_hasActiveGalleryDownloads());
+    bool active = _hasActiveGalleryDownloads();
+    if (_galleryDownloadsActive == active) {
+      return;
+    }
+    _galleryDownloadsActive = active;
+    unawaited(_syncDownloadWakelock());
+  }
+
+  void updateArchiveDownloadActivity(bool active) {
+    if (_archiveDownloadsActive == active) {
+      return;
+    }
+    _archiveDownloadsActive = active;
+    unawaited(_syncDownloadWakelock());
+  }
+
+  Future<void> _syncDownloadWakelock() {
+    bool shouldKeepAwake = downloadSetting.keepScreenOnWhileDownloading.isTrue &&
+        (_galleryDownloadsActive || _archiveDownloadsActive);
+
+    if (shouldKeepAwake) {
+      return wakelockService.acquire(_downloadLockName);
+    }
+
+    return wakelockService.release(_downloadLockName);
   }
 
   @override
@@ -127,6 +157,10 @@ class GalleryDownloadService extends GetxController
         updateExecutor();
       },
     );
+    _downloadKeepScreenListener = ever(downloadSetting.keepScreenOnWhileDownloading, (_) {
+      unawaited(_syncDownloadWakelock());
+    });
+    unawaited(_syncDownloadWakelock());
   }
 
   @override
@@ -137,12 +171,19 @@ class GalleryDownloadService extends GetxController
     super.onClose();
 
     _downloadSettingListener?.dispose();
+    _downloadKeepScreenListener?.dispose();
+    unawaited(wakelockService.release(_downloadLockName));
   }
 
   bool containGallery(int gid) => galleryDownloadInfos.containsKey(gid);
 
   Future<void> downloadGallery(GalleryDownloadedData gallery, {bool resume = false}) async {
-    if (!resume && containGallery(gallery.gid)) {
+    GalleryDownloadedData targetGallery = gallery;
+    if (!resume && gallery.downloadStatusIndex != DownloadStatus.downloading.index) {
+      targetGallery = gallery.copyWith(downloadStatusIndex: DownloadStatus.downloading.index);
+    }
+
+    if (!resume && containGallery(targetGallery.gid)) {
       return;
     }
 
@@ -150,21 +191,21 @@ class GalleryDownloadService extends GetxController
 
     /// If it's a new download task, record info.
     if (!resume) {
-      if (!await _initGalleryInfo(gallery)) {
+      if (!await _initGalleryInfo(targetGallery)) {
         return;
       }
-      _generateComicInfoInDisk(gallery);
+      _generateComicInfoInDisk(targetGallery);
     }
 
-    galleryDownloadInfos[gallery.gid]!.speedComputer.start();
+    galleryDownloadInfos[targetGallery.gid]!.speedComputer.start();
 
     log.info(
-        'Begin to download gallery: ${gallery.title}, original: ${gallery.downloadOriginalImage}');
+        'Begin to download gallery: ${targetGallery.title}, original: ${targetGallery.downloadOriginalImage}');
 
     _submitTask(
-      gid: gallery.gid,
-      priority: _computeGalleryTaskPriority(gallery),
-      task: _downloadGalleryTask(gallery),
+      gid: targetGallery.gid,
+      priority: _computeGalleryTaskPriority(targetGallery),
+      task: _downloadGalleryTask(targetGallery),
     );
 
     _notifyDownloadActivityChanged();
@@ -833,11 +874,12 @@ class GalleryDownloadService extends GetxController
   }) {
     galleryDownloadInfos[gid]?.tasks.add(task);
 
-    executor
-        .scheduleTask(priority, task)
-        .then((_) => galleryDownloadInfos[gid]?.tasks.remove(task))
-        .onError((e, stackTrace) {
+    executor.scheduleTask(priority, task).then((_) {
       galleryDownloadInfos[gid]?.tasks.remove(task);
+      _notifyDownloadActivityChanged();
+    }).onError((e, stackTrace) {
+      galleryDownloadInfos[gid]?.tasks.remove(task);
+      _notifyDownloadActivityChanged();
       if (e is! CancelException) {
         log.error('Executor exception!', e, stackTrace);
         log.uploadError(e);

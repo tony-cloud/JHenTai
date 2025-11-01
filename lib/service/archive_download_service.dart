@@ -45,7 +45,6 @@ import 'jh_service.dart';
 import 'log.dart';
 import '../utils/snack_util.dart';
 import 'gallery_download_service.dart';
-import 'download_wakelock_service.dart';
 
 ArchiveDownloadService archiveDownloadService = ArchiveDownloadService();
 
@@ -85,7 +84,7 @@ class ArchiveDownloadService extends GetxController
   }
 
   void _notifyDownloadActivityChanged() {
-    downloadWakelockService.updateArchiveActive(_hasActiveArchiveDownloads());
+    galleryDownloadService.updateArchiveDownloadActivity(_hasActiveArchiveDownloads());
   }
 
   @override

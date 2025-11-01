@@ -26,7 +26,6 @@ import 'package:retry/retry.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:throttling/throttling.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../model/detail_page_info.dart';
 import '../../model/gallery_image.dart';
@@ -35,6 +34,7 @@ import '../../network/eh_request.dart';
 import '../../setting/read_setting.dart';
 import '../../utils/eh_spider_parser.dart';
 import '../../service/log.dart';
+import '../../service/wakelock_service.dart';
 import '../../widget/auto_mode_interval_dialog.dart';
 import '../../widget/loading_state_indicator.dart';
 import '../../service/read_progress_service.dart';
@@ -67,7 +67,8 @@ class ReadPageLogic extends GetxController {
 
   late Timer refreshCurrentTimeAndBatteryLevelTimer;
   late Timer flushReadProgressTimer;
-  Timer? _wakelockTimeoutTimer;
+  static int _readerWakelockCounter = 0;
+  late final String _wakelockLockName = 'reader-${_readerWakelockCounter++}';
 
   late Worker toggleTurnPageByVolumeKeyLister;
   late Worker toggleCurrentImmersiveModeLister;
@@ -236,7 +237,6 @@ class ReadPageLogic extends GetxController {
     executor.close();
 
     _cancelWakelockTimer();
-    WakelockPlus.disable();
   }
 
   void beginToParseImageHref(int index) {
@@ -658,36 +658,34 @@ class ReadPageLogic extends GetxController {
   void _syncWakelockSetting() {
     if (readSetting.keepScreenAwakeWhenReading.isFalse) {
       _cancelWakelockTimer();
-      WakelockPlus.disable();
-      return;
-    }
-
-    WakelockPlus.enable();
-    _rescheduleWakelockTimer();
-  }
-
-  void _rescheduleWakelockTimer() {
-    _cancelWakelockTimer();
-
-    if (readSetting.keepScreenAwakeWhenReading.isFalse) {
       return;
     }
 
     final int limitMinutes = readSetting.wakelockTimeLimitMinutes.value;
-    if (limitMinutes <= 0) {
+    final Duration? timeout = limitMinutes > 0 ? Duration(minutes: limitMinutes) : null;
+
+    wakelockService.acquire(_wakelockLockName, timeout: timeout);
+  }
+
+  void _rescheduleWakelockTimer() {
+    if (readSetting.keepScreenAwakeWhenReading.isFalse) {
+      _cancelWakelockTimer();
       return;
     }
 
-    _wakelockTimeoutTimer = Timer(Duration(minutes: limitMinutes), () {
-      _wakelockTimeoutTimer = null;
-      WakelockPlus.disable();
-      log.info('Wakelock disabled after $limitMinutes minutes due to time limit');
-    });
+    final int limitMinutes = readSetting.wakelockTimeLimitMinutes.value;
+    final Duration? timeout = limitMinutes > 0 ? Duration(minutes: limitMinutes) : null;
+
+    if (timeout != null) {
+      wakelockService.resetTimer(_wakelockLockName, timeout: timeout);
+      return;
+    }
+
+    wakelockService.acquire(_wakelockLockName);
   }
 
   void _cancelWakelockTimer() {
-    _wakelockTimeoutTimer?.cancel();
-    _wakelockTimeoutTimer = null;
+    wakelockService.release(_wakelockLockName);
   }
 
   void clearImageContainerSized() {
