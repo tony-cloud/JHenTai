@@ -1654,6 +1654,11 @@ class GalleryDownloadService extends GetxController
 
     String? reloadKey = existingImage?.reloadKey;
     String? previousUrl = existingImage?.url;
+    Set<String> triedLegacyReloadKeys = galleryDownloadInfo.legacyReloadKeyHistory[serialNo];
+
+    if (reloadKey != null) {
+      triedLegacyReloadKeys.add(reloadKey);
+    }
 
     if (preferOriginalImage && existingImage != null && previousUrl != null) {
       String? legacyReloadKey = await _fetchLegacyReloadKeyForOriginalImage(
@@ -1664,6 +1669,31 @@ class GalleryDownloadService extends GetxController
       );
 
       if (legacyReloadKey != null) {
+        if (triedLegacyReloadKeys.contains(legacyReloadKey)) {
+          log.download(
+              'Detected legacy reload key loop, disable original download. Gid: ${gallery.gid}, index: $serialNo');
+          galleryDownloadInfo.preferOriginalImages[serialNo] = false;
+          triedLegacyReloadKeys.clear();
+          galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = null;
+          galleryDownloadInfo.images[serialNo] = null;
+          await GalleryImageDao.deleteImage(gallery.gid, serialNo);
+          _saveGalleryMetadataInDisk(gallery);
+
+          return _submitTask(
+            gid: gallery.gid,
+            priority: _computeImageTaskPriority(gallery, serialNo),
+            task: _parseImageUrlTask(
+              gallery,
+              serialNo,
+              reParse: true,
+              reloadKey: null,
+              previousFailedUrl: previousUrl,
+              preferOriginalOverride: false,
+            ),
+          );
+        }
+
+        triedLegacyReloadKeys.add(legacyReloadKey);
         existingImage.originalImageUrl ??= previousUrl;
         existingImage.url =
             _appendReloadKeyToOriginalUrl(existingImage.originalImageUrl!, legacyReloadKey);
@@ -2023,14 +2053,17 @@ class GalleryDownloadService extends GetxController
       return;
     }
 
-    GalleryDownloadProgress downloadProgress = galleryDownloadInfos[gallery.gid]!.downloadProgress;
+    GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
+    galleryDownloadInfo.legacyReloadKeyHistory[serialNo].clear();
+
+    GalleryDownloadProgress downloadProgress = galleryDownloadInfo.downloadProgress;
     downloadProgress.curCount++;
     downloadProgress.hasDownloaded[serialNo] = true;
 
     if (downloadProgress.curCount == downloadProgress.totalCount) {
       downloadProgress.downloadStatus = DownloadStatus.downloaded;
       await _updateGalleryDownloadStatus(gallery, DownloadStatus.downloaded);
-      galleryDownloadInfos[gallery.gid]!.speedComputer.dispose();
+      galleryDownloadInfo.speedComputer.dispose();
       update(['$galleryDownloadSuccessId::${gallery.gid}']);
     }
 
@@ -2213,6 +2246,7 @@ class GalleryDownloadService extends GetxController
       imageHrefs: List.generate(gallery.pageCount, (_) => null),
       images: resolvedImages,
       preferOriginalImages: preferOriginalImages,
+      legacyReloadKeyHistory: List.generate(gallery.pageCount, (_) => <String>{}, growable: false),
       speedComputer: GalleryDownloadSpeedComputer(
         gallery.pageCount,
         () => update(['$galleryDownloadSpeedComputerId::${gallery.gid}']),
@@ -2437,6 +2471,9 @@ class GalleryDownloadInfo {
   /// Track whether each image should still prefer original assets.
   List<bool> preferOriginalImages;
 
+  /// Cache legacy reload keys we've already tried for each image to avoid loops.
+  List<Set<String>> legacyReloadKeyHistory;
+
   GalleryDownloadSpeedComputer speedComputer;
 
   int priority;
@@ -2461,6 +2498,7 @@ class GalleryDownloadInfo {
     required this.imageHrefs,
     required this.images,
     required this.preferOriginalImages,
+    required this.legacyReloadKeyHistory,
     required this.speedComputer,
     required this.priority,
     required this.sortOrder,
