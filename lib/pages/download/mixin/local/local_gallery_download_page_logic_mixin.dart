@@ -87,7 +87,7 @@ mixin LocalGalleryDownloadPageLogicMixin on GetxController {
       openThirdPartyViewer(gallery.path);
     } else {
       String? string = await localConfigService.read(
-          configKey: ConfigEnum.readIndexRecord, subConfigKey: gallery.title);
+          configKey: ConfigEnum.readIndexRecord, subConfigKey: gallery.cover.path!);
       int readIndexRecord = (string == null ? 0 : (int.tryParse(string) ?? 0));
 
       List<GalleryImage> images = localGalleryService.getGalleryImages(gallery);
@@ -99,7 +99,7 @@ mixin LocalGalleryDownloadPageLogicMixin on GetxController {
           galleryTitle: gallery.title,
           initialIndex: readIndexRecord,
           pageCount: images.length,
-          readProgressRecordStorageKey: gallery.title,
+          readProgressRecordStorageKey: gallery.cover.path!,
           images: images,
           useSuperResolution: false,
         ),
