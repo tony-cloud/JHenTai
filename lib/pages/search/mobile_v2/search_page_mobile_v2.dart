@@ -18,8 +18,7 @@ class SearchPageMobileV2 extends BasePage<SearchPageMobileV2Logic, SearchPageMob
   final String tag = newUUID();
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
 
-  SearchPageMobileV2({super.key})
-      : super(showJumpButton: true, showScroll2TopButton: true) {
+  SearchPageMobileV2({super.key}) : super(showJumpButton: true, showScroll2TopButton: true) {
     logic = Get.put(SearchPageMobileV2Logic(), tag: tag);
     state = logic.state;
   }
@@ -44,6 +43,7 @@ class SearchPageMobileV2 extends BasePage<SearchPageMobileV2Logic, SearchPageMob
           endDrawerEnableOpenDragGesture: preferenceSetting.enableQuickSearchDrawerGesture.isTrue,
           body: SafeArea(child: buildBody(context)),
           floatingActionButton: buildFloatingActionButton(),
+          bottomNavigationBar: logic.buildMultiSelectBottomBar(context),
           resizeToAvoidBottomInset: false,
         ),
       ),

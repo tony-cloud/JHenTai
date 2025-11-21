@@ -18,9 +18,11 @@ import '../../service/log.dart';
 import '../../utils/snack_util.dart';
 import '../../widget/loading_state_indicator.dart';
 import '../base/base_page_logic.dart';
+import '../base/multi_select/multi_select_gallery_logic_mixin.dart';
+import '../base/multi_select/multi_select_gallery_state_mixin.dart';
 import 'favorite_page_state.dart';
 
-class FavoritePageLogic extends BasePageLogic {
+class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin {
   @override
   bool get useSearchConfig => true;
 
@@ -29,6 +31,10 @@ class FavoritePageLogic extends BasePageLogic {
 
   @override
   final FavoritePageState state = FavoritePageState();
+
+  @override
+  @override
+  MultiSelectGalleryStateMixin get multiSelectGalleryState => state;
 
   Future<void> handleChangeSortOrder() async {
     if (state.refreshState == LoadingState.loading) {

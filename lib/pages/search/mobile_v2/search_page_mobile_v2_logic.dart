@@ -9,9 +9,12 @@ import '../../../model/search_config.dart';
 import '../../../service/local_config_service.dart';
 import '../../../setting/preference_setting.dart';
 import '../../base/base_page_logic.dart';
+import '../../base/multi_select/multi_select_gallery_logic_mixin.dart';
+import '../../base/multi_select/multi_select_gallery_state_mixin.dart';
 import '../mixin/search_page_logic_mixin.dart';
 
-class SearchPageMobileV2Logic extends BasePageLogic with SearchPageLogicMixin {
+class SearchPageMobileV2Logic extends BasePageLogic
+    with SearchPageLogicMixin, MultiSelectGalleryLogicMixin {
   @override
   final SearchPageMobileV2State state = SearchPageMobileV2State();
 
@@ -24,6 +27,9 @@ class SearchPageMobileV2Logic extends BasePageLogic with SearchPageLogicMixin {
   SearchPageMobileV2Logic() {
     stack.add(this);
   }
+
+  @override
+  MultiSelectGalleryStateMixin get multiSelectGalleryState => state;
 
   @override
   Future<void> onReady() async {
@@ -71,5 +77,13 @@ class SearchPageMobileV2Logic extends BasePageLogic with SearchPageLogicMixin {
       subConfigKey: searchConfigKey,
       value: jsonEncode(searchConfig.copyWith(keyword: '', tags: [])),
     );
+  }
+
+  @override
+  void toggleBodyType() {
+    if (multiSelectGalleryState.inMultiSelectMode) {
+      exitSelectMode();
+    }
+    super.toggleBodyType();
   }
 }

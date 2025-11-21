@@ -25,11 +25,22 @@ class FavoritePage extends BasePage {
   FavoritePageState get state => Get.find<FavoritePageLogic>().state;
 
   @override
+  Widget? buildBottomNavigationBar(BuildContext context) {
+    return logic.buildMultiSelectBottomBar(context);
+  }
+
+  @override
   List<Widget> buildAppBarActions() {
     return [
-      if (state.gallerys.isNotEmpty) IconButton(icon: const Icon(FontAwesomeIcons.paperPlane, size: 20), onPressed: logic.handleTapJumpButton),
-      if (state.gallerys.isNotEmpty) IconButton(icon: const Icon(Icons.sort), onPressed: logic.handleChangeSortOrder),
-      IconButton(icon: const Icon(Icons.filter_alt_outlined, size: 28), onPressed: logic.handleTapFilterButton),
+      if (state.gallerys.isNotEmpty)
+        IconButton(
+            icon: const Icon(FontAwesomeIcons.paperPlane, size: 20),
+            onPressed: logic.handleTapJumpButton),
+      if (state.gallerys.isNotEmpty)
+        IconButton(icon: const Icon(Icons.sort), onPressed: logic.handleChangeSortOrder),
+      IconButton(
+          icon: const Icon(Icons.filter_alt_outlined, size: 28),
+          onPressed: logic.handleTapFilterButton),
     ];
   }
 }

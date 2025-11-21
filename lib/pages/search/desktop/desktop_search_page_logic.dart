@@ -24,7 +24,8 @@ class DesktopSearchPageLogic extends GetxController with Scroll2TopLogicMixin {
   @override
   Scroll2TopStateMixin get scroll2TopState => state;
 
-  DesktopSearchPageTabLogic get currentTabLogic => state.tabLogics[state.currentTabIndex];
+  DesktopSearchPageTabLogic get currentTabLogic =>
+      state.tabLogics[state.currentTabIndex];
 
   void handleClearAndRefresh() {
     state.tabLogics[state.currentTabIndex].handleClearAndRefresh();
@@ -46,7 +47,9 @@ class DesktopSearchPageLogic extends GetxController with Scroll2TopLogicMixin {
   }
 
   void addNewTab(
-      {String? keyword, SearchConfig? rewriteSearchConfig, bool loadImmediately = true}) {
+      {String? keyword,
+      SearchConfig? rewriteSearchConfig,
+      bool loadImmediately = true}) {
     DesktopSearchPageTabLogic newTabLogic = DesktopSearchPageTabLogic(
       NewSearchArgument(
           keyword: keyword,
@@ -56,7 +59,8 @@ class DesktopSearchPageLogic extends GetxController with Scroll2TopLogicMixin {
     );
 
     state.tabLogics.add(newTabLogic);
-    state.tabs.add(DesktopSearchPageTabView(key: ValueKey(newUUID()), logic: newTabLogic));
+    state.tabs.add(
+        DesktopSearchPageTabView(key: ValueKey(newUUID()), logic: newTabLogic));
 
     state.currentTabIndex = state.tabs.length - 1;
     state.pageController = PageController(initialPage: state.currentTabIndex);

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/pages/popular/popular_page_logic.dart';
 import 'package:jhentai/pages/popular/popular_page_state.dart';
@@ -20,4 +21,9 @@ class PopularPage extends BasePage {
 
   @override
   PopularPageState get state => Get.find<PopularPageLogic>().state;
+
+  @override
+  Widget? buildBottomNavigationBar(BuildContext context) {
+    return logic.buildMultiSelectBottomBar(context);
+  }
 }

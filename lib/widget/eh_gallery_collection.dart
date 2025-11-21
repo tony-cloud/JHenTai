@@ -23,7 +23,11 @@ Widget EHGalleryCollection({
   CardCallback? handleLongPressCard,
   CardCallback? handleSecondaryTapCard,
   VoidCallback? handleLoadMore,
+  bool inMultiSelectMode = false,
+  Set<int>? selectedGids,
 }) {
+  final Set<int> selectedSet = selectedGids ?? const <int>{};
+
   Widget buildGalleryList() {
     /// use FlutterSliverList to [keepPosition] when insert items at top
     return FlutterSliverList(
@@ -56,6 +60,8 @@ Widget EHGalleryCollection({
                   ? null
                   : (gallery) => handleSecondaryTapCard(gallery),
               withTags: listMode == ListMode.listWithTags || listMode == ListMode.flat,
+              selected: selectedSet.contains(gallerys[index].gid),
+              showSelectionOverlay: inMultiSelectMode,
             ),
           );
         },
@@ -104,6 +110,8 @@ Widget EHGalleryCollection({
               handleSecondaryTapCard: handleSecondaryTapCard == null
                   ? null
                   : (gallery) => handleSecondaryTapCard(gallery),
+              selected: selectedSet.contains(gallerys[index].gid),
+              showSelectionOverlay: inMultiSelectMode,
             );
           },
           childCount: gallerys.length,

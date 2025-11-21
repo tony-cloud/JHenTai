@@ -19,7 +19,8 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
   const DesktopSearchPage({super.key});
 
   DesktopSearchPageLogic get logic =>
-      Get.put<DesktopSearchPageLogic>(DesktopSearchPageLogic(), permanent: true);
+      Get.put<DesktopSearchPageLogic>(DesktopSearchPageLogic(),
+          permanent: true);
 
   DesktopSearchPageState get state => Get.find<DesktopSearchPageLogic>().state;
 
@@ -60,7 +61,8 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(
-                    maxWidth: constraints.maxWidth - UIConfig.desktopSearchTabRemainingWidth),
+                    maxWidth: constraints.maxWidth -
+                        UIConfig.desktopSearchTabRemainingWidth),
                 child: EHWheelSpeedController(
                   controller: state.tabController,
                   child: ListView(
@@ -72,7 +74,8 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
                 ),
               ),
               IconButton(
-                onPressed: () => logic.addNewTab(keyword: '', loadImmediately: false),
+                onPressed: () =>
+                    logic.addNewTab(keyword: '', loadImmediately: false),
                 icon: const Icon(Icons.add),
               ),
             ],
@@ -109,10 +112,15 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
                           .computeFullKeywords()
                           .defaultIfEmpty('${'tab'.tr} ${index + 1}'),
                   selected: index == state.currentTabIndex,
-                  selectedColor: UIConfig.desktopSearchTabSelectedBackGroundColor(context),
-                  unSelectedColor: UIConfig.desktopSearchTabUnSelectedBackGroundColor(context),
-                  selectedTextColor: UIConfig.desktopSearchTabSelectedTextColor(context),
-                  unSelectedTextColor: UIConfig.desktopSearchTabUnSelectedTextColor(context),
+                  selectedColor:
+                      UIConfig.desktopSearchTabSelectedBackGroundColor(context),
+                  unSelectedColor:
+                      UIConfig.desktopSearchTabUnSelectedBackGroundColor(
+                          context),
+                  selectedTextColor:
+                      UIConfig.desktopSearchTabSelectedTextColor(context),
+                  unSelectedTextColor:
+                      UIConfig.desktopSearchTabUnSelectedTextColor(context),
                   onTap: () => logic.handleTapTab(index),
                   onDelete: () => logic.deleteTab(index),
                 ),
@@ -127,9 +135,12 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
             hasRightTab: index != state.tabLogics.length - 1,
             leftTabIsSelected: index == state.currentTabIndex,
             rightTabIsSelected: index == state.currentTabIndex - 1,
-            selectedColor: UIConfig.desktopSearchTabSelectedBackGroundColor(context),
-            unSelectedColor: UIConfig.desktopSearchTabUnSelectedBackGroundColor(context),
-            backgroundColor: UIConfig.desktopSearchTabDividerBackGroundColor(context),
+            selectedColor:
+                UIConfig.desktopSearchTabSelectedBackGroundColor(context),
+            unSelectedColor:
+                UIConfig.desktopSearchTabUnSelectedBackGroundColor(context),
+            backgroundColor:
+                UIConfig.desktopSearchTabDividerBackGroundColor(context),
           ),
           joinAtFirst: true,
           joinAtLast: true,
@@ -143,7 +154,9 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
         key: state.tabViewKey,
         child: PageView(
           controller: state.pageController,
-          physics: GetPlatform.isDesktop ? const NeverScrollableScrollPhysics() : null,
+          physics: GetPlatform.isDesktop
+              ? const NeverScrollableScrollPhysics()
+              : null,
           onPageChanged: logic.onPageChanged,
           children: state.tabs,
         ),
@@ -209,7 +222,9 @@ class _SearchTabState extends State<_SearchTab> {
                 widget.name,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color: selected ? widget.selectedTextColor : widget.unSelectedTextColor,
+                    color: selected
+                        ? widget.selectedTextColor
+                        : widget.unSelectedTextColor,
                     letterSpacing: 0.1),
               ).marginOnly(left: 2),
             ),
@@ -217,7 +232,9 @@ class _SearchTabState extends State<_SearchTab> {
               onPressed: widget.onDelete,
               icon: Icon(
                 Icons.clear,
-                color: selected ? widget.selectedTextColor : widget.unSelectedTextColor,
+                color: selected
+                    ? widget.selectedTextColor
+                    : widget.unSelectedTextColor,
                 size: UIConfig.desktopSearchTabIconSize,
               ),
             ),
@@ -265,16 +282,20 @@ class _SearchTabDivider extends StatelessWidget {
               height: UIConfig.desktopSearchTabHeight / 2,
               foregroundDecoration: hasLeftTab
                   ? BoxDecoration(
-                      color: leftTabIsSelected ? selectedColor : unSelectedColor,
+                      color:
+                          leftTabIsSelected ? selectedColor : unSelectedColor,
                       borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(UIConfig.desktopSearchTabDividerBorderRadius)),
+                          topRight: Radius.circular(
+                              UIConfig.desktopSearchTabDividerBorderRadius)),
                     )
                   : null,
             ),
             Container(
               width: UIConfig.desktopSearchTabDividerWidth / 2,
               height: UIConfig.desktopSearchTabHeight / 2,
-              color: leftTabIsSelected || rightTabIsSelected ? selectedColor : unSelectedColor,
+              color: leftTabIsSelected || rightTabIsSelected
+                  ? selectedColor
+                  : unSelectedColor,
               foregroundDecoration: BoxDecoration(
                 color: !hasLeftTab
                     ? backgroundColor
@@ -283,7 +304,8 @@ class _SearchTabDivider extends StatelessWidget {
                         : null,
                 borderRadius: !hasLeftTab || rightTabIsSelected
                     ? const BorderRadius.only(
-                        bottomRight: Radius.circular(UIConfig.desktopSearchTabDividerBorderRadius))
+                        bottomRight: Radius.circular(
+                            UIConfig.desktopSearchTabDividerBorderRadius))
                     : null,
               ),
             ),
@@ -296,16 +318,20 @@ class _SearchTabDivider extends StatelessWidget {
               height: UIConfig.desktopSearchTabHeight / 2,
               foregroundDecoration: hasRightTab
                   ? BoxDecoration(
-                      color: rightTabIsSelected ? selectedColor : unSelectedColor,
+                      color:
+                          rightTabIsSelected ? selectedColor : unSelectedColor,
                       borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(UIConfig.desktopSearchTabDividerBorderRadius)),
+                          topLeft: Radius.circular(
+                              UIConfig.desktopSearchTabDividerBorderRadius)),
                     )
                   : null,
             ),
             Container(
               width: UIConfig.desktopSearchTabDividerWidth / 2,
               height: UIConfig.desktopSearchTabHeight / 2,
-              color: leftTabIsSelected || rightTabIsSelected ? selectedColor : unSelectedColor,
+              color: leftTabIsSelected || rightTabIsSelected
+                  ? selectedColor
+                  : unSelectedColor,
               foregroundDecoration: BoxDecoration(
                 color: !hasRightTab
                     ? backgroundColor
@@ -314,7 +340,8 @@ class _SearchTabDivider extends StatelessWidget {
                         : unSelectedColor,
                 borderRadius: !hasRightTab || leftTabIsSelected
                     ? const BorderRadius.only(
-                        bottomLeft: Radius.circular(UIConfig.desktopSearchTabDividerBorderRadius))
+                        bottomLeft: Radius.circular(
+                            UIConfig.desktopSearchTabDividerBorderRadius))
                     : null,
               ),
             ),

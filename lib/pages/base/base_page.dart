@@ -15,6 +15,7 @@ import '../../widget/eh_gallery_collection.dart';
 import '../../widget/loading_state_indicator.dart';
 import 'base_page_logic.dart';
 import 'base_page_state.dart';
+import 'multi_select/multi_select_gallery_logic_mixin.dart';
 
 abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extends StatelessWidget
     with Scroll2TopPageMixin {
@@ -58,6 +59,7 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
             : null,
         body: SafeArea(child: buildBody(context)),
         floatingActionButton: showScroll2TopButton ? buildFloatingActionButton() : null,
+        bottomNavigationBar: buildBottomNavigationBar(context),
       ),
     );
   }
@@ -94,6 +96,8 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
   Widget buildBody(BuildContext context) {
     return buildListBody(context);
   }
+
+  Widget? buildBottomNavigationBar(BuildContext context) => null;
 
   Widget buildListBody(BuildContext context) {
     return GetBuilder<L>(
@@ -171,6 +175,13 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
   }
 
   Widget buildGalleryCollection(BuildContext context) {
+    final bool inMultiSelectMode = logic is MultiSelectGalleryLogicMixin
+        ? (logic as MultiSelectGalleryLogicMixin).multiSelectGalleryState.inMultiSelectMode
+        : false;
+    final Set<int>? selectedGids = logic is MultiSelectGalleryLogicMixin
+        ? (logic as MultiSelectGalleryLogicMixin).multiSelectGalleryState.selectedGids
+        : null;
+
     return Obx(
       () => EHGalleryCollection(
         key: state.galleryCollectionKey,
@@ -182,6 +193,8 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
         handleLongPressCard: (gallery) => logic.handleLongPressCard(context, gallery),
         handleSecondaryTapCard: (gallery) => logic.handleSecondaryTapCard(context, gallery),
         handleLoadMore: logic.loadMore,
+        inMultiSelectMode: inMultiSelectMode,
+        selectedGids: selectedGids,
       ),
     );
   }

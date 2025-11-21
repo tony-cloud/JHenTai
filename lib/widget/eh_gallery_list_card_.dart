@@ -30,6 +30,8 @@ class EHGalleryListCard extends StatelessWidget {
   final CardCallback? handleLongPressCard;
   final CardCallback? handleSecondaryTapCard;
   final bool withTags;
+  final bool selected;
+  final bool showSelectionOverlay;
 
   const EHGalleryListCard({
     super.key,
@@ -40,25 +42,55 @@ class EHGalleryListCard extends StatelessWidget {
     this.withTags = true,
     this.handleLongPressCard,
     this.handleSecondaryTapCard,
+    this.selected = false,
+    this.showSelectionOverlay = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget child = FadeIn(
+      duration: const Duration(milliseconds: 100),
+      child: SizedBox(
+        height: withTags ? UIConfig.galleryCardHeight : UIConfig.galleryCardHeightWithoutTags,
+        child: listMode == ListMode.flat || listMode == ListMode.flatWithoutTags
+            ? buildFlatGalleryCard(context)
+            : buildRoundGalleryCard(context),
+      ),
+    );
+
+    if (showSelectionOverlay) {
+      child = Stack(
+        children: [
+          child,
+          Positioned.fill(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              color: selected
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.16)
+                  : Colors.transparent,
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Icon(
+              selected ? Icons.check_circle : Icons.radio_button_unchecked,
+              color: selected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+        ],
+      );
+    }
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => handleTapCard(gallery),
       onLongPress: handleLongPressCard == null ? null : () => handleLongPressCard!(gallery),
       onSecondaryTap:
           handleSecondaryTapCard == null ? null : () => handleSecondaryTapCard!(gallery),
-      child: FadeIn(
-        duration: const Duration(milliseconds: 100),
-        child: SizedBox(
-          height: withTags ? UIConfig.galleryCardHeight : UIConfig.galleryCardHeightWithoutTags,
-          child: listMode == ListMode.flat || listMode == ListMode.flatWithoutTags
-              ? buildFlatGalleryCard(context)
-              : buildRoundGalleryCard(context),
-        ),
-      ),
+      child: child,
     );
   }
 

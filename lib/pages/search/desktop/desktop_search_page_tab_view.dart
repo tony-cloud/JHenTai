@@ -24,6 +24,11 @@ class DesktopSearchPageTabView
   AppBar? buildAppBar(BuildContext context) => null;
 
   @override
+  Widget? buildBottomNavigationBar(BuildContext context) {
+    return logic.buildMultiSelectBottomBar(context);
+  }
+
+  @override
   Widget buildBody(BuildContext context) {
     return Column(
       children: [
