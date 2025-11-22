@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart' show Locale;
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/service/printer/error_text_printer.dart';
 import 'package:jhentai/service/rolling_file_output.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/service/path_service.dart';
@@ -49,6 +50,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       colors: false,
       noBoxingByDefault: true,
       levelEmojis: {Level.trace: '✔ '});
+  final LogPrinter _errorTextPrinter = ErrorTextPrinter();
 
   @override
   List<JHLifeCircleBean> get initDependencies => [pathService];
@@ -183,7 +185,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     if (advancedSetting.enableVerboseLogging.isTrue) {
       _warningFileLogger ??= Logger(
         level: Level.warning,
-        printer: prodPrinterWithBox,
+        printer: _errorTextPrinter,
         filter: ProductionFilter(),
         output: RollingFileOutput(
           baseFilePath: path.join(logDirPath!, '${fileName}_error.log'),
