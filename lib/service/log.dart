@@ -1,14 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/service/rolling_file_output.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:logger/logger.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
 
 import '../exception/upload_exception.dart';
@@ -24,6 +28,12 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   Logger? _verboseFileLogger;
   Logger? _warningFileLogger;
   Logger? _downloadFileLogger;
+
+  static const int _maxLogLinesPerFile = 5000;
+  final DateTime _startupTime = DateTime.now();
+  PackageInfo? _packageInfo;
+  Duration? _startupToFirstFrame;
+  bool _firstFrameLogged = false;
 
   LogPrinter devPrinter =
       PrettyPrinter(stackTraceBeginIndex: 0, methodCount: 6, levelEmojis: {Level.trace: '✔ '});
@@ -45,6 +55,8 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   @override
   Future<void> doInitBean() async {
+    _packageInfo = await _resolvePackageInfo();
+
     PlatformDispatcher.instance.onError = (error, stack) {
       if (error is NotUploadException) {
         return true;
@@ -162,19 +174,31 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       printer: HybridPrinter(prodPrinterWithBox,
           trace: prodPrinterWithoutBox, debug: prodPrinterWithoutBox, info: prodPrinterWithoutBox),
       filter: EHLogFilter(),
-      output: FileOutput(file: File(path.join(logDirPath!, '$fileName.log'))),
+      output: RollingFileOutput(
+        baseFilePath: path.join(logDirPath!, '$fileName.log'),
+        headerBuilder: () => _buildLogHeader('Main'),
+        maxLines: _maxLogLinesPerFile,
+      ),
     );
     if (advancedSetting.enableVerboseLogging.isTrue) {
       _warningFileLogger ??= Logger(
         level: Level.warning,
         printer: prodPrinterWithBox,
         filter: ProductionFilter(),
-        output: FileOutput(file: File(path.join(logDirPath!, '${fileName}_error.log'))),
+        output: RollingFileOutput(
+          baseFilePath: path.join(logDirPath!, '${fileName}_error.log'),
+          headerBuilder: () => _buildLogHeader('Warnings'),
+          maxLines: _maxLogLinesPerFile,
+        ),
       );
       _downloadFileLogger ??= Logger(
         printer: prodPrinterWithoutBox,
         filter: ProductionFilter(),
-        output: FileOutput(file: File(path.join(logDirPath!, '${fileName}_download.log'))),
+        output: RollingFileOutput(
+          baseFilePath: path.join(logDirPath!, '${fileName}_download.log'),
+          headerBuilder: () => _buildLogHeader('Downloads'),
+          maxLines: _maxLogLinesPerFile,
+        ),
       );
     }
 
@@ -185,6 +209,99 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       if (_downloadFileLogger != null) _downloadFileLogger!.init,
     ]);
   }
+
+  Future<PackageInfo?> _resolvePackageInfo() async {
+    try {
+      return await PackageInfo.fromPlatform();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> markFirstFrameRendered() async {
+    if (_firstFrameLogged) {
+      return;
+    }
+    _firstFrameLogged = true;
+
+    final DateTime firstFrameTime = DateTime.now();
+    _startupToFirstFrame = firstFrameTime.difference(_startupTime);
+
+    final String startupTs = _formatDateTime(_startupTime);
+    final String firstFrameTs = _formatDateTime(firstFrameTime);
+    final String payload = jsonEncode(_packageInfoAsMap());
+
+    final String message = [
+      'First UI frame rendered.',
+      'Startup timestamp: $startupTs',
+      'First-frame timestamp: $firstFrameTs',
+      'Startup duration(ms): ${_startupToFirstFrame!.inMilliseconds}',
+      'PackageInfo snapshot: $payload',
+    ].join('\n');
+
+    await _initLogger();
+    _consoleLogger?.i(message);
+    _verboseFileLogger?.i(message);
+  }
+
+  String _buildLogHeader(String channelLabel) {
+    final PackageInfo? info = _packageInfo;
+    final Locale? locale = Get.locale ?? Get.deviceLocale;
+    final String localeTag = locale == null
+        ? 'unknown'
+        : locale.countryCode?.isNotEmpty == true
+            ? '${locale.languageCode}-${locale.countryCode}'
+            : locale.languageCode;
+
+    final StringBuffer buffer = StringBuffer()
+      ..writeln('========== JHenTai Log ($channelLabel) ==========');
+
+    if (info != null) {
+      buffer
+        ..writeln('App: ${info.appName}')
+        ..writeln('Package: ${info.packageName}')
+        ..writeln('Version: ${info.version} (build ${info.buildNumber})');
+      if (info.buildSignature.isNotEmpty) {
+        buffer.writeln('Build signature: ${info.buildSignature}');
+      }
+      if (info.installerStore?.isNotEmpty == true) {
+        buffer.writeln('Installer store: ${info.installerStore}');
+      }
+      buffer.writeln('PackageInfo JSON: ${jsonEncode(_packageInfoAsMap())}');
+    }
+
+    buffer
+      ..writeln('Build mode: ${kReleaseMode ? 'release' : 'debug'}')
+      ..writeln(
+          'Startup: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_startupTime)} ${_startupTime.timeZoneName}')
+      ..writeln(
+          'Startup duration to first frame: ${_startupToFirstFrame?.inMilliseconds ?? -1} ms (logged later if -1)')
+      ..writeln('Locale: $localeTag')
+      ..writeln('Platform: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}')
+      ..writeln('===============================================');
+
+    return buffer.toString();
+  }
+
+  Map<String, dynamic> _packageInfoAsMap() {
+    final PackageInfo? info = _packageInfo;
+    if (info == null) {
+      return {};
+    }
+    final map = <String, dynamic>{
+      'appName': info.appName,
+      'packageName': info.packageName,
+      'version': info.version,
+      'buildNumber': info.buildNumber,
+      'buildSignature': info.buildSignature,
+      'installerStore': info.installerStore,
+    };
+    map.removeWhere((key, value) => value == null || (value is String && value.isEmpty));
+    return map;
+  }
+
+  String _formatDateTime(DateTime time) =>
+      '${DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(time)} ${time.timeZoneName}';
 }
 
 class EHLogFilter extends LogFilter {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:clipboard/clipboard.dart';
@@ -19,14 +20,25 @@ class LogPage extends StatefulWidget {
 
 class _LogPageState extends State<LogPage> {
   late final File log;
-  late final String logText;
+  String logText = '';
+  Timer? _refreshTimer;
+  DateTime? _lastModified;
 
   @override
   void initState() {
     super.initState();
 
     log = Get.arguments;
-    logText = log.readAsStringSync();
+    unawaited(_loadLog(initial: true));
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      unawaited(_loadLog());
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -74,5 +86,36 @@ class _LogPageState extends State<LogPage> {
     }
     await FlutterClipboard.copy(logText);
     toast('hasCopiedToClipboard'.tr);
+  }
+
+  Future<void> _loadLog({bool initial = false}) async {
+    try {
+      if (!await log.exists()) {
+        if (initial && mounted) {
+          setState(() {
+            logText = '';
+            _lastModified = null;
+          });
+        }
+        return;
+      }
+
+      final DateTime latestModified = await log.lastModified();
+      if (!initial && _lastModified != null && !latestModified.isAfter(_lastModified!)) {
+        return;
+      }
+
+      final String content = await log.readAsString();
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        logText = content;
+        _lastModified = latestModified;
+      });
+    } on Exception {
+      // ignore intermittent read issues (e.g., file rotation)
+    }
   }
 }

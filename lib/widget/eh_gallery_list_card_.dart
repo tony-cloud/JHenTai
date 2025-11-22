@@ -66,7 +66,7 @@ class EHGalleryListCard extends StatelessWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               color: selected
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.16)
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.16)
                   : Colors.transparent,
             ),
           ),
@@ -77,7 +77,7 @@ class EHGalleryListCard extends StatelessWidget {
               selected ? Icons.check_circle : Icons.radio_button_unchecked,
               color: selected
                   ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],

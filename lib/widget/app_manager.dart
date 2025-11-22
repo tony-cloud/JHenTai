@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:blur/blur.dart';
@@ -72,6 +73,9 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
     super.initState();
 
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(log.markFirstFrameRendered());
+    });
 
     _listener = AppLifecycleListener(
       onInactive: _onInactive,
