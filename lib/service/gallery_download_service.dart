@@ -1274,6 +1274,10 @@ class GalleryDownloadService extends GetxController
       }
 
       GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
+      Set<String> reloadKeyHistory = galleryDownloadInfo.legacyReloadKeyHistory[serialNo];
+      if (reloadKey != null) {
+        reloadKeyHistory.add(reloadKey);
+      }
 
       /// If this is a update from old gallery, try to copy from existing old image first
       if (gallery.oldVersionGalleryUrl != null) {
@@ -1441,6 +1445,21 @@ class GalleryDownloadService extends GetxController
         if (metadataChanged) {
           _saveGalleryMetadataInDisk(gallery);
         }
+      }
+
+      if (image.reloadKey != null) {
+        if (reloadKeyHistory.contains(image.reloadKey)) {
+          log.download(
+              'Parse image url returned reused reload key, mark as failed. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${image.reloadKey}');
+          image.path =
+              _computeImageDownloadRelativePath(gallery.title, gallery.gid, image.url, serialNo);
+          image.downloadStatus = DownloadStatus.downloadFailed;
+          galleryDownloadInfo.images[serialNo] = image;
+          await _saveNewImageInfoInDatabase(image, serialNo, gallery.gid);
+          await _markImageAsFailed(gallery, image, serialNo);
+          return;
+        }
+        reloadKeyHistory.add(image.reloadKey!);
       }
 
       if (previousFailedUrl != null && image.url == previousFailedUrl) {
@@ -1978,7 +1997,23 @@ class GalleryDownloadService extends GetxController
   Future<void> _markImageAsFailed(
       GalleryDownloadedData gallery, GalleryImage image, int serialNo) async {
     GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
+    galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = null;
+
+    Set<String> cacheUrls = {image.url};
+    if (image.originalImageUrl?.isNotEmpty == true) {
+      cacheUrls.add(image.originalImageUrl!);
+    }
+    GalleryThumbnail? thumbnail = galleryDownloadInfo.imageHrefs[serialNo];
+    if (thumbnail != null) {
+      cacheUrls.add(thumbnail.replacedMPVHref(serialNo + 1));
+    }
+
+    image.reloadKey = null;
     galleryDownloadInfo.images[serialNo] = image;
+
+    for (String url in cacheUrls) {
+      await _removeCacheSafe(url);
+    }
 
     galleryDownloadInfo.speedComputer.resetProgress(serialNo);
     await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloadFailed);
@@ -2533,6 +2568,18 @@ class GalleryDownloadService extends GetxController
           'exists': pathService.getVisibleDir().existsSync(),
         },
       );
+    }
+  }
+
+  Future<void> _removeCacheSafe(String url) async {
+    if (url.isEmpty) {
+      return;
+    }
+
+    try {
+      await ehRequest.removeCacheByUrl(url);
+    } catch (e) {
+      log.warning('Remove cache failed: $url', e, true);
     }
   }
 }
