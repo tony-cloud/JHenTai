@@ -1658,11 +1658,37 @@ class GalleryDownloadService extends GetxController
         return _reParseImageUrlAndDownload(gallery, serialNo);
       }
 
+      final String? contentType = response.headers.value(Headers.contentTypeHeader);
+      final bool receivedHtmlInsteadOfImage =
+          !response.isRedirect && (contentType?.toLowerCase().contains('text/html') ?? false);
+
       /// what we downloaded is not an valid image
-      if (!response.isRedirect &&
-          (response.headers[Headers.contentTypeHeader]?.contains("text/html; charset=UTF-8") ??
-              false)) {
-        String data = downloadedFile.readAsStringSync();
+      if (receivedHtmlInsteadOfImage) {
+        String data;
+        try {
+          data = downloadedFile.readAsStringSync();
+        } catch (e, stack) {
+          log.error('Read invalid image response failed', e, stack);
+          data = '';
+        }
+
+        if (galleryDownloadInfo.preferOriginalImages[serialNo]) {
+          String reason = data.trim();
+          if (reason.length > 200) {
+            reason = '${reason.substring(0, 200)}...';
+          }
+          log.download(
+              'Download ${gallery.title} original image: $serialNo returned HTML: ${reason.isEmpty ? 'unknown reason' : reason}');
+          galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+          if (downloadedFile.existsSync()) {
+            try {
+              downloadedFile.deleteSync();
+            } catch (e, stack) {
+              log.error('Delete invalid original image file failed', e, stack);
+            }
+          }
+          return _reParseImageUrlAndDownload(gallery, serialNo);
+        }
 
         EHImageException? exception = imageData2Exception(data);
         log.error('Download ${gallery.title} image: $serialNo failed: $exception');
