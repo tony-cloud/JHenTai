@@ -115,6 +115,7 @@ class DetailsPageLogic extends GetxController
 
   final DetailsPageState state;
   bool _isUpdatingFromHistory = false;
+  bool _isFindingHistoryDownload = false;
 
   @override
   Scroll2TopStateMixin get scroll2TopState => state;
@@ -883,36 +884,15 @@ class DetailsPageLogic extends GetxController
 
       toast('updateGallerySearchingHistory'.tr, isCenter: false);
 
-      Set<int> visitedGids = <int>{state.galleryDetails!.galleryUrl.gid};
-
-      GalleryDetail? latestDetail =
-          await _resolveLatestGalleryDetail(state.galleryDetails!, visitedGids);
-      if (latestDetail == null) {
+      final historyResult = await _collectDownloadedGalleriesFromHistory();
+      if (historyResult == null) {
         return;
       }
 
-      GalleryDownloadedData? downloadedGallery = galleryDownloadService.gallerys
-          .firstWhereOrNull((g) => g.gid == latestDetail.galleryUrl.gid);
-      GalleryDetail currentDetail = latestDetail;
-
-      while (downloadedGallery == null) {
-        GalleryUrl? parentUrl = currentDetail.parentGalleryUrl;
-        if (parentUrl == null || visitedGids.contains(parentUrl.gid)) {
-          break;
-        }
-
-        visitedGids.add(parentUrl.gid);
-
-        GalleryDetail? parentDetail = await _fetchGalleryDetailForHistory(parentUrl);
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (parentDetail == null) {
-          return;
-        }
-
-        currentDetail = parentDetail;
-        downloadedGallery = galleryDownloadService.gallerys
-            .firstWhereOrNull((g) => g.gid == currentDetail.galleryUrl.gid);
-      }
+      GalleryDetail latestDetail = historyResult.latestDetail;
+      GalleryDownloadedData? downloadedGallery = historyResult.downloadedGalleries.isEmpty
+          ? null
+          : historyResult.downloadedGalleries.first;
 
       if (downloadedGallery == null) {
         toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
@@ -929,6 +909,111 @@ class DetailsPageLogic extends GetxController
     } finally {
       _isUpdatingFromHistory = false;
     }
+  }
+
+  Future<void> handleTapFindRecentDownload() async {
+    if (_isFindingHistoryDownload) {
+      return;
+    }
+
+    if (state.galleryDetails == null) {
+      return;
+    }
+
+    bool hasHistory = state.galleryDetails!.parentGalleryUrl != null ||
+        (state.galleryDetails!.childrenGallerys?.isNotEmpty ?? false);
+    if (!hasHistory) {
+      return;
+    }
+
+    if (galleryDownloadService.gallerys.isEmpty) {
+      toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
+      return;
+    }
+
+    _isFindingHistoryDownload = true;
+
+    try {
+      await galleryDownloadService.completed;
+
+      toast('updateGallerySearchingHistory'.tr, isCenter: false);
+
+      final historyResult = await _collectDownloadedGalleriesFromHistory();
+      if (historyResult == null) {
+        return;
+      }
+
+      GalleryDownloadedData? downloadedGallery = historyResult.downloadedGalleries
+          .firstWhereOrNull((g) => g.gid != state.galleryDetails!.galleryUrl.gid);
+
+      downloadedGallery ??= historyResult.downloadedGalleries.firstWhereOrNull((_) => true);
+
+      if (downloadedGallery == null) {
+        toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
+        return;
+      }
+
+      if (downloadedGallery.gid == state.galleryDetails!.galleryUrl.gid) {
+        toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
+        return;
+      }
+
+      GalleryUrl? downloadedGalleryUrl = GalleryUrl.tryParse(downloadedGallery.galleryUrl);
+      if (downloadedGalleryUrl == null) {
+        log.error(
+            'Failed to parse gallery url when finding recent download: ${downloadedGallery.galleryUrl}');
+        toast('findRecentDownloadNavigateFailed'.tr, isCenter: false);
+        return;
+      }
+
+      toRoute(
+        Routes.details,
+        arguments: DetailsPageArgument(galleryUrl: downloadedGalleryUrl),
+        offAllBefore: false,
+        preventDuplicates: false,
+      );
+    } finally {
+      _isFindingHistoryDownload = false;
+    }
+  }
+
+  Future<({GalleryDetail latestDetail, List<GalleryDownloadedData> downloadedGalleries})?>
+      _collectDownloadedGalleriesFromHistory() async {
+    Set<int> visitedGids = <int>{state.galleryDetails!.galleryUrl.gid};
+
+    GalleryDetail? latestDetail =
+        await _resolveLatestGalleryDetail(state.galleryDetails!, visitedGids);
+    if (latestDetail == null) {
+      return null;
+    }
+
+    GalleryDetail currentDetail = latestDetail;
+    List<GalleryDownloadedData> downloadedGalleries = [];
+
+    while (true) {
+      GalleryDownloadedData? downloadedGallery = galleryDownloadService.gallerys
+          .firstWhereOrNull((g) => g.gid == currentDetail.galleryUrl.gid);
+      if (downloadedGallery != null) {
+        downloadedGalleries.add(downloadedGallery);
+      }
+
+      GalleryUrl? parentUrl = currentDetail.parentGalleryUrl;
+      if (parentUrl == null || visitedGids.contains(parentUrl.gid)) {
+        break;
+      }
+
+      visitedGids.add(parentUrl.gid);
+
+      GalleryDetail? parentDetail = await _fetchGalleryDetailForHistory(parentUrl);
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (parentDetail == null) {
+        return null;
+      }
+
+      currentDetail = parentDetail;
+    }
+
+    return (latestDetail: latestDetail, downloadedGalleries: downloadedGalleries);
   }
 
   Future<GalleryDetail?> _resolveLatestGalleryDetail(

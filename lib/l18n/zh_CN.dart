@@ -173,6 +173,8 @@ class zh_CN {
       'beginToDownloadArchiveHint': '可在 下载 -> 归档 确认进度',
       'updateGalleryError': '更新画廊失败',
       'updateGallery': '更新画廊',
+      'findRecentDownload': '查找最近下载',
+      'findRecentDownloadNavigateFailed': '无法打开已下载的历史画廊',
       'updateGallerySearchingHistory': '正在从历史记录中查找已下载的画廊...',
       'updateGalleryHistoryDownloadNotFound': '历史记录中没有找到已下载的画廊',
       'updateGalleryAlreadyLatest': '本地画廊已是最新版本',

@@ -192,6 +192,8 @@ class ko_KR {
       'beginToDownloadArchiveHint': '다운로드 → 아카이브에서 진행 상황을 확인할 수 있습니다.',
       'updateGalleryError': '갤러리 업데이트 오류',
       'updateGallery': '갤러리 업데이트',
+      'findRecentDownload': '최근 다운로드 찾기',
+      'findRecentDownloadNavigateFailed': '다운로드한 갤러리를 열 수 없습니다',
       'updateGallerySearchingHistory': '히스토리에서 다운로드한 갤러리를 찾는 중...',
       'updateGalleryHistoryDownloadNotFound': '히스토리에 다운로드된 갤러리가 없습니다',
       'updateGalleryAlreadyLatest': '다운로드한 갤러리가 이미 최신 버전입니다',

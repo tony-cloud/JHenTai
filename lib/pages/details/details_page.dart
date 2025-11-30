@@ -159,6 +159,14 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                         value: 5,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [Text('findRecentDownload'.tr), const Icon(Icons.find_in_page)],
+                        ),
+                      ),
+                    if (hasHistory)
+                      PopupMenuItem(
+                        value: 6,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [Text('history'.tr), const Icon(Icons.history)],
                         ),
                       ),
@@ -187,6 +195,9 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                     logic.handleTapUpdateGalleryFromHistory();
                   }
                   if (value == 5) {
+                    logic.handleTapFindRecentDownload();
+                  }
+                  if (value == 6) {
                     logic.handleTapHistoryButton(context);
                   }
                 },

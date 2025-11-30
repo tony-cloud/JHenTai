@@ -174,6 +174,8 @@ class en_US {
       'beginToDownloadArchiveHint': 'You can check progress at Download -> Archive',
       'updateGalleryError': 'Update Gallery Error',
       'updateGallery': 'Update Gallery',
+      'findRecentDownload': 'Find Recent Download',
+      'findRecentDownloadNavigateFailed': 'Unable to open the downloaded gallery',
       'updateGallerySearchingHistory': 'Searching history for downloaded gallery...',
       'updateGalleryHistoryDownloadNotFound': 'No downloaded gallery found in history',
       'updateGalleryAlreadyLatest': 'Downloaded gallery is already the latest version',

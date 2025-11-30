@@ -192,6 +192,8 @@ class zh_TW {
       'beginToDownloadArchiveHint': '可在 下載 -> 歸檔 確認進度',
       'updateGalleryError': '更新畫廊失敗',
       'updateGallery': '更新畫廊',
+      'findRecentDownload': '尋找最近下載',
+      'findRecentDownloadNavigateFailed': '無法開啟已下載的歷史畫廊',
       'updateGallerySearchingHistory': '正在從歷史紀錄中查找已下載的畫廊...',
       'updateGalleryHistoryDownloadNotFound': '在歷史紀錄中找不到已下載的畫廊',
       'updateGalleryAlreadyLatest': '本地畫廊已是最新版本',

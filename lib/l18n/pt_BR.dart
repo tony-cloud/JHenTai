@@ -195,6 +195,8 @@ class pt_BR {
       'beginToDownloadArchiveHint': 'Você pode verificar o progresso em Baixar -> Arquivo',
       'updateGalleryError': 'Erro ao atualizar galeria',
       'updateGallery': 'Atualizar Galeria',
+      'findRecentDownload': 'Encontrar download recente',
+      'findRecentDownloadNavigateFailed': 'Não foi possível abrir a galeria baixada',
       'updateGallerySearchingHistory': 'Procurando galeria baixada no histórico...',
       'updateGalleryHistoryDownloadNotFound': 'Nenhuma galeria baixada encontrada no histórico',
       'updateGalleryAlreadyLatest': 'A galeria baixada já está na versão mais recente',

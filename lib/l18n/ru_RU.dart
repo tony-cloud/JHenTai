@@ -195,6 +195,8 @@ class ru_RU {
       'beginToDownloadArchiveHint': 'Вы можете проверить прогресс в Загрузки -> Архив',
       'updateGalleryError': 'Ошибка обновления галереи',
       'updateGallery': 'Обновить галерею',
+      'findRecentDownload': 'Найти последнюю загрузку',
+      'findRecentDownloadNavigateFailed': 'Не удалось открыть загруженную галерею',
       'updateGallerySearchingHistory': 'Поиск загруженной галереи в истории...',
       'updateGalleryHistoryDownloadNotFound': 'Загруженная галерея не найдена в истории',
       'updateGalleryAlreadyLatest': 'Загруженная галерея уже обновлена до последней версии',
