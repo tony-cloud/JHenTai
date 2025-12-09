@@ -2141,6 +2141,16 @@ class GalleryDownloadService extends GetxController
 
       log.download('Copy old image, new serialNo: $serialNo');
       io.File oldFile = io.File(path.join(pathService.getVisibleDir().path, oldImage.path!));
+
+      if (!oldFile.existsSync()) {
+        log.download(
+            'Old image missing while copying for update, fallback to re-download. Gid: ${newGallery.gid}, serialNo: $serialNo');
+        newImage.downloadStatus = DownloadStatus.downloading;
+        newGalleryDownloadInfo.images[serialNo] ??= newImage;
+        await _updateImageStatus(newGallery, newImage, serialNo, DownloadStatus.downloading);
+        continue;
+      }
+
       await oldFile.copy(path.join(pathService.getVisibleDir().path, newImage.path!));
 
       if (newGalleryDownloadInfo.images[serialNo] == null) {
@@ -2166,11 +2176,77 @@ class GalleryDownloadService extends GetxController
     GalleryImage newImage = galleryDownloadInfos[newGallery.gid]!.images[newImageSerialNo]!;
 
     io.File oldFile = io.File(path.join(pathService.getVisibleDir().path, oldImage.path!));
-    await oldFile.copy(path.join(pathService.getVisibleDir().path, newImage.path!));
+    String targetPath = path.join(pathService.getVisibleDir().path, newImage.path!);
+
+    if (!oldFile.existsSync()) {
+      log.download(
+          'Old image missing when copying, queue re-download. Gid: ${newGallery.gid}, serialNo: $newImageSerialNo');
+      newImage.downloadStatus = DownloadStatus.downloading;
+      await _updateImageStatus(newGallery, newImage, newImageSerialNo, DownloadStatus.downloading);
+      return;
+    }
+
+    await oldFile.copy(targetPath);
 
     await _updateImageStatus(newGallery, newImage, newImageSerialNo, DownloadStatus.downloaded);
 
     await _updateProgressAfterImageDownloaded(newGallery, newImageSerialNo);
+  }
+
+  Future<int> checkAndRedownloadMissingImages(GalleryDownloadedData gallery) async {
+    await completed;
+
+    GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gallery.gid];
+    if (galleryDownloadInfo == null) {
+      return 0;
+    }
+
+    int repaired = 0;
+
+    for (int serialNo = 0; serialNo < galleryDownloadInfo.images.length; serialNo++) {
+      GalleryImage? image = galleryDownloadInfo.images[serialNo];
+      if (image == null) {
+        continue;
+      }
+
+      if (image.downloadStatus != DownloadStatus.downloaded) {
+        continue;
+      }
+
+      String? relativePath = image.path;
+      String absolutePath = relativePath == null
+          ? _computeImageDownloadAbsolutePath(gallery.title, gallery.gid, image.url, serialNo)
+          : path.join(pathService.getVisibleDir().path, relativePath);
+
+      if (io.File(absolutePath).existsSync()) {
+        continue;
+      }
+
+      if (galleryDownloadInfo.downloadProgress.hasDownloaded[serialNo]) {
+        galleryDownloadInfo.downloadProgress.hasDownloaded[serialNo] = false;
+        if (galleryDownloadInfo.downloadProgress.curCount > 0) {
+          galleryDownloadInfo.downloadProgress.curCount--;
+        }
+      }
+
+      galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+      await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloading);
+
+      repaired++;
+
+      _processImage(gallery, serialNo);
+    }
+
+    if (repaired > 0) {
+      if (galleryDownloadInfo.downloadProgress.downloadStatus == DownloadStatus.downloaded) {
+        await _updateGalleryDownloadStatus(gallery, DownloadStatus.downloading);
+      }
+      _saveGalleryMetadataInDisk(gallery);
+      update(['$galleryDownloadProgressId::${gallery.gid}']);
+      _notifyDownloadActivityChanged();
+    }
+
+    return repaired;
   }
 
   Future<void> _tryLoadFromCacheInsteadDownload(

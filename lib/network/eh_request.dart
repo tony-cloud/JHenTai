@@ -804,6 +804,9 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     bool deleteOnError = true,
     HtmlParser<T>? parser,
   }) async {
+    final Duration? resolvedReceiveTimeout =
+        receiveTimeout == null ? null : Duration(milliseconds: receiveTimeout);
+
     Response response = await _dio.download(
       url,
       path,
@@ -814,7 +817,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       options: Options(
         preserveHeaderCase: preserveHeaderCase,
         headers: range == null ? null : {'Range': range},
-        receiveTimeout: Duration(milliseconds: receiveTimeout ?? 0),
+        receiveTimeout: resolvedReceiveTimeout,
       ),
     );
 

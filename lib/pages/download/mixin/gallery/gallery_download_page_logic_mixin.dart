@@ -135,6 +135,15 @@ mixin GalleryDownloadPageLogicMixin on GetxController
     updateSafely([bodyId]);
   }
 
+  Future<void> handleCheckMissingImages(GalleryDownloadedData gallery) async {
+    int repaired = await downloadService.checkAndRedownloadMissingImages(gallery);
+    if (repaired == 0) {
+      toast('No missing images detected');
+    } else {
+      toast('Re-downloading $repaired missing image(s)');
+    }
+  }
+
   void handleReDownloadItem(GalleryDownloadedData gallery) {
     downloadService.reDownloadGallery(gallery);
   }
@@ -233,6 +242,13 @@ mixin GalleryDownloadPageLogicMixin on GetxController
             },
           ),
           CupertinoActionSheetAction(
+            child: const Text('Check missing images'),
+            onPressed: () async {
+              backRoute();
+              await handleCheckMissingImages(gallery);
+            },
+          ),
+          CupertinoActionSheetAction(
             child: Text('reDownload'.tr),
             onPressed: () {
               backRoute();
@@ -276,17 +292,14 @@ mixin GalleryDownloadPageLogicMixin on GetxController
             },
             child: Text('${'priority'.tr} : 1 (${'highest'.tr})'),
           ),
-          ...[2, 3]
-              .map((i) => CupertinoActionSheetAction(
-                    isDefaultAction:
-                        downloadService.galleryDownloadInfos[gallery.gid]?.priority == i,
-                    onPressed: () {
-                      handleAssignPriority(gallery, i);
-                      backRoute();
-                    },
-                    child: Text('${'priority'.tr} : $i'),
-                  ))
-              ,
+          ...[2, 3].map((i) => CupertinoActionSheetAction(
+                isDefaultAction: downloadService.galleryDownloadInfos[gallery.gid]?.priority == i,
+                onPressed: () {
+                  handleAssignPriority(gallery, i);
+                  backRoute();
+                },
+                child: Text('${'priority'.tr} : $i'),
+              )),
           CupertinoActionSheetAction(
             isDefaultAction: downloadService.galleryDownloadInfos[gallery.gid]?.priority == 4,
             onPressed: () {
