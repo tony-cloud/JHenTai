@@ -424,6 +424,13 @@ class ru_RU {
       'custom': 'Пользовательский',
 
       /// performance setting page
+      'enableInactivateShade': 'Enable Inactivate Shade',
+      'enableInactivateShadeHint':
+          'Show a full-screen dark shade with moving text while the screen is kept awake without input to protect OLED displays.',
+      'inactivateShadeText': 'Shade Text',
+      'inactivateShadeTextHint': 'Customize the moving message shown on the inactivate shade.',
+      'inactivateTimeout': 'Inactivate Timeout (s)',
+      'inactivateTimeoutHint': 'Idle time before the shade appears when wakelock is active.',
       'maxGalleryNum4Animation': 'Макс. кол-во галерей для анимации списка на стр. загрузок',
       'maxGalleryNum4AnimationHint':
           'Отключить анимацию для групп с большим кол-вом галерей (для стиля списка)',

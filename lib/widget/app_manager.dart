@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_windowmanager_plus/flutter_windowmanager_plus.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
@@ -10,9 +12,11 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import '../config/theme_config.dart';
 import '../config/ui_config.dart';
 import '../routes/routes.dart';
+import '../setting/performance_setting.dart';
 import '../setting/security_setting.dart';
 import '../setting/style_setting.dart';
 import '../service/log.dart';
+import '../service/wakelock_service.dart';
 import '../utils/route_util.dart';
 
 typedef DidChangePlatformBrightnessCallback = void Function();
@@ -65,6 +69,14 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
   late final AppLifecycleListener _listener;
   DateTime? lastInactiveTime;
   bool inBlur = false;
+  bool _inactivateShadeVisible = false;
+  Alignment _shadeTextAlignment = Alignment.center;
+  final Random _shadeRandom = Random();
+  final Duration _shadeMoveInterval = const Duration(seconds: 3);
+  final Duration _inactivateCheckInterval = const Duration(seconds: 1);
+  Timer? _inactivateCheckTimer;
+  Timer? _shadeMoveTimer;
+  DateTime _lastUserInteraction = DateTime.now();
 
   late AppLifecycleState _currentState;
 
@@ -83,6 +95,8 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
       onStateChange: (AppLifecycleState state) => _currentState = state,
     );
 
+    _startInactivateWatcher();
+
     AppManager.registerAppLaunchCallback(_addSecureFlagForAndroid);
     AppManager.registerDidChangePlatformBrightnessCallback(_changeTheme);
     AppManager.registerDidHaveMemoryPressureCallback(_logMemoryPressure);
@@ -96,6 +110,9 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _listener.dispose();
+    _inactivateCheckTimer?.cancel();
+    _shadeMoveTimer?.cancel();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     AppManager.unRegisterAppLaunchCallback(_addSecureFlagForAndroid);
     AppManager.unRegisterDidChangePlatformBrightnessCallback(_changeTheme);
     AppManager.unRegisterDidHaveMemoryPressureCallback(_logMemoryPressure);
@@ -132,16 +149,30 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final Widget content = inBlur
+        ? Blur(
+            blur: 100,
+            blurColor: GetPlatform.isAndroid ? Colors.white : Colors.grey.shade600,
+            colorOpacity: 1,
+            child: widget.child,
+          )
+        : widget.child;
+
     return ScrollConfiguration(
       behavior: UIConfig.scrollBehaviourWithScrollBar,
-      child: inBlur
-          ? Blur(
-              blur: 100,
-              blurColor: GetPlatform.isAndroid ? Colors.white : Colors.grey.shade600,
-              colorOpacity: 1,
-              child: widget.child,
-            )
-          : widget.child,
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _markUserInteraction(),
+        onPointerHover: (_) => _markUserInteraction(),
+        onPointerMove: (_) => _markUserInteraction(),
+        onPointerSignal: (_) => _markUserInteraction(),
+        child: Stack(
+          children: [
+            content,
+            if (_inactivateShadeVisible) _buildInactivateShade(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -167,6 +198,8 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
   void _onInactive() {
     log.debug('App is hidden');
 
+    _markUserInteraction();
+
     if (securitySetting.enableAuthOnResume.isTrue) {
       lastInactiveTime ??= DateTime.now();
     }
@@ -180,6 +213,8 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
 
   void _onResume() {
     log.debug('App is shown');
+
+    _markUserInteraction();
 
     if (!inBlur) {
       return;
@@ -212,5 +247,99 @@ class _AppManagerState extends State<AppManager> with WidgetsBindingObserver {
         (securitySetting.enableAuthOnResume.isTrue || securitySetting.enableBlur.isTrue)) {
       FlutterWindowManagerPlus.addFlags(FlutterWindowManagerPlus.FLAG_SECURE);
     }
+  }
+
+  void _startInactivateWatcher() {
+    _inactivateCheckTimer ??=
+        Timer.periodic(_inactivateCheckInterval, (_) => _checkInactivateShade());
+  }
+
+  void _checkInactivateShade() {
+    if (performanceSetting.enableInactivateShade.isFalse) {
+      _hideInactivateShade();
+      return;
+    }
+
+    final int timeoutSeconds = performanceSetting.inactivateTimeoutSeconds.value;
+    if (timeoutSeconds <= 0) {
+      _hideInactivateShade();
+      return;
+    }
+
+    if (!wakelockService.hasAny) {
+      _hideInactivateShade();
+      return;
+    }
+
+    final Duration inactiveFor = DateTime.now().difference(_lastUserInteraction);
+    if (inactiveFor.inSeconds < timeoutSeconds) {
+      _hideInactivateShade();
+      return;
+    }
+
+    _showInactivateShade();
+  }
+
+  void _markUserInteraction() {
+    _lastUserInteraction = DateTime.now();
+    _hideInactivateShade();
+  }
+
+  void _showInactivateShade() {
+    if (_inactivateShadeVisible) {
+      return;
+    }
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    setState(() => _inactivateShadeVisible = true);
+    _shadeMoveTimer ??= Timer.periodic(_shadeMoveInterval, (_) {
+      setState(() => _shadeTextAlignment = _nextShadeAlignment());
+    });
+  }
+
+  void _hideInactivateShade() {
+    if (!_inactivateShadeVisible) {
+      return;
+    }
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    setState(() => _inactivateShadeVisible = false);
+    _shadeMoveTimer?.cancel();
+    _shadeMoveTimer = null;
+  }
+
+  Alignment _nextShadeAlignment() {
+    const double min = -0.8;
+    const double max = 0.8;
+    return Alignment(
+      min + (max - min) * _shadeRandom.nextDouble(),
+      min + (max - min) * _shadeRandom.nextDouble(),
+    );
+  }
+
+  Widget _buildInactivateShade() {
+    return Positioned.fill(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _markUserInteraction,
+        onPanDown: (_) => _markUserInteraction(),
+        child: Container(
+          color: Colors.black,
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 50),
+            alignment: _shadeTextAlignment,
+            child: Obx(
+              () => Text(
+                performanceSetting.inactivateShadeText.value,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

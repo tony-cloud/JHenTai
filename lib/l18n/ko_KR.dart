@@ -418,6 +418,13 @@ class ko_KR {
       'custom': '커스텀',
 
       /// performance setting page
+      'enableInactivateShade': 'Enable Inactivate Shade',
+      'enableInactivateShadeHint':
+          'Show a full-screen dark shade with moving text while the screen is kept awake without input to protect OLED displays.',
+      'inactivateShadeText': 'Shade Text',
+      'inactivateShadeTextHint': 'Customize the moving message shown on the inactivate shade.',
+      'inactivateTimeout': 'Inactivate Timeout (s)',
+      'inactivateTimeoutHint': 'Idle time before the shade appears when wakelock is active.',
       'disableLoadingAnimations': '모든 로딩 애니메이션 비활성화',
       'disableLoadingAnimationsHint': '전력 소비를 줄이기 위해 로딩 애니메이션 대신 정적 이미지를 사용합니다',
       'maxGalleryNum4Animation': 'Max Gallery Num For List Animation in Download page',

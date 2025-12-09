@@ -426,6 +426,13 @@ class pt_BR {
       'custom': 'Custom',
 
       /// performance setting page
+      'enableInactivateShade': 'Enable Inactivate Shade',
+      'enableInactivateShadeHint':
+          'Show a full-screen dark shade with moving text while the screen is kept awake without input to protect OLED displays.',
+      'inactivateShadeText': 'Shade Text',
+      'inactivateShadeTextHint': 'Customize the moving message shown on the inactivate shade.',
+      'inactivateTimeout': 'Inactivate Timeout (s)',
+      'inactivateTimeoutHint': 'Idle time before the shade appears when wakelock is active.',
       'disableLoadingAnimations': 'Desativar todas as animações de carregamento',
       'disableLoadingAnimationsHint':
           'Substitui animações de carregamento por uma imagem estática para reduzir o consumo de energia',

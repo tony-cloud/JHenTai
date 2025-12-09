@@ -393,6 +393,12 @@ class zh_CN {
       'custom': '自定义',
 
       /// performance setting page
+      'enableInactivateShade': '启用防烧屏遮罩',
+      'enableInactivateShadeHint': '屏幕因下载或阅读保持常亮且长时间无操作时，显示全黑遮罩与移动提示文字保护OLED。',
+      'inactivateShadeText': '遮罩提示文字',
+      'inactivateShadeTextHint': '自定义遮罩上显示的移动提示语。',
+      'inactivateTimeout': '无操作遮罩延时（秒）',
+      'inactivateTimeoutHint': '在保持唤醒时，超过该时间无输入将显示遮罩。',
       'disableLoadingAnimations': '禁用所有加载动画',
       'disableLoadingAnimationsHint': '使用静态图像替换加载动画以降低功耗',
       'maxGalleryNum4Animation': '下载页支持列表动画的最大画廊个数',

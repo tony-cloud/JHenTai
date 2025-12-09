@@ -412,6 +412,12 @@ class zh_TW {
       'custom': '自訂',
 
       /// performance setting page
+      'enableInactivateShade': '啟用防烙印遮罩',
+      'enableInactivateShadeHint': '螢幕因下載或閱讀保持常亮且長時間無操作時，顯示全黑遮罩與移動提示文字來保護OLED。',
+      'inactivateShadeText': '遮罩提示文字',
+      'inactivateShadeTextHint': '自訂遮罩上顯示的移動提示語。',
+      'inactivateTimeout': '無操作遮罩延遲（秒）',
+      'inactivateTimeoutHint': '保持喚醒時，超過此時間未操作將顯示遮罩。',
       'disableLoadingAnimations': '停用所有載入動畫',
       'disableLoadingAnimationsHint': '以靜態圖片取代載入動畫來降低耗電',
       'maxGalleryNum4Animation': '下載頁支援列表動畫的最大畫廊個數',
