@@ -1612,16 +1612,25 @@ class GalleryDownloadService extends GetxController
         log.download(
             'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.errorMsg}. Url:${image.url}');
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+        if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
+          return;
+        }
         return _reParseImageUrlAndDownload(gallery, serialNo);
       } on io.HttpException catch (e) {
         log.download(
             'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.message}. Url:${image.url}');
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+        if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
+          return;
+        }
         return _reParseImageUrlAndDownload(gallery, serialNo);
       } on io.SocketException catch (e) {
         log.download(
             'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.message}. Url:${image.url}');
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+        if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
+          return;
+        }
         return _reParseImageUrlAndDownload(gallery, serialNo);
       } on EHSiteException catch (e) {
         log.download('Download Error, reason: ${e.message}');
@@ -1640,6 +1649,9 @@ class GalleryDownloadService extends GetxController
         log.download(
             'Download ${gallery.title} image: $serialNo failed with status 403, try re-parse. Url:${image.url}');
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+        if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
+          return;
+        }
         return _reParseImageUrlAndDownload(gallery, serialNo);
       }
 
@@ -1701,6 +1713,10 @@ class GalleryDownloadService extends GetxController
             snack('error'.tr, exception.message, isShort: true);
             return pauseAllDownloadGallery();
           } else if (exception.operation == EHImageExceptionAfterOperation.reParse) {
+            final bool isInvalidToken = exception.message.toLowerCase().contains('invalid token');
+            if (!isInvalidToken && await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
+              return;
+            }
             return _reParseImageUrlAndDownload(gallery, serialNo);
           }
         } else {
@@ -1717,19 +1733,20 @@ class GalleryDownloadService extends GetxController
     };
   }
 
-  /// the image's url may be invalid, try re-parse and then download
-  Future<void> _reParseImageUrlAndDownload(GalleryDownloadedData gallery, int serialNo) async {
-    if (_taskHasBeenPausedOrRemoved(gallery)) {
-      return;
-    }
-
+  Future<bool> _retryDownloadWithLegacyReloadKey(
+    GalleryDownloadedData gallery,
+    int serialNo,
+  ) async {
     GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
-
     GalleryImage? existingImage = galleryDownloadInfo.images[serialNo];
     bool preferOriginalImage = galleryDownloadInfo.preferOriginalImages[serialNo];
 
-    String? reloadKey = existingImage?.reloadKey;
-    String? previousUrl = existingImage?.url;
+    if (!preferOriginalImage || existingImage == null) {
+      return false;
+    }
+
+    String? reloadKey = existingImage.reloadKey;
+    String previousUrl = existingImage.url;
     Set<String> triedLegacyReloadKeys = galleryDownloadInfo.legacyReloadKeyHistory[serialNo];
     bool triedLegacyWithoutKey = galleryDownloadInfo.legacyReloadTriedWithoutKey[serialNo];
 
@@ -1737,67 +1754,32 @@ class GalleryDownloadService extends GetxController
       triedLegacyReloadKeys.add(reloadKey);
     }
 
-    if (preferOriginalImage && existingImage != null && previousUrl != null) {
-      String? legacyReloadKey = await _fetchLegacyReloadKeyForOriginalImage(
-        gallery,
-        galleryDownloadInfo,
-        serialNo,
-        reloadKey,
-      );
+    final ({String? reloadKey, String? url})? legacy = await _fetchLegacyReloadKeyForOriginalImage(
+      gallery,
+      galleryDownloadInfo,
+      serialNo,
+      reloadKey,
+    );
 
-      if (legacyReloadKey != null) {
-        if (triedLegacyReloadKeys.contains(legacyReloadKey)) {
-          if (!triedLegacyWithoutKey) {
-            galleryDownloadInfo.legacyReloadTriedWithoutKey[serialNo] = true;
-            log.download(
-                'Legacy reload key loop, retry without reload key. Gid: ${gallery.gid}, index: $serialNo');
-            existingImage.originalImageUrl ??= _stripReloadKeyFromUrl(previousUrl);
-            existingImage.url =
-                _stripReloadKeyFromUrl(existingImage.originalImageUrl ?? previousUrl);
-            existingImage.reloadKey = null;
-            existingImage.downloadStatus = DownloadStatus.downloading;
+    if (legacy == null || legacy.reloadKey == null) {
+      return false;
+    }
 
-            galleryDownloadInfo.images[serialNo] = existingImage;
-            galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = null;
+    final String newReloadKey = legacy.reloadKey!;
+    final String updatedUrl = legacy.url ?? previousUrl;
 
-            bool updated = await _updateImageInDatabase(
-              ImageCompanion(
-                gid: Value(gallery.gid),
-                serialNo: Value(serialNo),
-                url: Value(existingImage.url),
-                downloadStatusIndex: Value(DownloadStatus.downloading.index),
-              ),
-            );
-            if (!updated) {
-              await GalleryImageDao.deleteImage(gallery.gid, serialNo);
-              await _saveNewImageInfoInDatabase(existingImage, serialNo, gallery.gid);
-            }
-
-            _saveGalleryMetadataInDisk(gallery);
-            log.download(
-                'Re-parse image url by stripping legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}');
-            return _submitTask(
-              gid: gallery.gid,
-              priority: _computeImageTaskPriority(gallery, serialNo),
-              task: _downloadImageTask(gallery, serialNo),
-            );
-          }
-
-          log.download(
-              'Legacy reload key loop persists after stripping reload key, mark failed. Gid: ${gallery.gid}, index: $serialNo');
-          await _markImageAsFailed(gallery, existingImage, serialNo);
-          return;
-        }
-
-        triedLegacyReloadKeys.add(legacyReloadKey);
-        existingImage.originalImageUrl ??= _stripReloadKeyFromUrl(previousUrl);
-        existingImage.url =
-            _appendReloadKeyToOriginalUrl(existingImage.originalImageUrl!, legacyReloadKey);
-        existingImage.reloadKey = legacyReloadKey;
+    if (triedLegacyReloadKeys.contains(newReloadKey)) {
+      if (!triedLegacyWithoutKey) {
+        galleryDownloadInfo.legacyReloadTriedWithoutKey[serialNo] = true;
+        log.download(
+            'Legacy reload key loop, retry without reload key. Gid: ${gallery.gid}, index: $serialNo');
+        existingImage.originalImageUrl ??= _stripReloadKeyFromUrl(updatedUrl);
+        existingImage.url = _stripReloadKeyFromUrl(existingImage.originalImageUrl ?? updatedUrl);
+        existingImage.reloadKey = null;
         existingImage.downloadStatus = DownloadStatus.downloading;
 
         galleryDownloadInfo.images[serialNo] = existingImage;
-        galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = legacyReloadKey;
+        galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = null;
 
         bool updated = await _updateImageInDatabase(
           ImageCompanion(
@@ -1814,14 +1796,64 @@ class GalleryDownloadService extends GetxController
 
         _saveGalleryMetadataInDisk(gallery);
         log.download(
-            'Re-parse image url success using legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}');
-        return _submitTask(
+            'Re-parse image url by stripping legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}');
+        _submitTask(
           gid: gallery.gid,
           priority: _computeImageTaskPriority(gallery, serialNo),
           task: _downloadImageTask(gallery, serialNo),
         );
+        return true;
       }
+
+      log.download(
+          'Legacy reload key loop persists after stripping reload key, mark failed. Gid: ${gallery.gid}, index: $serialNo');
+      await _markImageAsFailed(gallery, existingImage, serialNo);
+      return true;
     }
+
+    triedLegacyReloadKeys.add(newReloadKey);
+    existingImage.originalImageUrl ??= _stripReloadKeyFromUrl(updatedUrl);
+    existingImage.url =
+        _appendReloadKeyToOriginalUrl(existingImage.originalImageUrl!, newReloadKey);
+    existingImage.reloadKey = newReloadKey;
+    existingImage.downloadStatus = DownloadStatus.downloading;
+
+    galleryDownloadInfo.images[serialNo] = existingImage;
+    galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = newReloadKey;
+
+    bool updated = await _updateImageInDatabase(
+      ImageCompanion(
+        gid: Value(gallery.gid),
+        serialNo: Value(serialNo),
+        url: Value(existingImage.url),
+        downloadStatusIndex: Value(DownloadStatus.downloading.index),
+      ),
+    );
+    if (!updated) {
+      await GalleryImageDao.deleteImage(gallery.gid, serialNo);
+      await _saveNewImageInfoInDatabase(existingImage, serialNo, gallery.gid);
+    }
+
+    _saveGalleryMetadataInDisk(gallery);
+    log.download(
+        'Re-parse image url success using legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}');
+    _submitTask(
+      gid: gallery.gid,
+      priority: _computeImageTaskPriority(gallery, serialNo),
+      task: _downloadImageTask(gallery, serialNo),
+    );
+    return true;
+  }
+
+  /// the image's url may be invalid, try re-parse and then download without reusing legacy reload keys
+  Future<void> _reParseImageUrlAndDownload(GalleryDownloadedData gallery, int serialNo) async {
+    if (_taskHasBeenPausedOrRemoved(gallery)) {
+      return;
+    }
+
+    GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
+
+    String? previousUrl = galleryDownloadInfo.images[serialNo]?.url;
 
     galleryDownloadInfo.images[serialNo] = null;
     await GalleryImageDao.deleteImage(gallery.gid, serialNo);
@@ -1835,7 +1867,6 @@ class GalleryDownloadService extends GetxController
           gallery,
           serialNo,
           reParse: true,
-          reloadKey: reloadKey,
           previousFailedUrl: previousUrl,
         ),
       );
@@ -1929,7 +1960,7 @@ class GalleryDownloadService extends GetxController
     }
   }
 
-  Future<String?> _fetchLegacyReloadKeyForOriginalImage(
+  Future<({String? reloadKey, String? url})?> _fetchLegacyReloadKeyForOriginalImage(
     GalleryDownloadedData gallery,
     GalleryDownloadInfo galleryDownloadInfo,
     int serialNo,
@@ -1957,7 +1988,7 @@ class GalleryDownloadService extends GetxController
       );
       log.download(
           'Fetch legacy reload key success. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${legacyImage.reloadKey}');
-      return legacyImage.reloadKey;
+      return (reloadKey: legacyImage.reloadKey, url: legacyImage.url);
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
         return null;
@@ -2144,10 +2175,8 @@ class GalleryDownloadService extends GetxController
 
       if (!oldFile.existsSync()) {
         log.download(
-            'Old image missing while copying for update, fallback to re-download. Gid: ${newGallery.gid}, serialNo: $serialNo');
-        newImage.downloadStatus = DownloadStatus.downloading;
-        newGalleryDownloadInfo.images[serialNo] ??= newImage;
-        await _updateImageStatus(newGallery, newImage, serialNo, DownloadStatus.downloading);
+            'Old image missing while copying for update, fallback to re-parse. Gid: ${newGallery.gid}, serialNo: $serialNo');
+        await _resetImageForReparse(newGallery, serialNo, existingImage: newImage);
         continue;
       }
 
@@ -2180,9 +2209,8 @@ class GalleryDownloadService extends GetxController
 
     if (!oldFile.existsSync()) {
       log.download(
-          'Old image missing when copying, queue re-download. Gid: ${newGallery.gid}, serialNo: $newImageSerialNo');
-      newImage.downloadStatus = DownloadStatus.downloading;
-      await _updateImageStatus(newGallery, newImage, newImageSerialNo, DownloadStatus.downloading);
+          'Old image missing when copying, queue re-parse. Gid: ${newGallery.gid}, serialNo: $newImageSerialNo');
+      await _resetImageForReparse(newGallery, newImageSerialNo, existingImage: newImage);
       return;
     }
 
@@ -2191,6 +2219,55 @@ class GalleryDownloadService extends GetxController
     await _updateImageStatus(newGallery, newImage, newImageSerialNo, DownloadStatus.downloaded);
 
     await _updateProgressAfterImageDownloaded(newGallery, newImageSerialNo);
+  }
+
+  Future<void> _resetImageForReparse(
+    GalleryDownloadedData gallery,
+    int serialNo, {
+    GalleryImage? existingImage,
+  }) async {
+    GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gallery.gid];
+    if (galleryDownloadInfo == null) {
+      return;
+    }
+
+    GalleryImage? image = existingImage ?? galleryDownloadInfo.images[serialNo];
+
+    Set<String> urlsToClear = {};
+    if (image?.url != null) {
+      urlsToClear.add(image!.url);
+    }
+    if (image?.originalImageUrl != null) {
+      urlsToClear.add(image!.originalImageUrl!);
+    }
+
+    for (String url in urlsToClear) {
+      await _removeCacheSafe(url);
+    }
+
+    galleryDownloadInfo.images[serialNo] = null;
+    galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = null;
+    galleryDownloadInfo.legacyReloadKeyHistory[serialNo].clear();
+    galleryDownloadInfo.legacyReloadTriedWithoutKey[serialNo] = false;
+    galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+
+    if (galleryDownloadInfo.downloadProgress.hasDownloaded[serialNo]) {
+      galleryDownloadInfo.downloadProgress.hasDownloaded[serialNo] = false;
+      if (galleryDownloadInfo.downloadProgress.curCount > 0) {
+        galleryDownloadInfo.downloadProgress.curCount--;
+      }
+    }
+
+    await GalleryImageDao.deleteImage(gallery.gid, serialNo);
+
+    update([
+      '$downloadImageId::${gallery.gid}::$serialNo',
+      '$downloadImageUrlId::${gallery.gid}::$serialNo'
+    ]);
+
+    if (galleryDownloadInfo.downloadProgress.downloadStatus == DownloadStatus.downloaded) {
+      await _updateGalleryDownloadStatus(gallery, DownloadStatus.downloading);
+    }
   }
 
   Future<int> checkAndRedownloadMissingImages(GalleryDownloadedData gallery) async {
@@ -2222,15 +2299,7 @@ class GalleryDownloadService extends GetxController
         continue;
       }
 
-      if (galleryDownloadInfo.downloadProgress.hasDownloaded[serialNo]) {
-        galleryDownloadInfo.downloadProgress.hasDownloaded[serialNo] = false;
-        if (galleryDownloadInfo.downloadProgress.curCount > 0) {
-          galleryDownloadInfo.downloadProgress.curCount--;
-        }
-      }
-
-      galleryDownloadInfo.speedComputer.resetProgress(serialNo);
-      await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloading);
+      await _resetImageForReparse(gallery, serialNo, existingImage: image);
 
       repaired++;
 

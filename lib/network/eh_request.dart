@@ -806,20 +806,61 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }) async {
     final Duration? resolvedReceiveTimeout =
         receiveTimeout == null ? null : Duration(milliseconds: receiveTimeout);
+    final Duration? effectiveReceiveTimeout = resolvedReceiveTimeout ?? _dio.options.receiveTimeout;
 
-    Response response = await _dio.download(
-      url,
-      path,
-      onReceiveProgress: onReceiveProgress,
-      fileAccessMode: appendMode ? FileAccessMode.append : FileAccessMode.write,
-      cancelToken: cancelToken,
-      deleteOnError: deleteOnError,
-      options: Options(
-        preserveHeaderCase: preserveHeaderCase,
-        headers: range == null ? null : {'Range': range},
-        receiveTimeout: resolvedReceiveTimeout,
-      ),
-    );
+    final CancelToken effectiveCancelToken = cancelToken ?? CancelToken();
+    Timer? receiveTimeoutTimer;
+
+    void resetReceiveTimeoutTimer() {
+      if (effectiveReceiveTimeout == null || effectiveReceiveTimeout <= Duration.zero) {
+        return;
+      }
+
+      receiveTimeoutTimer?.cancel();
+      receiveTimeoutTimer = Timer(effectiveReceiveTimeout, () {
+        if (effectiveCancelToken.isCancelled) {
+          return;
+        }
+        effectiveCancelToken.cancel(
+          _DownloadReceiveTimeout(url: url, timeout: effectiveReceiveTimeout),
+        );
+      });
+    }
+
+    resetReceiveTimeoutTimer();
+
+    Response response;
+    try {
+      response = await _dio.download(
+        url,
+        path,
+        onReceiveProgress: (count, total) {
+          resetReceiveTimeoutTimer();
+          onReceiveProgress?.call(count, total);
+        },
+        fileAccessMode: appendMode ? FileAccessMode.append : FileAccessMode.write,
+        cancelToken: effectiveCancelToken,
+        deleteOnError: deleteOnError,
+        options: Options(
+          preserveHeaderCase: preserveHeaderCase,
+          headers: range == null ? null : {'Range': range},
+          receiveTimeout: resolvedReceiveTimeout,
+        ),
+      );
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel && e.error is _DownloadReceiveTimeout) {
+        final _DownloadReceiveTimeout timeout = e.error as _DownloadReceiveTimeout;
+        throw DioException(
+          requestOptions: e.requestOptions,
+          type: DioExceptionType.receiveTimeout,
+          message: '${'receiveDataTimeoutHint'.tr} (${timeout.timeout.inMilliseconds}ms)',
+          error: e.error,
+        );
+      }
+      rethrow;
+    } finally {
+      receiveTimeoutTimer?.cancel();
+    }
 
     if (parser == null) {
       return response as T;
@@ -1164,4 +1205,11 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       }
     }
   }
+}
+
+class _DownloadReceiveTimeout {
+  _DownloadReceiveTimeout({required this.url, required this.timeout});
+
+  final String url;
+  final Duration timeout;
 }
