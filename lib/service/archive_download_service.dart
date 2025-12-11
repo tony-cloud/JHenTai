@@ -244,7 +244,8 @@ class ArchiveDownloadService extends GetxController
         return;
       }
 
-      log.download('Cancel archive: ${archive.title}, original: ${archive.isOriginal}');
+      log.download('Cancel archive: ${archive.title}, original: ${archive.isOriginal}',
+          level: Level.info);
 
       archiveDownloadInfo.archiveStatus = ArchiveStatus.unlocking;
       archiveDownloadInfo.downloadPageUrl = null;
@@ -270,7 +271,9 @@ class ArchiveDownloadService extends GetxController
             ),
             retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
             onRetry: (e) => log.download(
-                'Cancel archive: ${archive.title} failed, retry. Reason: ${(e as DioException).message}'),
+              'Cancel archive: ${archive.title} failed, retry. Reason: ${(e as DioException).message}',
+              level: Level.warning,
+            ),
             maxAttempts: _maxRetryTimes,
           );
         } on DioException catch (e) {
@@ -278,7 +281,7 @@ class ArchiveDownloadService extends GetxController
             return;
           }
 
-          log.download('Cancel archive error, reason: ${e.toString()}');
+          log.download('Cancel archive error, reason: ${e.toString()}', level: Level.error);
           return pauseDownloadArchive(archive.gid);
         }
       }
@@ -665,36 +668,39 @@ class ArchiveDownloadService extends GetxController
       }
 
       if (e.response?.statusCode != 410) {
-        log.download('Check archive  ${archive.title} 410 reason failed, pause task.');
+        log.download('Check archive  ${archive.title} 410 reason failed, pause task.',
+            level: Level.warning);
         return pauseDownloadArchive(archive.gid);
       }
 
       if (e.response!.data is String &&
           e.response!.data.contains('You have clocked too many downloaded bytes on this gallery')) {
-        log.download('${'410Hints'.tr} Archive: ${archive.title}');
+        log.download('${'410Hints'.tr} Archive: ${archive.title}', level: Level.warning);
         snack('archiveError'.tr, '${'410Hints'.tr} : ${archive.title}', isShort: true);
         return pauseDownloadArchive(archive.gid, needReUnlock: true);
       } else if (e.response!.data is String &&
           e.response!.data
               .contains('This archive session has been used from too many different locations')) {
         log.download(
-            'Archive session has been used from too many different locations! Archive: ${archive.title}');
+            'Archive session has been used from too many different locations! Archive: ${archive.title}',
+            level: Level.warning);
         snack('archiveError'.tr,
             'This archive session has been used from too many different locations.',
             isShort: true);
         return pauseDownloadArchive(archive.gid, needReUnlock: true);
       } else if (e.response!.data is String && e.response!.data.contains('IP quota exhausted')) {
-        log.download('IP quota exhausted! Archive: ${archive.title}');
+        log.download('IP quota exhausted! Archive: ${archive.title}', level: Level.error);
         snack('archiveError'.tr, 'IP quota exhausted!', isShort: true);
         return pauseDownloadArchive(archive.gid, needReUnlock: true);
       } else if (e.response!.data is String &&
           e.response!.data.contains('Expired or invalid session')) {
-        log.download('Expired or invalid session! Archive: ${archive.title}');
+        log.download('Expired or invalid session! Archive: ${archive.title}', level: Level.warning);
         snack('archiveError'.tr, 'Expired or invalid session!', isShort: true);
         return pauseDownloadArchive(archive.gid);
       } else {
         log.download(
-            'Download archive 410, try re-parse. Archive: ${archive.title} Response: ${e.response!.data}');
+            'Download archive 410, try re-parse. Archive: ${archive.title} Response: ${e.response!.data}',
+            level: Level.warning);
 
         archiveDownloadInfos[archive.gid]!.downloadUrl = null;
 
@@ -726,7 +732,7 @@ class ArchiveDownloadService extends GetxController
       ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[a.gid]!;
       if (currentActiveIsolateCount + archiveDownloadInfo.downloadTask!.isolateCount <=
           _maxIsolateCountsTotal) {
-        log.download('Archive ${a.title} gain isolates.');
+        log.download('Archive ${a.title} gain isolates.', level: Level.info);
         await _updateArchiveStatus(a.gid, ArchiveStatus.downloading);
         downloadArchive(a, resume: true);
         return;
@@ -801,7 +807,8 @@ class ArchiveDownloadService extends GetxController
       return;
     }
 
-    log.download('Begin to unlock archive: ${archive.title}, original: ${archive.isOriginal}');
+    log.download('Begin to unlock archive: ${archive.title}, original: ${archive.isOriginal}',
+        level: Level.info);
 
     await _updateArchiveStatus(archive.gid, ArchiveStatus.unlocking);
 
@@ -816,7 +823,9 @@ class ArchiveDownloadService extends GetxController
         ),
         retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
         onRetry: (e) => log.download(
-            'Request unlock archive: ${archive.title} failed, retry. Reason: ${(e as DioException).message}'),
+          'Request unlock archive: ${archive.title} failed, retry. Reason: ${(e as DioException).message}',
+          level: Level.warning,
+        ),
         maxAttempts: _maxRetryTimes,
       );
     } on DioException catch (e) {
@@ -825,7 +834,7 @@ class ArchiveDownloadService extends GetxController
       }
       return await _unlock(archive);
     } on EHSiteException catch (e) {
-      log.download('Unlock archive error, reason: ${e.message}');
+      log.download('Unlock archive error, reason: ${e.message}', level: Level.error);
       snack('archiveError'.tr, e.message, isShort: true);
 
       if (e.shouldPauseAllDownloadTasks) {
@@ -836,11 +845,12 @@ class ArchiveDownloadService extends GetxController
     }
 
     if (result.success) {
-      log.download('Get archive download page url success: ${archive.title}');
+      log.download('Get archive download page url success: ${archive.title}', level: Level.info);
       archiveDownloadInfo.downloadPageUrl = result.url;
       await _updateArchiveStatus(archive.gid, ArchiveStatus.unlocked);
     } else {
-      log.download('Unlock archive failed. Archive: ${archive.title}, reason: ${result.msg}');
+      log.download('Unlock archive failed. Archive: ${archive.title}, reason: ${result.msg}',
+          level: Level.error);
       snack('archiveError'.tr, result.msg, isShort: true);
       await pauseDownloadArchive(archive.gid);
     }
@@ -864,7 +874,9 @@ class ArchiveDownloadService extends GetxController
     }
 
     log.download(
-        'Begin to circularly fetch archive download page url: ${archive.title}, original: ${archive.isOriginal}');
+      'Begin to circularly fetch archive download page url: ${archive.title}, original: ${archive.isOriginal}',
+      level: Level.info,
+    );
 
     await _updateArchiveStatus(archive.gid, ArchiveStatus.parsingDownloadPageUrl);
 
@@ -879,7 +891,9 @@ class ArchiveDownloadService extends GetxController
         ),
         retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
         onRetry: (e) => log.download(
-            'Request unlock archive: ${archive.title} failed, retry. Reason: ${(e as DioException).message}'),
+          'Request unlock archive: ${archive.title} failed, retry. Reason: ${(e as DioException).message}',
+          level: Level.warning,
+        ),
         maxAttempts: _maxRetryTimes,
       );
     } on DioException catch (e) {
@@ -888,7 +902,8 @@ class ArchiveDownloadService extends GetxController
       }
       return await _unlock(archive);
     } on EHSiteException catch (e) {
-      log.download('Parsing archive download page url failed, reason: ${e.message}');
+      log.download('Parsing archive download page url failed, reason: ${e.message}',
+          level: Level.error);
       snack('archiveError'.tr, e.message, isShort: true);
 
       if (e.shouldPauseAllDownloadTasks) {
@@ -899,7 +914,7 @@ class ArchiveDownloadService extends GetxController
     }
 
     if (result.success && result.url != null) {
-      log.download('Get archive download page url success: ${archive.title}');
+      log.download('Get archive download page url success: ${archive.title}', level: Level.info);
       archiveDownloadInfo.downloadPageUrl = result.url;
       await _updateArchiveStatus(archive.gid, ArchiveStatus.parsedDownloadPageUrl);
     } else if (result.success && result.url == null) {
@@ -908,7 +923,9 @@ class ArchiveDownloadService extends GetxController
       return _getDownloadPageUrl(archive);
     } else {
       log.download(
-          'Get archive download page url failed. Archive: ${archive.title}, reason: ${result.msg}');
+        'Get archive download page url failed. Archive: ${archive.title}, reason: ${result.msg}',
+        level: Level.error,
+      );
       snack('archiveError'.tr, result.msg, isShort: true);
       await pauseDownloadArchive(archive.gid);
       return;
@@ -936,7 +953,9 @@ class ArchiveDownloadService extends GetxController
     }
 
     log.download(
-        'Begin to parse fetch archive download url: ${archive.title}, original: ${archive.isOriginal}, parseSource: ${archive.parseSource}');
+      'Begin to parse fetch archive download url: ${archive.title}, original: ${archive.isOriginal}, parseSource: ${archive.parseSource}',
+      level: Level.info,
+    );
 
     await _updateArchiveStatus(archive.gid, ArchiveStatus.parsingDownloadUrl);
 
@@ -952,7 +971,9 @@ class ArchiveDownloadService extends GetxController
           ),
           retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
           onRetry: (e) => log.download(
-              'Parse archive download url: ${archive.title} failed, retry. Reason: ${(e as DioException).message}'),
+            'Parse archive download url: ${archive.title} failed, retry. Reason: ${(e as DioException).message}',
+            level: Level.warning,
+          ),
           maxAttempts: _maxRetryTimes,
         );
       } on DioException catch (e) {
@@ -962,7 +983,7 @@ class ArchiveDownloadService extends GetxController
 
         return await _getDownloadUrl(archive);
       } on EHSiteException catch (e) {
-        log.download('Download error, reason: ${e.message}');
+        log.download('Download error, reason: ${e.message}', level: Level.error);
         snack('archiveError'.tr, e.message, isShort: true);
 
         if (e.shouldPauseAllDownloadTasks) {
@@ -971,7 +992,7 @@ class ArchiveDownloadService extends GetxController
           return pauseDownloadArchive(archive.gid);
         }
       } catch (e) {
-        log.download('Parse archive download url error, reason: $e');
+        log.download('Parse archive download url error, reason: $e', level: Level.error);
         snack('archiveError'.tr, e.toString(), isShort: true);
         return pauseDownloadArchive(archive.gid);
       }
@@ -994,10 +1015,12 @@ class ArchiveDownloadService extends GetxController
           ),
           retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
           onRetry: (e) => log.download(
-              'Parse archive download url: ${archive.title} failed, retry. Reason: ${(e as DioException).message}'),
+            'Parse archive download url: ${archive.title} failed, retry. Reason: ${(e as DioException).message}',
+            level: Level.warning,
+          ),
           maxAttempts: _maxRetryTimes,
         );
-        log.download('Parse archive download url via bot, response: $response');
+        log.download('Parse archive download url via bot, response: $response', level: Level.info);
 
         if (response.isSuccess) {
           ArchiveResolveVO archiveResolveVO = ArchiveResolveVO.fromResponse(response.data);
@@ -1013,7 +1036,7 @@ class ArchiveDownloadService extends GetxController
 
         return await _getDownloadUrl(archive);
       } catch (e) {
-        log.download('Parse archive download url error, reason: $e');
+        log.download('Parse archive download url error, reason: $e', level: Level.error);
         snack('archiveError'.tr, e.toString(), isShort: true);
         return pauseDownloadArchive(archive.gid);
       }
@@ -1046,7 +1069,8 @@ class ArchiveDownloadService extends GetxController
       return;
     }
 
-    log.download('Begin to download archive: ${archive.title}, original: ${archive.isOriginal}');
+    log.download('Begin to download archive: ${archive.title}, original: ${archive.isOriginal}',
+        level: Level.info);
 
     await _updateArchiveStatus(archive.gid, ArchiveStatus.downloading);
 
@@ -1055,7 +1079,7 @@ class ArchiveDownloadService extends GetxController
     archiveDownloadInfo.speedComputer
       ..resetDownloadedBytes(task.currentBytes)
       ..start();
-    log.download('${archive.title} downloaded bytes: ${task.currentBytes}');
+    log.download('${archive.title} downloaded bytes: ${task.currentBytes}', level: Level.debug);
 
     if (task.status != TaskStatus.completed) {
       if (downloadSetting.manageArchiveDownloadConcurrency.isTrue) {
@@ -1072,7 +1096,7 @@ class ArchiveDownloadService extends GetxController
                       : a.downloadTask!.isolateCount),
             );
         if (currentActiveIsolateCount + task.isolateCount > _maxIsolateCountsTotal) {
-          log.download('Archive ${archive.title} is waiting isolates...');
+          log.download('Archive ${archive.title} is waiting isolates...', level: Level.info);
           return _updateArchiveStatus(archive.gid, ArchiveStatus.waitingIsolate);
         }
       }
@@ -1100,30 +1124,35 @@ class ArchiveDownloadService extends GetxController
 
           /// too many download thread will cause 410
           else if (response?.statusCode == 429) {
-            log.download('${'429Hints'.tr} Archive: ${archive.title}');
+            log.download('${'429Hints'.tr} Archive: ${archive.title}', level: Level.warning);
             snack('archiveError'.tr, '429Hints'.tr, isShort: true);
             return await pauseDownloadArchive(archive.gid);
           } else {
             log.download(
-                'Download archive failed: ${archive.title}, original: ${archive.isOriginal}, reason: $e');
+              'Download archive failed: ${archive.title}, original: ${archive.isOriginal}, reason: $e',
+              level: Level.error,
+            );
             snack('archiveError'.tr, e.error?.toString() ?? e.type.desc, isShort: true);
             return pauseDownloadArchive(archive.gid);
           }
         } else {
           log.download(
-              'Download archive failed: ${archive.title}, original: ${archive.isOriginal}, reason: $e');
+            'Download archive failed: ${archive.title}, original: ${archive.isOriginal}, reason: $e',
+            level: Level.error,
+          );
           snack('archiveError'.tr, e.error?.toString() ?? e.type.desc, isShort: true);
           return pauseDownloadArchive(archive.gid);
         }
       } on Exception catch (e) {
-        log.download('Failed to download archive ${archive.title}, reason: $e');
+        log.download('Failed to download archive ${archive.title}, reason: $e', level: Level.error);
         snack('archiveError'.tr, e.toString(), isShort: true);
         archiveDownloadInfo.downloadCompleter = null;
         return pauseDownloadArchive(archive.gid);
       }
     }
 
-    log.download('Download archive success: ${archive.title}, original: ${archive.isOriginal}');
+    log.download('Download archive success: ${archive.title}, original: ${archive.isOriginal}',
+        level: Level.info);
 
     archiveDownloadInfo.speedComputer.dispose();
     return _updateArchiveStatus(archive.gid, ArchiveStatus.downloaded);

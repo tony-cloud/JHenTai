@@ -22,6 +22,7 @@ import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/service/volume_service.dart';
 import 'package:jhentai/utils/eh_executor.dart';
+import 'package:logger/logger.dart';
 import 'package:retry/retry.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -296,6 +297,7 @@ class ReadPageLogic extends GetxController {
     if (state.thumbnails[index] == null) {
       log.download(
         'Parse image hrefs error, thumbnails count per page is not equal to default setting, parse again. Thumbnails count per page: ${detailPageInfo.thumbnailsCountPerPage}, changed: $thumbnailsCountPerPageChanged',
+        level: Level.warning,
       );
       await ehRequest.removeCacheByGalleryUrlAndPage(
           state.readPageInfo.galleryUrl!, requestPageIndex);

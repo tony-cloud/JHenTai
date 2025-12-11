@@ -28,6 +28,7 @@ import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/proxy_util.dart';
 import 'package:jhentai/utils/string_uril.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
+import 'package:logger/logger.dart';
 import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:path/path.dart';
 import 'package:webview_flutter/webview_flutter.dart' show WebViewCookieManager;
@@ -849,7 +850,9 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     final Stopwatch stopwatch = Stopwatch()..start();
 
     log.download(
-        '[DL#$requestId] start url:$url path:$path append:$appendMode range:${range ?? 'none'} rt:${effectiveReceiveTimeout?.inMilliseconds ?? 'none'}ms preserveHeaderCase:$preserveHeaderCase');
+      '[DL#$requestId] start url:$url path:$path append:$appendMode range:${range ?? 'none'} rt:${effectiveReceiveTimeout?.inMilliseconds ?? 'none'}ms preserveHeaderCase:$preserveHeaderCase',
+      level: Level.info,
+    );
 
     void resetReceiveTimeoutTimer() {
       final Duration? timeoutForTimer = effectiveReceiveTimeout;
@@ -863,7 +866,9 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
           return;
         }
         log.download(
-            '[DL#$requestId] receive timeout reached (${timeoutForTimer.inMilliseconds}ms), cancelling url:$url');
+          '[DL#$requestId] receive timeout reached (${timeoutForTimer.inMilliseconds}ms), cancelling url:$url',
+          level: Level.warning,
+        );
         effectiveCancelToken.cancel(
           _DownloadReceiveTimeout(url: url, timeout: timeoutForTimer),
         );
@@ -895,7 +900,9 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       successResponse = downloadResponse;
     } on DioException catch (e) {
       log.download(
-          '[DL#$requestId] dio error type:${e.type} status:${e.response?.statusCode} msg:${e.message} url:$url');
+        '[DL#$requestId] dio error type:${e.type} status:${e.response?.statusCode} msg:${e.message} url:$url',
+        level: Level.error,
+      );
       if (e.type == DioExceptionType.cancel && e.error is _DownloadReceiveTimeout) {
         final _DownloadReceiveTimeout timeout = e.error as _DownloadReceiveTimeout;
         throw DioException(
@@ -910,7 +917,9 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       receiveTimeoutTimer?.cancel();
       stopwatch.stop();
       log.download(
-          '[DL#$requestId] finish elapsed:${stopwatch.elapsedMilliseconds}ms status:${responseForLog?.statusCode ?? 'n/a'} url:$url');
+        '[DL#$requestId] finish elapsed:${stopwatch.elapsedMilliseconds}ms status:${responseForLog?.statusCode ?? 'n/a'} url:$url',
+        level: Level.info,
+      );
     }
 
     if (parser == null) {

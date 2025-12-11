@@ -39,7 +39,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   LogPrinter devPrinter =
       PrettyPrinter(stackTraceBeginIndex: 0, methodCount: 6, levelEmojis: {Level.trace: '✔ '});
 
-  final FileLogPrinter fileLogPrinter = FileLogPrinter(printTime: true);
+  final FileLogPrinter fileLogPrinter = FileLogPrinter(printTime: true, useAnsiColor: true);
   final LogPrinter _errorTextPrinter = ErrorTextPrinter();
 
   @override
@@ -105,10 +105,12 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     _warningFileLogger?.e(msg, error: error, stackTrace: stackTrace);
   }
 
-  void download(Object msg) async {
+  void download(Object msg,
+      {Level level = Level.trace, Object? error, StackTrace? stackTrace}) async {
     await _initLogger();
-    _consoleLogger?.t(msg, stackTrace: StackTrace.empty);
-    _downloadFileLogger?.t(msg, stackTrace: StackTrace.empty);
+    final StackTrace effectiveStack = stackTrace ?? StackTrace.empty;
+    _consoleLogger?.log(level, msg, error: error, stackTrace: effectiveStack);
+    _downloadFileLogger?.log(level, msg, error: error, stackTrace: effectiveStack);
   }
 
   Future<void> uploadError(dynamic throwable,
@@ -318,9 +320,10 @@ class EHLogFilter extends LogFilter {
 }
 
 class FileLogPrinter extends LogPrinter {
-  FileLogPrinter({this.printTime = true});
+  FileLogPrinter({this.printTime = true, this.useAnsiColor = false});
 
   final bool printTime;
+  final bool useAnsiColor;
   static final DateFormat _timeFormat = DateFormat('yyyy-MM-ddTHH:mm:ss.SSS');
 
   static const Map<Level, String> _levelLabels = {
@@ -332,6 +335,16 @@ class FileLogPrinter extends LogPrinter {
     Level.fatal: 'FATAL',
   };
 
+  static const Map<Level, String> _levelAnsi = {
+    Level.trace: '\u001b[90m', // bright black
+    Level.debug: '\u001b[36m', // cyan
+    Level.info: '\u001b[32m', // green
+    Level.warning: '\u001b[33m', // yellow
+    Level.error: '\u001b[31m', // red
+    Level.fatal: '\u001b[35m', // magenta
+  };
+  static const String _ansiReset = '\u001b[0m';
+
   @override
   List<String> log(LogEvent event) {
     final StringBuffer buffer = StringBuffer();
@@ -341,19 +354,32 @@ class FileLogPrinter extends LogPrinter {
         ..write(' ');
     }
 
-    buffer
-      ..write('[')
-      ..write(_levelLabels[event.level] ?? event.level.name.toUpperCase())
-      ..write('] ')
-      ..write(event.message);
+    final String levelLabel = _levelLabels[event.level] ?? event.level.name.toUpperCase();
+    if (useAnsiColor) {
+      final String color = _levelAnsi[event.level] ?? _ansiReset;
+      buffer
+        ..write(color)
+        ..write('[')
+        ..write(levelLabel)
+        ..write('] ')
+        ..write(_ansiReset);
+    } else {
+      buffer
+        ..write('[')
+        ..write(levelLabel)
+        ..write('] ');
+    }
+
+    buffer.write(event.message);
 
     final List<String> lines = [buffer.toString()];
 
     if (event.error != null) {
       lines.add('Error: ${event.error}');
     }
-    if (event.stackTrace != null) {
-      lines.add('Stack: ${event.stackTrace}');
+    final String? stack = event.stackTrace?.toString();
+    if (stack != null && stack.isNotEmpty && stack != StackTrace.empty.toString()) {
+      lines.add('Stack: $stack');
     }
 
     return lines;

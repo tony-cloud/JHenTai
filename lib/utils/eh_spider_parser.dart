@@ -18,6 +18,7 @@ import 'package:jhentai/model/gallery_hh_archive.dart';
 import 'package:jhentai/model/gallery_hh_info.dart';
 import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/model/gallery_image_page_url.dart';
+import 'package:logger/logger.dart';
 import 'package:jhentai/model/gallery_note.dart';
 import 'package:jhentai/model/gallery_page.dart';
 import 'package:jhentai/model/gallery_stats.dart';
@@ -886,9 +887,11 @@ class EHSpiderParser {
       originalWidth = resolution['width'];
       originalHeight = resolution['height'];
     }
-    log.download('Parse image page from json: url=$url, originalUrl=$originalUrl, '
+    log.download(
+        'Parse image page from json: url=$url, originalUrl=$originalUrl, '
         'width=$width, height=$height, originalWidth=$originalWidth, originalHeight=$originalHeight, '
-        'reloadKey=$reloadKey, imageHash=$imageHash');
+        'reloadKey=$reloadKey, imageHash=$imageHash',
+        level: Level.debug);
     return GalleryImage(
       url: preferOriginal && !isEmptyOrNull(originalUrl) ? originalUrl! : url!,
       height: height,

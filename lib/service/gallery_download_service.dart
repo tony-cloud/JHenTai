@@ -38,6 +38,7 @@ import 'package:jhentai/utils/jh_response_parser.dart';
 import 'package:jhentai/utils/speed_computer.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/toast_util.dart';
+import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart';
 import 'package:retry/retry.dart';
@@ -915,7 +916,7 @@ class GalleryDownloadService extends GetxController
       return;
     }
 
-    log.download('Pause gallery after incomplete run. Gid: $gid');
+    log.download('Pause gallery after incomplete run. Gid: $gid', level: Level.info);
     await _updateGalleryDownloadStatus(gallery, DownloadStatus.paused);
   }
 
@@ -1092,7 +1093,8 @@ class GalleryDownloadService extends GetxController
         ),
         retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
         onRetry: (e) => log.download(
-            'Failed to fetch image hashes, retry. Reason: ${(e as DioException).message}'),
+            'Failed to fetch image hashes, retry. Reason: ${(e as DioException).message}',
+            level: Level.warning),
         maxAttempts: _maxRetryTimes4FetchImageHashes,
       );
 
@@ -1185,7 +1187,8 @@ class GalleryDownloadService extends GetxController
           delayFactor: const Duration(milliseconds: 500),
           retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
           onRetry: (e) => log.download(
-              'Parse image hrefs failed, retry. Reason: ${(e as DioException).toString()}'),
+              'Parse image hrefs failed, retry. Reason: ${(e as DioException).toString()}',
+              level: Level.warning),
           maxAttempts: _maxRetryTimes,
         );
       } on DioException catch (e) {
@@ -1204,7 +1207,9 @@ class GalleryDownloadService extends GetxController
         );
       } on EHSiteException catch (e) {
         log.download(
-            'Parse image href error, reason: ${e.message}, gallery url: ${gallery.galleryUrl}');
+          'Parse image href error, reason: ${e.message}, gallery url: ${gallery.galleryUrl}',
+          level: Level.error,
+        );
         snack('error'.tr, e.message, isShort: true);
         if (e.shouldPauseAllDownloadTasks) {
           pauseAllDownloadGallery();
@@ -1230,6 +1235,7 @@ class GalleryDownloadService extends GetxController
       if (galleryDownloadInfo.imageHrefs[serialNo] == null) {
         log.download(
           'Parse image hrefs error, thumbnails count per page is not equal to default setting, parse again. Thumbnails count per page: ${detailPageInfo.thumbnailsCountPerPage}, changed: $thumbnailsCountPerPageChanged',
+          level: Level.warning,
         );
         await ehRequest.removeCacheByGalleryUrlAndPage(gallery.galleryUrl, requestPageIndex);
         return _submitTask(
@@ -1303,7 +1309,9 @@ class GalleryDownloadService extends GetxController
       GalleryThumbnail? thumbnail = galleryDownloadInfo.imageHrefs[serialNo];
       if (thumbnail == null) {
         log.download(
-            'Image href missing when parsing image url, re-parse href. Gid: ${gallery.gid}, index: $serialNo');
+          'Image href missing when parsing image url, re-parse href. Gid: ${gallery.gid}, index: $serialNo',
+          level: Level.warning,
+        );
         return _submitTask(
           gid: gallery.gid,
           priority: _computeImageTaskPriority(gallery, serialNo),
@@ -1340,7 +1348,9 @@ class GalleryDownloadService extends GetxController
               rethrow;
             }
             log.download(
-                'MPV page unsupported, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo');
+              'MPV page unsupported, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo',
+              level: Level.info,
+            );
           }
 
           mpvKeyForRequest = galleryDownloadInfo.mpvKey ?? thumbnail.mpvKey;
@@ -1363,7 +1373,9 @@ class GalleryDownloadService extends GetxController
                 );
           } else {
             log.download(
-                'MPV imagelist missing key, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo');
+              'MPV imagelist missing key, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo',
+              level: Level.warning,
+            );
           }
         }
 
@@ -1380,8 +1392,10 @@ class GalleryDownloadService extends GetxController
         image = await retry(
           requestImageFactory,
           retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
-          onRetry: (e) => log
-              .download('Parse image url failed, retry. Reason: ${(e as DioException).errorMsg}'),
+          onRetry: (e) => log.download(
+            'Parse image url failed, retry. Reason: ${(e as DioException).errorMsg}',
+            level: Level.warning,
+          ),
           delayFactor: const Duration(milliseconds: 500),
           maxAttempts: _maxRetryTimes,
         );
@@ -1402,7 +1416,7 @@ class GalleryDownloadService extends GetxController
           ),
         );
       } on EHParseException catch (e) {
-        log.download('Parse image url error, reason: ${e.message.tr}');
+        log.download('Parse image url error, reason: ${e.message.tr}', level: Level.error);
         snack('error'.tr, e.message.tr, isShort: true);
 
         if (e.shouldPauseAllDownloadTasks) {
@@ -1416,7 +1430,7 @@ class GalleryDownloadService extends GetxController
 
         return;
       } on EHSiteException catch (e) {
-        log.download('Parse image url error, reason: ${e.message.tr}');
+        log.download('Parse image url error, reason: ${e.message.tr}', level: Level.error);
         snack('error'.tr, e.message.tr, isShort: true);
 
         if (e.shouldPauseAllDownloadTasks) {
@@ -1450,7 +1464,9 @@ class GalleryDownloadService extends GetxController
       if (image.reloadKey != null) {
         if (reloadKeyHistory.contains(image.reloadKey)) {
           log.download(
-              'Parse image url returned reused reload key, mark as failed. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${image.reloadKey}');
+            'Parse image url returned reused reload key, mark as failed. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${image.reloadKey}',
+            level: Level.warning,
+          );
           image.path =
               _computeImageDownloadRelativePath(gallery.title, gallery.gid, image.url, serialNo);
           image.downloadStatus = DownloadStatus.downloadFailed;
@@ -1465,11 +1481,15 @@ class GalleryDownloadService extends GetxController
       if (previousFailedUrl != null && image.url == previousFailedUrl) {
         if (reParseDepth < _maxReparseImageUrlAttempts) {
           log.download(
-              'Parse image url returned identical url, wait and retry. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}');
+            'Parse image url returned identical url, wait and retry. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}',
+            level: Level.warning,
+          );
           await Future.delayed(const Duration(milliseconds: 1000), () {});
           if (image.reloadKey != null) {
             log.download(
-                'Parse image url returned identical url, retry with new reload key. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${image.reloadKey}, attempt: ${reParseDepth + 1}');
+              'Parse image url returned identical url, retry with new reload key. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${image.reloadKey}, attempt: ${reParseDepth + 1}',
+              level: Level.warning,
+            );
             return _submitTask(
               gid: gallery.gid,
               priority: _computeImageTaskPriority(gallery, serialNo),
@@ -1485,7 +1505,9 @@ class GalleryDownloadService extends GetxController
           }
 
           log.download(
-              'Parse image url returned identical url, force re-parse href. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}');
+            'Parse image url returned identical url, force re-parse href. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}',
+            level: Level.warning,
+          );
           GalleryThumbnail? thumbnail = galleryDownloadInfo.imageHrefs[serialNo];
           if (thumbnail != null) {
             await ehRequest.removeCacheByUrl(thumbnail.replacedMPVHref(serialNo + 1));
@@ -1506,7 +1528,9 @@ class GalleryDownloadService extends GetxController
 
       if (previousFailedUrl != null && image.url == previousFailedUrl) {
         log.download(
-            'Parse image url returned identical url after all retries, mark as failed. Gid: ${gallery.gid}, index: $serialNo');
+          'Parse image url returned identical url after all retries, mark as failed. Gid: ${gallery.gid}, index: $serialNo',
+          level: Level.error,
+        );
         image.path =
             _computeImageDownloadRelativePath(gallery.title, gallery.gid, image.url, serialNo);
         image.downloadStatus = DownloadStatus.downloadFailed;
@@ -1525,7 +1549,8 @@ class GalleryDownloadService extends GetxController
 
       galleryDownloadInfo.images[serialNo] = image;
 
-      log.download('Parse image url success, index: $serialNo, url: ${image.url}');
+      log.download('Parse image url success, index: $serialNo, url: ${image.url}',
+          level: Level.info);
 
       /// Next step: download image
       return _submitTask(
@@ -1601,7 +1626,9 @@ class GalleryDownloadService extends GetxController
           },
           onRetry: (e) {
             log.download(
-                'Download ${gallery.title} image: $serialNo failed, retry. Reason: ${(e as DioException).errorMsg}. Url:${image.url}');
+              'Download ${gallery.title} image: $serialNo failed, retry. Reason: ${(e as DioException).errorMsg}. Url:${image.url}',
+              level: Level.warning,
+            );
             galleryDownloadInfo.speedComputer.resetProgress(serialNo);
           },
         );
@@ -1610,7 +1637,9 @@ class GalleryDownloadService extends GetxController
           return;
         }
         log.download(
-            'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.errorMsg}. Url:${image.url}');
+          'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.errorMsg}. Url:${image.url}',
+          level: Level.warning,
+        );
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
         if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
           return;
@@ -1618,7 +1647,9 @@ class GalleryDownloadService extends GetxController
         return _reParseImageUrlAndDownload(gallery, serialNo);
       } on io.HttpException catch (e) {
         log.download(
-            'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.message}. Url:${image.url}');
+          'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.message}. Url:${image.url}',
+          level: Level.warning,
+        );
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
         if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
           return;
@@ -1626,14 +1657,16 @@ class GalleryDownloadService extends GetxController
         return _reParseImageUrlAndDownload(gallery, serialNo);
       } on io.SocketException catch (e) {
         log.download(
-            'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.message}. Url:${image.url}');
+          'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.message}. Url:${image.url}',
+          level: Level.warning,
+        );
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
         if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
           return;
         }
         return _reParseImageUrlAndDownload(gallery, serialNo);
       } on EHSiteException catch (e) {
-        log.download('Download Error, reason: ${e.message}');
+        log.download('Download Error, reason: ${e.message}', level: Level.error);
         snack('error'.tr, e.message, isShort: true);
 
         if (e.shouldPauseAllDownloadTasks) {
@@ -1647,7 +1680,9 @@ class GalleryDownloadService extends GetxController
       final int? statusCode = response.statusCode;
       if (statusCode == 403) {
         log.download(
-            'Download ${gallery.title} image: $serialNo failed with status 403, try re-parse. Url:${image.url}');
+          'Download ${gallery.title} image: $serialNo failed with status 403, try re-parse. Url:${image.url}',
+          level: Level.warning,
+        );
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
         if (await _retryDownloadWithLegacyReloadKey(gallery, serialNo)) {
           return;
@@ -1658,7 +1693,9 @@ class GalleryDownloadService extends GetxController
       io.File downloadedFile = io.File(path);
       if (!downloadedFile.existsSync() || downloadedFile.lengthSync() == 0) {
         log.download(
-            'Download ${gallery.title} image: $serialNo returned empty content, try re-parse. Url:${image.url}');
+          'Download ${gallery.title} image: $serialNo returned empty content, try re-parse. Url:${image.url}',
+          level: Level.warning,
+        );
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
         if (downloadedFile.existsSync()) {
           try {
@@ -1690,7 +1727,9 @@ class GalleryDownloadService extends GetxController
             reason = '${reason.substring(0, 200)}...';
           }
           log.download(
-              'Download ${gallery.title} original image: $serialNo returned HTML: ${reason.isEmpty ? 'unknown reason' : reason}');
+            'Download ${gallery.title} original image: $serialNo returned HTML: ${reason.isEmpty ? 'unknown reason' : reason}',
+            level: Level.warning,
+          );
           galleryDownloadInfo.speedComputer.resetProgress(serialNo);
           if (downloadedFile.existsSync()) {
             try {
@@ -1725,7 +1764,7 @@ class GalleryDownloadService extends GetxController
         }
       }
 
-      log.download('Download ${gallery.title} image: $serialNo success');
+      log.download('Download ${gallery.title} image: $serialNo success', level: Level.info);
 
       await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloaded);
 
@@ -1772,7 +1811,9 @@ class GalleryDownloadService extends GetxController
       if (!triedLegacyWithoutKey) {
         galleryDownloadInfo.legacyReloadTriedWithoutKey[serialNo] = true;
         log.download(
-            'Legacy reload key loop, retry without reload key. Gid: ${gallery.gid}, index: $serialNo');
+          'Legacy reload key loop, retry without reload key. Gid: ${gallery.gid}, index: $serialNo',
+          level: Level.warning,
+        );
         existingImage.originalImageUrl ??= _stripReloadKeyFromUrl(updatedUrl);
         existingImage.url = _stripReloadKeyFromUrl(existingImage.originalImageUrl ?? updatedUrl);
         existingImage.reloadKey = null;
@@ -1796,7 +1837,9 @@ class GalleryDownloadService extends GetxController
 
         _saveGalleryMetadataInDisk(gallery);
         log.download(
-            'Re-parse image url by stripping legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}');
+          'Re-parse image url by stripping legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}',
+          level: Level.info,
+        );
         _submitTask(
           gid: gallery.gid,
           priority: _computeImageTaskPriority(gallery, serialNo),
@@ -1806,7 +1849,9 @@ class GalleryDownloadService extends GetxController
       }
 
       log.download(
-          'Legacy reload key loop persists after stripping reload key, mark failed. Gid: ${gallery.gid}, index: $serialNo');
+        'Legacy reload key loop persists after stripping reload key, mark failed. Gid: ${gallery.gid}, index: $serialNo',
+        level: Level.error,
+      );
       await _markImageAsFailed(gallery, existingImage, serialNo);
       return true;
     }
@@ -1836,7 +1881,9 @@ class GalleryDownloadService extends GetxController
 
     _saveGalleryMetadataInDisk(gallery);
     log.download(
-        'Re-parse image url success using legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}');
+      'Re-parse image url success using legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}',
+      level: Level.info,
+    );
     _submitTask(
       gid: gallery.gid,
       priority: _computeImageTaskPriority(gallery, serialNo),
@@ -1982,27 +2029,37 @@ class GalleryDownloadService extends GetxController
         ),
         retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
         onRetry: (e) => log.download(
-            'Fetch legacy reload key failed, retry. Reason: ${(e as DioException).errorMsg}'),
+          'Fetch legacy reload key failed, retry. Reason: ${(e as DioException).errorMsg}',
+          level: Level.warning,
+        ),
         delayFactor: const Duration(milliseconds: 500),
         maxAttempts: _maxRetryTimes,
       );
       log.download(
-          'Fetch legacy reload key success. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${legacyImage.reloadKey}');
+        'Fetch legacy reload key success. Gid: ${gallery.gid}, index: $serialNo, reloadKey: ${legacyImage.reloadKey}',
+        level: Level.info,
+      );
       return (reloadKey: legacyImage.reloadKey, url: legacyImage.url);
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
         return null;
       }
       log.download(
-          'Fetch legacy reload key failed. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.errorMsg}');
+        'Fetch legacy reload key failed. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.errorMsg}',
+        level: Level.warning,
+      );
       return null;
     } on EHParseException catch (e) {
       log.download(
-          'Fetch legacy reload key parse error. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.message.tr}');
+        'Fetch legacy reload key parse error. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.message.tr}',
+        level: Level.error,
+      );
       return null;
     } on EHSiteException catch (e) {
       log.download(
-          'Fetch legacy reload key site error. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.message.tr}');
+        'Fetch legacy reload key site error. Gid: ${gallery.gid}, index: $serialNo, reason: ${e.message.tr}',
+        level: Level.error,
+      );
       return null;
     }
   }
@@ -2170,12 +2227,14 @@ class GalleryDownloadService extends GetxController
         downloadStatus: DownloadStatus.downloaded,
       );
 
-      log.download('Copy old image, new serialNo: $serialNo');
+      log.download('Copy old image, new serialNo: $serialNo', level: Level.info);
       io.File oldFile = io.File(path.join(pathService.getVisibleDir().path, oldImage.path!));
 
       if (!oldFile.existsSync()) {
         log.download(
-            'Old image missing while copying for update, fallback to re-parse. Gid: ${newGallery.gid}, serialNo: $serialNo');
+          'Old image missing while copying for update, fallback to re-parse. Gid: ${newGallery.gid}, serialNo: $serialNo',
+          level: Level.warning,
+        );
         await _resetImageForReparse(newGallery, serialNo, existingImage: newImage);
         continue;
       }
@@ -2200,7 +2259,7 @@ class GalleryDownloadService extends GetxController
 
   Future<void> _copyImageInfo(
       GalleryImage oldImage, GalleryDownloadedData newGallery, int newImageSerialNo) async {
-    log.download('Copy old image, new serialNo: $newImageSerialNo');
+    log.download('Copy old image, new serialNo: $newImageSerialNo', level: Level.info);
 
     GalleryImage newImage = galleryDownloadInfos[newGallery.gid]!.images[newImageSerialNo]!;
 
@@ -2209,7 +2268,9 @@ class GalleryDownloadService extends GetxController
 
     if (!oldFile.existsSync()) {
       log.download(
-          'Old image missing when copying, queue re-parse. Gid: ${newGallery.gid}, serialNo: $newImageSerialNo');
+        'Old image missing when copying, queue re-parse. Gid: ${newGallery.gid}, serialNo: $newImageSerialNo',
+        level: Level.warning,
+      );
       await _resetImageForReparse(newGallery, newImageSerialNo, existingImage: newImage);
       return;
     }

@@ -14,6 +14,7 @@ import 'package:jhentai/setting/super_resolution_setting.dart';
 import 'package:jhentai/utils/table.dart';
 import 'package:path/path.dart';
 import 'package:retry/retry.dart';
+import 'package:logger/logger.dart';
 
 import '../database/dao/super_resolution_info_dao.dart';
 import '../model/gallery_image.dart';
@@ -326,7 +327,7 @@ class SuperResolutionService extends GetxController
       }
 
       superResolutionInfo.imageStatuses[i] = SuperResolutionStatus.success;
-      log.download('super resolve image ${rawImages[i].path} success');
+      log.download('super resolve image ${rawImages[i].path} success', level: Level.info);
 
       /// we can't kill the process immediately on Windows
       if (get(gid, type) != null) {
@@ -404,7 +405,7 @@ class SuperResolutionService extends GetxController
   }
 
   Future<Process> _callProcess(GalleryImage rawImage) {
-    log.download('start to super resolve image ${rawImage.path}');
+    log.download('start to super resolve image ${rawImage.path}', level: Level.info);
 
     String inputRelativePath = rawImage.path!;
     String outputRelativePath = computeImageOutputRelativePath(rawImage.path!);
