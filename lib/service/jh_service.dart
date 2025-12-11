@@ -73,10 +73,10 @@ mixin JHLifeCircleBeanWithConfigStorage {
     try {
       String? configString = await localConfigService.read(configKey: configEnum);
       if (configString == null) {
-        log.debug('Refresh $runtimeType config success with default');
+        log.trace('Refresh $runtimeType config success with default');
       } else {
         applyBeanConfig(configString);
-        log.debug('Refresh $runtimeType config success');
+        log.trace('Refresh $runtimeType config success');
       }
     } catch (e, stack) {
       log.error('Refresh $runtimeType config failed', e, stack);

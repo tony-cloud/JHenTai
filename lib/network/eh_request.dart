@@ -46,6 +46,20 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   late final EHIpProvider _ehIpProvider;
   late final String systemProxyAddress;
 
+  int _requestSeq = 0;
+
+  int _nextRequestSeq() => (_requestSeq++ & 0x7fffffff);
+
+  Duration _normalizedTimeout(
+      {required int milliseconds, required Duration fallback, required String label}) {
+    if (milliseconds <= 0) {
+      log.warning(
+          '$label is non-positive ($milliseconds ms), falling back to ${fallback.inMilliseconds} ms to avoid infinite waits.');
+      return fallback;
+    }
+    return Duration(milliseconds: milliseconds);
+  }
+
   List<Cookie> get cookies => List.unmodifiable(_cookieManager.cookies);
 
   static const String domainFrontingExtraKey = 'JHDF';
@@ -57,8 +71,16 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   @override
   Future<void> doInitBean() async {
     _dio = Dio(BaseOptions(
-      connectTimeout: Duration(milliseconds: networkSetting.connectTimeout.value),
-      receiveTimeout: Duration(milliseconds: networkSetting.receiveTimeout.value),
+      connectTimeout: _normalizedTimeout(
+        milliseconds: networkSetting.connectTimeout.value,
+        fallback: const Duration(seconds: 15),
+        label: 'connectTimeout',
+      ),
+      receiveTimeout: _normalizedTimeout(
+        milliseconds: networkSetting.receiveTimeout.value,
+        fallback: const Duration(minutes: 1),
+        label: 'receiveTimeout',
+      ),
     ));
 
     systemProxyAddress = await getSystemProxyAddress();
@@ -310,11 +332,19 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   void setConnectTimeout(int connectTimeout) {
-    _dio.options.connectTimeout = Duration(milliseconds: connectTimeout);
+    _dio.options.connectTimeout = _normalizedTimeout(
+      milliseconds: connectTimeout,
+      fallback: const Duration(seconds: 15),
+      label: 'connectTimeout',
+    );
   }
 
   void setReceiveTimeout(int receiveTimeout) {
-    _dio.options.receiveTimeout = Duration(milliseconds: receiveTimeout);
+    _dio.options.receiveTimeout = _normalizedTimeout(
+      milliseconds: receiveTimeout,
+      fallback: const Duration(minutes: 1),
+      label: 'receiveTimeout',
+    );
   }
 
   Future<T> requestLogin<T>(String userName, String passWord, HtmlParser<T> parser) async {
@@ -804,34 +834,48 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     bool deleteOnError = true,
     HtmlParser<T>? parser,
   }) async {
+    final int requestId = _nextRequestSeq();
     final Duration? resolvedReceiveTimeout =
         receiveTimeout == null ? null : Duration(milliseconds: receiveTimeout);
-    final Duration? effectiveReceiveTimeout = resolvedReceiveTimeout ?? _dio.options.receiveTimeout;
+    Duration? effectiveReceiveTimeout = resolvedReceiveTimeout ?? _dio.options.receiveTimeout;
+    if (effectiveReceiveTimeout != null && effectiveReceiveTimeout <= Duration.zero) {
+      log.warning(
+          '[DL#$requestId] receiveTimeout is disabled (<=0), using 1 minute to avoid hangs. url:$url');
+      effectiveReceiveTimeout = const Duration(minutes: 1);
+    }
 
     final CancelToken effectiveCancelToken = cancelToken ?? CancelToken();
     Timer? receiveTimeoutTimer;
+    final Stopwatch stopwatch = Stopwatch()..start();
+
+    log.download(
+        '[DL#$requestId] start url:$url path:$path append:$appendMode range:${range ?? 'none'} rt:${effectiveReceiveTimeout?.inMilliseconds ?? 'none'}ms preserveHeaderCase:$preserveHeaderCase');
 
     void resetReceiveTimeoutTimer() {
-      if (effectiveReceiveTimeout == null || effectiveReceiveTimeout <= Duration.zero) {
+      final Duration? timeoutForTimer = effectiveReceiveTimeout;
+      if (timeoutForTimer == null || timeoutForTimer <= Duration.zero) {
         return;
       }
 
       receiveTimeoutTimer?.cancel();
-      receiveTimeoutTimer = Timer(effectiveReceiveTimeout, () {
+      receiveTimeoutTimer = Timer(timeoutForTimer, () {
         if (effectiveCancelToken.isCancelled) {
           return;
         }
+        log.download(
+            '[DL#$requestId] receive timeout reached (${timeoutForTimer.inMilliseconds}ms), cancelling url:$url');
         effectiveCancelToken.cancel(
-          _DownloadReceiveTimeout(url: url, timeout: effectiveReceiveTimeout),
+          _DownloadReceiveTimeout(url: url, timeout: timeoutForTimer),
         );
       });
     }
 
     resetReceiveTimeoutTimer();
 
-    Response response;
+    Response? responseForLog;
+    late final Response successResponse;
     try {
-      response = await _dio.download(
+      final Response downloadResponse = await _dio.download(
         url,
         path,
         onReceiveProgress: (count, total) {
@@ -847,7 +891,11 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
           receiveTimeout: resolvedReceiveTimeout,
         ),
       );
+      responseForLog = downloadResponse;
+      successResponse = downloadResponse;
     } on DioException catch (e) {
+      log.download(
+          '[DL#$requestId] dio error type:${e.type} status:${e.response?.statusCode} msg:${e.message} url:$url');
       if (e.type == DioExceptionType.cancel && e.error is _DownloadReceiveTimeout) {
         final _DownloadReceiveTimeout timeout = e.error as _DownloadReceiveTimeout;
         throw DioException(
@@ -860,12 +908,15 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       rethrow;
     } finally {
       receiveTimeoutTimer?.cancel();
+      stopwatch.stop();
+      log.download(
+          '[DL#$requestId] finish elapsed:${stopwatch.elapsedMilliseconds}ms status:${responseForLog?.statusCode ?? 'n/a'} url:$url');
     }
 
     if (parser == null) {
-      return response as T;
+      return successResponse as T;
     }
-    return parser(response.headers, response.data);
+    return parser(successResponse.headers, successResponse.data);
   }
 
   Future<T> voteTag<T>(
@@ -1100,6 +1151,10 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
   }) async {
+    final int requestId = _nextRequestSeq();
+    final Stopwatch stopwatch = Stopwatch()..start();
+    log.info(
+        '[REQ#$requestId] GET start url:$url query:${queryParameters?.keys.join(',') ?? 'none'}');
     Response response;
 
     try {
@@ -1111,6 +1166,8 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
         onReceiveProgress: onReceiveProgress,
       );
     } on DioException catch (e) {
+      log.warning(
+          '[REQ#$requestId] GET dio error type:${e.type} status:${e.response?.statusCode} msg:${e.message} url:$url');
       throw _convertExceptionIfGalleryDeleted(e);
     }
 
@@ -1120,6 +1177,10 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       removeCacheByUrl(response.requestOptions.uri.toString());
       rethrow;
     }
+
+    stopwatch.stop();
+    log.info(
+        '[REQ#$requestId] GET done status:${response.statusCode} elapsed:${stopwatch.elapsedMilliseconds}ms url:$url');
 
     return response;
   }
@@ -1133,6 +1194,10 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
+    final int requestId = _nextRequestSeq();
+    final Stopwatch stopwatch = Stopwatch()..start();
+    log.info(
+        '[REQ#$requestId] POST start url:$url query:${queryParameters?.keys.join(',') ?? 'none'}');
     Response response;
     try {
       response = await _dio.post(
@@ -1145,10 +1210,16 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
         onReceiveProgress: onReceiveProgress,
       );
     } on DioException catch (e) {
+      log.warning(
+          '[REQ#$requestId] POST dio error type:${e.type} status:${e.response?.statusCode} msg:${e.message} url:$url');
       throw _convertExceptionIfGalleryDeleted(e);
     }
 
     _emitEHExceptionIfFailed(response);
+
+    stopwatch.stop();
+    log.info(
+        '[REQ#$requestId] POST done status:${response.statusCode} elapsed:${stopwatch.elapsedMilliseconds}ms url:$url');
 
     return response;
   }

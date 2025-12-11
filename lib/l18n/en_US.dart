@@ -258,6 +258,8 @@ class en_US {
       'accountSetting': 'Account Setting',
       'styleSetting': 'Style Setting',
       'advancedSetting': 'Advanced Setting',
+      'logLevel': 'Log level',
+      'logLevelHint': 'Lowest level written to logs',
       'securitySetting': 'Security Setting',
       'ehSetting': 'EH Site Setting',
       'readSetting': 'Read Setting',

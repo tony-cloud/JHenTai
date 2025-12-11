@@ -78,13 +78,24 @@ class RollingFileOutput extends LogOutput {
     if (sink == null) {
       return;
     }
-    if (awaitCompletion) {
-      await sink.flush();
-      await sink.close();
-      return;
+    Future<void> doClose() async {
+      try {
+        await sink.flush();
+      } catch (_) {
+        // ignore flush errors when closing
+      }
+      try {
+        await sink.close();
+      } catch (_) {
+        // Ignore state errors such as "StreamSink is bound to a stream" to avoid crashing logging.
+      }
     }
-    unawaited(sink.flush());
-    unawaited(sink.close());
+
+    if (awaitCompletion) {
+      await doClose();
+    } else {
+      unawaited(doClose());
+    }
   }
 
   File _fileWithIndex(int index) {

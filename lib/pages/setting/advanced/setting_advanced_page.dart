@@ -18,6 +18,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/read_progress_service.dart';
 import 'package:jhentai/service/schedule_service.dart';
 import 'package:jhentai/utils/toast_util.dart';
+import 'package:logger/logger.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
 import 'package:jhentai/service/ftp_server_service.dart';
@@ -69,6 +70,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
           children: [
             _buildEnableLogging(),
             if (advancedSetting.enableLogging.isTrue) _buildRecordAllLogs().fadeInWidget(),
+            if (advancedSetting.enableLogging.isTrue) _buildLogLevel().fadeInWidget(),
             _buildOpenLogs(),
             _buildClearLogs(context),
             _buildClearImageCache(context),
@@ -105,6 +107,36 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       subtitle: Text('needRestart'.tr),
       value: advancedSetting.enableVerboseLogging.value,
       onChanged: advancedSetting.saveEnableVerboseLogging,
+    );
+  }
+
+  static const List<Level> _logLevels = [
+    Level.trace,
+    Level.debug,
+    Level.info,
+    Level.warning,
+    Level.error,
+  ];
+
+  Widget _buildLogLevel() {
+    return ListTile(
+      title: Text('logLevel'.tr),
+      subtitle: Text('logLevelHint'.tr),
+      trailing: DropdownButton<Level>(
+        value: advancedSetting.logLevel.value,
+        onChanged: (Level? level) {
+          if (level == null) {
+            return;
+          }
+          advancedSetting.saveLogLevel(level);
+        },
+        items: _logLevels
+            .map((level) => DropdownMenuItem<Level>(
+                  value: level,
+                  child: Text(level.name.toUpperCase()),
+                ))
+            .toList(),
+      ),
     );
   }
 

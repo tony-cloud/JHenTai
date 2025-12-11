@@ -252,6 +252,8 @@ class zh_CN {
       'accountSetting': '账户设置',
       'styleSetting': '样式设置',
       'advancedSetting': '高级设置',
+      'logLevel': '日志级别',
+      'logLevelHint': '选择写入日志的最低级别',
       'ehSetting': 'EH 网站设置',
       'securitySetting': '安全设置',
       'readSetting': '阅读设置',

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:logger/logger.dart';
 
 import '../service/jh_service.dart';
 
@@ -12,6 +13,7 @@ AdvancedSetting advancedSetting = AdvancedSetting();
 class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxBool enableLogging = true.obs;
   RxBool enableVerboseLogging = kDebugMode.obs;
+  Rx<Level> logLevel = Level.debug.obs;
   RxBool enableCheckUpdate = true.obs;
   RxBool enableCheckClipboard = true.obs;
   RxBool inNoImageMode = false.obs;
@@ -27,6 +29,10 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
 
     enableLogging.value = map['enableLogging'];
     enableVerboseLogging.value = map['enableVerboseLogging'] ?? enableVerboseLogging.value;
+    int? levelIndex = map['logLevelIndex'];
+    if (levelIndex != null && levelIndex >= 0 && levelIndex < Level.values.length) {
+      logLevel.value = Level.values[levelIndex];
+    }
     enableCheckUpdate.value = map['enableCheckUpdate'] ?? enableCheckUpdate.value;
     enableCheckClipboard.value = map['enableCheckClipboard'] ?? enableCheckClipboard.value;
     inNoImageMode.value = map['inNoImageMode'] ?? inNoImageMode.value;
@@ -41,6 +47,7 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
     return jsonEncode({
       'enableLogging': enableLogging.value,
       'enableVerboseLogging': enableVerboseLogging.value,
+      'logLevelIndex': logLevel.value.index,
       'enableCheckUpdate': enableCheckUpdate.value,
       'enableCheckClipboard': enableCheckClipboard.value,
       'inNoImageMode': inNoImageMode.value,
@@ -64,6 +71,12 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   Future<void> saveEnableVerboseLogging(bool enableVerboseLogging) async {
     log.debug('saveEnableVerboseLogging:$enableVerboseLogging');
     this.enableVerboseLogging.value = enableVerboseLogging;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveLogLevel(Level level) async {
+    log.debug('saveLogLevel:$level');
+    logLevel.value = level;
     await saveBeanConfig();
   }
 

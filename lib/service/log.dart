@@ -38,18 +38,8 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   LogPrinter devPrinter =
       PrettyPrinter(stackTraceBeginIndex: 0, methodCount: 6, levelEmojis: {Level.trace: '✔ '});
-  LogPrinter prodPrinterWithBox = PrettyPrinter(
-      stackTraceBeginIndex: 0,
-      methodCount: 6,
-      colors: false,
-      printTime: true,
-      levelEmojis: {Level.trace: '✔ '});
-  LogPrinter prodPrinterWithoutBox = PrettyPrinter(
-      stackTraceBeginIndex: 0,
-      methodCount: 6,
-      colors: false,
-      noBoxingByDefault: true,
-      levelEmojis: {Level.trace: '✔ '});
+
+  final FileLogPrinter fileLogPrinter = FileLogPrinter(printTime: true);
   final LogPrinter _errorTextPrinter = ErrorTextPrinter();
 
   @override
@@ -167,15 +157,18 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   }
 
   Future<void> _initLogger() async {
-    _consoleLogger ??= Logger(printer: devPrinter);
+    final Level selectedLevel =
+        advancedSetting.enableVerboseLogging.isTrue ? Level.trace : advancedSetting.logLevel.value;
+
+    _consoleLogger ??= Logger(printer: devPrinter, level: selectedLevel);
 
     await _initLogDir();
     String fileName = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
 
     _verboseFileLogger ??= Logger(
-      printer: HybridPrinter(prodPrinterWithBox,
-          trace: prodPrinterWithoutBox, debug: prodPrinterWithoutBox, info: prodPrinterWithoutBox),
-      filter: EHLogFilter(),
+      level: selectedLevel,
+      printer: fileLogPrinter,
+      filter: EHLogFilter.withLevel(selectedLevel),
       output: RollingFileOutput(
         baseFilePath: path.join(logDirPath!, '$fileName.log'),
         headerBuilder: () => _buildLogHeader('Main'),
@@ -194,7 +187,8 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         ),
       );
       _downloadFileLogger ??= Logger(
-        printer: prodPrinterWithoutBox,
+        level: selectedLevel,
+        printer: fileLogPrinter,
         filter: ProductionFilter(),
         output: RollingFileOutput(
           baseFilePath: path.join(logDirPath!, '${fileName}_download.log'),
@@ -307,12 +301,62 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 }
 
 class EHLogFilter extends LogFilter {
+  EHLogFilter({Level level = Level.debug}) {
+    this.level = level;
+  }
+
+  factory EHLogFilter.withLevel(Level level) => EHLogFilter(level: level);
+
   @override
   bool shouldLog(LogEvent event) {
+    final Level effectiveLevel = level ?? Level.debug;
     if (advancedSetting.enableVerboseLogging.isTrue) {
-      return event.level.index >= level!.index;
+      return event.level.index >= effectiveLevel.index;
     }
-    return event.level.index >= level!.index && event.level != Level.trace;
+    return event.level.index >= effectiveLevel.index && event.level != Level.trace;
+  }
+}
+
+class FileLogPrinter extends LogPrinter {
+  FileLogPrinter({this.printTime = true});
+
+  final bool printTime;
+  static final DateFormat _timeFormat = DateFormat('yyyy-MM-ddTHH:mm:ss.SSS');
+
+  static const Map<Level, String> _levelLabels = {
+    Level.trace: 'TRACE',
+    Level.debug: 'DEBUG',
+    Level.info: 'INFO',
+    Level.warning: 'WARN',
+    Level.error: 'ERROR',
+    Level.fatal: 'FATAL',
+  };
+
+  @override
+  List<String> log(LogEvent event) {
+    final StringBuffer buffer = StringBuffer();
+    if (printTime) {
+      buffer
+        ..write(_timeFormat.format(DateTime.now()))
+        ..write(' ');
+    }
+
+    buffer
+      ..write('[')
+      ..write(_levelLabels[event.level] ?? event.level.name.toUpperCase())
+      ..write('] ')
+      ..write(event.message);
+
+    final List<String> lines = [buffer.toString()];
+
+    if (event.error != null) {
+      lines.add('Error: ${event.error}');
+    }
+    if (event.stackTrace != null) {
+      lines.add('Stack: ${event.stackTrace}');
+    }
+
+    return lines;
   }
 }
 
