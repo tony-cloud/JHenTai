@@ -11,6 +11,7 @@ import 'package:jhentai/setting/style_setting.dart';
 import 'dart:io' as io;
 
 import '../service/gallery_download_service.dart';
+import '../service/log.dart';
 
 typedef LoadingProgressWidgetBuilder = Widget Function(double);
 typedef FailedWidgetBuilder = Widget Function(ExtendedImageState state);
@@ -153,8 +154,7 @@ class EHImage extends StatelessWidget {
 
             if (state.slidePageState != null) {
               child = ExtendedImageSlidePageHandler(
-                  extendedImageSlidePageState: state.slidePageState,
-                  child: child);
+                  extendedImageSlidePageState: state.slidePageState, child: child);
             }
 
             child = Center(
@@ -180,9 +180,13 @@ class EHImage extends StatelessWidget {
       return downloadingWidgetBuilder?.call() ?? const Center(child: CircularProgressIndicator());
     }
 
+    final String filePath = GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
+      galleryImage.path!,
+    );
+    final io.File imageFile = io.File(filePath);
+
     return ExtendedImage.file(
-      io.File(GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
-          galleryImage.path!)),
+      imageFile,
       fit: fit,
       height: containerHeight,
       width: containerWidth,
@@ -200,6 +204,7 @@ class EHImage extends StatelessWidget {
                 ? loadingWidgetBuilder!.call()
                 : Center(child: UIConfig.loadingAnimation(context));
           case LoadState.failed:
+            _logFileLoadFailure(imageFile, state);
             return failedWidgetBuilder?.call(state) ??
                 Center(
                   child: GestureDetector(
@@ -212,11 +217,10 @@ class EHImage extends StatelessWidget {
             Widget child = completedWidgetBuilder?.call(state) ?? _buildExtendedRawImage(state);
 
             child = ClipRRect(borderRadius: borderRadius, child: child);
-          
+
             if (state.slidePageState != null) {
               child = ExtendedImageSlidePageHandler(
-                  extendedImageSlidePageState: state.slidePageState,
-                  child: child);
+                  extendedImageSlidePageState: state.slidePageState, child: child);
             }
 
             return FadeIn(
@@ -243,6 +247,29 @@ class EHImage extends StatelessWidget {
     int? total = extendedImageInfo?.sizeBytes;
     int? compressed = loadingProgress.expectedTotalBytes;
     return cur / (compressed ?? total ?? cur * 100);
+  }
+
+  void _logFileLoadFailure(io.File file, ExtendedImageState state) {
+    final bool exists = file.existsSync();
+    int? length;
+
+    if (exists) {
+      try {
+        length = file.lengthSync();
+      } catch (e, stack) {
+        log.error('Read downloaded image length failed: ${file.path}', e, stack);
+      }
+    }
+
+    final String reason = !exists
+        ? 'file_missing'
+        : ((length ?? 0) == 0)
+            ? 'empty_file'
+            : 'decode_failed';
+
+    log.error(
+      'Load downloaded image failed ($reason): path=${file.path}, exists=$exists, length=${length ?? 'unknown'}, url=${galleryImage.url}, status=${galleryImage.downloadStatus}, exception=${state.lastException}',
+    );
   }
 
   /// replace image host: exhentai.org -> ehgt.org
