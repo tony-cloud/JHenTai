@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -32,6 +33,7 @@ import '../../model/detail_page_info.dart';
 import '../../model/gallery_image.dart';
 import '../../model/read_page_info.dart';
 import '../../network/eh_request.dart';
+import '../../service/gallery_download_service.dart';
 import '../../setting/read_setting.dart';
 import '../../utils/eh_spider_parser.dart';
 import '../../service/log.dart';
@@ -70,6 +72,11 @@ class ReadPageLogic extends GetxController {
   late Timer flushReadProgressTimer;
   static int _readerWakelockCounter = 0;
   late final String _wakelockLockName = 'reader-${_readerWakelockCounter++}';
+
+  final Map<int, Uint8List> _localImageMemoryCache = {};
+  Set<int> _localImageMemoryTargets = {};
+  Future<void> _localImageCachePipeline = Future.value();
+  int? _lastMemoryCacheCenterIndex;
 
   late Worker toggleTurnPageByVolumeKeyLister;
   late Worker toggleCurrentImmersiveModeLister;
@@ -192,8 +199,13 @@ class ReadPageLogic extends GetxController {
         readSetting.preloadDistanceLocal,
         readSetting.preloadDistance
       ],
-      (_) => updateSafely([layoutId]),
+      (_) {
+        updateSafely([layoutId]);
+        _scheduleLocalMemoryCache(state.readPageInfo.currentImageIndex);
+      },
     );
+
+    _scheduleLocalMemoryCache(state.readPageInfo.currentImageIndex);
 
     inited = true;
     if (!delayInitCompleter.isCompleted) {
@@ -236,6 +248,9 @@ class ReadPageLogic extends GetxController {
     Get.delete<HorizontalDoubleColumnLayoutLogic>(force: true);
 
     executor.close();
+
+    _localImageMemoryCache.clear();
+    _localImageMemoryTargets = {};
 
     _cancelWakelockTimer();
   }
@@ -638,6 +653,7 @@ class ReadPageLogic extends GetxController {
 
   void recordReadProgress(int index) {
     state.readPageInfo.currentImageIndex = index;
+    _scheduleLocalMemoryCache(index);
     update([sliderId, pageNoId, thumbnailNoId]);
   }
 
@@ -654,6 +670,66 @@ class ReadPageLogic extends GetxController {
         state.readPageInfo.gid!,
         state.readPageInfo.currentImageIndex,
       );
+    }
+  }
+
+  Uint8List? getLocalMemoryImage(int index) {
+    return _localImageMemoryCache[index];
+  }
+
+  bool shouldKeepLocalMemoryCache(int index) {
+    return state.readPageInfo.mode == ReadMode.local && _localImageMemoryTargets.contains(index);
+  }
+
+  void _scheduleLocalMemoryCache(int centerIndex) {
+    if (state.readPageInfo.mode != ReadMode.local) {
+      return;
+    }
+
+    int radius = max(readSetting.preloadDistanceLocal.value, 0);
+    int start = max(centerIndex - radius, 0);
+    int end = min(centerIndex + radius, state.readPageInfo.pageCount - 1);
+    Set<int> target = {for (int i = start; i <= end; i++) i};
+
+    _localImageMemoryTargets = target;
+
+    if (_lastMemoryCacheCenterIndex == centerIndex &&
+        target.length == _localImageMemoryCache.length &&
+        _localImageMemoryCache.keys.every(target.contains)) {
+      return;
+    }
+
+    _lastMemoryCacheCenterIndex = centerIndex;
+
+    _localImageCachePipeline =
+        _localImageCachePipeline.then((_) => _updateLocalMemoryCache(target));
+  }
+
+  Future<void> _updateLocalMemoryCache(Set<int> target) async {
+    List<int> toRemove = _localImageMemoryCache.keys.where((key) => !target.contains(key)).toList();
+    for (int index in toRemove) {
+      _localImageMemoryCache.remove(index);
+    }
+
+    for (int index in target) {
+      if (_localImageMemoryCache.containsKey(index)) {
+        continue;
+      }
+
+      GalleryImage? image = state.images[index];
+      if (image?.path == null) {
+        continue;
+      }
+
+      String filePath =
+          GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(image!.path!);
+      try {
+        _localImageMemoryCache[index] = await File(filePath).readAsBytes();
+      } on FileSystemException catch (e, stack) {
+        log.error('Cache local image to memory failed: $filePath', e, stack);
+      } catch (e, stack) {
+        log.error('Cache local image to memory failed: $filePath', e, stack);
+      }
     }
   }
 

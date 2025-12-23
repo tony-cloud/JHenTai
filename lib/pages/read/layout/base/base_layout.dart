@@ -330,6 +330,9 @@ abstract class BaseLayout extends StatelessWidget {
   }
 
   Widget _buildLocalImage(BuildContext context, int index) {
+    final memoryBytes = readPageLogic.getLocalMemoryImage(index);
+    final bool keepMemoryCache = readPageLogic.shouldKeepLocalMemoryCache(index);
+
     return GestureDetector(
       onLongPress: () => logic.showBottomMenuInLocalMode(index, context),
       onSecondaryTap: () => logic.showBottomMenuInLocalMode(index, context),
@@ -339,7 +342,8 @@ abstract class BaseLayout extends StatelessWidget {
             logic.getPlaceHolderSize(index).width,
         containerHeight: logic.readPageState.imageContainerSizes[index]?.height ??
             logic.getPlaceHolderSize(index).height,
-        clearMemoryCacheWhenDispose: true,
+        memoryBytes: memoryBytes,
+        clearMemoryCacheWhenDispose: !keepMemoryCache,
         downloadingWidgetBuilder: () => _downloadingWidgetBuilder(index),
         pausedWidgetBuilder: () => _pausedWidgetBuilder(index),
         loadingWidgetBuilder: () => _loadingWidgetBuilder(context, index),

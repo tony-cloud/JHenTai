@@ -34,6 +34,7 @@ class EHImage extends StatelessWidget {
   final List<BoxShadow>? shadows;
   final bool forceFadeIn;
   final int? maxBytes;
+  final Uint8List? memoryBytes;
 
   final LoadingProgressWidgetBuilder? loadingProgressWidgetBuilder;
   final FailedWidgetBuilder? failedWidgetBuilder;
@@ -57,6 +58,7 @@ class EHImage extends StatelessWidget {
     this.shadows,
     this.forceFadeIn = false,
     this.maxBytes,
+    this.memoryBytes,
     this.loadingProgressWidgetBuilder,
     this.failedWidgetBuilder,
     this.downloadingWidgetBuilder,
@@ -80,6 +82,7 @@ class EHImage extends StatelessWidget {
     this.shadows,
     this.forceFadeIn = false,
     this.maxBytes,
+    this.memoryBytes,
     this.loadingProgressWidgetBuilder,
     this.failedWidgetBuilder,
     this.downloadingWidgetBuilder,
@@ -172,6 +175,59 @@ class EHImage extends StatelessWidget {
   }
 
   Widget buildFileImage(BuildContext context) {
+    if (memoryBytes != null) {
+      return ExtendedImage.memory(
+        memoryBytes!,
+        fit: fit,
+        height: containerHeight,
+        width: containerWidth,
+        enableLoadState: loadingWidgetBuilder != null ||
+            failedWidgetBuilder != null ||
+            completedWidgetBuilder != null,
+        enableSlideOutPage: enableSlideOutPage,
+        borderRadius: borderRadius,
+        shape: BoxShape.rectangle,
+        clearMemoryCacheWhenDispose: clearMemoryCacheWhenDispose,
+        loadStateChanged: (ExtendedImageState state) {
+          switch (state.extendedImageLoadState) {
+            case LoadState.loading:
+              return loadingWidgetBuilder != null
+                  ? loadingWidgetBuilder!.call()
+                  : Center(child: UIConfig.loadingAnimation(context));
+            case LoadState.failed:
+              return failedWidgetBuilder?.call(state) ??
+                  Center(
+                    child: GestureDetector(
+                        onTap: state.reLoadImage,
+                        child: const Icon(Icons.sentiment_very_dissatisfied)),
+                  );
+            case LoadState.completed:
+              state.returnLoadStateChangedWidget = true;
+
+              Widget child = completedWidgetBuilder?.call(state) ?? _buildExtendedRawImage(state);
+
+              child = ClipRRect(borderRadius: borderRadius, child: child);
+
+              if (state.slidePageState != null) {
+                child = ExtendedImageSlidePageHandler(
+                    extendedImageSlidePageState: state.slidePageState, child: child);
+              }
+
+              return FadeIn(
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(boxShadow: shadows, borderRadius: borderRadius),
+                    child: child,
+                  ),
+                ),
+              );
+          }
+        },
+        maxBytes: maxBytes,
+        filterQuality: FilterQuality.medium,
+      );
+    }
+
     if (galleryImage.downloadStatus == DownloadStatus.paused) {
       return pausedWidgetBuilder?.call() ?? const Center(child: CircularProgressIndicator());
     }
