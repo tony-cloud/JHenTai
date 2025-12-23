@@ -183,21 +183,27 @@ class FtpServerService extends GetxService
       // Strip dir listing messages
       String stripped = normalized.replaceAll(RegExp(r'dir contents: (.*)'), '');
       log.info('FTP Server: $stripped');
+      log.trace('FTP Server: $message');
       return;
     }
     if (normalized.contains('Response: 250 Directory changed to')) {
+      log.trace('FTP Server: $message');
       return;
     }
     if (normalized.contains('Response: 226 Transfer complete')) {
+      log.trace('FTP Server: $message');
       return;
     }
     if (normalized.contains('Response: 200 Type set to')) {
+      log.trace('FTP Server: $message');
       return;
     }
     if (normalized.contains('Command: PWD, Argument:')) {
+      log.trace('FTP Server: $message');
       return;
     }
     if (normalized.contains('Command: CWD, Argument:')) {
+      log.trace('FTP Server: $message');
       return;
     }
     log.debug('FTP Server: $message');

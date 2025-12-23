@@ -6,7 +6,7 @@ applyTo: "**"
 To facilitate collaboration, the prompt file must be written in English.
 
 # Issue check
-- Use `flutter analyze` to get the list of files with issues. Then, for each file, use the problems tool to check for specific problems.
+- Use `flutter analyze` to get the list of files with issues. Then, for each file, use the problems tool to check for specific problems. Issues check is required after any work with code changes.
 - If there are linting issues, fix them according to the suggestions provided by the analyzer. Use 'dart fix' where applicable.
 
 # Test
