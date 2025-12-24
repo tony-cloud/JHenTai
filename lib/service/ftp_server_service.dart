@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ftp_server/ftp_server.dart';
-import 'package:ftp_server/file_operations/physical_file_operations.dart';
-import 'package:ftp_server/server_type.dart';
+import '/ftp_server/ftp_server.dart';
+import '/ftp_server/file_operations/physical_file_operations.dart';
+import '/ftp_server/server_type.dart';
 import 'package:get/get.dart';
 
 import '../setting/download_setting.dart';

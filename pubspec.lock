@@ -693,14 +693,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
-  ftp_server:
-    dependency: "direct main"
-    description:
-      name: ftp_server
-      sha256: "0dd851d1f75734fcc846f5f8fcae0c9673d4e2d81e1e2779f07b57a54f8fb341"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.1"
   fwfh_cached_network_image:
     dependency: transitive
     description:

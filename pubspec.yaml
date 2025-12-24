@@ -69,7 +69,6 @@ dependencies:
       url: https://github.com/jiangtian616/system_network_proxy
       path: system_network_proxy
   http_proxy: ^1.2.3
-  ftp_server: ^2.1.1
   flutter_draggable_gridview: ^0.0.13
   flutter_displaymode: ^0.7.0
   pinput: ^5.0.2
