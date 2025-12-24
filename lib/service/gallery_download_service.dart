@@ -1691,19 +1691,29 @@ class GalleryDownloadService extends GetxController
       }
 
       io.File downloadedFile = io.File(path);
-      if (!downloadedFile.existsSync() || downloadedFile.lengthSync() == 0) {
-        log.download(
-          'Download ${gallery.title} image: $serialNo returned empty content, try re-parse. Url:${image.url}',
-          level: Level.warning,
+      try {
+        if (!downloadedFile.existsSync() || downloadedFile.lengthSync() == 0) {
+          log.download(
+            'Download ${gallery.title} image: $serialNo returned empty content, try re-parse. Url:${image.url}',
+            level: Level.warning,
+          );
+          galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+          if (downloadedFile.existsSync()) {
+            try {
+              downloadedFile.deleteSync();
+            } catch (e, stack) {
+              log.error('Delete empty image file failed', e, stack);
+            }
+          }
+          return _reParseImageUrlAndDownload(gallery, serialNo);
+        }
+      } on io.FileSystemException catch (e, stack) {
+        log.error(
+          'Validate downloaded image failed due to file system error, will retry. Gid: ${gallery.gid}, index: $serialNo',
+          e,
+          stack,
         );
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
-        if (downloadedFile.existsSync()) {
-          try {
-            downloadedFile.deleteSync();
-          } catch (e, stack) {
-            log.error('Delete empty image file failed', e, stack);
-          }
-        }
         return _reParseImageUrlAndDownload(gallery, serialNo);
       }
 
@@ -1766,7 +1776,16 @@ class GalleryDownloadService extends GetxController
 
       log.download('Download ${gallery.title} image: $serialNo success', level: Level.info);
 
-      await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloaded);
+      final bool statusUpdated =
+          await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloaded);
+      if (!statusUpdated) {
+        log.download(
+          'Update image status failed after download, queue re-parse. Gid: ${gallery.gid}, index: $serialNo',
+          level: Level.error,
+        );
+        await _resetImageForReparse(gallery, serialNo, existingImage: image);
+        return;
+      }
 
       await _updateProgressAfterImageDownloaded(gallery, serialNo);
     };
@@ -2239,13 +2258,32 @@ class GalleryDownloadService extends GetxController
         continue;
       }
 
-      await oldFile.copy(path.join(pathService.getVisibleDir().path, newImage.path!));
+      try {
+        await oldFile.copy(path.join(pathService.getVisibleDir().path, newImage.path!));
+      } on io.FileSystemException catch (e, stack) {
+        log.download(
+          'Copy old image failed, queue re-parse. Gid: ${newGallery.gid}, serialNo: $serialNo',
+          level: Level.warning,
+        );
+        log.error('Copy old image failed', e, stack);
+        await _resetImageForReparse(newGallery, serialNo, existingImage: newImage);
+        continue;
+      }
 
       if (newGalleryDownloadInfo.images[serialNo] == null) {
         await _saveNewImageInfoInDatabase(newImage, serialNo, newGallery.gid);
         newGalleryDownloadInfo.images[serialNo] = newImage;
       } else {
-        await _updateImageStatus(newGallery, newImage, serialNo, DownloadStatus.downloaded);
+        final bool statusUpdated =
+            await _updateImageStatus(newGallery, newImage, serialNo, DownloadStatus.downloaded);
+        if (!statusUpdated) {
+          log.download(
+            'Update image status failed after copying from hashes, queue re-parse. Gid: ${newGallery.gid}, serialNo: $serialNo',
+            level: Level.error,
+          );
+          await _resetImageForReparse(newGallery, serialNo, existingImage: newImage);
+          continue;
+        }
       }
 
       await _updateProgressAfterImageDownloaded(newGallery, serialNo);
@@ -2275,9 +2313,28 @@ class GalleryDownloadService extends GetxController
       return;
     }
 
-    await oldFile.copy(targetPath);
+    try {
+      await oldFile.copy(targetPath);
+    } on io.FileSystemException catch (e, stack) {
+      log.download(
+        'Copy old image failed, queue re-parse. Gid: ${newGallery.gid}, serialNo: $newImageSerialNo',
+        level: Level.warning,
+      );
+      log.error('Copy old image failed', e, stack);
+      await _resetImageForReparse(newGallery, newImageSerialNo, existingImage: newImage);
+      return;
+    }
 
-    await _updateImageStatus(newGallery, newImage, newImageSerialNo, DownloadStatus.downloaded);
+    final bool statusUpdated =
+        await _updateImageStatus(newGallery, newImage, newImageSerialNo, DownloadStatus.downloaded);
+    if (!statusUpdated) {
+      log.download(
+        'Update image status failed after copying image info, queue re-parse. Gid: ${newGallery.gid}, serialNo: $newImageSerialNo',
+        level: Level.error,
+      );
+      await _resetImageForReparse(newGallery, newImageSerialNo, existingImage: newImage);
+      return;
+    }
 
     await _updateProgressAfterImageDownloaded(newGallery, newImageSerialNo);
   }
@@ -2384,8 +2441,27 @@ class GalleryDownloadService extends GetxController
     io.File? cachedImageFile = await getCachedImageFile(image.url);
     if (cachedImageFile != null && cachedImageFile.existsSync()) {
       log.debug('download image from cache, gallery: ${gallery.gid}, serialNo:$serialNo');
-      await cachedImageFile.copy(path);
-      await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloaded);
+      try {
+        await cachedImageFile.copy(path);
+      } on io.FileSystemException catch (e, stack) {
+        log.error(
+            'Copy cached image failed, fallback to download. Gid: ${gallery.gid}, index: $serialNo',
+            e,
+            stack);
+        return;
+      }
+
+      final bool statusUpdated =
+          await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloaded);
+      if (!statusUpdated) {
+        log.download(
+          'Update image status failed after loading from cache, queue re-parse. Gid: ${gallery.gid}, index: $serialNo',
+          level: Level.error,
+        );
+        await _resetImageForReparse(gallery, serialNo, existingImage: image);
+        return;
+      }
+
       await _updateProgressAfterImageDownloaded(gallery, serialNo);
     }
   }
@@ -2401,6 +2477,9 @@ class GalleryDownloadService extends GetxController
     galleryDownloadInfo.legacyReloadTriedWithoutKey[serialNo] = false;
 
     GalleryDownloadProgress downloadProgress = galleryDownloadInfo.downloadProgress;
+    if (downloadProgress.hasDownloaded[serialNo]) {
+      return;
+    }
     downloadProgress.curCount++;
     downloadProgress.hasDownloaded[serialNo] = true;
 
