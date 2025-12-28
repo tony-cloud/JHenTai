@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -23,6 +24,7 @@ import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
 import 'package:jhentai/service/ftp_server_service.dart';
 import 'package:jhentai/setting/ftp_server_setting.dart';
+import 'package:flutter_fd_utils/flutter_fd_utils.dart';
 
 import '../../../config/ui_config.dart';
 import '../../../enum/config_type_enum.dart';
@@ -73,6 +75,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             if (advancedSetting.enableLogging.isTrue) _buildLogLevel().fadeInWidget(),
             _buildOpenLogs(),
             _buildClearLogs(context),
+            _buildFdDebugReport(context),
             _buildClearImageCache(context),
             _buildClearNetworkCache(),
             _buildClearReadProgress(),
@@ -168,6 +171,15 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
         ],
       ),
       onLongPress: _clearAndLoadingLogSize,
+    );
+  }
+
+  Widget _buildFdDebugReport(BuildContext context) {
+    return ListTile(
+      title: Text('fdDebugReport'.tr),
+      subtitle: Text('fdDebugReportHint'.tr),
+      trailing: const Icon(Icons.keyboard_arrow_right).marginOnly(right: 4),
+      onTap: () => FdReportDialog.show(context),
     );
   }
 

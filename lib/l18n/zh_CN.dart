@@ -60,6 +60,9 @@ class zh_CN {
       'CurrentVersion': '当前版本',
       'check': '查看',
       'dismiss': '忽略',
+      'copy': '复制',
+      'fdDebugReport': 'FD 调试报告',
+      'fdDebugReportHint': '显示当前进程文件描述符（FD）详情',
 
       /// login page
       'login': '登录',

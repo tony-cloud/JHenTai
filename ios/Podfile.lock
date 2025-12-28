@@ -42,6 +42,8 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
+  - flutter_fd_utils (0.0.1):
+    - Flutter
   - fluttertoast (0.0.2):
     - Flutter
   - http_proxy (0.0.1):
@@ -122,6 +124,7 @@ DEPENDENCIES:
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
+  - flutter_fd_utils (from `.symlinks/plugins/flutter_fd_utils/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - http_proxy (from `.symlinks/plugins/http_proxy/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
@@ -163,6 +166,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
+  flutter_fd_utils:
+    :path: ".symlinks/plugins/flutter_fd_utils/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   http_proxy:
@@ -211,6 +216,7 @@ SPEC CHECKSUMS:
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_fd_utils: c7b4fa4e10c7c859f3f5a0c0a7cb1d4bfa2a9549
   fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
   http_proxy: 6e9876b8b0d8bd9378a526bf49c51d8df64e891e
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed

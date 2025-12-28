@@ -87,6 +87,9 @@ class ru_RU {
       'CurrentVersion': 'Текущая версия',
       'check': 'Проверить',
       'dismiss': 'Закрыть',
+      'copy': 'Копировать',
+      'fdDebugReport': 'Отчёт по FD',
+      'fdDebugReportHint': 'Показать сведения о файловых дескрипторах текущего процесса',
 
       /// login page
       'login': 'Вход',

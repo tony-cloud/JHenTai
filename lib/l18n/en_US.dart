@@ -60,6 +60,9 @@ class en_US {
       'CurrentVersion': 'Current Ver',
       'check': 'Check',
       'dismiss': 'Dismiss',
+      'copy': 'Copy',
+      'fdDebugReport': 'FD Debug Report',
+      'fdDebugReportHint': 'Show current process file descriptor details',
 
       /// login page
       'login': 'Login',

@@ -89,6 +89,9 @@ class pt_BR {
       'CurrentVersion': 'Current Ver',
       'check': 'Checar',
       'dismiss': 'Dispensar',
+      'copy': 'Copiar',
+      'fdDebugReport': 'Relatório de FD',
+      'fdDebugReportHint': 'Mostrar detalhes de descritores de arquivo do processo atual',
 
       /// login page
       'login': 'Login',

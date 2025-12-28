@@ -66,6 +66,10 @@ class ko_KR {
       'gallery': "갤러리",
       'setting': '설정',
 
+      'copy': '복사',
+      'fdDebugReport': 'FD 디버그 보고서',
+      'fdDebugReportHint': '현재 프로세스의 파일 디스크립터(FD) 상세 정보 표시',
+
       /// schedule
       'dawnOfaNewDay': 'It is the dawn of a new day!',
       'encounterMonster': 'You have encountered a monster!',

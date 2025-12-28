@@ -87,6 +87,9 @@ class zh_TW {
       'CurrentVersion': '目前版本',
       'check': '查看',
       'dismiss': '忽略',
+      'copy': '複製',
+      'fdDebugReport': 'FD 除錯報告',
+      'fdDebugReportHint': '顯示目前進程檔案描述符（FD）詳情',
 
       /// login page
       'login': '登入',

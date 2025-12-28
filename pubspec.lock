@@ -558,6 +558,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.13"
+  flutter_fd_utils:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "8e1829cd1434226bad0bbe7865e116ab18b3b303"
+      url: "https://github.com/tony-cloud/flutter_fd_utils.git"
+    source: git
+    version: "0.0.1"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
