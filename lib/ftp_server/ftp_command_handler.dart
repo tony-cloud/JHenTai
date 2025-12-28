@@ -9,7 +9,7 @@ class FTPCommandHandler {
 
   FTPCommandHandler(this.controlSocket, this.logger);
 
-  void handleCommand(String commandLine, FtpSession session) {
+  Future<void> handleCommand(String commandLine, FtpSession session) async {
     List<String> parts = commandLine.split(' ');
     String command = parts[0].toUpperCase();
     String argument = parts.length > 1 ? parts.sublist(1).join(' ').trim() : '';
@@ -24,23 +24,23 @@ class FTPCommandHandler {
         handlePass(argument, session);
         break;
       case 'QUIT':
-        handleQuit(session);
+        await handleQuit(session);
         break;
       case 'PASV':
-        handlePasv(session);
+        await handlePasv(session);
         break;
       case 'PORT':
-        handlePort(argument, session);
+        await handlePort(argument, session);
         break;
       case 'LIST':
       case 'NLST':
-        handleList(argument, session);
+        await handleList(argument, session);
         break;
       case 'RETR':
-        handleRetr(argument, session);
+        await handleRetr(argument, session);
         break;
       case 'STOR':
-        handleStor(argument, session);
+        await handleStor(argument, session);
         break;
       case 'CWD':
         handleCwd(argument, session);
@@ -50,14 +50,14 @@ class FTPCommandHandler {
         break;
       case 'MKD':
       case 'XMKD':
-        handleMkd(argument, session);
+        await handleMkd(argument, session);
         break;
       case 'RMD':
       case 'XRMD':
-        handleRmd(argument, session);
+        await handleRmd(argument, session);
         break;
       case 'DELE':
-        handleDele(argument, session);
+        await handleDele(argument, session);
         break;
       case 'SYST':
         handleSyst(session);
@@ -69,7 +69,7 @@ class FTPCommandHandler {
         handleType(argument, session);
         break;
       case 'SIZE':
-        handleSize(argument, session);
+        await handleSize(argument, session);
         break;
       case 'PWD':
       case 'XPWD':
@@ -82,25 +82,31 @@ class FTPCommandHandler {
         handleFeat(session);
         break;
       case 'EPSV':
-        handleEpsv(session);
+        await handleEpsv(session);
         break;
       case 'ABOR':
-        handleAbort(session);
+        await handleAbort(session);
         break;
       case 'MLSD':
-        handleMlsd(argument, session);
+        await handleMlsd(argument, session);
+        break;
+      case 'MLST':
+        await handleMlst(argument, session);
         break;
       case 'MDTM':
-        handleMdtm(argument, session);
+        await handleMdtm(argument, session);
+        break;
+      case 'MFMT':
+        await handleMfmt(argument, session);
         break;
       case 'RNFR':
-        handleRnfr(argument, session);
+        await handleRnfr(argument, session);
         break;
       case 'RNTO':
-        handleRnto(argument, session);
+        await handleRnto(argument, session);
         break;
       case 'RENAME':
-        handleRename(argument, session);
+        await handleRename(argument, session);
         break;
       default:
         session.sendResponse('502 Command not implemented $command $argument');
@@ -129,35 +135,43 @@ class FTPCommandHandler {
     await session.controlSocket.close();
   }
 
-  void handlePasv(FtpSession session) {
-    session.enterPassiveMode();
+  Future<void> handlePasv(FtpSession session) async {
+    await session.enterPassiveMode();
   }
 
-  void handlePort(String argument, FtpSession session) {
-    session.enterActiveMode(argument);
+  Future<void> handlePort(String argument, FtpSession session) async {
+    await session.enterActiveMode(argument);
   }
 
-  void handleList(String argument, FtpSession session) {
-    session.listDirectory(argument);
+  Future<void> handleList(String argument, FtpSession session) async {
+    await session.listDirectory(argument);
   }
 
-  void handleRetr(String argument, FtpSession session) {
-    session.retrieveFile(argument);
+  Future<void> handleRetr(String argument, FtpSession session) async {
+    await session.retrieveFile(argument);
   }
 
-  void handleMlsd(String argument, FtpSession session) {
-    session.handleMlsd(argument, session);
+  Future<void> handleMlsd(String argument, FtpSession session) async {
+    await session.handleMlsd(argument, session);
   }
 
-  void handleMdtm(String argument, FtpSession session) {
+  Future<void> handleMlst(String argument, FtpSession session) async {
+    await session.handleMlst(argument);
+  }
+
+  Future<void> handleMdtm(String argument, FtpSession session) async {
     session.handleMdtm(argument, session);
   }
 
-  void handleStor(String argument, FtpSession session) {
+  Future<void> handleMfmt(String argument, FtpSession session) async {
+    await session.handleMfmt(argument, session);
+  }
+
+  Future<void> handleStor(String argument, FtpSession session) async {
     if (session.serverType == ServerType.readOnly) {
       session.sendResponse('550 Command not allowed in read-only mode');
     } else {
-      session.storeFile(argument);
+      await session.storeFile(argument);
     }
   }
 
@@ -169,27 +183,27 @@ class FTPCommandHandler {
     session.changeToParentDirectory();
   }
 
-  void handleMkd(String argument, FtpSession session) {
+  Future<void> handleMkd(String argument, FtpSession session) async {
     if (session.serverType == ServerType.readOnly) {
       session.sendResponse('550 Command not allowed in read-only mode');
     } else {
-      session.makeDirectory(argument);
+      await session.makeDirectory(argument);
     }
   }
 
-  void handleRmd(String argument, FtpSession session) {
+  Future<void> handleRmd(String argument, FtpSession session) async {
     if (session.serverType == ServerType.readOnly) {
       session.sendResponse('550 Command not allowed in read-only mode');
     } else {
-      session.removeDirectory(argument);
+      await session.removeDirectory(argument);
     }
   }
 
-  void handleDele(String argument, FtpSession session) {
+  Future<void> handleDele(String argument, FtpSession session) async {
     if (session.serverType == ServerType.readOnly) {
       session.sendResponse('550 Command not allowed in read-only mode');
     } else {
-      session.deleteFile(argument);
+      await session.deleteFile(argument);
     }
   }
 
@@ -209,8 +223,8 @@ class FTPCommandHandler {
     }
   }
 
-  void handleSize(String argument, FtpSession session) {
-    session.fileSize(argument);
+  Future<void> handleSize(String argument, FtpSession session) async {
+    await session.fileSize(argument);
   }
 
   void handleCurPath(FtpSession session) {
@@ -233,25 +247,31 @@ class FTPCommandHandler {
   }
 
   void handleFeat(FtpSession session) {
-    session.sendResponse('211-Features:');
+    const List<String> features = [
+      '211-Features:',
+      ' SIZE',
+      ' MDTM',
+      ' MFMT',
+      ' MLSD',
+      ' EPSV',
+      ' PASV',
+      ' UTF8',
+      ' MLST modify*;size*;type*;',
+      '211 End',
+    ];
 
-    session.sendResponse(' SIZE');
-    session.sendResponse(' MDTM');
-    session.sendResponse(' EPSV');
-    session.sendResponse(' PASV');
-    session.sendResponse(' UTF8');
-    session.sendResponse('211 End');
+    session.sendMultiLineResponse(features);
   }
 
-  void handleEpsv(FtpSession session) {
-    session.enterExtendedPassiveMode();
+  Future<void> handleEpsv(FtpSession session) async {
+    await session.enterExtendedPassiveMode();
   }
 
-  void handleAbort(FtpSession session) {
-    session.abortTransfer();
+  Future<void> handleAbort(FtpSession session) async {
+    await session.abortTransfer();
   }
 
-  void handleRnfr(String argument, FtpSession session) {
+  Future<void> handleRnfr(String argument, FtpSession session) async {
     if (session.serverType == ServerType.readOnly) {
       session.sendResponse('550 Command not allowed in read-only mode');
       return;
@@ -273,7 +293,7 @@ class FTPCommandHandler {
     session.sendResponse('350 Requested file action pending further information');
   }
 
-  void handleRnto(String argument, FtpSession session) {
+  Future<void> handleRnto(String argument, FtpSession session) async {
     if (session.serverType == ServerType.readOnly) {
       session.sendResponse('550 Command not allowed in read-only mode');
       return;
@@ -292,7 +312,7 @@ class FTPCommandHandler {
 
     try {
       // Perform the rename operation
-      session.renameFileOrDirectory(session.pendingRenameFrom!, argument);
+      await session.renameFileOrDirectory(session.pendingRenameFrom!, argument);
     } catch (e) {
       // Clear the pending rename state on error
       session.pendingRenameFrom = null;
@@ -300,7 +320,7 @@ class FTPCommandHandler {
     }
   }
 
-  void handleRename(String argument, FtpSession session) {
+  Future<void> handleRename(String argument, FtpSession session) async {
     if (session.serverType == ServerType.readOnly) {
       session.sendResponse('550 Command not allowed in read-only mode');
       return;
@@ -329,7 +349,7 @@ class FTPCommandHandler {
 
     try {
       // Perform the rename operation directly
-      session.renameFileOrDirectory(oldName, newName);
+      await session.renameFileOrDirectory(oldName, newName);
     } catch (e) {
       // Error handling is done in the session method
     }

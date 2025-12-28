@@ -12,6 +12,10 @@ class FtpServerDialog extends StatefulWidget {
 
 class _FtpServerDialogState extends State<FtpServerDialog> {
   late final TextEditingController _portController;
+  late final TextEditingController _poolSizeController;
+  late final TextEditingController _timeoutController;
+  late final TextEditingController _portRangeStartController;
+  late final TextEditingController _portRangeEndController;
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
 
@@ -26,6 +30,14 @@ class _FtpServerDialogState extends State<FtpServerDialog> {
   void initState() {
     super.initState();
     _portController = TextEditingController(text: ftpServerSetting.port.value.toString());
+    _poolSizeController =
+        TextEditingController(text: ftpServerSetting.passivePoolSize.value.toString());
+    _timeoutController =
+        TextEditingController(text: ftpServerSetting.passiveTimeoutSeconds.value.toString());
+    _portRangeStartController =
+        TextEditingController(text: ftpServerSetting.passivePortRangeStart.value.toString());
+    _portRangeEndController =
+        TextEditingController(text: ftpServerSetting.passivePortRangeEnd.value.toString());
     _usernameController = TextEditingController(text: ftpServerSetting.username.value);
     _passwordController = TextEditingController(text: ftpServerSetting.password.value);
   }
@@ -33,6 +45,10 @@ class _FtpServerDialogState extends State<FtpServerDialog> {
   @override
   void dispose() {
     _portController.dispose();
+    _poolSizeController.dispose();
+    _timeoutController.dispose();
+    _portRangeStartController.dispose();
+    _portRangeEndController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -58,6 +74,68 @@ class _FtpServerDialogState extends State<FtpServerDialog> {
                   final int? port = int.tryParse(trimmed);
                   if (port == null || port < 1 || port > 65535) {
                     return 'ftpServerInvalidPort'.tr;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _poolSizeController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'ftpServerPassivePoolSize'.tr),
+                validator: (value) {
+                  final String trimmed = value?.trim() ?? '';
+                  final int? poolSize = int.tryParse(trimmed);
+                  if (poolSize == null || poolSize < 1) {
+                    return 'ftpServerInvalidPoolSize'.tr;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _timeoutController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'ftpServerPassiveTimeout'.tr),
+                validator: (value) {
+                  final String trimmed = value?.trim() ?? '';
+                  final int? timeout = int.tryParse(trimmed);
+                  if (timeout == null || timeout < 1) {
+                    return 'ftpServerInvalidTimeout'.tr;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _portRangeStartController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'ftpServerPassivePortStart'.tr),
+                validator: (value) {
+                  final int? start = int.tryParse((value ?? '').trim());
+                  if (start == null || start < 1 || start > 65535) {
+                    return 'ftpServerInvalidPort'.tr;
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _portRangeEndController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'ftpServerPassivePortEnd'.tr),
+                validator: (value) {
+                  final int? start = int.tryParse(_portRangeStartController.text.trim());
+                  final int? end = int.tryParse((value ?? '').trim());
+                  final int? poolSize = int.tryParse(_poolSizeController.text.trim());
+
+                  if (end == null || end < 1 || end > 65535) {
+                    return 'ftpServerInvalidPort'.tr;
+                  }
+                  if (start != null && end < start) {
+                    return 'ftpServerInvalidPortRange'.tr;
+                  }
+                  if (start != null && poolSize != null && (end - start + 1) < poolSize) {
+                    return 'ftpServerPoolExceedsRange'.tr;
                   }
                   return null;
                 },
@@ -139,6 +217,10 @@ class _FtpServerDialogState extends State<FtpServerDialog> {
     }
 
     final int port = int.parse(_portController.text.trim());
+    final int poolSize = int.parse(_poolSizeController.text.trim());
+    final int timeoutSeconds = int.parse(_timeoutController.text.trim());
+    final int portRangeStart = int.parse(_portRangeStartController.text.trim());
+    final int portRangeEnd = int.parse(_portRangeEndController.text.trim());
     final String username = _usernameController.text.trim();
     final String password = _passwordController.text;
 
@@ -146,6 +228,9 @@ class _FtpServerDialogState extends State<FtpServerDialog> {
 
     try {
       await ftpServerSetting.savePort(port);
+      await ftpServerSetting.savePassivePoolSize(poolSize);
+      await ftpServerSetting.savePassiveTimeoutSeconds(timeoutSeconds);
+      await ftpServerSetting.savePassivePortRange(start: portRangeStart, end: portRangeEnd);
       await ftpServerSetting.saveUsername(username);
       await ftpServerSetting.savePassword(password);
       await ftpServerSetting.saveAllowReadAndWrite(_allowReadWrite);

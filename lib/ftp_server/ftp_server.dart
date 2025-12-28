@@ -5,6 +5,7 @@ import '/ftp_server/ftp_session.dart';
 import '/ftp_server/server_type.dart';
 import 'logger_handler.dart';
 import '/ftp_server/file_operations/file_operations.dart';
+import 'data_connection_pool.dart';
 
 class FtpServer {
   ServerSocket? _server;
@@ -31,7 +32,13 @@ class FtpServer {
   /// A logger handler used for logging various server events and commands.
   ///
   /// The `LoggerHandler` provides methods to log commands, responses, and general messages.
-  final LoggerHandler logger;
+  late final LoggerHandler logger;
+
+  /// Manages passive data listeners for PASV/EPSV commands.
+  late final DataConnectionPool dataConnectionPool;
+
+  /// Timeout for waiting on data sockets and pool availability.
+  final Duration dataConnectionTimeout;
 
   /// The file operations backend to use (VirtualFileOperations, PhysicalFileOperations, or custom).
   final FileOperations fileOperations;
@@ -51,20 +58,33 @@ class FtpServer {
   /// Optional parameters include [username], [password], and [logFunction].
   ///
   /// BREAKING CHANGE: `sharedDirectories` and `startingDirectory` are removed. All directory logic is now handled by the provided [fileOperations].
-  FtpServer(this.port,
-      {this.username,
-      this.password,
-      required this.fileOperations,
-      required this.serverType,
-      Function(String)? logFunction})
-      : logger = LoggerHandler(logFunction);
+  FtpServer(
+    this.port, {
+    this.username,
+    this.password,
+    required this.fileOperations,
+    required this.serverType,
+    required int passivePortRangeStart,
+    required int passivePortRangeEnd,
+    required int passivePoolSize,
+    required Duration passiveTimeout,
+    Function(String)? logFunction,
+  }) : dataConnectionTimeout = passiveTimeout {
+    logger = LoggerHandler();
+    dataConnectionPool = DataConnectionPool(
+      logger: logger,
+      poolSize: passivePoolSize,
+      portRangeStart: passivePortRangeStart,
+      portRangeEnd: passivePortRangeEnd,
+      waitTimeout: passiveTimeout,
+    );
+  }
 
   Future<void> start() async {
     _server = await ServerSocket.bind(InternetAddress.anyIPv4, port);
-    logger.generalLog('FTP Server is running on port $port');
+    logger.info('FTP Server is running on port $port');
     await for (var socket in _server!) {
-      logger.generalLog(
-          'New client connected from ${socket.remoteAddress.address}:${socket.remotePort}');
+      logger.info('New client connected from ${socket.remoteAddress.address}:${socket.remotePort}');
       var session = FtpSession(
         socket,
         username: username,
@@ -72,6 +92,8 @@ class FtpServer {
         fileOperations: fileOperations,
         serverType: serverType,
         logger: logger,
+        dataConnectionPool: dataConnectionPool,
+        dataConnectionTimeout: dataConnectionTimeout,
       );
       //Fill sessionList with new sessions.
       _sessionList.add(session);
@@ -80,10 +102,9 @@ class FtpServer {
 
   Future<void> startInBackground() async {
     _server = await ServerSocket.bind(InternetAddress.anyIPv4, port);
-    logger.generalLog('FTP Server is running on port $port');
+    logger.info('FTP Server is running on port $port');
     _server!.listen((socket) {
-      logger.generalLog(
-          'New client connected from ${socket.remoteAddress.address}:${socket.remotePort}');
+      logger.info('New client connected from ${socket.remoteAddress.address}:${socket.remotePort}');
       var session = FtpSession(
         socket,
         username: username,
@@ -91,6 +112,8 @@ class FtpServer {
         fileOperations: fileOperations,
         serverType: serverType,
         logger: logger,
+        dataConnectionPool: dataConnectionPool,
+        dataConnectionTimeout: dataConnectionTimeout,
       );
       //Fill sessionList with new sessions.
       _sessionList.add(session);
@@ -100,11 +123,12 @@ class FtpServer {
   Future<void> stop() async {
     //Disconnect all active sessions
     for (var session in _sessionList) {
-      session.closeConnection();
+      await session.closeConnection();
     }
     _sessionList.clear();
     await _server?.close();
     _server = null;
-    logger.generalLog('FTP Server stopped');
+    await dataConnectionPool.dispose();
+    logger.info('FTP Server stopped');
   }
 }

@@ -30,11 +30,13 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   Logger? _warningFileLogger;
   Logger? _downloadFileLogger;
 
-  static const int _maxLogLinesPerFile = 5000;
+  static const int _maxLogLinesPerFile = 1000;
   final DateTime _startupTime = DateTime.now();
   PackageInfo? _packageInfo;
   Duration? _startupToFirstFrame;
   bool _firstFrameLogged = false;
+  Level? _lastSelectedLevel;
+  bool? _lastVerboseEnabled;
 
   LogPrinter devPrinter =
       PrettyPrinter(stackTraceBeginIndex: 0, methodCount: 6, levelEmojis: {Level.trace: '✔ '});
@@ -159,8 +161,16 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   }
 
   Future<void> _initLogger() async {
-    final Level selectedLevel =
-        advancedSetting.enableVerboseLogging.isTrue ? Level.trace : advancedSetting.logLevel.value;
+    final bool verboseEnabled = advancedSetting.enableVerboseLogging.isTrue;
+    final Level selectedLevel = verboseEnabled ? Level.trace : advancedSetting.logLevel.value;
+
+    final bool needsReinit =
+        _lastSelectedLevel != selectedLevel || _lastVerboseEnabled != verboseEnabled;
+    if (needsReinit) {
+      await _disposeLoggers();
+      _lastSelectedLevel = selectedLevel;
+      _lastVerboseEnabled = verboseEnabled;
+    }
 
     _consoleLogger ??= Logger(printer: devPrinter, level: selectedLevel);
 
@@ -177,7 +187,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         maxLines: _maxLogLinesPerFile,
       ),
     );
-    if (advancedSetting.enableVerboseLogging.isTrue) {
+    if (verboseEnabled) {
       _warningFileLogger ??= Logger(
         level: Level.warning,
         printer: _errorTextPrinter,
@@ -206,6 +216,17 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       if (_warningFileLogger != null) _warningFileLogger!.init,
       if (_downloadFileLogger != null) _downloadFileLogger!.init,
     ]);
+  }
+
+  Future<void> _disposeLoggers() async {
+    await _verboseFileLogger?.close();
+    await _warningFileLogger?.close();
+    await _downloadFileLogger?.close();
+
+    _consoleLogger = null;
+    _verboseFileLogger = null;
+    _warningFileLogger = null;
+    _downloadFileLogger = null;
   }
 
   Future<PackageInfo?> _resolvePackageInfo() async {

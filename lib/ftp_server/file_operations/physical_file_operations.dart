@@ -39,10 +39,30 @@ class PhysicalFileOperations extends FileOperations {
       return rootDirectory;
     }
     final cleanPath = p.normalize(path);
-    final absPath = p.isAbsolute(cleanPath)
-        ? p.normalize(p.join(rootDirectory, cleanPath.substring(1)))
-        : p.normalize(p.join(currentDirectory, cleanPath));
-    // Restrict to root
+
+    // Handle absolute paths that are already within the root.
+    if (p.isAbsolute(cleanPath)) {
+      final normalizedAbsolute = p.normalize(cleanPath);
+      // Case 1: absolute and already inside root -> allow as-is.
+      if (p.isWithin(rootDirectory, normalizedAbsolute) ||
+          p.equals(rootDirectory, normalizedAbsolute)) {
+        return normalizedAbsolute;
+      }
+
+      // Case 2: FTP-style absolute (starting with '/') that should be treated as root-relative.
+      final String stripped = normalizedAbsolute.startsWith(p.separator)
+          ? normalizedAbsolute.substring(1)
+          : normalizedAbsolute;
+      final String remapped = p.normalize(p.join(rootDirectory, stripped));
+      if (!p.isWithin(rootDirectory, remapped) && !p.equals(rootDirectory, remapped)) {
+        throw FileSystemException(
+            "Path resolution failed: Path is outside the root directory", remapped);
+      }
+      return remapped;
+    }
+
+    // Handle relative paths from the current directory.
+    final absPath = p.normalize(p.join(currentDirectory, cleanPath));
     if (!p.isWithin(rootDirectory, absPath) && !p.equals(rootDirectory, absPath)) {
       throw FileSystemException(
           "Path resolution failed: Path is outside the root directory", absPath);
@@ -79,7 +99,10 @@ class PhysicalFileOperations extends FileOperations {
       if (!await dir.exists()) {
         throw FileSystemException("Directory not found: $path (resolved to $dirPath)", path);
       }
-      return await dir.list().toList();
+      // On iOS, Directory.list() uses a stream that may delay releasing the underlying
+      // directory handle under heavy churn. listSync() keeps the handle lifetime strictly
+      // within this call.
+      return dir.listSync(followLinks: false);
     });
   }
 
@@ -232,6 +255,22 @@ class PhysicalFileOperations extends FileOperations {
   @override
   PhysicalFileOperations copy() {
     return PhysicalFileOperations(rootDirectory, startingDirectory: currentDirectory);
+  }
+
+  @override
+  Future<void> setModificationTime(String path, DateTime modifiedTime) async {
+    await _withFdRetry(() async {
+      final targetPath = resolvePath(path);
+      final entityType = FileSystemEntity.typeSync(targetPath);
+
+      if (entityType == FileSystemEntityType.notFound) {
+        throw FileSystemException(
+            "Target not found for modification time update: $path (resolved to $targetPath)");
+      }
+
+      final fileHandle = File(targetPath);
+      await fileHandle.setLastModified(modifiedTime);
+    });
   }
 
   Future<T> _withFdRetry<T>(FutureOr<T> Function() action) async {

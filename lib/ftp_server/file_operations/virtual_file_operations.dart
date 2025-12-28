@@ -489,4 +489,24 @@ class VirtualFileOperations extends FileOperations {
     );
     return copy;
   }
+
+  @override
+  Future<void> setModificationTime(String path, DateTime modifiedTime) async {
+    if (_isDirectChildOfRoot(path)) {
+      throw FileSystemException("Cannot modify timestamps directly in the virtual root", path);
+    }
+
+    final fullPath = resolvePath(path);
+    if (fullPath == rootDirectory) {
+      throw FileSystemException("Cannot modify timestamp of the virtual root", path);
+    }
+
+    final entityType = FileSystemEntity.typeSync(fullPath);
+    if (entityType == FileSystemEntityType.notFound) {
+      throw FileSystemException("Target not found for modification time update: $path");
+    }
+
+    final fileHandle = File(fullPath);
+    await fileHandle.setLastModified(modifiedTime);
+  }
 }

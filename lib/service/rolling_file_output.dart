@@ -10,7 +10,7 @@ class RollingFileOutput extends LogOutput {
   RollingFileOutput({
     required String baseFilePath,
     required this.headerBuilder,
-    this.maxLines = 5000,
+    this.maxLines = 1000,
   })  : assert(maxLines > 0),
         _baseFile = File(baseFilePath);
 
@@ -21,26 +21,43 @@ class RollingFileOutput extends LogOutput {
   IOSink? _sink;
   int _fileIndex = 0;
   int _lineCount = 0;
+  Future<void> _ioChain = Future.value();
+  bool _destroyed = false;
 
   @override
   Future<void> init() async {
-    _openSink();
+    _destroyed = false;
+    // Lazily create the file on first output.
+    // This avoids generating 0-byte log files at startup when a logger is
+    // initialized but never emits any lines (or only emits buffered header).
   }
 
   @override
   void output(OutputEvent event) {
-    _ensureSink();
-    for (final line in event.lines) {
-      if (_lineCount >= maxLines) {
-        _rotate();
-      }
-      _sink!.writeln(line);
-      _lineCount++;
+    if (_destroyed) {
+      return;
     }
+
+    // Serialize all IO to avoid opening many file descriptors during rapid rotation.
+    _ioChain = _ioChain.then((_) async {
+      if (_destroyed) {
+        return;
+      }
+      _ensureSink();
+      for (final line in event.lines) {
+        if (_lineCount >= maxLines) {
+          await _rotate();
+        }
+        _sink!.writeln(line);
+        _lineCount++;
+      }
+    });
   }
 
   @override
   Future<void> destroy() async {
+    _destroyed = true;
+    await _ioChain;
     await _closeSink(awaitCompletion: true);
   }
 
@@ -67,8 +84,8 @@ class RollingFileOutput extends LogOutput {
     return sink;
   }
 
-  void _rotate() {
-    unawaited(_closeSink(awaitCompletion: false));
+  Future<void> _rotate() async {
+    await _closeSink(awaitCompletion: true);
     _openSink(incrementIndex: true);
   }
 

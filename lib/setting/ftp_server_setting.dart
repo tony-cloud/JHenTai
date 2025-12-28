@@ -10,6 +10,10 @@ FtpServerSetting ftpServerSetting = FtpServerSetting();
 
 class FtpServerSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   static const int defaultPort = 2121;
+  static const int defaultPassivePoolSize = 4;
+  static const int defaultPassiveTimeoutSeconds = 30;
+  static const int defaultPassivePortRangeStart = 50000;
+  static const int defaultPassivePortRangeEnd = 50100;
 
   late RxInt port;
   late RxString username;
@@ -17,6 +21,10 @@ class FtpServerSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeC
   RxBool enableServer = false.obs;
   RxBool allowReadAndWrite = false.obs;
   RxBool keepScreenOn = false.obs;
+  late RxInt passivePoolSize;
+  late RxInt passiveTimeoutSeconds;
+  late RxInt passivePortRangeStart;
+  late RxInt passivePortRangeEnd;
 
   @override
   ConfigEnum get configEnum => ConfigEnum.ftpServerSetting;
@@ -26,6 +34,10 @@ class FtpServerSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeC
     port = defaultPort.obs;
     username = ''.obs;
     password = ''.obs;
+    passivePoolSize = defaultPassivePoolSize.obs;
+    passiveTimeoutSeconds = defaultPassiveTimeoutSeconds.obs;
+    passivePortRangeStart = defaultPassivePortRangeStart.obs;
+    passivePortRangeEnd = defaultPassivePortRangeEnd.obs;
   }
 
   @override
@@ -38,6 +50,10 @@ class FtpServerSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeC
     enableServer.value = map['enableServer'] ?? enableServer.value;
     allowReadAndWrite.value = map['allowReadAndWrite'] ?? allowReadAndWrite.value;
     keepScreenOn.value = map['keepScreenOn'] ?? keepScreenOn.value;
+    passivePoolSize.value = map['passivePoolSize'] ?? passivePoolSize.value;
+    passiveTimeoutSeconds.value = map['passiveTimeoutSeconds'] ?? passiveTimeoutSeconds.value;
+    passivePortRangeStart.value = map['passivePortRangeStart'] ?? passivePortRangeStart.value;
+    passivePortRangeEnd.value = map['passivePortRangeEnd'] ?? passivePortRangeEnd.value;
   }
 
   @override
@@ -49,6 +65,10 @@ class FtpServerSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeC
       'enableServer': enableServer.value,
       'allowReadAndWrite': allowReadAndWrite.value,
       'keepScreenOn': keepScreenOn.value,
+      'passivePoolSize': passivePoolSize.value,
+      'passiveTimeoutSeconds': passiveTimeoutSeconds.value,
+      'passivePortRangeStart': passivePortRangeStart.value,
+      'passivePortRangeEnd': passivePortRangeEnd.value,
     });
   }
 
@@ -88,6 +108,25 @@ class FtpServerSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeC
   Future<void> saveKeepScreenOn(bool keepScreenOn) async {
     log.debug('saveFtpKeepScreenOn:$keepScreenOn');
     this.keepScreenOn.value = keepScreenOn;
+    await saveBeanConfig();
+  }
+
+  Future<void> savePassivePoolSize(int poolSize) async {
+    log.debug('saveFtpPassivePoolSize:$poolSize');
+    passivePoolSize.value = poolSize;
+    await saveBeanConfig();
+  }
+
+  Future<void> savePassiveTimeoutSeconds(int seconds) async {
+    log.debug('saveFtpPassiveTimeoutSeconds:$seconds');
+    passiveTimeoutSeconds.value = seconds;
+    await saveBeanConfig();
+  }
+
+  Future<void> savePassivePortRange({required int start, required int end}) async {
+    log.debug('saveFtpPassivePortRange:$start-$end');
+    passivePortRangeStart.value = start;
+    passivePortRangeEnd.value = end;
     await saveBeanConfig();
   }
 }

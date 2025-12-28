@@ -62,5 +62,8 @@ abstract class FileOperations {
   /// Implementations must handle path resolution and ensure the operation stays within allowed boundaries.
   Future<void> renameFileOrDirectory(String oldPath, String newPath);
 
+  /// Updates the modification time of a file or directory.
+  Future<void> setModificationTime(String path, DateTime modifiedTime);
+
   FileOperations copy();
 }

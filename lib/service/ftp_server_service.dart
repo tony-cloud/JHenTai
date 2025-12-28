@@ -51,7 +51,11 @@ class FtpServerService extends GetxService
         ftpServerSetting.port,
         ftpServerSetting.username,
         ftpServerSetting.password,
-        ftpServerSetting.allowReadAndWrite
+        ftpServerSetting.allowReadAndWrite,
+        ftpServerSetting.passivePoolSize,
+        ftpServerSetting.passiveTimeoutSeconds,
+        ftpServerSetting.passivePortRangeStart,
+        ftpServerSetting.passivePortRangeEnd
       ],
       (_) => _restartIfRunning(),
     );
@@ -104,9 +108,10 @@ class FtpServerService extends GetxService
       fileOperations: PhysicalFileOperations(rootPath),
       serverType:
           ftpServerSetting.allowReadAndWrite.isTrue ? ServerType.readAndWrite : ServerType.readOnly,
-      logFunction: (message) {
-        _logFtpMessage(message);
-      },
+      passivePortRangeStart: ftpServerSetting.passivePortRangeStart.value,
+      passivePortRangeEnd: ftpServerSetting.passivePortRangeEnd.value,
+      passivePoolSize: ftpServerSetting.passivePoolSize.value,
+      passiveTimeout: Duration(seconds: ftpServerSetting.passiveTimeoutSeconds.value),
     );
 
     try {
@@ -166,46 +171,5 @@ class FtpServerService extends GetxService
     _keepScreenWorker?.dispose();
     _server?.stop().ignore();
     super.onClose();
-  }
-
-  void _logFtpMessage(String message) {
-    final String normalized = message.trimLeft();
-
-    if (normalized.contains('error') || normalized.contains('fail')) {
-      log.error('FTP Server: $message');
-      return;
-    }
-    if (normalized.contains('warn')) {
-      log.warning('FTP Server: $message');
-      return;
-    }
-    if (normalized.contains('Listing directory')) {
-      // Strip dir listing messages
-      String stripped = normalized.replaceAll(RegExp(r'dir contents: (.*)'), '');
-      log.info('FTP Server: $stripped');
-      log.trace('FTP Server: $message');
-      return;
-    }
-    if (normalized.contains('Response: 250 Directory changed to')) {
-      log.trace('FTP Server: $message');
-      return;
-    }
-    if (normalized.contains('Response: 226 Transfer complete')) {
-      log.trace('FTP Server: $message');
-      return;
-    }
-    if (normalized.contains('Response: 200 Type set to')) {
-      log.trace('FTP Server: $message');
-      return;
-    }
-    if (normalized.contains('Command: PWD, Argument:')) {
-      log.trace('FTP Server: $message');
-      return;
-    }
-    if (normalized.contains('Command: CWD, Argument:')) {
-      log.trace('FTP Server: $message');
-      return;
-    }
-    log.debug('FTP Server: $message');
   }
 }
