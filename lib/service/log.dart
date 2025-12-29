@@ -162,7 +162,9 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   Future<void> _initLogger() async {
     final bool verboseEnabled = advancedSetting.enableVerboseLogging.isTrue;
-    final Level selectedLevel = verboseEnabled ? Level.trace : advancedSetting.logLevel.value;
+    // Verbose logging toggles additional log channels/files, but must not
+    // override the user-selected minimum log level.
+    final Level selectedLevel = advancedSetting.logLevel.value;
 
     final bool needsReinit =
         _lastSelectedLevel != selectedLevel || _lastVerboseEnabled != verboseEnabled;
@@ -333,10 +335,7 @@ class EHLogFilter extends LogFilter {
   @override
   bool shouldLog(LogEvent event) {
     final Level effectiveLevel = level ?? Level.debug;
-    if (advancedSetting.enableVerboseLogging.isTrue) {
-      return event.level.index >= effectiveLevel.index;
-    }
-    return event.level.index >= effectiveLevel.index && event.level != Level.trace;
+    return event.level.index >= effectiveLevel.index;
   }
 }
 

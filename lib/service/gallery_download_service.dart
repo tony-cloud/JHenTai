@@ -1349,7 +1349,7 @@ class GalleryDownloadService extends GetxController
             }
             log.download(
               'MPV page unsupported, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo',
-              level: Level.info,
+              level: Level.warning,
             );
           }
 
@@ -1550,7 +1550,7 @@ class GalleryDownloadService extends GetxController
       galleryDownloadInfo.images[serialNo] = image;
 
       log.download('Parse image url success, index: $serialNo, url: ${image.url}',
-          level: Level.info);
+          level: Level.debug);
 
       /// Next step: download image
       return _submitTask(
@@ -1774,7 +1774,7 @@ class GalleryDownloadService extends GetxController
         }
       }
 
-      log.download('Download ${gallery.title} image: $serialNo success', level: Level.info);
+      log.download('Download ${gallery.title} image: $serialNo success', level: Level.debug);
 
       final bool statusUpdated =
           await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloaded);
@@ -1857,7 +1857,7 @@ class GalleryDownloadService extends GetxController
         _saveGalleryMetadataInDisk(gallery);
         log.download(
           'Re-parse image url by stripping legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}',
-          level: Level.info,
+          level: Level.warning,
         );
         _submitTask(
           gid: gallery.gid,
@@ -1901,7 +1901,7 @@ class GalleryDownloadService extends GetxController
     _saveGalleryMetadataInDisk(gallery);
     log.download(
       'Re-parse image url success using legacy reload key. Gid: ${gallery.gid}, index: $serialNo, url: ${existingImage.url}',
-      level: Level.info,
+      level: Level.debug,
     );
     _submitTask(
       gid: gallery.gid,
@@ -2246,7 +2246,7 @@ class GalleryDownloadService extends GetxController
         downloadStatus: DownloadStatus.downloaded,
       );
 
-      log.download('Copy old image, new serialNo: $serialNo', level: Level.info);
+      log.download('Copy old image, new serialNo: $serialNo', level: Level.debug);
       io.File oldFile = io.File(path.join(pathService.getVisibleDir().path, oldImage.path!));
 
       if (!oldFile.existsSync()) {
@@ -2297,7 +2297,7 @@ class GalleryDownloadService extends GetxController
 
   Future<void> _copyImageInfo(
       GalleryImage oldImage, GalleryDownloadedData newGallery, int newImageSerialNo) async {
-    log.download('Copy old image, new serialNo: $newImageSerialNo', level: Level.info);
+    log.download('Copy old image, new serialNo: $newImageSerialNo', level: Level.debug);
 
     GalleryImage newImage = galleryDownloadInfos[newGallery.gid]!.images[newImageSerialNo]!;
 

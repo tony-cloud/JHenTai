@@ -851,7 +851,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
     log.download(
       '[DL#$requestId] start url:$url path:$path append:$appendMode range:${range ?? 'none'} rt:${effectiveReceiveTimeout?.inMilliseconds ?? 'none'}ms preserveHeaderCase:$preserveHeaderCase',
-      level: Level.info,
+      level: Level.debug,
     );
 
     void resetReceiveTimeoutTimer() {
@@ -918,7 +918,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       stopwatch.stop();
       log.download(
         '[DL#$requestId] finish elapsed:${stopwatch.elapsedMilliseconds}ms status:${responseForLog?.statusCode ?? 'n/a'} url:$url',
-        level: Level.info,
+        level: Level.debug,
       );
     }
 
