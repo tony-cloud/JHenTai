@@ -1,20 +1,67 @@
+import 'dart:async';
 import 'dart:io';
 import '/ftp_server/ftp_session.dart';
 import '/ftp_server/server_type.dart';
-import 'logger_handler.dart';
+
+typedef SiteCommandCallback = FutureOr<SiteCommandResult> Function(String args, FtpSession session);
+
+class SiteCommandResult {
+  const SiteCommandResult({required this.success, required this.message});
+
+  final bool success;
+  final String message;
+
+  static SiteCommandResult ok([String message = '']) =>
+      SiteCommandResult(success: true, message: message);
+
+  static SiteCommandResult fail([String message = '']) =>
+      SiteCommandResult(success: false, message: message);
+}
+
+class _SiteCommandRegistration {
+  const _SiteCommandRegistration({required this.callback, required this.timeout});
+
+  final SiteCommandCallback callback;
+  final Duration timeout;
+}
 
 class FTPCommandHandler {
   final Socket controlSocket;
-  final LoggerHandler logger;
 
-  FTPCommandHandler(this.controlSocket, this.logger);
+  static final Map<String, _SiteCommandRegistration> _siteCommands =
+      <String, _SiteCommandRegistration>{};
+
+  FTPCommandHandler(this.controlSocket);
+
+  static void registerSiteCommand(
+    String name,
+    SiteCommandCallback callback, {
+    Duration timeout = const Duration(seconds: 3),
+  }) {
+    final String trimmed = name.trim();
+    if (trimmed.isEmpty || trimmed.contains(RegExp(r'\s'))) {
+      throw ArgumentError('SITE command name must be a single token');
+    }
+    _siteCommands[trimmed.toUpperCase()] = _SiteCommandRegistration(
+      callback: callback,
+      timeout: timeout,
+    );
+  }
+
+  static void unregisterSiteCommand(String name) {
+    _siteCommands.remove(name.trim().toUpperCase());
+  }
+
+  static void clearSiteCommands() {
+    _siteCommands.clear();
+  }
 
   Future<void> handleCommand(String commandLine, FtpSession session) async {
     List<String> parts = commandLine.split(' ');
     String command = parts[0].toUpperCase();
     String argument = parts.length > 1 ? parts.sublist(1).join(' ').trim() : '';
 
-    logger.logCommand(command, argument);
+    session.logger.logCommand(command, argument); // Updated to use session.logger
 
     switch (command) {
       case 'USER':
@@ -42,6 +89,15 @@ class FTPCommandHandler {
       case 'STOR':
         await handleStor(argument, session);
         break;
+      case 'APPE':
+        await handleAppe(argument, session);
+        break;
+      case 'REST':
+        handleRest(argument, session);
+        break;
+      case 'CLNT':
+        handleClnt(argument, session);
+        break;
       case 'CWD':
         handleCwd(argument, session);
         break;
@@ -65,8 +121,17 @@ class FTPCommandHandler {
       case 'NOOP':
         handleNoop(session);
         break;
+      case 'HELP':
+        await handleHelp(argument, session);
+        break;
       case 'TYPE':
         handleType(argument, session);
+        break;
+      case 'MODE':
+        handleMode(argument, session);
+        break;
+      case 'STRU':
+        handleStru(argument, session);
         break;
       case 'SIZE':
         await handleSize(argument, session);
@@ -86,6 +151,12 @@ class FTPCommandHandler {
         break;
       case 'ABOR':
         await handleAbort(session);
+        break;
+      case 'STAT':
+        await handleStat(argument, session);
+        break;
+      case 'SITE':
+        await handleSite(argument, session);
         break;
       case 'MLSD':
         await handleMlsd(argument, session);
@@ -110,6 +181,8 @@ class FTPCommandHandler {
         break;
       default:
         session.sendResponse('502 Command not implemented $command $argument');
+        session.logger
+            .warning('Unsupported command: $commandLine'); // Updated to use session.logger
         break;
     }
   }
@@ -127,11 +200,15 @@ class FTPCommandHandler {
       session.sendResponse('230 User logged in, proceed');
     } else {
       session.sendResponse('530 Not logged in');
+      session.logger.warning(
+          'Authentication failed for user: ${session.cachedUsername}'); // Updated to use session.logger
     }
   }
 
   Future<void> handleQuit(FtpSession session) async {
     session.sendResponse('221 Service closing control connection');
+    session.logger.info('Client disconnected: ${session.controlSocket.remoteAddress.address}'
+        ':${session.controlSocket.remotePort}');
     await session.controlSocket.close();
   }
 
@@ -173,6 +250,26 @@ class FTPCommandHandler {
     } else {
       await session.storeFile(argument);
     }
+  }
+
+  Future<void> handleAppe(String argument, FtpSession session) async {
+    if (session.serverType == ServerType.readOnly) {
+      session.sendResponse('550 Command not allowed in read-only mode');
+    } else {
+      await session.appendFile(argument);
+    }
+  }
+
+  void handleMode(String argument, FtpSession session) {
+    session.handleMode(argument);
+  }
+
+  void handleStru(String argument, FtpSession session) {
+    session.handleStru(argument);
+  }
+
+  Future<void> handleStat(String argument, FtpSession session) async {
+    await session.handleStat(argument);
   }
 
   void handleCwd(String argument, FtpSession session) {
@@ -223,6 +320,76 @@ class FTPCommandHandler {
     }
   }
 
+  Future<void> handleHelp(String argument, FtpSession session) async {
+    final String topic = argument.trim().toUpperCase();
+    if (topic.isNotEmpty && topic != 'SITE') {
+      session.sendResponse('502 HELP for $topic not implemented');
+      return;
+    }
+
+    final List<String> lines = <String>[
+      '214-Commands supported:',
+      ' USER PASS QUIT',
+      ' PASV EPSV PORT',
+      ' LIST NLST MLSD MLST',
+      ' RETR STOR APPE REST',
+      ' RNFR RNTO RENAME',
+      ' CWD CDUP MKD RMD DELE',
+      ' SIZE PWD XPWD SYST NOOP TYPE',
+      ' MODE STRU STAT',
+      ' HELP SITE',
+    ];
+
+    if (topic == 'SITE') {
+      lines.add(' SITE <subcommand> [args]');
+      if (_siteCommands.isEmpty) {
+        lines.add('  (no custom SITE subcommands registered)');
+      } else {
+        final List<String> names = _siteCommands.keys.toList()..sort();
+        lines.add('  Registered SITE subcommands: ${names.join(' ')}');
+      }
+    }
+
+    lines.add('214 End');
+    session.sendMultiLineResponse(lines);
+  }
+
+  Future<void> handleSite(String argument, FtpSession session) async {
+    final String trimmed = argument.trim();
+    if (trimmed.isEmpty) {
+      session.sendResponse('501 Syntax error in parameters or arguments');
+      return;
+    }
+
+    final List<String> parts = trimmed.split(RegExp(r'\s+'));
+    final String subcommand = parts.first.toUpperCase();
+    final String args =
+        trimmed.length > parts.first.length ? trimmed.substring(parts.first.length).trimLeft() : '';
+
+    final _SiteCommandRegistration? registration = _siteCommands[subcommand];
+    if (registration == null) {
+      session.sendResponse('500 SITE command not understood');
+      return;
+    }
+
+    try {
+      final Future<SiteCommandResult> future = Future<SiteCommandResult>.sync(
+        () => registration.callback(args, session),
+      ).then((value) => value);
+
+      final SiteCommandResult result = await future.timeout(registration.timeout);
+      final String message = result.message.isEmpty
+          ? (result.success ? 'SITE $subcommand ok' : 'SITE $subcommand failed')
+          : result.message;
+
+      session.sendResponse(result.success ? '200 $message' : '550 $message');
+    } on TimeoutException {
+      session.sendResponse('550 SITE $subcommand timed out');
+    } catch (e) {
+      session.sendResponse('550 SITE $subcommand failed: $e');
+    }
+  }
+
   Future<void> handleSize(String argument, FtpSession session) async {
     await session.fileSize(argument);
   }
@@ -241,7 +408,9 @@ class FTPCommandHandler {
         session.sendResponse("200 UTF8 mode ${mode ? 'enable' : 'disable'}");
         break;
       default:
-        session.sendResponse('502 Command not implemented handleOptions');
+        session.sendResponse('502 Command not implemented handleOptions $argument');
+        session.logger
+            .warning('Unsupported OPTS command: $argument'); // Updated to use session.logger
         break;
     }
   }
@@ -255,6 +424,7 @@ class FTPCommandHandler {
       ' MLSD',
       ' EPSV',
       ' PASV',
+      ' REST STREAM',
       ' UTF8',
       ' MLST modify*;size*;type*;',
       '211 End',
@@ -269,6 +439,24 @@ class FTPCommandHandler {
 
   Future<void> handleAbort(FtpSession session) async {
     await session.abortTransfer();
+  }
+
+  void handleClnt(String argument, FtpSession session) {
+    // Client name (RFC 959 extension). Some clients (e.g. QNAP HBS) require this.
+    session.clientName = argument.isEmpty ? null : argument;
+    session.sendResponse('200 CLNT command successful');
+  }
+
+  void handleRest(String argument, FtpSession session) {
+    final String trimmed = argument.trim();
+    final int? offset = int.tryParse(trimmed);
+    if (trimmed.isEmpty || offset == null || offset < 0) {
+      session.sendResponse('501 Syntax error in parameters or arguments');
+      return;
+    }
+
+    session.restartOffset = offset;
+    session.sendResponse('350 Restarting at $offset. Send RETR or STOR to initiate transfer.');
   }
 
   Future<void> handleRnfr(String argument, FtpSession session) async {

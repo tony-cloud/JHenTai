@@ -43,12 +43,18 @@ class DataConnectionPool {
   final Map<int, ServerSocket> _activeListenersByPort = {};
   final StreamController<void> _availabilityController = StreamController.broadcast();
 
-  Future<PooledDataConnection> acquire({Duration? timeout}) async {
+  final _AsyncLock _lock = _AsyncLock();
+
+  Future<PooledDataConnection> acquire({
+    Duration? timeout,
+    Duration keepAliveInterval = const Duration(seconds: 2),
+    void Function()? onWaitTick,
+  }) async {
     final Duration effectiveTimeout = timeout ?? waitTimeout;
     final DateTime deadline = DateTime.now().add(effectiveTimeout);
 
     while (true) {
-      final PooledDataConnection? connection = await _tryAcquireOnce();
+      final PooledDataConnection? connection = await _lock.synchronized(_tryAcquireOnce);
       if (connection != null) {
         return connection;
       }
@@ -58,10 +64,13 @@ class DataConnectionPool {
         throw TimeoutException('No available passive data listener within $effectiveTimeout');
       }
 
-      try {
-        await _availabilityController.stream.first.timeout(remaining);
-      } on TimeoutException {
-        throw TimeoutException('No available passive data listener within $effectiveTimeout');
+      final Duration waitSlice = remaining < keepAliveInterval ? remaining : keepAliveInterval;
+      final Future<bool> availability = _availabilityController.stream.first.then((_) => true);
+      final Future<bool> tick = Future.delayed(waitSlice, () => false);
+
+      final bool gotAvailability = await Future.any([availability, tick]);
+      if (!gotAvailability) {
+        onWaitTick?.call();
       }
     }
   }
@@ -95,12 +104,16 @@ class DataConnectionPool {
   }
 
   Future<void> _release(PooledDataConnection connection) async {
-    final ServerSocket? listener = _activeListenersByPort.remove(connection.port);
+    final ServerSocket? listenerToClose = await _lock.synchronized(() async {
+      return _activeListenersByPort.remove(connection.port) ?? connection.listener;
+    });
+
     try {
-      await (listener ?? connection.listener).close();
+      await listenerToClose?.close();
     } catch (e) {
       logger.warning('Error closing passive listener on ${connection.port}', e);
     }
+
     if (!_availabilityController.isClosed) {
       _availabilityController.add(null);
     }
@@ -113,8 +126,12 @@ class DataConnectionPool {
 
     // Force-close any listeners that might still be held by in-flight sessions.
     // This is important when the FTP server is stopped/restarted without app restart.
-    final List<ServerSocket> listeners = _activeListenersByPort.values.toList(growable: false);
-    _activeListenersByPort.clear();
+    final List<ServerSocket> listeners = await _lock.synchronized(() async {
+      final List<ServerSocket> snapshot = _activeListenersByPort.values.toList(growable: false);
+      _activeListenersByPort.clear();
+      return snapshot;
+    });
+
     for (final listener in listeners) {
       try {
         await listener.close();
@@ -124,5 +141,22 @@ class DataConnectionPool {
     }
 
     await _availabilityController.close();
+  }
+}
+
+class _AsyncLock {
+  Future<void> _tail = Future.value();
+
+  Future<T> synchronized<T>(Future<T> Function() action) {
+    final Completer<T> completer = Completer<T>();
+    _tail = _tail.then((_) async {
+      try {
+        final T result = await action();
+        completer.complete(result);
+      } catch (e, st) {
+        completer.completeError(e, st);
+      }
+    });
+    return completer.future;
   }
 }

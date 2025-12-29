@@ -1,4 +1,4 @@
-import '/service/log.dart';
+import 'package:jhentai/service/log.dart';
 
 class LoggerHandler {
   LoggerHandler() : _logService = log;
