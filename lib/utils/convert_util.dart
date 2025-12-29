@@ -6,10 +6,10 @@ import 'package:jhentai/model/gallery_detail.dart';
 import 'package:jhentai/model/gallery_history_model.dart';
 import 'package:jhentai/model/gallery_image.dart';
 
-import '../database/database.dart';
-import '../model/gallery.dart';
-import '../model/gallery_tag.dart';
-import '../setting/site_setting.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_tag.dart';
+import 'package:jhentai/setting/site_setting.dart';
 
 String tagMap2TagString(Map<String, List<GalleryTag>> tagMap) {
   return tagMap.values.flattened

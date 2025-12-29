@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../service/log.dart';
+import 'package:jhentai/service/log.dart';
 
 Future<void> requestStoragePermission() async {
   if (!GetPlatform.isMacOS && !GetPlatform.isLinux) {

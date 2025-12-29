@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 
-import '../model/archive_bot_response/archive_bot_response.dart';
+import 'package:jhentai/model/archive_bot_response/archive_bot_response.dart';
 
 class ArchiveBotResponseParser {
   static ArchiveBotResponse commonParse(Headers headers, dynamic data) {

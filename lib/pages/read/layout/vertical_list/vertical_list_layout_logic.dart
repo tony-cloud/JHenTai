@@ -8,9 +8,9 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/pages/read/layout/vertical_list/vertical_list_layout_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../../../../setting/read_setting.dart';
-import '../../../../utils/screen_size_util.dart';
-import '../base/base_layout_logic.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/utils/screen_size_util.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout_logic.dart';
 
 class VerticalListLayoutLogic extends BaseLayoutLogic {
   final String verticalLayoutId = 'verticalLayoutId';

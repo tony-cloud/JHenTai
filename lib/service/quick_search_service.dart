@@ -8,9 +8,9 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/utils/toast_util.dart';
 
-import 'jh_service.dart';
-import 'log.dart';
-import '../widget/eh_search_config_dialog.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/widget/eh_search_config_dialog.dart';
 
 QuickSearchService quickSearchService = QuickSearchService();
 

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:jhentai/service/local_block_rule_service.dart';
 
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../widget/grouped_list.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/widget/grouped_list.dart';
 
 class BlockingRulePageState with Scroll2TopStateMixin {
   Map<String, List<LocalBlockRule>> groupedRules = {};

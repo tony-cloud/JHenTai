@@ -14,8 +14,8 @@ import 'package:jhentai/widget/eh_archive_bot_setting_dialog.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../../model/archive_bot_response/archive_bot_response.dart';
-import '../../../../setting/preference_setting.dart';
+import 'package:jhentai/model/archive_bot_response/archive_bot_response.dart';
+import 'package:jhentai/setting/preference_setting.dart';
 
 class ArchiveBotSettingsPage extends StatefulWidget {
   const ArchiveBotSettingsPage({super.key});

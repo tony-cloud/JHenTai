@@ -23,13 +23,13 @@ import 'package:jhentai/widget/eh_comment_score_details_dialog.dart';
 import 'package:jhentai/widget/like_button.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../exception/eh_site_exception.dart';
-import '../../../model/gallery_comment.dart';
-import '../../../network/eh_request.dart';
-import '../../../utils/check_util.dart';
-import '../../../setting/user_setting.dart';
-import '../../../service/log.dart';
-import '../../../utils/route_util.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/gallery_comment.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/utils/check_util.dart';
+import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 const double imageMinHeight = 100;
 

@@ -1,4 +1,4 @@
-import 'gallery_image.dart';
+import 'package:jhentai/model/gallery_image.dart';
 
 enum ReadMode { downloaded, online, archive, local }
 

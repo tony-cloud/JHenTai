@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
-import '../config/ui_config.dart';
-import 'double_tap_to_refresh_state_mixin.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/mixin/double_tap_to_refresh_state_mixin.dart';
 
 mixin DoubleTapToRefreshLogicMixin on GetxController {
   DoubleTapToRefreshStateMixin get state;

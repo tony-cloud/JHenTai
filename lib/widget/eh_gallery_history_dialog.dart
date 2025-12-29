@@ -5,8 +5,8 @@ import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
-import '../config/ui_config.dart';
-import '../routes/routes.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/routes/routes.dart';
 
 class EHGalleryHistoryDialog extends StatelessWidget {
   final String currentGalleryTitle;

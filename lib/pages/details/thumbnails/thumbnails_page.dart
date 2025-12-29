@@ -8,14 +8,14 @@ import 'package:jhentai/pages/details/thumbnails/thumbnails_page_state.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/widget/eh_image.dart';
 
-import '../../../config/ui_config.dart';
-import '../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../model/gallery_image.dart';
-import '../../../setting/style_setting.dart';
-import '../../../widget/eh_thumbnail.dart';
-import '../../../widget/eh_wheel_speed_controller.dart';
-import '../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/widget/eh_thumbnail.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class ThumbnailsPage extends StatelessWidget with Scroll2TopPageMixin {
   final ThumbnailsPageLogic logic = Get.put<ThumbnailsPageLogic>(ThumbnailsPageLogic());

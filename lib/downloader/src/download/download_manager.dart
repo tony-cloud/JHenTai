@@ -13,8 +13,7 @@ import 'package:jhentai/downloader/src/isolate/main_isolate_manager.dart';
 import 'package:jhentai/downloader/src/model/download_chunk.dart';
 import 'package:jhentai/downloader/src/model/download_progress.dart';
 import 'package:jhentai/downloader/src/util/lock.dart';
-import 'package:jhentai/downloader/src/util/log_output.dart';
-import 'package:logger/logger.dart';
+import 'package:jhentai/service/log.dart';
 import 'package:retry/retry.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
 
@@ -54,8 +53,6 @@ class DownloadManager {
   VoidCallback? _onDone;
   ValueCallback<JDownloadException>? _onError;
 
-  final JDownloadLogOutput _logOutput = JDownloadLogOutput();
-  late final Logger _logger = Logger(output: _logOutput);
   bool _warnedUnsupportedSocks = false;
 
   static const int _preservedMetadataHeaderSize = 1024 * 16;
@@ -154,7 +151,6 @@ class DownloadManager {
       unRegisterOnProgress();
       unRegisterOnDone();
       unRegisterOnError();
-      unRegisterOnLog();
     });
   }
 
@@ -170,7 +166,7 @@ class DownloadManager {
     );
 
     if (parsed == null) {
-      _logger.w(
+      log.warning(
           'Invalid SOCKS5 proxy address "${config.address}"; falling back to direct connection.');
     }
 
@@ -182,7 +178,7 @@ class DownloadManager {
       return;
     }
     _warnedUnsupportedSocks = true;
-    _logger.w('SOCKS4 proxy is not supported, falling back to direct connection.');
+    log.warning('SOCKS4 proxy is not supported, falling back to direct connection.');
   }
 
   Future<void> changeIsolateCount(int count) async {
@@ -286,14 +282,6 @@ class DownloadManager {
     _onError = null;
   }
 
-  void registerOnLog(JDownloadLogCallback callback) {
-    _logOutput.registerCallBack(callback);
-  }
-
-  void unRegisterOnLog() {
-    _logOutput.unregisterCallBack();
-  }
-
   Future<void> _initTrunks() async {
     if (_chunksReady) {
       return;
@@ -347,10 +335,9 @@ class DownloadManager {
       List<Completer<void>> readyCompleters = List.generate(
           min(_isolateCount, _chunks.where((c) => !c.completed).length), (_) => Completer<void>());
       for (int i = 0; i < readyCompleters.length; i++) {
-        MainIsolateManager isolateManager =
-            MainIsolateManager(proxyConfig: proxyConfig, logger: _logger)
-              ..registerOnReady(readyCompleters[i].complete)
-              ..initIsolate();
+        MainIsolateManager isolateManager = MainIsolateManager(proxyConfig: proxyConfig)
+          ..registerOnReady(readyCompleters[i].complete)
+          ..initIsolate();
         _isolates.add(isolateManager);
       }
 
@@ -425,7 +412,7 @@ class DownloadManager {
         await downloadFile.create(recursive: true);
       }
 
-      _fileManager = FileManager(path: downloadPath, logger: _logger);
+      _fileManager = FileManager(path: downloadPath);
 
       await _storeCurrentDownloadProgress();
 
@@ -487,7 +474,7 @@ class DownloadManager {
   void _handleChunkDownloadComplete(MainIsolateManager isolate, int chunkIndex) {
     assert(_chunks[chunkIndex].completed);
 
-    _logger.d(
+    log.download(
         'chunk $chunkIndex done, size:${_chunks[chunkIndex].size}, bytes:${_chunks[chunkIndex].downloadedBytes}');
 
     _chunksBusy[chunkIndex] = false;
@@ -520,7 +507,7 @@ class DownloadManager {
       await saveFileOutput.flush();
       await saveFileOutput.close();
 
-      _logger.d('complete download file');
+      log.download('complete download file');
       await saveFile.rename(savePath);
       await downloadFile.delete();
     } on Exception catch (e) {

@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
-import 'double_tap_drag_zoom_gesture_recognizer.dart';
+import 'package:jhentai/widget/photo_view/double_tap_drag_zoom_gesture_recognizer.dart';
 
 typedef JScaleStateCycle = PhotoViewScaleState Function(PhotoViewScaleState);
 typedef PhotoViewDoubleTapZoomEndCallback = void Function(

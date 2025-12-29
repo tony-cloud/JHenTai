@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:jhentai/setting/style_setting.dart';
 
-import '../model/jh_layout.dart';
+import 'package:jhentai/model/jh_layout.dart';
 
 class FocusWidget extends StatefulWidget {
   final Widget child;

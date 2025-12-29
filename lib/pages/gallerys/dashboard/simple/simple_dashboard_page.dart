@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import 'package:jhentai/pages/gallerys/dashboard/simple/simple_dashboard_page_logic.dart';
 import 'package:jhentai/pages/gallerys/dashboard/simple/simple_dashboard_page_state.dart';
 
-import '../../../../routes/routes.dart';
-import '../../../../utils/route_util.dart';
-import '../../../base/base_page.dart';
-import '../../../layout/mobile_v2/mobile_layout_page_v2_state.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/pages/base/base_page.dart';
+import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2_state.dart';
 
 /// For mobile v2 layout
 class SimpleDashboardPage extends BasePage {

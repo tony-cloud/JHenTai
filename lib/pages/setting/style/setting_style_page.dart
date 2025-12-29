@@ -4,9 +4,9 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/setting/style_setting.dart';
 
-import '../../../model/jh_layout.dart';
-import '../../../routes/routes.dart';
-import '../../../utils/route_util.dart';
+import 'package:jhentai/model/jh_layout.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class SettingStylePage extends StatelessWidget {
   const SettingStylePage({super.key});

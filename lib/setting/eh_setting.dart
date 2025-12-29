@@ -5,7 +5,7 @@ import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/service/log.dart';
 
-import '../service/jh_service.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 EHSetting ehSetting = EHSetting();
 

@@ -7,15 +7,15 @@ import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/pages/details/details_page_state.dart';
 import 'package:jhentai/pages/details/thumbnails/thumbnails_page_state.dart';
 
-import '../../../exception/eh_site_exception.dart';
-import '../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../model/detail_page_info.dart';
-import '../../../network/eh_request.dart';
-import '../../../utils/eh_spider_parser.dart';
-import '../../../service/log.dart';
-import '../../../utils/snack_util.dart';
-import '../../../widget/jump_page_dialog.dart';
-import '../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/model/detail_page_info.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/widget/jump_page_dialog.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class ThumbnailsPageLogic extends GetxController with Scroll2TopLogicMixin {
   static const String thumbnailsId = 'thumbnailsId';

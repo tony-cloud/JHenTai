@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../service/local_gallery_service.dart';
-import '../../mixin/local/local_gallery_download_page_logic_mixin.dart';
-import 'local_gallery_list_page_state.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/service/local_gallery_service.dart';
+import 'package:jhentai/pages/download/mixin/local/local_gallery_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/list/local/local_gallery_list_page_state.dart';
 
 class LocalGalleryListPageLogic extends GetxController
     with Scroll2TopLogicMixin, LocalGalleryDownloadPageLogicMixin {

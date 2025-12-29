@@ -52,9 +52,9 @@ import 'package:jhentai/setting/security_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/service/log.dart';
 
-import 'config/theme_config.dart';
-import 'network/archive_bot_request.dart';
-import 'service/wakelock_service.dart';
+import 'package:jhentai/config/theme_config.dart';
+import 'package:jhentai/network/archive_bot_request.dart';
+import 'package:jhentai/service/wakelock_service.dart';
 
 List<JHLifeCircleBean> lifeCircleBeans = [
   ehRequest,

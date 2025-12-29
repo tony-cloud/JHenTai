@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/pages/watched/watched_page_state.dart';
 
-import '../base/base_page.dart';
-import 'watched_page_logic.dart';
+import 'package:jhentai/pages/base/base_page.dart';
+import 'package:jhentai/pages/watched/watched_page_logic.dart';
 
 class WatchedPage extends BasePage {
   const WatchedPage({

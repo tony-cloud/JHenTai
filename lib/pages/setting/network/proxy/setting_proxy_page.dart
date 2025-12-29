@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/utils/toast_util.dart';
 
-import '../../../../setting/network_setting.dart';
+import 'package:jhentai/setting/network_setting.dart';
 
 class SettingProxyPage extends StatefulWidget {
   const SettingProxyPage({super.key});

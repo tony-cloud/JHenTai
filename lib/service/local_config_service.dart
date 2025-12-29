@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/jh_service.dart';
 
-import '../database/database.dart';
+import 'package:jhentai/database/database.dart';
 
 class LocalConfig {
   ConfigEnum configKey;

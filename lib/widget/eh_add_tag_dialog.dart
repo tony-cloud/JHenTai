@@ -10,15 +10,15 @@ import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
 import 'package:throttling/throttling.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../database/database.dart';
-import '../model/eh_raw_tag.dart';
-import '../network/eh_request.dart';
-import '../service/tag_translation_service.dart';
-import '../utils/eh_spider_parser.dart';
-import '../service/log.dart';
-import '../utils/route_util.dart';
-import '../utils/string_uril.dart';
-import 'loading_state_indicator.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/model/eh_raw_tag.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/tag_translation_service.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/string_uril.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class EHAddTagDialog extends StatelessWidget {
   final EHAddTagDialogLogic logic = Get.put(EHAddTagDialogLogic());

@@ -24,14 +24,14 @@ import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../../exception/eh_image_exception.dart';
-import '../../../../model/gallery_image.dart';
-import '../../../../setting/read_setting.dart';
-import '../../../../service/log.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../utils/screen_size_util.dart';
-import '../../read_page_logic.dart';
-import '../../read_page_state.dart';
+import 'package:jhentai/exception/eh_image_exception.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/screen_size_util.dart';
+import 'package:jhentai/pages/read/read_page_logic.dart';
+import 'package:jhentai/pages/read/read_page_state.dart';
 
 abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStateMixin {
   static const String pageId = 'pageId';

@@ -5,12 +5,12 @@ import 'package:jhentai/pages/home_page.dart';
 import 'package:jhentai/pages/layout/desktop/desktop_home_page.dart';
 import 'package:jhentai/pages/layout/desktop/desktop_layout_page_state.dart';
 
-import '../../../config/ui_config.dart';
-import '../../../routes/routes.dart';
-import '../../../service/windows_service.dart';
-import '../../../setting/preference_setting.dart';
-import '../../blank_page.dart';
-import 'desktop_layout_page_logic.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/windows_service.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/pages/blank_page.dart';
+import 'package:jhentai/pages/layout/desktop/desktop_layout_page_logic.dart';
 
 class DesktopLayoutPage extends StatelessWidget {
   final DesktopLayoutPageLogic logic = Get.put(DesktopLayoutPageLogic(), permanent: true);

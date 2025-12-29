@@ -10,26 +10,26 @@ import 'package:jhentai/pages/download/mixin/archive/archive_download_page_logic
 import 'package:jhentai/pages/download/mixin/archive/archive_download_page_state_mixin.dart';
 import 'package:jhentai/widget/grouped_list.dart';
 
-import '../../../../model/gallery_image.dart';
-import '../../../../routes/routes.dart';
-import '../../../../service/archive_download_service.dart';
-import '../../../../service/super_resolution_service.dart' as srs;
-import '../../../../service/super_resolution_service.dart';
-import '../../../../setting/performance_setting.dart';
-import '../../../../setting/preference_setting.dart';
-import '../../../../setting/style_setting.dart';
-import '../../../../utils/byte_util.dart';
-import '../../../../utils/date_util.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../widget/eh_gallery_category_tag.dart';
-import '../../../../widget/eh_image.dart';
-import '../../../details/details_page_logic.dart';
-import '../../../layout/mobile_v2/notification/tap_menu_button_notification.dart';
-import '../../download_base_page.dart';
-import '../../mixin/archive/archive_download_page_mixin.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_mixin.dart';
-import 'archive_list_download_page_logic.dart';
-import 'archive_list_download_page_state.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/service/super_resolution_service.dart' as srs;
+import 'package:jhentai/service/super_resolution_service.dart';
+import 'package:jhentai/setting/performance_setting.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/utils/byte_util.dart';
+import 'package:jhentai/utils/date_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/eh_gallery_category_tag.dart';
+import 'package:jhentai/widget/eh_image.dart';
+import 'package:jhentai/pages/details/details_page_logic.dart';
+import 'package:jhentai/pages/layout/mobile_v2/notification/tap_menu_button_notification.dart';
+import 'package:jhentai/pages/download/download_base_page.dart';
+import 'package:jhentai/pages/download/mixin/archive/archive_download_page_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_mixin.dart';
+import 'package:jhentai/pages/download/list/archive/archive_list_download_page_logic.dart';
+import 'package:jhentai/pages/download/list/archive/archive_list_download_page_state.dart';
 
 class ArchiveListDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, ArchiveDownloadPageMixin {

@@ -15,11 +15,11 @@ import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:retry/retry.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../exception/eh_site_exception.dart';
-import '../../../setting/eh_setting.dart';
-import '../../../service/log.dart';
-import '../../../utils/route_util.dart';
-import '../../../utils/snack_util.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/setting/eh_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/snack_util.dart';
 
 class SettingEHPage extends StatefulWidget {
   const SettingEHPage({super.key});

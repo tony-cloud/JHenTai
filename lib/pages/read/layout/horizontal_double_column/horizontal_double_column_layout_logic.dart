@@ -8,10 +8,10 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/utils/screen_size_util.dart';
 
-import '../../../../service/gallery_download_service.dart';
-import '../../../../setting/read_setting.dart';
-import '../base/base_layout_logic.dart';
-import 'horizontal_double_column_layout_state.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout_logic.dart';
+import 'package:jhentai/pages/read/layout/horizontal_double_column/horizontal_double_column_layout_state.dart';
 
 class HorizontalDoubleColumnLayoutLogic extends BaseLayoutLogic {
   HorizontalDoubleColumnLayoutState state = HorizontalDoubleColumnLayoutState();

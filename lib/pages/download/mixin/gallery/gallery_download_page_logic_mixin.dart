@@ -7,19 +7,19 @@ import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/setting/super_resolution_setting.dart';
 
-import '../../../../database/database.dart';
-import '../../../../enum/config_enum.dart';
-import '../../../../model/read_page_info.dart';
-import '../../../../routes/routes.dart';
-import '../../../../service/gallery_download_service.dart';
-import '../../../../service/local_config_service.dart';
-import '../../../../setting/read_setting.dart';
-import '../../../../utils/process_util.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../utils/toast_util.dart';
-import '../../../../widget/eh_alert_dialog.dart';
-import '../../../../widget/eh_download_dialog.dart';
-import '../basic/multi_select/multi_select_download_page_logic_mixin.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/model/read_page_info.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/utils/process_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/eh_alert_dialog.dart';
+import 'package:jhentai/widget/eh_download_dialog.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
 
 mixin GalleryDownloadPageLogicMixin on GetxController
     implements

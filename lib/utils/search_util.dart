@@ -4,14 +4,14 @@ import 'package:jhentai/service/quick_search_service.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../model/jh_layout.dart';
-import '../model/search_config.dart';
-import '../pages/search/desktop/desktop_search_page_logic.dart';
-import '../pages/search/mobile_v2/search_page_mobile_v2_logic.dart';
-import '../routes/routes.dart';
-import '../setting/preference_setting.dart';
-import '../setting/style_setting.dart';
-import '../widget/eh_search_config_dialog.dart';
+import 'package:jhentai/model/jh_layout.dart';
+import 'package:jhentai/model/search_config.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_logic.dart';
+import 'package:jhentai/pages/search/mobile_v2/search_page_mobile_v2_logic.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/widget/eh_search_config_dialog.dart';
 
 Future<void> newSearch(
     {String? keyword, SearchConfig? rewriteSearchConfig, bool forceNewRoute = false}) async {

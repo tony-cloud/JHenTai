@@ -8,7 +8,7 @@ import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/log.dart';
 
-import '../model/jh_layout.dart';
+import 'package:jhentai/model/jh_layout.dart';
 
 StyleSetting styleSetting = StyleSetting();
 

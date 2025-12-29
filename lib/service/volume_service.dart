@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import 'jh_service.dart';
-import 'log.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 
 VolumeService volumeService = VolumeService();
 

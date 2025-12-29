@@ -14,9 +14,9 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../exception/eh_site_exception.dart';
-import '../utils/snack_util.dart';
-import '../utils/toast_util.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class EHGalleryTorrentsDialog extends StatefulWidget {
   final int gid;

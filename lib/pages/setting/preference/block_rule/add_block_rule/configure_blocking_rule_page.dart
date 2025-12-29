@@ -4,10 +4,10 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 
-import '../../../../../service/local_block_rule_service.dart';
-import '../../../../../widget/eh_wheel_speed_controller.dart';
-import 'configure_blocking_rule_page_logic.dart';
-import 'configure_blocking_rule_page_state.dart';
+import 'package:jhentai/service/local_block_rule_service.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
+import 'package:jhentai/pages/setting/preference/block_rule/add_block_rule/configure_blocking_rule_page_logic.dart';
+import 'package:jhentai/pages/setting/preference/block_rule/add_block_rule/configure_blocking_rule_page_state.dart';
 
 class ConfigureBlockingRulePage extends StatelessWidget {
   final ConfigureBlockingRulePageLogic logic =

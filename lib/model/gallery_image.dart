@@ -1,4 +1,4 @@
-import '../service/gallery_download_service.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
 
 class GalleryImage {
   String url;

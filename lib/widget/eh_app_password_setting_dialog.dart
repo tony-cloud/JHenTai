@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
 
-import '../config/ui_config.dart';
+import 'package:jhentai/config/ui_config.dart';
 
 class EHAppPasswordSettingDialog extends StatefulWidget {
   const EHAppPasswordSettingDialog({super.key});

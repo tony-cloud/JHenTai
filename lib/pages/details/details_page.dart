@@ -28,19 +28,19 @@ import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:jhentai/widget/icon_text_button.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../../database/database.dart';
-import '../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../mixin/scroll_to_top_state_mixin.dart';
-import '../../service/gallery_download_service.dart';
-import '../../setting/preference_setting.dart';
-import '../../setting/style_setting.dart';
-import '../../utils/date_util.dart';
-import '../../utils/route_util.dart';
-import '../../utils/search_util.dart';
-import '../../utils/string_uril.dart';
-import '../../widget/eh_gallery_category_tag.dart';
-import 'details_page_logic.dart';
-import 'details_page_state.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/utils/date_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/search_util.dart';
+import 'package:jhentai/utils/string_uril.dart';
+import 'package:jhentai/widget/eh_gallery_category_tag.dart';
+import 'package:jhentai/pages/details/details_page_logic.dart';
+import 'package:jhentai/pages/details/details_page_state.dart';
 
 class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
   final String tag = newUUID();

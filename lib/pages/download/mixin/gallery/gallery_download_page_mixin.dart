@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_mixin.dart';
 import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_state_mixin.dart';
 
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_page_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import 'gallery_download_page_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_page_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_logic_mixin.dart';
 
 mixin GalleryDownloadPageMixin on StatelessWidget
     implements Scroll2TopPageMixin, MultiSelectDownloadPageMixin {

@@ -6,10 +6,10 @@ import 'package:jhentai/pages/download/download_base_page.dart';
 import 'package:jhentai/service/local_gallery_service.dart';
 import 'package:path/path.dart';
 
-import '../../../../utils/toast_util.dart';
-import '../mixin/grid_download_page_mixin.dart';
-import 'local_gallery_grid_page_logic.dart';
-import 'local_gallery_grid_page_state.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_mixin.dart';
+import 'package:jhentai/pages/download/grid/local/local_gallery_grid_page_logic.dart';
+import 'package:jhentai/pages/download/grid/local/local_gallery_grid_page_state.dart';
 
 class LocalGalleryGridPage extends StatelessWidget with Scroll2TopPageMixin, GridBasePage {
   LocalGalleryGridPage({super.key});

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'jh_service.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 PathService pathService = PathService();
 

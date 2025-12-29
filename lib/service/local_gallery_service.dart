@@ -7,14 +7,14 @@ import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/utils/file_util.dart';
 import 'package:path/path.dart';
 
-import '../model/gallery_image.dart';
-import '../pages/download/grid/mixin/grid_download_page_service_mixin.dart';
-import '../setting/download_setting.dart';
-import 'jh_service.dart';
-import 'path_service.dart';
-import 'log.dart';
-import '../widget/loading_state_indicator.dart';
-import 'archive_download_service.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_service_mixin.dart';
+import 'package:jhentai/setting/download_setting.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/service/archive_download_service.dart';
 
 /// Load galleries in download directory but is not downloaded by JHenTai
 LocalGalleryService localGalleryService = LocalGalleryService();

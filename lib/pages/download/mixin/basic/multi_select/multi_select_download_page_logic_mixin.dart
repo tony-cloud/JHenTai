@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 
-import '../../../../../utils/toast_util.dart';
-import 'multi_select_download_page_state_mixin.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
 
 mixin MultiSelectDownloadPageLogicMixin<T> on GetxController {
   final String itemCardId = 'itemCardId';

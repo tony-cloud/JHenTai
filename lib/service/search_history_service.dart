@@ -4,8 +4,8 @@ import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/model/search_history.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 
-import '../database/database.dart';
-import 'jh_service.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 SearchHistoryService searchHistoryService = SearchHistoryService();
 

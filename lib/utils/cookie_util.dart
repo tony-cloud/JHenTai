@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:jhentai/utils/string_uril.dart';
 
-import '../service/log.dart';
+import 'package:jhentai/service/log.dart';
 
 class CookieUtil {
   static List<Cookie> parse2Cookies(String? cookiesString) {

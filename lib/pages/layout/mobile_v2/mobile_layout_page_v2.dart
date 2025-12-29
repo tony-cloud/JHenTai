@@ -13,9 +13,9 @@ import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/will_pop_interceptor.dart';
-import '../../../setting/preference_setting.dart';
-import '../../../widget/eh_log_out_dialog.dart';
-import 'notification/tap_tab_bat_button_notification.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/widget/eh_log_out_dialog.dart';
+import 'package:jhentai/pages/layout/mobile_v2/notification/tap_tab_bat_button_notification.dart';
 
 class MobileLayoutPageV2 extends StatelessWidget {
   final MobileLayoutPageV2Logic logic = Get.put(MobileLayoutPageV2Logic(), permanent: true);

@@ -2,7 +2,7 @@ import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/path_service.dart';
 
-import 'log.dart';
+import 'package:jhentai/service/log.dart';
 
 abstract interface class JHLifeCircleBean {
   List<JHLifeCircleBean> get initDependencies;
@@ -13,7 +13,7 @@ abstract interface class JHLifeCircleBean {
 }
 
 mixin JHLifeCircleBeanErrorCatch {
-  List<JHLifeCircleBean> get initDependencies => [pathService, log];
+  List<JHLifeCircleBean> get initDependencies => [pathService];
 
   Future<void> initBean() async {
     try {
@@ -39,7 +39,7 @@ mixin JHLifeCircleBeanErrorCatch {
 }
 
 mixin JHLifeCircleBeanWithConfigStorage {
-  List<JHLifeCircleBean> get initDependencies => [pathService, log, localConfigService];
+  List<JHLifeCircleBean> get initDependencies => [pathService, localConfigService];
 
   ConfigEnum get configEnum;
 

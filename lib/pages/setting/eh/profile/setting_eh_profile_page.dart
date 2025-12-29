@@ -8,12 +8,12 @@ import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:retry/retry.dart';
 
-import '../../../../exception/eh_site_exception.dart';
-import '../../../../model/profile.dart';
-import '../../../../network/eh_request.dart';
-import '../../../../setting/site_setting.dart';
-import '../../../../utils/eh_spider_parser.dart';
-import '../../../../service/log.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/profile.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/setting/site_setting.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
 
 class SettingEHProfilePage extends StatefulWidget {
   const SettingEHProfilePage({super.key});

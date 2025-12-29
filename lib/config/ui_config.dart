@@ -7,8 +7,8 @@ import 'package:get/get.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
-import '../utils/screen_size_util.dart';
-import '../setting/performance_setting.dart';
+import 'package:jhentai/utils/screen_size_util.dart';
+import 'package:jhentai/setting/performance_setting.dart';
 
 class UIConfig {
   /// common

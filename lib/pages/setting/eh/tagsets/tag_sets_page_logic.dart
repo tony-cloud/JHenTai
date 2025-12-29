@@ -12,18 +12,18 @@ import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/toast_util.dart';
 
-import '../../../../database/database.dart';
-import '../../../../exception/eh_site_exception.dart';
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../model/tag_set.dart';
-import '../../../../service/tag_translation_service.dart';
-import '../../../../utils/color_util.dart';
-import '../../../../service/log.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../utils/snack_util.dart';
-import '../../../../widget/loading_state_indicator.dart';
-import 'tag_sets_page_state.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/model/tag_set.dart';
+import 'package:jhentai/service/tag_translation_service.dart';
+import 'package:jhentai/utils/color_util.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/pages/setting/eh/tagsets/tag_sets_page_state.dart';
 
 class TagSetsLogic extends GetxController with Scroll2TopLogicMixin {
   static const String titleId = 'titleId';

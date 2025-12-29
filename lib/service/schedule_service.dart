@@ -25,22 +25,22 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:retry/retry.dart';
 
-import '../database/database.dart';
-import '../enum/config_enum.dart';
-import '../model/archive_bot_response/archive_bot_response.dart';
-import '../model/archive_bot_response/check_in_vo.dart';
-import '../model/gallery_metadata.dart';
-import '../network/archive_bot_request.dart';
-import '../setting/advanced_setting.dart';
-import '../utils/archive_bot_response_parser.dart';
-import '../utils/version_util.dart';
-import '../widget/update_dialog.dart';
-import '../routes/routes.dart';
-import 'jh_service.dart';
-import 'local_config_service.dart';
-import 'log.dart';
-import '../utils/cookie_util.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/model/archive_bot_response/archive_bot_response.dart';
+import 'package:jhentai/model/archive_bot_response/check_in_vo.dart';
+import 'package:jhentai/model/gallery_metadata.dart';
+import 'package:jhentai/network/archive_bot_request.dart';
+import 'package:jhentai/setting/advanced_setting.dart';
+import 'package:jhentai/utils/archive_bot_response_parser.dart';
+import 'package:jhentai/utils/version_util.dart';
+import 'package:jhentai/widget/update_dialog.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/cookie_util.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 ScheduleService scheduleService = ScheduleService();
 

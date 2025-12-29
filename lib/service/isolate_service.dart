@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:integral_isolates/integral_isolates.dart';
 
-import 'jh_service.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 IsolateService isolateService = IsolateService();
 

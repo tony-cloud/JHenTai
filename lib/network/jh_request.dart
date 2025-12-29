@@ -5,10 +5,10 @@ import 'package:jhentai/consts/jh_consts.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/utils/hmac_util.dart';
 
-import '../service/isolate_service.dart';
-import '../service/jh_service.dart';
-import '../setting/network_setting.dart';
-import '../utils/eh_spider_parser.dart';
+import 'package:jhentai/service/isolate_service.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/setting/network_setting.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
 
 JHRequest jhRequest = JHRequest();
 

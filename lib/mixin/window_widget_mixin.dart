@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../config/ui_config.dart';
-import '../service/windows_service.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/service/windows_service.dart';
 
 mixin WindowWidgetMixin<T extends StatefulWidget> on State<T>, WindowListener {
   final FocusNode focusNode = FocusNode();

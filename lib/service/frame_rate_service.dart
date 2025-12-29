@@ -1,7 +1,7 @@
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:get/get.dart';
 
-import 'jh_service.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 FrameRateService frameRateService = FrameRateService();
 

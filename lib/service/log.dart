@@ -16,18 +16,18 @@ import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
 
-import '../exception/upload_exception.dart';
-import 'jh_service.dart';
-import '../utils/byte_util.dart';
+import 'package:jhentai/exception/upload_exception.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/utils/byte_util.dart';
 
-LogService log = LogService();
+final LogService log = LogService();
 
 class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   String? logDirPath;
 
   Logger? _consoleLogger;
   Logger? _verboseFileLogger;
-  Logger? _warningFileLogger;
+  Logger? _errorFileLogger;
   Logger? _downloadFileLogger;
 
   static const int _maxLogLinesPerFile = 1000;
@@ -97,14 +97,13 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     await _initLogger();
     _consoleLogger?.w(msg, error: error, stackTrace: withStack ? null : StackTrace.empty);
     _verboseFileLogger?.w(msg, error: error, stackTrace: withStack ? null : StackTrace.empty);
-    _warningFileLogger?.w(msg, error: error, stackTrace: withStack ? null : StackTrace.empty);
   }
 
   void error(Object msg, [Object? error, StackTrace? stackTrace]) async {
     await _initLogger();
     _consoleLogger?.e(msg, error: error, stackTrace: stackTrace);
     _verboseFileLogger?.e(msg, error: error, stackTrace: stackTrace);
-    _warningFileLogger?.e(msg, error: error, stackTrace: stackTrace);
+    _errorFileLogger?.e(msg, error: error, stackTrace: stackTrace);
   }
 
   void download(Object msg,
@@ -139,11 +138,11 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   Future<void> clear() async {
     await _verboseFileLogger?.close();
-    await _warningFileLogger?.close();
+    await _errorFileLogger?.close();
     await _downloadFileLogger?.close();
 
     _verboseFileLogger = null;
-    _warningFileLogger = null;
+    _errorFileLogger = null;
     _downloadFileLogger = null;
 
     if (await Directory(logDirPath!).exists()) {
@@ -190,13 +189,13 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       ),
     );
     if (verboseEnabled) {
-      _warningFileLogger ??= Logger(
+      _errorFileLogger ??= Logger(
         level: Level.warning,
         printer: _errorTextPrinter,
         filter: ProductionFilter(),
         output: RollingFileOutput(
           baseFilePath: path.join(logDirPath!, '${fileName}_error.log'),
-          headerBuilder: () => _buildLogHeader('Warnings'),
+          headerBuilder: () => _buildLogHeader('Errors'),
           maxLines: _maxLogLinesPerFile,
         ),
       );
@@ -215,19 +214,19 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     await Future.wait([
       _consoleLogger!.init,
       _verboseFileLogger!.init,
-      if (_warningFileLogger != null) _warningFileLogger!.init,
+      if (_errorFileLogger != null) _errorFileLogger!.init,
       if (_downloadFileLogger != null) _downloadFileLogger!.init,
     ]);
   }
 
   Future<void> _disposeLoggers() async {
     await _verboseFileLogger?.close();
-    await _warningFileLogger?.close();
+    await _errorFileLogger?.close();
     await _downloadFileLogger?.close();
 
     _consoleLogger = null;
     _verboseFileLogger = null;
-    _warningFileLogger = null;
+    _errorFileLogger = null;
     _downloadFileLogger = null;
   }
 

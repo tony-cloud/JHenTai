@@ -8,8 +8,8 @@ import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:path/path.dart';
 
-import '../service/jh_service.dart';
-import '../utils/toast_util.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 DownloadSetting downloadSetting = DownloadSetting();
 

@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 
-import '../../../config/ui_config.dart';
-import '../../../setting/performance_setting.dart';
-import '../../../utils/text_input_formatter.dart';
-import '../../../utils/toast_util.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/setting/performance_setting.dart';
+import 'package:jhentai/utils/text_input_formatter.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class SettingPerformancePage extends StatelessWidget {
   SettingPerformancePage({super.key});

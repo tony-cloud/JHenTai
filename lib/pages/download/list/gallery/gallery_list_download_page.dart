@@ -15,22 +15,22 @@ import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/eh_gallery_category_tag.dart';
 import 'package:jhentai/widget/eh_image.dart';
 import 'package:jhentai/widget/grouped_list.dart';
-import '../../../../database/database.dart';
-import '../../../../mixin/scroll_to_top_page_mixin.dart';
-import '../../../../model/gallery_image.dart';
-import '../../../../routes/routes.dart';
-import '../../../../service/gallery_download_service.dart';
-import '../../../../service/super_resolution_service.dart';
-import '../../../details/details_page_logic.dart';
-import '../../../layout/mobile_v2/notification/tap_menu_button_notification.dart';
-import '../../download_base_page.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_mixin.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
-import '../../mixin/gallery/gallery_download_page_logic_mixin.dart';
-import '../../mixin/gallery/gallery_download_page_state_mixin.dart';
-import 'gallery_list_download_page_logic.dart';
-import 'gallery_list_download_page_state.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/mixin/scroll_to_top_page_mixin.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/super_resolution_service.dart';
+import 'package:jhentai/pages/details/details_page_logic.dart';
+import 'package:jhentai/pages/layout/mobile_v2/notification/tap_menu_button_notification.dart';
+import 'package:jhentai/pages/download/download_base_page.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/list/gallery/gallery_list_download_page_logic.dart';
+import 'package:jhentai/pages/download/list/gallery/gallery_list_download_page_state.dart';
 
 class GalleryListDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, GalleryDownloadPageMixin {

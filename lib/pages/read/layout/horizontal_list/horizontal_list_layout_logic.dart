@@ -6,10 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../../../../setting/read_setting.dart';
-import '../../../../utils/screen_size_util.dart';
-import '../base/base_layout_logic.dart';
-import 'horizontal_list_layout_state.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/utils/screen_size_util.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout_logic.dart';
+import 'package:jhentai/pages/read/layout/horizontal_list/horizontal_list_layout_state.dart';
 
 class HorizontalListLayoutLogic extends BaseLayoutLogic {
   HorizontalListLayoutState state = HorizontalListLayoutState();

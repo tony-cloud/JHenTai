@@ -14,7 +14,7 @@ import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-import '../exception/eh_site_exception.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
 
 enum GraphType { allTime, year, month, day }
 

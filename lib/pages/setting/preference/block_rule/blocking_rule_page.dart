@@ -6,13 +6,13 @@ import 'package:jhentai/pages/setting/preference/block_rule/add_block_rule/confi
 import 'package:jhentai/service/local_block_rule_service.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/grouped_list.dart';
-import '../../../../config/ui_config.dart';
-import '../../../../routes/routes.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../widget/eh_wheel_speed_controller.dart';
-import '../../../download/download_base_page.dart';
-import 'blocking_rule_page_logic.dart';
-import 'blocking_rule_page_state.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
+import 'package:jhentai/pages/download/download_base_page.dart';
+import 'package:jhentai/pages/setting/preference/block_rule/blocking_rule_page_logic.dart';
+import 'package:jhentai/pages/setting/preference/block_rule/blocking_rule_page_state.dart';
 
 class BlockingRulePage extends StatelessWidget {
   final BlockingRulePageLogic logic = Get.put<BlockingRulePageLogic>(BlockingRulePageLogic());

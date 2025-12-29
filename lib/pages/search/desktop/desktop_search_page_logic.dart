@@ -7,12 +7,12 @@ import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/pages/search/desktop/desktop_search_page_state.dart';
 import 'package:jhentai/pages/search/mixin/new_search_argument.dart';
 
-import '../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../setting/preference_setting.dart';
-import '../../../utils/uuid_util.dart';
-import 'desktop_search_page_tab_logic.dart';
-import 'desktop_search_page_tab_view.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/utils/uuid_util.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_tab_logic.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_tab_view.dart';
 
 class DesktopSearchPageLogic extends GetxController with Scroll2TopLogicMixin {
   final String pageId = 'pageId';

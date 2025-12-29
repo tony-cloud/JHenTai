@@ -7,7 +7,7 @@ import 'package:collection/collection.dart';
 import 'package:executor/executor.dart';
 import 'package:jhentai/service/log.dart';
 
-import '../exception/cancel_exception.dart';
+import 'package:jhentai/exception/cancel_exception.dart';
 
 /// copied from [package:executor/executor.dart] and
 /// 1. replace [_waiting] ListQueue by PriorityQueue

@@ -10,16 +10,16 @@ import 'package:jhentai/pages/search/mixin/search_page_state_mixin.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/utils/search_util.dart';
 
-import '../../../database/database.dart';
-import '../../../model/gallery_tag.dart';
-import '../../../model/search_history.dart';
-import '../../../routes/routes.dart';
-import '../../../service/search_history_service.dart';
-import '../../../service/tag_translation_service.dart';
-import '../../../utils/route_util.dart';
-import '../../../widget/eh_search_config_dialog.dart';
-import '../../../widget/eh_tag.dart';
-import '../../../widget/eh_wheel_speed_controller.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/model/gallery_tag.dart';
+import 'package:jhentai/model/search_history.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/search_history_service.dart';
+import 'package:jhentai/service/tag_translation_service.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/eh_search_config_dialog.dart';
+import 'package:jhentai/widget/eh_tag.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
 mixin SearchPageMixin<L extends SearchPageLogicMixin, S extends SearchPageStateMixin>
     on BasePage<L, S> {

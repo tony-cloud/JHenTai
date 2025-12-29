@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../base/base_page.dart';
-import 'history_page_logic.dart';
-import 'history_page_state.dart';
+import 'package:jhentai/pages/base/base_page.dart';
+import 'package:jhentai/pages/history/history_page_logic.dart';
+import 'package:jhentai/pages/history/history_page_state.dart';
 
 class HistoryPage extends BasePage {
   const HistoryPage({

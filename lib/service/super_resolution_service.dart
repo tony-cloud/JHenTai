@@ -16,18 +16,18 @@ import 'package:path/path.dart';
 import 'package:retry/retry.dart';
 import 'package:logger/logger.dart';
 
-import '../database/dao/super_resolution_info_dao.dart';
-import '../model/gallery_image.dart';
-import 'jh_service.dart';
-import 'path_service.dart';
-import '../utils/archive_util.dart';
-import '../utils/eh_executor.dart';
-import 'log.dart';
-import '../utils/toast_util.dart';
-import '../widget/loading_state_indicator.dart';
-import '../utils/table.dart' as util;
-import 'archive_download_service.dart';
-import 'gallery_download_service.dart';
+import 'package:jhentai/database/dao/super_resolution_info_dao.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/utils/archive_util.dart';
+import 'package:jhentai/utils/eh_executor.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/utils/table.dart' as util;
+import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
 
 SuperResolutionService superResolutionService = SuperResolutionService();
 

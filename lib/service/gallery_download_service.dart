@@ -44,22 +44,22 @@ import 'package:path/path.dart';
 import 'package:retry/retry.dart';
 import 'package:drift/drift.dart';
 
-import '../consts/locale_consts.dart';
-import '../database/dao/gallery_image_dao.dart';
-import '../exception/cancel_exception.dart';
-import '../exception/eh_site_exception.dart';
-import '../model/comic_info.dart';
-import '../model/detail_page_info.dart';
-import '../model/gallery_detail.dart';
-import '../model/gallery_image.dart';
-import '../network/eh_request.dart';
-import '../pages/download/grid/mixin/grid_download_page_service_mixin.dart';
-import 'jh_service.dart';
-import 'path_service.dart';
-import '../utils/eh_executor.dart';
-import '../utils/eh_spider_parser.dart';
-import '../utils/snack_util.dart';
-import 'wakelock_service.dart';
+import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/database/dao/gallery_image_dao.dart';
+import 'package:jhentai/exception/cancel_exception.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/comic_info.dart';
+import 'package:jhentai/model/detail_page_info.dart';
+import 'package:jhentai/model/gallery_detail.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_service_mixin.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/utils/eh_executor.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/service/wakelock_service.dart';
 
 /// Responsible for local images meta-data and download all images of a gallery
 GalleryDownloadService galleryDownloadService = GalleryDownloadService();

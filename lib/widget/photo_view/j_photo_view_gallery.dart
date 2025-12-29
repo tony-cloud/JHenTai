@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
-import 'j_photo_view.dart';
+import 'package:jhentai/widget/photo_view/j_photo_view.dart';
 
 typedef JPhotoViewGalleryBuilder = JPhotoViewGalleryPageOptions Function(
   BuildContext context,

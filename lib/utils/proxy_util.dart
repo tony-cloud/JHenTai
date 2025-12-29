@@ -5,7 +5,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/string_uril.dart';
 import 'package:system_network_proxy/system_network_proxy.dart';
 
-import '../setting/network_setting.dart';
+import 'package:jhentai/setting/network_setting.dart';
 
 Future<String> getSystemProxyAddress() async {
   String systemProxyAddress = '';

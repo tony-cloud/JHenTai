@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../base/base_page.dart';
-import 'favorite_page_logic.dart';
-import 'favorite_page_state.dart';
+import 'package:jhentai/pages/base/base_page.dart';
+import 'package:jhentai/pages/favorite/favorite_page_logic.dart';
+import 'package:jhentai/pages/favorite/favorite_page_state.dart';
 
 class FavoritePage extends BasePage {
   const FavoritePage({

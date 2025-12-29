@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../setting/mouse_setting.dart';
+import 'package:jhentai/setting/mouse_setting.dart';
 
 class EHWheelSpeedControllerForReadPage extends StatelessWidget {
   final Widget child;

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'data_connection_pool.dart';
-import 'logger_handler.dart';
+import 'package:jhentai/ftp_server/data_connection_pool.dart';
+import 'package:jhentai/ftp_server/logger_handler.dart';
 
 class FtpDataChannel {
   FtpDataChannel(this.socket);

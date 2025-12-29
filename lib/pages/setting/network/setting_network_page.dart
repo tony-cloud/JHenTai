@@ -5,10 +5,10 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/setting/network_setting.dart';
 
-import '../../../routes/routes.dart';
-import '../../../utils/route_util.dart';
-import '../../../utils/text_input_formatter.dart';
-import '../../../utils/toast_util.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/text_input_formatter.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class SettingNetworkPage extends StatelessWidget {
   final TextEditingController proxyAddressController =

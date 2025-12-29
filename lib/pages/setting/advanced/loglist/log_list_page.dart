@@ -7,8 +7,8 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:path/path.dart';
 
-import '../../../../routes/routes.dart';
-import '../../../../utils/route_util.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class LogListPage extends StatefulWidget {
   const LogListPage({super.key});

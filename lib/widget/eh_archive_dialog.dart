@@ -10,12 +10,12 @@ import 'package:jhentai/widget/eh_group_name_selector.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 
-import '../exception/eh_site_exception.dart';
-import '../network/eh_request.dart';
-import '../utils/eh_spider_parser.dart';
-import '../service/log.dart';
-import '../utils/route_util.dart';
-import '../utils/snack_util.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/snack_util.dart';
 
 class EHArchiveDialog extends StatefulWidget {
   final String title;

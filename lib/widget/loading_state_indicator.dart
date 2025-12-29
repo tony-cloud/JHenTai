@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/ui_config.dart';
+import 'package:jhentai/config/ui_config.dart';
 
 enum LoadingState {
   /// didn't load or success

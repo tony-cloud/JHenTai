@@ -1,4 +1,4 @@
-import 'gallery_hh_archive.dart';
+import 'package:jhentai/model/gallery_hh_archive.dart';
 
 class GalleryHHInfo {
   int? gpCount;

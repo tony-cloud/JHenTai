@@ -7,15 +7,15 @@ import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
-import '../../config/ui_config.dart';
-import '../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../mixin/scroll_to_top_page_mixin.dart';
-import '../../mixin/scroll_to_top_state_mixin.dart';
-import '../../widget/eh_gallery_collection.dart';
-import '../../widget/loading_state_indicator.dart';
-import 'base_page_logic.dart';
-import 'base_page_state.dart';
-import 'multi_select/multi_select_gallery_logic_mixin.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_page_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/widget/eh_gallery_collection.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/pages/base/base_page_logic.dart';
+import 'package:jhentai/pages/base/base_page_state.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_gallery_logic_mixin.dart';
 
 abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extends StatelessWidget
     with Scroll2TopPageMixin {

@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
 
-import '../network/eh_request.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});

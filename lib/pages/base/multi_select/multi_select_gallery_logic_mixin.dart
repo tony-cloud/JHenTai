@@ -18,10 +18,10 @@ import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_download_dialog.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
 
-import '../../../exception/eh_site_exception.dart';
-import '../../../mixin/update_global_gallery_status_logic_mixin.dart';
-import '../base_page_logic.dart';
-import 'multi_select_gallery_state_mixin.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
+import 'package:jhentai/pages/base/base_page_logic.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
 
 mixin MultiSelectGalleryLogicMixin on BasePageLogic {
   MultiSelectGalleryStateMixin get multiSelectGalleryState;

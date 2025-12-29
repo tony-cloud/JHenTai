@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-import 'jh_service.dart';
-import 'log.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 
 WakelockService wakelockService = WakelockService();
 
@@ -14,9 +14,6 @@ class WakelockService extends GetxService
   final Map<String, _WakelockEntry> _locks = <String, _WakelockEntry>{};
   Future<void> _serialTask = Future<void>.value();
   bool _wakelockEnabledByService = false;
-
-  @override
-  List<JHLifeCircleBean> get initDependencies => <JHLifeCircleBean>[log];
 
   List<String> get activeLocks => List<String>.unmodifiable(_locks.keys);
 

@@ -5,9 +5,9 @@ import 'package:jhentai/setting/download_setting.dart';
 import 'package:jhentai/utils/string_uril.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 
-import '../../../../service/log.dart';
-import '../../../../utils/permission_util.dart';
-import '../../../../utils/toast_util.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/permission_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class ExtraGalleryScanPathPage extends StatelessWidget {
   const ExtraGalleryScanPathPage({super.key});

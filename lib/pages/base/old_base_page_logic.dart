@@ -6,14 +6,14 @@ import 'package:get/get.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/pages/base/base_page_logic.dart';
-import '../../mixin/scroll_to_top_state_mixin.dart';
-import '../../model/gallery.dart';
-import '../../service/log.dart';
-import '../../utils/snack_util.dart';
-import '../../utils/uuid_util.dart';
-import '../../widget/jump_page_dialog.dart';
-import '../../widget/loading_state_indicator.dart';
-import 'old_base_page_state.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/utils/uuid_util.dart';
+import 'package:jhentai/widget/jump_page_dialog.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/pages/base/old_base_page_state.dart';
 
 /// load pages by page index, not by nextGid or prevGid, to deal with EHentai's old search rule
 abstract class OldBasePageLogic extends BasePageLogic {

@@ -1,5 +1,5 @@
-import '../../../model/search_config.dart';
-import '../../../setting/preference_setting.dart';
+import 'package:jhentai/model/search_config.dart';
+import 'package:jhentai/setting/preference_setting.dart';
 
 class NewSearchArgument {
   final String? keyword;

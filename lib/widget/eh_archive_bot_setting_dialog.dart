@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:telegram/telegram.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 
-import '../setting/archive_bot_setting.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/setting/archive_bot_setting.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class EHArchiveBotSettingDialog extends StatefulWidget {
   final String? apiAddress;

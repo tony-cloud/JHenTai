@@ -9,7 +9,7 @@ import 'package:jhentai/pages/setting/account/login/login_page_state.dart';
 import 'package:jhentai/widget/icon_text_button.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../../../../utils/screen_size_util.dart';
+import 'package:jhentai/utils/screen_size_util.dart';
 
 class LoginPage extends StatelessWidget {
   final LoginPageLogic logic = Get.put<LoginPageLogic>(LoginPageLogic());

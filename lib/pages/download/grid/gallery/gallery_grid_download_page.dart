@@ -16,12 +16,12 @@ import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/utils/route_util.dart';
 
-import '../../../../config/ui_config.dart';
-import '../../../../model/gallery_image.dart';
-import '../../../../service/gallery_download_service.dart';
-import '../../download_base_page.dart';
-import '../mixin/grid_download_page_mixin.dart';
-import 'gallery_grid_download_page_logic.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/pages/download/download_base_page.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_mixin.dart';
+import 'package:jhentai/pages/download/grid/gallery/gallery_grid_download_page_logic.dart';
 
 class GalleryGridDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, GalleryDownloadPageMixin, GridBasePage {

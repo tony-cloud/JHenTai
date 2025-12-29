@@ -4,16 +4,16 @@ import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
-import '../../../../database/database.dart';
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../service/archive_download_service.dart';
-import '../../../../service/local_config_service.dart';
-import '../../../../setting/performance_setting.dart';
-import '../../mixin/archive/archive_download_page_logic_mixin.dart';
-import '../../mixin/archive/archive_download_page_state_mixin.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
-import 'archive_list_download_page_state.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/setting/performance_setting.dart';
+import 'package:jhentai/pages/download/mixin/archive/archive_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/archive/archive_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/list/archive/archive_list_download_page_state.dart';
 
 class ArchiveListDownloadPageLogic extends GetxController
     with

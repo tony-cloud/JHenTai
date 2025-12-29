@@ -1,4 +1,4 @@
-import '../database.dart';
+import 'package:jhentai/database/database.dart';
 
 class TagCountDao {
   static const int _batchSize = 200;

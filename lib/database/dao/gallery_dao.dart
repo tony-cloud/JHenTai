@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-import '../database.dart';
+import 'package:jhentai/database/database.dart';
 
 class GalleryDao {
   static Future<List<GalleryDownloadedData>> selectGallerys() {

@@ -7,10 +7,10 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../../service/super_resolution_service.dart';
-import '../../../../setting/super_resolution_setting.dart';
-import '../../../../service/log.dart';
-import '../../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/service/super_resolution_service.dart';
+import 'package:jhentai/setting/super_resolution_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class SettingSuperResolutionPage extends StatelessWidget {
   const SettingSuperResolutionPage({super.key});

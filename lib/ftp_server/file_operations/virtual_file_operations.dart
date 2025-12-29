@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
-import 'file_operations.dart';
+import 'package:jhentai/ftp_server/file_operations/file_operations.dart';
 
 class VirtualFileOperations extends FileOperations {
   final Map<String, String> directoryMappings = {};

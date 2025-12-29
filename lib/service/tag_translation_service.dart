@@ -17,11 +17,11 @@ import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
 import 'package:retry/retry.dart';
 
-import '../database/database.dart';
-import '../enum/config_enum.dart';
-import '../model/gallery_tag.dart';
-import 'jh_service.dart';
-import 'log.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/model/gallery_tag.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 
 typedef TagAutoCompletionMatch = ({
   String searchText,

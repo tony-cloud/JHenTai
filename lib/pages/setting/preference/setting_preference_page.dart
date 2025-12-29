@@ -5,16 +5,16 @@ import 'package:jhentai/model/tab_bar_icon.dart';
 import 'package:jhentai/service/tag_search_order_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../consts/locale_consts.dart';
-import '../../../l18n/locale_text.dart';
-import '../../../model/jh_layout.dart';
-import '../../../routes/routes.dart';
-import '../../../service/tag_translation_service.dart';
-import '../../../setting/preference_setting.dart';
-import '../../../setting/style_setting.dart';
-import '../../../utils/locale_util.dart';
-import '../../../utils/route_util.dart';
-import '../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/l18n/locale_text.dart';
+import 'package:jhentai/model/jh_layout.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/tag_translation_service.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/utils/locale_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class SettingPreferencePage extends StatelessWidget {
   const SettingPreferencePage({super.key});

@@ -7,10 +7,10 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:retry/retry.dart';
 
-import '../network/eh_request.dart';
-import 'jh_service.dart';
-import 'local_block_rule_service.dart';
-import 'log.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/local_block_rule_service.dart';
+import 'package:jhentai/service/log.dart';
 
 BuiltInBlockedUserService builtInBlockedUserService = BuiltInBlockedUserService();
 

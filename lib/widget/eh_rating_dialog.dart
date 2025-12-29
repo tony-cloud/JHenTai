@@ -6,7 +6,7 @@ import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:get/get_utils/src/extensions/widget_extensions.dart';
 import 'package:jhentai/config/ui_config.dart';
 
-import '../utils/route_util.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class EHRatingDialog extends StatefulWidget {
   final double rating;

@@ -10,8 +10,8 @@ import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'dart:io' as io;
 
-import '../service/gallery_download_service.dart';
-import '../service/log.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/log.dart';
 
 typedef LoadingProgressWidgetBuilder = Widget Function(double);
 typedef FailedWidgetBuilder = Widget Function(ExtendedImageState state);

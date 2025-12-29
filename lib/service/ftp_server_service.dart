@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:io';
 
-import '/ftp_server/ftp_server.dart';
-import '/ftp_server/file_operations/physical_file_operations.dart';
-import '/ftp_server/server_type.dart';
+import 'package:jhentai/ftp_server/ftp_server.dart';
+import 'package:jhentai/ftp_server/file_operations/physical_file_operations.dart';
+import 'package:jhentai/ftp_server/server_type.dart';
 import 'package:get/get.dart';
 
-import '../setting/download_setting.dart';
-import '../setting/ftp_server_setting.dart';
-import '../utils/toast_util.dart';
-import 'jh_service.dart';
-import 'log.dart';
-import 'path_service.dart';
-import 'wakelock_service.dart';
+import 'package:jhentai/setting/download_setting.dart';
+import 'package:jhentai/setting/ftp_server_setting.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/service/wakelock_service.dart';
 
 FtpServerService ftpServerService = FtpServerService();
 
@@ -32,7 +32,7 @@ class FtpServerService extends GetxService
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
-      [pathService, log, ftpServerSetting, downloadSetting, wakelockService];
+      [pathService, ftpServerSetting, downloadSetting, wakelockService];
 
   Future<void> _enqueue(Future<void> Function() action) {
     _serialTask = _serialTask.then((_) => action()).catchError((error, stack) {

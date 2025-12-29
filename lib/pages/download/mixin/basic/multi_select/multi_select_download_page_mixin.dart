@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
 
-import 'multi_select_download_page_logic_mixin.dart';
-import 'multi_select_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
 
 mixin MultiSelectDownloadPageMixin on StatelessWidget {
   MultiSelectDownloadPageLogicMixin get multiSelectDownloadPageLogic;

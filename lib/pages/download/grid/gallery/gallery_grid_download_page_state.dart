@@ -1,10 +1,10 @@
 
-import '../../../../database/database.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../service/gallery_download_service.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
-import '../../mixin/gallery/gallery_download_page_state_mixin.dart';
-import '../mixin/grid_download_page_state_mixin.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_state_mixin.dart';
 
 class GalleryGridDownloadPageState with Scroll2TopStateMixin, MultiSelectDownloadPageStateMixin, GalleryDownloadPageStateMixin, GridBasePageState {
   @override

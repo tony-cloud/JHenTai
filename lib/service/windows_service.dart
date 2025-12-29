@@ -9,10 +9,10 @@ import 'package:jhentai/utils/screen_size_util.dart';
 import 'package:throttling/throttling.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../setting/preference_setting.dart';
-import 'app_update_service.dart';
-import 'jh_service.dart';
-import 'log.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/service/app_update_service.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 
 WindowService windowService = WindowService();
 

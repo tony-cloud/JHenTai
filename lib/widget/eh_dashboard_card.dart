@@ -3,12 +3,12 @@ import 'package:get/get.dart';
 import 'package:jhentai/model/gallery.dart';
 import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/widget/eh_image.dart';
-import '../config/ui_config.dart';
+import 'package:jhentai/config/ui_config.dart';
 
-import '../consts/locale_consts.dart';
-import '../model/gallery_image.dart';
-import '../routes/routes.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class EHDashboardCard extends StatefulWidget {
   final Gallery gallery;

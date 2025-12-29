@@ -15,10 +15,10 @@ import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/pages/details/details_page_state.dart';
 import 'package:html/dom.dart' as dom;
 
-import '../../../../../config/ui_config.dart';
-import '../../../../../widget/eh_thumbnail.dart';
-import '../../../../../widget/eh_wheel_speed_controller.dart';
-import '../../../../../widget/icon_text_button.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/widget/eh_thumbnail.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
+import 'package:jhentai/widget/icon_text_button.dart';
 
 class DetailPreviewPage extends DetailsPage {
   DetailPreviewPage({super.key}) : super.preview() {

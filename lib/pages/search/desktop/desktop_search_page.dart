@@ -7,13 +7,13 @@ import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
 
-import '../../../config/ui_config.dart';
-import '../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../mixin/scroll_to_top_page_mixin.dart';
-import '../../../mixin/scroll_to_top_state_mixin.dart';
-import 'desktop_search_page_logic.dart';
-import 'desktop_search_page_state.dart';
-import 'desktop_search_page_tab_logic.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_page_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_logic.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_state.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_tab_logic.dart';
 
 class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
   const DesktopSearchPage({super.key});

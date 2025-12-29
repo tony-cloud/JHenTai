@@ -7,12 +7,12 @@ import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:retry/retry.dart';
 
-import '../exception/eh_site_exception.dart';
-import '../model/tag_set.dart';
-import '../network/eh_request.dart';
-import '../service/jh_service.dart';
-import '../utils/eh_spider_parser.dart';
-import '../service/log.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/tag_set.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
 
 MyTagsSetting myTagsSetting = MyTagsSetting();
 

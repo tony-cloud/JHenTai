@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
 
-import '../../../model/gallery_thumbnail.dart';
-import '../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/model/gallery_thumbnail.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class ThumbnailsPageState with Scroll2TopStateMixin {
   late int initialPageIndex;

@@ -12,15 +12,15 @@ import 'package:jhentai/pages/download/mixin/archive/archive_download_page_mixin
 import 'package:jhentai/pages/download/mixin/archive/archive_download_page_state_mixin.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 
-import '../../../../model/gallery_image.dart';
-import '../../../../routes/routes.dart';
-import '../../../../service/archive_download_service.dart';
-import '../../../../utils/byte_util.dart';
-import '../../../../utils/route_util.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_mixin.dart';
-import '../mixin/grid_download_page_mixin.dart';
-import 'archive_grid_download_page_logic.dart';
-import 'archive_grid_download_page_state.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/utils/byte_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_mixin.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_mixin.dart';
+import 'package:jhentai/pages/download/grid/archive/archive_grid_download_page_logic.dart';
+import 'package:jhentai/pages/download/grid/archive/archive_grid_download_page_state.dart';
 
 class ArchiveGridDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, ArchiveDownloadPageMixin, GridBasePage {

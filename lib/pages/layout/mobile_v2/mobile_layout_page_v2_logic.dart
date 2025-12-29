@@ -5,8 +5,8 @@ import 'package:jhentai/extension/list_extension.dart';
 import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2_state.dart';
 import 'package:jhentai/utils/route_util.dart';
 
-import '../../../mixin/double_tap_to_refresh_logic_mixin.dart';
-import '../../../setting/preference_setting.dart';
+import 'package:jhentai/mixin/double_tap_to_refresh_logic_mixin.dart';
+import 'package:jhentai/setting/preference_setting.dart';
 
 class MobileLayoutPageV2Logic extends GetxController with DoubleTapToRefreshLogicMixin {
   final String bodyId = 'bodyId';

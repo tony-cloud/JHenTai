@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import '/ftp_server/server_type.dart';
+import 'package:jhentai/ftp_server/server_type.dart';
 import 'package:intl/intl.dart';
-import 'ftp_command_handler.dart';
-import 'logger_handler.dart';
-import 'file_operations/file_operations.dart';
-import 'data_connection_pool.dart';
-import 'socket_manager.dart';
+import 'package:jhentai/ftp_server/ftp_command_handler.dart';
+import 'package:jhentai/ftp_server/logger_handler.dart';
+import 'package:jhentai/ftp_server/file_operations/file_operations.dart';
+import 'package:jhentai/ftp_server/data_connection_pool.dart';
+import 'package:jhentai/ftp_server/socket_manager.dart';
 
 class FtpSession {
   final Socket controlSocket;

@@ -9,7 +9,7 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/date_util.dart';
 import 'package:jhentai/utils/string_uril.dart';
 
-import '../utils/toast_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class EHGalleryDetailDialog extends StatelessWidget {
   final GalleryDetail galleryDetail;

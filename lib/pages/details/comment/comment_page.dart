@@ -10,12 +10,12 @@ import 'package:jhentai/pages/details/comment/eh_comment.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
-import '../../../mixin/login_required_logic_mixin.dart';
-import '../../../service/local_block_rule_service.dart';
-import '../../../setting/user_setting.dart';
-import '../../../utils/eh_spider_parser.dart';
-import '../../../utils/uuid_util.dart';
-import '../../../widget/eh_comment_dialog.dart';
+import 'package:jhentai/mixin/login_required_logic_mixin.dart';
+import 'package:jhentai/service/local_block_rule_service.dart';
+import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/utils/uuid_util.dart';
+import 'package:jhentai/widget/eh_comment_dialog.dart';
 
 class CommentPage extends StatefulWidget {
   const CommentPage({super.key});

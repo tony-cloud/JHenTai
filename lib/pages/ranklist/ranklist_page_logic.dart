@@ -5,8 +5,8 @@ import 'package:jhentai/pages/ranklist/ranklist_page_state.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../../service/log.dart';
-import '../base/old_base_page_logic.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/pages/base/old_base_page_logic.dart';
 
 class RanklistPageLogic extends OldBasePageLogic {
   @override

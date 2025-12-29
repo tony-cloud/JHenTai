@@ -2,8 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'desktop_layout_page_logic.dart';
-import 'desktop_layout_page_state.dart';
+import 'package:jhentai/pages/layout/desktop/desktop_layout_page_logic.dart';
+import 'package:jhentai/pages/layout/desktop/desktop_layout_page_state.dart';
 
 class DesktopHomePage extends StatelessWidget {
   final DesktopLayoutPageLogic logic = Get.find();

@@ -1,7 +1,7 @@
 import 'package:jhentai/pages/base/base_page_logic.dart';
 import 'package:jhentai/pages/gallerys/dashboard/simple/simple_dashboard_page_state.dart';
 
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
 
 class SimpleDashboardPageLogic extends BasePageLogic {
   @override

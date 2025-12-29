@@ -4,8 +4,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:path/path.dart';
 
-import 'log.dart';
-import 'jh_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 StorageService storageService = StorageService();
 

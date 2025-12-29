@@ -5,8 +5,8 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/setting/mouse_setting.dart';
 
-import '../../../utils/text_input_formatter.dart';
-import '../../../utils/toast_util.dart';
+import 'package:jhentai/utils/text_input_formatter.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class SettingMouseWheelPage extends StatelessWidget {
   const SettingMouseWheelPage({super.key});

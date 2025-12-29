@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'logger_handler.dart';
+import 'package:jhentai/ftp_server/logger_handler.dart';
 
 class PooledDataConnection {
   PooledDataConnection(

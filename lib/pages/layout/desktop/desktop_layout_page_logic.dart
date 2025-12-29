@@ -5,9 +5,9 @@ import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/windows_service.dart';
 import 'package:jhentai/utils/route_util.dart';
 
-import '../../../mixin/double_tap_to_refresh_logic_mixin.dart';
-import '../../home_page.dart';
-import 'desktop_layout_page_state.dart';
+import 'package:jhentai/mixin/double_tap_to_refresh_logic_mixin.dart';
+import 'package:jhentai/pages/home_page.dart';
+import 'package:jhentai/pages/layout/desktop/desktop_layout_page_state.dart';
 
 class DesktopLayoutPageLogic extends GetxController with DoubleTapToRefreshLogicMixin {
   final String tabBarId = 'tabBarId';

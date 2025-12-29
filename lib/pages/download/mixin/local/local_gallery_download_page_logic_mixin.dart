@@ -5,19 +5,19 @@ import 'package:get/get.dart';
 import 'package:jhentai/extension/string_extension.dart';
 import 'package:path/path.dart';
 
-import '../../../../config/ui_config.dart';
-import '../../../../enum/config_enum.dart';
-import '../../../../model/gallery_image.dart';
-import '../../../../model/read_page_info.dart';
-import '../../../../routes/routes.dart';
-import '../../../../service/local_config_service.dart';
-import '../../../../service/local_gallery_service.dart';
-import '../../../../setting/read_setting.dart';
-import '../../../../utils/process_util.dart';
-import '../../../../utils/route_util.dart' as route;
-import '../../../../utils/toast_util.dart';
-import '../../../../widget/eh_alert_dialog.dart';
-import '../../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/read_page_info.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/service/local_gallery_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/utils/process_util.dart';
+import 'package:jhentai/utils/route_util.dart' as route;
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/eh_alert_dialog.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 mixin LocalGalleryDownloadPageLogicMixin on GetxController {
   final String bodyId = 'bodyId';

@@ -8,8 +8,8 @@ import 'package:jhentai/routes/eh_page.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/setting/style_setting.dart';
 
-import '../model/jh_layout.dart';
-import '../pages/layout/desktop/desktop_layout_page_logic.dart';
+import 'package:jhentai/model/jh_layout.dart';
+import 'package:jhentai/pages/layout/desktop/desktop_layout_page_logic.dart';
 
 /// adaptive to different layout
 Future<T?>? toRoute<T>(

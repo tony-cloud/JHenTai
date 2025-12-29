@@ -9,18 +9,18 @@ import 'package:jhentai/model/gallery_page.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/widget/eh_favorite_sort_order_dialog.dart';
 
-import '../../enum/config_enum.dart';
-import '../../exception/eh_site_exception.dart';
-import '../../model/search_config.dart';
-import '../../service/local_config_service.dart';
-import '../../utils/eh_spider_parser.dart';
-import '../../service/log.dart';
-import '../../utils/snack_util.dart';
-import '../../widget/loading_state_indicator.dart';
-import '../base/base_page_logic.dart';
-import '../base/multi_select/multi_select_gallery_logic_mixin.dart';
-import '../base/multi_select/multi_select_gallery_state_mixin.dart';
-import 'favorite_page_state.dart';
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/search_config.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/pages/base/base_page_logic.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_gallery_logic_mixin.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
+import 'package:jhentai/pages/favorite/favorite_page_state.dart';
 
 class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin {
   @override

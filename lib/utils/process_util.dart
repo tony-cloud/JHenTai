@@ -5,8 +5,8 @@ import 'package:jhentai/utils/string_uril.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:path/path.dart';
 
-import '../setting/read_setting.dart';
-import '../service/log.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/service/log.dart';
 
 Future<void> openThirdPartyViewer(String dirPath) async {
   String viewerPath = readSetting.thirdPartyViewerPath.value!;

@@ -11,7 +11,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:path/path.dart';
 
-import '../service/jh_service.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 SecuritySetting securitySetting = SecuritySetting();
 

@@ -4,12 +4,12 @@ import 'package:get/get.dart';
 import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2.dart';
 import 'package:jhentai/widget/will_pop_interceptor.dart';
 
-import '../../../config/ui_config.dart';
-import '../../../routes/routes.dart';
-import '../../../service/windows_service.dart';
-import '../../../setting/preference_setting.dart';
-import '../../blank_page.dart';
-import '../../home_page.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/windows_service.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/pages/blank_page.dart';
+import 'package:jhentai/pages/home_page.dart';
 
 class TabletLayoutPageV2 extends StatefulWidget {
   const TabletLayoutPageV2({super.key});

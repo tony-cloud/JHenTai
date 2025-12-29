@@ -14,7 +14,7 @@ import 'package:local_auth_windows/local_auth_windows.dart';
 import 'package:pinput/pinput.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../config/ui_config.dart';
+import 'package:jhentai/config/ui_config.dart';
 
 class LockPage extends StatefulWidget {
   const LockPage({super.key});

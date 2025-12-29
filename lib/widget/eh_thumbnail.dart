@@ -2,8 +2,8 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jhentai/model/gallery_thumbnail.dart';
 
-import '../model/gallery_image.dart';
-import 'eh_image.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/widget/eh_image.dart';
 
 class EHThumbnail extends StatelessWidget {
   final GalleryThumbnail thumbnail;

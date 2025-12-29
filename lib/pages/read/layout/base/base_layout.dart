@@ -7,16 +7,16 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/setting/read_setting.dart';
 
-import '../../../../config/ui_config.dart';
-import '../../../../service/gallery_download_service.dart';
-import '../../../../service/super_resolution_service.dart';
-import '../../../../service/log.dart';
-import '../../../../widget/eh_image.dart';
-import '../../../../widget/icon_text_button.dart';
-import '../../../../widget/loading_state_indicator.dart';
-import '../../read_page_logic.dart';
-import '../../read_page_state.dart';
-import 'base_layout_logic.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/super_resolution_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/widget/eh_image.dart';
+import 'package:jhentai/widget/icon_text_button.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/pages/read/read_page_logic.dart';
+import 'package:jhentai/pages/read/read_page_state.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout_logic.dart';
 
 abstract class BaseLayout extends StatelessWidget {
   BaseLayout({super.key});

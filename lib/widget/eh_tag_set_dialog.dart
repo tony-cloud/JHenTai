@@ -5,16 +5,16 @@ import 'package:get/get.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 
-import '../config/ui_config.dart';
-import '../exception/eh_site_exception.dart';
-import '../model/tag_set.dart';
-import '../network/eh_request.dart';
-import '../setting/preference_setting.dart';
-import '../utils/eh_spider_parser.dart';
-import '../service/log.dart';
-import '../utils/route_util.dart';
-import '../utils/snack_util.dart';
-import 'loading_state_indicator.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/tag_set.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class EHTagSetDialog extends StatefulWidget {
   const EHTagSetDialog({super.key});

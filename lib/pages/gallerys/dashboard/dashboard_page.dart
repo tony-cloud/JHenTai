@@ -10,10 +10,10 @@ import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:jhentai/widget/eh_dashboard_card.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../../../config/ui_config.dart';
-import '../../layout/mobile_v2/mobile_layout_page_v2_state.dart';
-import '../../layout/mobile_v2/notification/tap_tab_bat_button_notification.dart';
-import 'dashboard_page_logic.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2_state.dart';
+import 'package:jhentai/pages/layout/mobile_v2/notification/tap_tab_bat_button_notification.dart';
+import 'package:jhentai/pages/gallerys/dashboard/dashboard_page_logic.dart';
 
 /// For mobile v2 layout
 class DashboardPage extends BasePage {

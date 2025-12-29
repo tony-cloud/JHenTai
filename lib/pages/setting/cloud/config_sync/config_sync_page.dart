@@ -20,11 +20,11 @@ import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_config_type_select_dialog.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../../../../config/ui_config.dart';
-import '../../../../model/config.dart';
-import '../../../../utils/jh_spider_parser.dart';
-import '../../../../utils/permission_util.dart';
-import '../../../../utils/route_util.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/model/config.dart';
+import 'package:jhentai/utils/jh_spider_parser.dart';
+import 'package:jhentai/utils/permission_util.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class ConfigSyncPage extends StatefulWidget {
   const ConfigSyncPage({super.key});

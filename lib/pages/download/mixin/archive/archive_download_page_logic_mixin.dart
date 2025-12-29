@@ -8,24 +8,24 @@ import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
 import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/widget/eh_archive_parse_source_select_dialog.dart';
 
-import '../../../../database/database.dart';
-import '../../../../model/gallery_image.dart';
-import '../../../../model/read_page_info.dart';
-import '../../../../routes/routes.dart';
-import '../../../../service/archive_download_service.dart';
-import '../../../../service/local_config_service.dart';
-import '../../../../service/super_resolution_service.dart';
-import '../../../../setting/read_setting.dart';
-import '../../../../setting/super_resolution_setting.dart';
-import '../../../../utils/process_util.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../utils/toast_util.dart';
-import '../../../../widget/eh_alert_dialog.dart';
-import '../../../../widget/eh_download_dialog.dart';
-import '../../../../widget/re_unlock_dialog.dart';
-import '../basic/multi_select/multi_select_download_page_logic_mixin.dart';
-import '../basic/multi_select/multi_select_download_page_state_mixin.dart';
-import 'archive_download_page_state_mixin.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/read_page_info.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/service/super_resolution_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/setting/super_resolution_setting.dart';
+import 'package:jhentai/utils/process_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/eh_alert_dialog.dart';
+import 'package:jhentai/widget/eh_download_dialog.dart';
+import 'package:jhentai/widget/re_unlock_dialog.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/archive/archive_download_page_state_mixin.dart';
 
 mixin ArchiveDownloadPageLogicMixin on GetxController
     implements

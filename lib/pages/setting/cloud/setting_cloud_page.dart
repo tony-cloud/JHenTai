@@ -5,9 +5,9 @@ import 'package:jhentai/network/jh_request.dart';
 import 'package:jhentai/utils/jh_spider_parser.dart';
 import 'package:jhentai/service/log.dart';
 
-import '../../../routes/routes.dart';
-import '../../../utils/route_util.dart';
-import '../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class SettingCloudPage extends StatefulWidget {
   const SettingCloudPage({super.key});

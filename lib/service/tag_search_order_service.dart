@@ -18,11 +18,11 @@ import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
 import 'package:retry/retry.dart';
 
-import '../utils/byte_util.dart';
-import 'jh_service.dart';
-import 'local_config_service.dart';
-import 'log.dart';
-import '../utils/toast_util.dart';
+import 'package:jhentai/utils/byte_util.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 TagSearchOrderOptimizationService tagSearchOrderOptimizationService =
     TagSearchOrderOptimizationService();

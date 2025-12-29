@@ -5,8 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/setting/read_setting.dart';
 
-import '../base/base_layout_logic.dart';
-import 'horizontal_page_layout_state.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout_logic.dart';
+import 'package:jhentai/pages/read/layout/horizontal_page/horizontal_page_layout_state.dart';
 
 class HorizontalPageLayoutLogic extends BaseLayoutLogic {
   HorizontalPageLayoutState state = HorizontalPageLayoutState();

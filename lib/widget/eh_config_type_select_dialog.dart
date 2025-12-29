@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:jhentai/enum/config_type_enum.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 
-import '../utils/route_util.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class EHConfigTypeSelectDialog extends StatefulWidget {
   final String title;

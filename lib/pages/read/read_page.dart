@@ -19,22 +19,22 @@ import 'package:jhentai/widget/eh_mouse_button_listener.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../../config/ui_config.dart';
-import '../../routes/routes.dart';
-import '../../service/gallery_download_service.dart';
-import '../../setting/read_setting.dart';
-import '../../utils/route_util.dart';
-import '../../utils/screen_size_util.dart';
-import '../../utils/toast_util.dart';
-import '../../widget/eh_image.dart';
-import '../../widget/eh_keyboard_listener.dart';
-import '../../widget/eh_read_page_stack.dart';
-import '../../widget/eh_thumbnail.dart';
-import '../../widget/eh_wheel_speed_controller_for_read_page.dart';
-import '../../widget/loading_state_indicator.dart';
-import '../home_page.dart';
-import 'layout/horizontal_double_column/horizontal_double_column_layout.dart';
-import 'layout/vertical_list/vertical_list_layout.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/screen_size_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/eh_image.dart';
+import 'package:jhentai/widget/eh_keyboard_listener.dart';
+import 'package:jhentai/widget/eh_read_page_stack.dart';
+import 'package:jhentai/widget/eh_thumbnail.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller_for_read_page.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/pages/home_page.dart';
+import 'package:jhentai/pages/read/layout/horizontal_double_column/horizontal_double_column_layout.dart';
+import 'package:jhentai/pages/read/layout/vertical_list/vertical_list_layout.dart';
 
 class ReadPage extends StatefulWidget {
   const ReadPage({super.key});

@@ -20,14 +20,14 @@ import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:jhentai/widget/like_button.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../config/ui_config.dart';
-import '../database/database.dart';
-import '../network/eh_request.dart';
-import '../setting/user_setting.dart';
-import '../service/log.dart';
-import '../utils/snack_util.dart';
-import '../utils/string_uril.dart';
-import 'loading_state_indicator.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/utils/string_uril.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class EHTagDialog extends StatefulWidget {
   final TagData tagData;

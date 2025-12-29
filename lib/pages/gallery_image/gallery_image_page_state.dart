@@ -1,5 +1,5 @@
-import '../../model/gallery_image_page_url.dart';
-import '../../widget/loading_state_indicator.dart';
+import 'package:jhentai/model/gallery_image_page_url.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class GalleryImagePageState {
   /// initial param

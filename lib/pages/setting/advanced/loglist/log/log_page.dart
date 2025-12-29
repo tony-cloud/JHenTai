@@ -9,7 +9,7 @@ import 'package:jhentai/utils/string_uril.dart';
 import 'package:path/path.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../../../utils/toast_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class LogPage extends StatefulWidget {
   const LogPage({super.key});

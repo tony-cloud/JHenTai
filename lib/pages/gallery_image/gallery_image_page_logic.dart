@@ -16,16 +16,16 @@ import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../../config/ui_config.dart';
-import '../../exception/eh_site_exception.dart';
-import '../../model/gallery_detail.dart';
-import '../../model/gallery_tag.dart';
-import '../../model/tag_set.dart';
-import '../../setting/eh_setting.dart';
-import '../../setting/my_tags_setting.dart';
-import '../../setting/user_setting.dart';
-import '../../service/log.dart';
-import '../../utils/snack_util.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/gallery_detail.dart';
+import 'package:jhentai/model/gallery_tag.dart';
+import 'package:jhentai/model/tag_set.dart';
+import 'package:jhentai/setting/eh_setting.dart';
+import 'package:jhentai/setting/my_tags_setting.dart';
+import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/snack_util.dart';
 
 class GalleryImagePageArgument {
   final GalleryImagePageUrl galleryImagePageUrl;

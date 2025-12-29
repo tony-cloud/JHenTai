@@ -33,13 +33,13 @@ import 'package:path/path.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:sqlite3/sqlite3.dart';
 
-import '../model/gallery.dart';
-import '../model/gallery_history_model.dart';
-import '../service/archive_download_service.dart';
-import '../service/storage_service.dart';
-import 'dao/archive_dao.dart';
-import 'dao/archive_group_dao.dart';
-import 'dao/gallery_dao.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_history_model.dart';
+import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/service/storage_service.dart';
+import 'package:jhentai/database/dao/archive_dao.dart';
+import 'package:jhentai/database/dao/archive_group_dao.dart';
+import 'package:jhentai/database/dao/gallery_dao.dart';
 
 part 'database.g.dart';
 

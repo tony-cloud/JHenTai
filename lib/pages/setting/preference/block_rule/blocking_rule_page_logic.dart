@@ -7,8 +7,8 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/utils/snack_util.dart';
 
-import '../../../../service/local_block_rule_service.dart';
-import 'blocking_rule_page_state.dart';
+import 'package:jhentai/service/local_block_rule_service.dart';
+import 'package:jhentai/pages/setting/preference/block_rule/blocking_rule_page_state.dart';
 
 class BlockingRulePageLogic extends GetxController {
   final String bodyId = 'bodyId';

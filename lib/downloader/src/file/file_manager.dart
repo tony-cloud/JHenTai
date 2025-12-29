@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:jhentai/downloader/src/util/lock.dart';
-import 'package:logger/logger.dart';
+import 'package:jhentai/service/log.dart';
 
 typedef AsyncValueCallback<T> = Future<T> Function();
 
 class FileManager {
   final String path;
-  final Logger _logger;
 
   File? _file;
 
@@ -19,7 +18,7 @@ class FileManager {
   RandomAccessFile? _writeRaf;
   Lock? _writeLock;
 
-  FileManager({required this.path, required Logger logger}) : _logger = logger;
+  FileManager({required this.path});
 
   Future<void> truncate(int length) async {
     await _writeOperation(() => _writeRaf!.truncate(length));
@@ -50,7 +49,7 @@ class FileManager {
       return;
     }
 
-    _logger.d('init write file');
+    log.debug('init write file');
 
     _file ??= File(path);
     _writeRaf = await File(path).open(mode: FileMode.writeOnlyAppend);
@@ -71,7 +70,7 @@ class FileManager {
     _readReady = false;
     _readRaf = null;
 
-    _logger.d('close read file');
+    log.debug('close read file');
   }
 
   Future<void> _closeWrite() async {
@@ -87,6 +86,6 @@ class FileManager {
     _writeReady = false;
     _writeRaf = null;
 
-    _logger.d('close write file');
+    log.debug('close write file');
   }
 }

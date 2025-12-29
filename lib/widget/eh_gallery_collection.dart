@@ -7,10 +7,10 @@ import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
-import '../model/gallery.dart';
-import 'eh_gallery_list_card_.dart';
-import '../setting/style_setting.dart';
-import 'eh_gallery_waterflow_card.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/widget/eh_gallery_list_card_.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/widget/eh_gallery_waterflow_card.dart';
 
 /// Act as a List or WaterfallFlow according to Style Setting
 Widget EHGalleryCollection({

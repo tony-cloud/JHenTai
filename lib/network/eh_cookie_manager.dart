@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 
-import '../enum/config_enum.dart';
-import '../service/local_config_service.dart';
-import '../setting/network_setting.dart';
-import '../utils/cookie_util.dart';
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/setting/network_setting.dart';
+import 'package:jhentai/utils/cookie_util.dart';
 
 class EHCookieManager extends Interceptor {
   final LocalConfigService localConfigService;

@@ -10,16 +10,16 @@ import 'package:jhentai/widget/eh_image.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_page_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../routes/routes.dart';
-import '../../../../setting/style_setting.dart';
-import '../../../layout/mobile_v2/notification/tap_menu_button_notification.dart';
-import '../../download_base_page.dart';
-import 'grid_download_page_logic_mixin.dart';
-import 'grid_download_page_service_mixin.dart';
-import 'grid_download_page_state_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_page_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/pages/layout/mobile_v2/notification/tap_menu_button_notification.dart';
+import 'package:jhentai/pages/download/download_base_page.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_service_mixin.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_state_mixin.dart';
 
 mixin GridBasePage on StatelessWidget implements Scroll2TopPageMixin {
   DownloadPageGalleryType get galleryType;

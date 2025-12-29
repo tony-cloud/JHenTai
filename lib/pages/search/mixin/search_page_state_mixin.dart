@@ -5,7 +5,7 @@ import 'package:jhentai/model/gallery_image_page_url.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/pages/base/base_page_state.dart';
 
-import '../../../service/tag_translation_service.dart';
+import 'package:jhentai/service/tag_translation_service.dart';
 
 enum SearchPageBodyType { gallerys, suggestionAndHistory }
 

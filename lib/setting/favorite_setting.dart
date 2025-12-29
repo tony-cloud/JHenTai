@@ -9,9 +9,9 @@ import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:retry/retry.dart';
 
-import '../exception/eh_site_exception.dart';
-import '../service/jh_service.dart';
-import '../utils/eh_spider_parser.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
 
 FavoriteSetting favoriteSetting = FavoriteSetting();
 

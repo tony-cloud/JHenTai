@@ -8,11 +8,11 @@ import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/quick_search_service.dart';
 import 'package:jhentai/service/search_history_service.dart';
 
-import '../database/database.dart';
-import 'history_service.dart';
-import 'jh_service.dart';
-import 'local_block_rule_service.dart';
-import 'log.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/service/history_service.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/local_block_rule_service.dart';
+import 'package:jhentai/service/log.dart';
 
 CloudConfigService cloudConfigService = CloudConfigService();
 

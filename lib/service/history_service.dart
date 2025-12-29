@@ -4,8 +4,8 @@ import 'package:jhentai/database/dao/gallery_history_dao.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/extension/list_extension.dart';
 import 'package:jhentai/model/gallery_history_model.dart';
-import 'jh_service.dart';
-import 'log.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 
 HistoryService historyService = HistoryService();
 

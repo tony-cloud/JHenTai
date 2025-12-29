@@ -5,10 +5,10 @@ import 'package:jhentai/database/dao/block_rule_dao.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/model/gallery.dart';
 
-import '../model/gallery_comment.dart';
-import '../model/gallery_tag.dart';
-import 'jh_service.dart';
-import 'log.dart';
+import 'package:jhentai/model/gallery_comment.dart';
+import 'package:jhentai/model/gallery_tag.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 
 LocalBlockRuleService localBlockRuleService = LocalBlockRuleService();
 

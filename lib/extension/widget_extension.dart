@@ -4,7 +4,7 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/widget/eh_keyboard_listener.dart';
 import 'package:jhentai/widget/eh_mouse_button_listener.dart';
 
-import '../utils/route_util.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 extension WidgetExtension on Widget {
   Widget center([Key? key]) {

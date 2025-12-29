@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../model/config.dart';
-import '../model/jh_response/jh_response.dart';
+import 'package:jhentai/model/config.dart';
+import 'package:jhentai/model/jh_response/jh_response.dart';
 
 class JHResponseParser {
   static bool api2Success(Headers headers, dynamic data) {

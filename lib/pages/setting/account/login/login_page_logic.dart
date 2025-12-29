@@ -17,13 +17,13 @@ import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../../exception/eh_site_exception.dart';
-import '../../../../setting/eh_setting.dart';
-import '../../../../utils/cookie_util.dart';
-import '../../../../service/log.dart';
-import '../../../../utils/route_util.dart';
-import '../../../../utils/snack_util.dart';
-import 'login_page_state.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/setting/eh_setting.dart';
+import 'package:jhentai/utils/cookie_util.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/pages/setting/account/login/login_page_state.dart';
 
 class LoginPageLogic extends GetxController {
   static const formId = 'formId';

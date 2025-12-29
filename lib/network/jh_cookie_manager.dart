@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:jhentai/consts/jh_consts.dart';
 import 'package:jhentai/network/eh_request.dart';
 
-import '../utils/cookie_util.dart';
+import 'package:jhentai/utils/cookie_util.dart';
 
 class JHCookieManager extends Interceptor {
   @override

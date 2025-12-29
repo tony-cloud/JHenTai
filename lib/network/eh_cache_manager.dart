@@ -7,7 +7,7 @@ import 'package:jhentai/database/dao/dio_cache_dao.dart';
 import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/service/log.dart';
 
-import '../database/database.dart';
+import 'package:jhentai/database/database.dart';
 
 class EHCacheManager extends Interceptor {
   final CacheOptions _options;

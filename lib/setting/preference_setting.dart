@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/model/tab_bar_icon.dart';
 
-import '../service/jh_service.dart';
-import '../utils/locale_util.dart';
-import '../service/log.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/utils/locale_util.dart';
+import 'package:jhentai/service/log.dart';
 
 PreferenceSetting preferenceSetting = PreferenceSetting();
 

@@ -4,14 +4,14 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 
-import '../../model/gallery.dart';
-import '../../model/gallery_history_model.dart';
-import '../../service/history_service.dart';
-import '../../utils/convert_util.dart';
-import '../../service/log.dart';
-import '../../utils/route_util.dart';
-import '../base/old_base_page_logic.dart';
-import 'history_page_state.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_history_model.dart';
+import 'package:jhentai/service/history_service.dart';
+import 'package:jhentai/utils/convert_util.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/pages/base/old_base_page_logic.dart';
+import 'package:jhentai/pages/history/history_page_state.dart';
 
 class HistoryPageLogic extends OldBasePageLogic {
   @override

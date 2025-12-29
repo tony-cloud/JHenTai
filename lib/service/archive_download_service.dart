@@ -32,19 +32,19 @@ import 'package:logger/logger.dart';
 import 'package:path/path.dart';
 import 'package:retry/retry.dart';
 
-import '../consts/locale_consts.dart';
-import '../database/dao/archive_dao.dart';
-import '../exception/cancel_exception.dart';
-import '../model/comic_info.dart';
-import '../model/gallery_detail.dart';
-import '../model/gallery_image.dart';
-import '../pages/download/grid/mixin/grid_download_page_service_mixin.dart';
-import '../utils/archive_util.dart';
-import '../utils/file_util.dart';
-import 'jh_service.dart';
-import 'log.dart';
-import '../utils/snack_util.dart';
-import 'gallery_download_service.dart';
+import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/database/dao/archive_dao.dart';
+import 'package:jhentai/exception/cancel_exception.dart';
+import 'package:jhentai/model/comic_info.dart';
+import 'package:jhentai/model/gallery_detail.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_service_mixin.dart';
+import 'package:jhentai/utils/archive_util.dart';
+import 'package:jhentai/utils/file_util.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
 
 ArchiveDownloadService archiveDownloadService = ArchiveDownloadService();
 
@@ -638,7 +638,6 @@ class ArchiveDownloadService extends GetxController
       proxyConfig: ehRequest.currentProxyConfig(),
       headConnectionTimeout: Duration(milliseconds: networkSetting.connectTimeout.value),
       headReceiveTimeout: Duration(milliseconds: networkSetting.receiveTimeout.value),
-      onLog: (OutputEvent event) {},
       onProgress: (current, total) {
         ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[archive.gid]!;
         archiveDownloadInfo.speedComputer.downloadedBytes = current;

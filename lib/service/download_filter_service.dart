@@ -8,7 +8,7 @@ import 'package:jhentai/utils/convert_util.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite3_simple/sqlite3_simple.dart';
 
-import '../database/database.dart';
+import 'package:jhentai/database/database.dart';
 
 DownloadFilterService downloadFilterService = DownloadFilterService();
 

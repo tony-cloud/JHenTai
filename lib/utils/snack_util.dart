@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/utils/screen_size_util.dart';
 
-import '../config/ui_config.dart';
+import 'package:jhentai/config/ui_config.dart';
 
 void snack(
   String title,

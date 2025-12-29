@@ -4,7 +4,7 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
 
-import 'eh_group_name_selector.dart';
+import 'package:jhentai/widget/eh_group_name_selector.dart';
 
 class EHDownloadDialog extends StatefulWidget {
   final String title;

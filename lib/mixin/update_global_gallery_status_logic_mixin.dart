@@ -4,12 +4,12 @@ import 'package:jhentai/pages/popular/popular_page_logic.dart';
 import 'package:jhentai/pages/ranklist/ranklist_page_logic.dart';
 import 'package:jhentai/pages/watched/watched_page_logic.dart';
 
-import '../pages/gallerys/dashboard/dashboard_page_logic.dart';
-import '../pages/gallerys/dashboard/simple/simple_dashboard_page_logic.dart';
-import '../pages/gallerys/simple/gallerys_page_logic.dart';
-import '../pages/search/desktop/desktop_search_page_logic.dart';
-import '../pages/search/desktop/desktop_search_page_tab_logic.dart';
-import '../pages/search/mobile_v2/search_page_mobile_v2_logic.dart';
+import 'package:jhentai/pages/gallerys/dashboard/dashboard_page_logic.dart';
+import 'package:jhentai/pages/gallerys/dashboard/simple/simple_dashboard_page_logic.dart';
+import 'package:jhentai/pages/gallerys/simple/gallerys_page_logic.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_logic.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_tab_logic.dart';
+import 'package:jhentai/pages/search/mobile_v2/search_page_mobile_v2_logic.dart';
 
 mixin UpdateGlobalGalleryStatusLogicMixin on GetxController {
   void updateGlobalGalleryStatus() {

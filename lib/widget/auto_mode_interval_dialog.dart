@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/setting/read_setting.dart';
 
-import '../config/ui_config.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class AutoModeIntervalDialog extends StatefulWidget {
   const AutoModeIntervalDialog({super.key});

@@ -6,16 +6,16 @@ import 'package:jhentai/widget/fade_slide_widget.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart' as p;
 
-import '../../../../config/ui_config.dart';
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_page_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../utils/toast_util.dart';
-import '../../../../widget/eh_image.dart';
-import '../../../../widget/eh_wheel_speed_controller.dart';
-import '../../download_base_page.dart';
-import 'local_gallery_list_page_logic.dart';
-import 'local_gallery_list_page_state.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_page_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/eh_image.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
+import 'package:jhentai/pages/download/download_base_page.dart';
+import 'package:jhentai/pages/download/list/local/local_gallery_list_page_logic.dart';
+import 'package:jhentai/pages/download/list/local/local_gallery_list_page_state.dart';
 
 class LocalGalleryListPage extends StatelessWidget with Scroll2TopPageMixin {
   LocalGalleryListPage({super.key});

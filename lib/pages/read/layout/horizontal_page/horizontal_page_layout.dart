@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/widget/eh_wheel_scroll_listener.dart';
 
-import '../../../../setting/read_setting.dart';
-import '../../../../widget/photo_view/j_photo_view_gallery.dart';
-import '../base/base_layout.dart';
-import 'horizontal_page_layout_logic.dart';
-import 'horizontal_page_layout_state.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/widget/photo_view/j_photo_view_gallery.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout.dart';
+import 'package:jhentai/pages/read/layout/horizontal_page/horizontal_page_layout_logic.dart';
+import 'package:jhentai/pages/read/layout/horizontal_page/horizontal_page_layout_state.dart';
 
 class HorizontalPageLayout extends BaseLayout {
   HorizontalPageLayout({super.key});

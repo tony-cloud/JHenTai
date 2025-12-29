@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:sqlite3/sqlite3.dart';
 
-import '../database.dart';
+import 'package:jhentai/database/database.dart';
 
 class GalleryImageDao {
   static Future<List<ImageData>> selectImages() {

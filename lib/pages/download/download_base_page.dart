@@ -9,12 +9,12 @@ import 'package:jhentai/pages/download/grid/local/local_gallery_grid_page.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:simple_animations/animation_controller_extension/animation_controller_extension.dart';
 import 'package:simple_animations/animation_mixin/animation_mixin.dart';
-import '../../config/ui_config.dart';
-import 'grid/archive/archive_grid_download_page.dart';
-import 'grid/gallery/gallery_grid_download_page.dart';
-import 'list/archive/archive_list_download_page.dart';
-import 'list/gallery/gallery_list_download_page.dart';
-import 'list/local/local_gallery_list_page.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/pages/download/grid/archive/archive_grid_download_page.dart';
+import 'package:jhentai/pages/download/grid/gallery/gallery_grid_download_page.dart';
+import 'package:jhentai/pages/download/list/archive/archive_list_download_page.dart';
+import 'package:jhentai/pages/download/list/gallery/gallery_list_download_page.dart';
+import 'package:jhentai/pages/download/list/local/local_gallery_list_page.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});

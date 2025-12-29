@@ -6,9 +6,9 @@ import 'package:jhentai/model/gallery_count.dart';
 import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/utils/uuid_util.dart';
 
-import '../../model/gallery.dart';
-import '../../model/gallery_page.dart';
-import '../../widget/loading_state_indicator.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_page.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 abstract class BasePageState with Scroll2TopStateMixin {
   String get route;

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/routes/routes.dart';
-import '../../setting/user_setting.dart';
-import '../../utils/route_util.dart';
-import '../layout/mobile_v2/notification/tap_menu_button_notification.dart';
+import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/pages/layout/mobile_v2/notification/tap_menu_button_notification.dart';
 
 class SettingPage extends StatelessWidget {
   final bool showMenuButton;

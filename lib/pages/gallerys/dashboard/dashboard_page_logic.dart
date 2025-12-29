@@ -5,15 +5,15 @@ import 'package:jhentai/pages/base/base_page_logic.dart';
 import 'package:jhentai/pages/gallerys/dashboard/dashboard_page_state.dart';
 import 'package:jhentai/pages/ranklist/ranklist_page_state.dart';
 
-import '../../../consts/eh_consts.dart';
-import '../../../exception/eh_site_exception.dart';
-import '../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../model/gallery_page.dart';
-import '../../../network/eh_request.dart';
-import '../../../utils/eh_spider_parser.dart';
-import '../../../service/log.dart';
-import '../../../utils/snack_util.dart';
-import '../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/consts/eh_consts.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/model/gallery_page.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class DashboardPageLogic extends BasePageLogic {
   final String ranklistId = 'ranklistId';

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_mixin.dart';
 
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_page_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../basic/multi_select/multi_select_download_page_logic_mixin.dart';
-import '../basic/multi_select/multi_select_download_page_state_mixin.dart';
-import 'archive_download_page_logic_mixin.dart';
-import 'archive_download_page_state_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_page_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/mixin/archive/archive_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/archive/archive_download_page_state_mixin.dart';
 
 mixin ArchiveDownloadPageMixin on StatelessWidget
     implements Scroll2TopPageMixin, MultiSelectDownloadPageMixin {

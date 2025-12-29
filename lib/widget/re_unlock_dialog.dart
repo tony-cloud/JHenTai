@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
-import '../config/ui_config.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class ReUnlockDialog extends StatelessWidget {
   const ReUnlockDialog({super.key});

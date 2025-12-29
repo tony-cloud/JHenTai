@@ -4,7 +4,7 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:simple_animations/animation_controller_extension/animation_controller_extension.dart';
 import 'package:simple_animations/animation_mixin/animation_mixin.dart';
 
-import '../model/gallery_tag.dart';
+import 'package:jhentai/model/gallery_tag.dart';
 
 class EHTag extends StatefulWidget {
   final GalleryTag tag;

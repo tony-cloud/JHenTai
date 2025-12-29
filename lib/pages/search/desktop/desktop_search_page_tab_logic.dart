@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:jhentai/pages/search/desktop/desktop_search_page_tab_state.dart';
 import 'package:jhentai/pages/search/mixin/new_search_argument.dart';
 
-import '../../../enum/config_enum.dart';
-import '../../../model/search_config.dart';
-import '../../../service/local_config_service.dart';
-import '../../../setting/preference_setting.dart';
-import '../../base/base_page_logic.dart';
-import '../../base/multi_select/multi_select_gallery_logic_mixin.dart';
-import '../../base/multi_select/multi_select_gallery_state_mixin.dart';
-import '../mixin/search_page_logic_mixin.dart';
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/model/search_config.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/pages/base/base_page_logic.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_gallery_logic_mixin.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
+import 'package:jhentai/pages/search/mixin/search_page_logic_mixin.dart';
 
 class DesktopSearchPageTabLogic extends BasePageLogic
     with SearchPageLogicMixin, MultiSelectGalleryLogicMixin {

@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:jhentai/pages/gallerys/simple/gallerys_page_logic.dart';
 import 'package:jhentai/pages/gallerys/simple/gallerys_page_state.dart';
-import '../../base/base_page.dart';
+import 'package:jhentai/pages/base/base_page.dart';
 
 /// For desktop layout
 class GallerysPage extends BasePage {

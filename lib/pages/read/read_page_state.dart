@@ -7,11 +7,11 @@ import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/setting/site_setting.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../../model/gallery_image.dart';
-import '../../model/gallery_thumbnail.dart';
-import '../../service/gallery_download_service.dart';
-import '../../setting/read_setting.dart';
-import '../../widget/loading_state_indicator.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/gallery_thumbnail.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class ReadPageState with ScrollStatusListerState {
   /// gallery info

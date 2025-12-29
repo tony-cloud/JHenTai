@@ -1,6 +1,6 @@
 import 'package:jhentai/model/gallery_count.dart';
 
-import 'gallery.dart';
+import 'package:jhentai/model/gallery.dart';
 
 enum FavoriteSortOrder { favoritedTime, publishedTime }
 

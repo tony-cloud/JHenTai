@@ -11,17 +11,17 @@ import 'package:jhentai/pages/watched/watched_page.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/setting/preference_setting.dart';
 
-import '../../../mixin/double_tap_to_refresh_state_mixin.dart';
-import '../../../model/tab_bar_icon.dart';
-import '../../favorite/favorite_page.dart';
-import '../../favorite/favorite_page_logic.dart';
-import '../../history/history_page_logic.dart';
-import '../../popular/popular_page_logic.dart';
-import '../../ranklist/ranklist_page.dart';
-import '../../ranklist/ranklist_page_logic.dart';
-import '../../search/desktop/desktop_search_page.dart';
-import '../../search/desktop/desktop_search_page_logic.dart';
-import '../../watched/watched_page_logic.dart';
+import 'package:jhentai/mixin/double_tap_to_refresh_state_mixin.dart';
+import 'package:jhentai/model/tab_bar_icon.dart';
+import 'package:jhentai/pages/favorite/favorite_page.dart';
+import 'package:jhentai/pages/favorite/favorite_page_logic.dart';
+import 'package:jhentai/pages/history/history_page_logic.dart';
+import 'package:jhentai/pages/popular/popular_page_logic.dart';
+import 'package:jhentai/pages/ranklist/ranklist_page.dart';
+import 'package:jhentai/pages/ranklist/ranklist_page_logic.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page_logic.dart';
+import 'package:jhentai/pages/watched/watched_page_logic.dart';
 
 class DesktopLayoutPageState with DoubleTapToRefreshStateMixin {
   late final List<TabBarIcon> icons;

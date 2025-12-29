@@ -26,14 +26,14 @@ import 'package:jhentai/service/ftp_server_service.dart';
 import 'package:jhentai/setting/ftp_server_setting.dart';
 import 'package:flutter_fd_utils/flutter_fd_utils.dart';
 
-import '../../../config/ui_config.dart';
-import '../../../enum/config_type_enum.dart';
-import '../../../routes/routes.dart';
-import '../../../service/isolate_service.dart';
-import '../../../utils/byte_util.dart';
-import '../../../utils/route_util.dart';
-import '../../../widget/eh_config_type_select_dialog.dart';
-import 'ftp_server_dialog.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/enum/config_type_enum.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/isolate_service.dart';
+import 'package:jhentai/utils/byte_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/eh_config_type_select_dialog.dart';
+import 'package:jhentai/pages/setting/advanced/ftp_server_dialog.dart';
 
 class SettingAdvancedPage extends StatefulWidget {
   const SettingAdvancedPage({super.key});

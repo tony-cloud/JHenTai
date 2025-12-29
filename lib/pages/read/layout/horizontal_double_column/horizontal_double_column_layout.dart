@@ -7,11 +7,11 @@ import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/pages/read/layout/horizontal_double_column/horizontal_double_column_layout_state.dart';
 import 'package:jhentai/widget/eh_wheel_scroll_listener.dart';
 
-import '../../../../service/gallery_download_service.dart';
-import '../../../../setting/read_setting.dart';
-import '../../../../widget/photo_view/j_photo_view_gallery.dart';
-import '../base/base_layout.dart';
-import 'horizontal_double_column_layout_logic.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/widget/photo_view/j_photo_view_gallery.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout.dart';
+import 'package:jhentai/pages/read/layout/horizontal_double_column/horizontal_double_column_layout_logic.dart';
 
 class HorizontalDoubleColumnLayout extends BaseLayout {
   HorizontalDoubleColumnLayout({super.key});

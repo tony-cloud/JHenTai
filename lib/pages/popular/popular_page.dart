@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:jhentai/pages/popular/popular_page_logic.dart';
 import 'package:jhentai/pages/popular/popular_page_state.dart';
 
-import '../base/base_page.dart';
+import 'package:jhentai/pages/base/base_page.dart';
 
 class PopularPage extends BasePage {
   const PopularPage({

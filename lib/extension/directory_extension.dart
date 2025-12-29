@@ -2,7 +2,7 @@ import 'dart:io' as io;
 
 import 'package:path/path.dart';
 
-import '../service/log.dart';
+import 'package:jhentai/service/log.dart';
 
 extension DirectoryExtension on io.Directory {
   Future<void> copy(String toPath) async {

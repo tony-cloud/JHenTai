@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
 
-import '../service/jh_service.dart';
-import '../service/log.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 
 PerformanceSetting performanceSetting = PerformanceSetting();
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../routes/routes.dart';
-import '../../../../setting/style_setting.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/setting/style_setting.dart';
 
 class SettingPageListStylePage extends StatelessWidget {
   SettingPageListStylePage({super.key});

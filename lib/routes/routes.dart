@@ -41,21 +41,21 @@ import 'package:jhentai/pages/watched/watched_page.dart';
 import 'package:jhentai/pages/webview/webview_page.dart';
 import 'package:jhentai/setting/preference_setting.dart';
 
-import '../pages/blank_page.dart';
-import '../pages/details/comment/comment_page.dart';
-import '../pages/favorite/favorite_page.dart';
-import '../pages/layout/mobile_v2/mobile_layout_page_v2.dart';
-import '../pages/search/desktop/desktop_search_page.dart';
-import '../pages/setting/account/setting_account_page.dart';
-import '../pages/setting/advanced/loglist/log/log_page.dart';
-import '../pages/setting/advanced/loglist/log_list_page.dart';
-import '../pages/setting/advanced/super_resolution/setting_super_resolution_page.dart';
-import '../pages/setting/download/archive_bot/archive_bot_settings_page.dart';
-import '../pages/setting/preference/block_rule/add_block_rule/configure_blocking_rule_page.dart';
-import '../pages/setting/style/page_list_style/setting_page_list_style_page.dart';
-import '../pages/setting/style/theme_color/setting_theme_color_page.dart';
-import '../pages/single_image/single_image.dart';
-import 'eh_page.dart';
+import 'package:jhentai/pages/blank_page.dart';
+import 'package:jhentai/pages/details/comment/comment_page.dart';
+import 'package:jhentai/pages/favorite/favorite_page.dart';
+import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2.dart';
+import 'package:jhentai/pages/search/desktop/desktop_search_page.dart';
+import 'package:jhentai/pages/setting/account/setting_account_page.dart';
+import 'package:jhentai/pages/setting/advanced/loglist/log/log_page.dart';
+import 'package:jhentai/pages/setting/advanced/loglist/log_list_page.dart';
+import 'package:jhentai/pages/setting/advanced/super_resolution/setting_super_resolution_page.dart';
+import 'package:jhentai/pages/setting/download/archive_bot/archive_bot_settings_page.dart';
+import 'package:jhentai/pages/setting/preference/block_rule/add_block_rule/configure_blocking_rule_page.dart';
+import 'package:jhentai/pages/setting/style/page_list_style/setting_page_list_style_page.dart';
+import 'package:jhentai/pages/setting/style/theme_color/setting_theme_color_page.dart';
+import 'package:jhentai/pages/single_image/single_image.dart';
+import 'package:jhentai/routes/eh_page.dart';
 
 class Routes {
   static const String home = "/";

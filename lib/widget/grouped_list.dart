@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
 
-import 'eh_wheel_speed_controller.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
 class GroupedListLogic extends GetxController {}
 

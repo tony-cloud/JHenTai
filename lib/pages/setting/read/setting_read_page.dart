@@ -6,9 +6,9 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/setting/read_setting.dart';
 
-import '../../../service/log.dart';
-import '../../../utils/text_input_formatter.dart';
-import '../../../utils/toast_util.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/text_input_formatter.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class SettingReadPage extends StatelessWidget {
   static const List<int> _wakelockTimeLimitOptions = <int>[0, 5, 10, 15, 20, 30, 45, 60];

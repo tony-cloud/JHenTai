@@ -11,12 +11,14 @@ class RollingFileOutput extends LogOutput {
     required String baseFilePath,
     required this.headerBuilder,
     this.maxLines = 1000,
+    this.append = false,
   })  : assert(maxLines > 0),
         _baseFile = File(baseFilePath);
 
   final File _baseFile;
   final int maxLines;
   final LogHeaderBuilder headerBuilder;
+  final bool append;
 
   IOSink? _sink;
   int _fileIndex = 0;
@@ -39,17 +41,22 @@ class RollingFileOutput extends LogOutput {
     }
 
     // Serialize all IO to avoid opening many file descriptors during rapid rotation.
-    _ioChain = _ioChain.then((_) async {
+    _ioChain = _ioChain.catchError((_) {}).then((_) async {
       if (_destroyed) {
         return;
       }
-      _ensureSink();
-      for (final line in event.lines) {
-        if (_lineCount >= maxLines) {
-          await _rotate();
+      try {
+        _ensureSink();
+        for (final line in event.lines) {
+          if (_lineCount >= maxLines) {
+            await _rotate();
+          }
+          _sink!.writeln(line);
+          _lineCount++;
         }
-        _sink!.writeln(line);
-        _lineCount++;
+      } catch (_) {
+        // Swallow IO errors to keep logging from breaking the app.
+        // The next output call may succeed (e.g. after permissions/path changes).
       }
     });
   }
@@ -57,7 +64,7 @@ class RollingFileOutput extends LogOutput {
   @override
   Future<void> destroy() async {
     _destroyed = true;
-    await _ioChain;
+    await _ioChain.catchError((_) {});
     await _closeSink(awaitCompletion: true);
   }
 
@@ -73,15 +80,46 @@ class RollingFileOutput extends LogOutput {
     if (!file.parent.existsSync()) {
       file.parent.createSync(recursive: true);
     }
-    _lineCount = 0;
-    final IOSink sink = file.openWrite(mode: FileMode.write);
+
+    final bool isBaseFile = _fileIndex == 0;
+    final bool shouldAppend = append && isBaseFile;
+
+    bool hasExistingContent = false;
+    if (shouldAppend) {
+      try {
+        hasExistingContent = file.existsSync() && file.lengthSync() > 0;
+      } catch (_) {
+        hasExistingContent = false;
+      }
+    }
+
+    if (shouldAppend) {
+      _lineCount = _estimateExistingLineCount(file);
+    } else {
+      _lineCount = 0;
+    }
+
+    final IOSink sink = file.openWrite(mode: shouldAppend ? FileMode.append : FileMode.write);
+
     final String header = headerBuilder().trimRight();
-    if (header.isNotEmpty) {
+    if (header.isNotEmpty && (!shouldAppend || !hasExistingContent)) {
       sink.writeln(header);
       sink.writeln('');
     }
     _sink = sink;
     return sink;
+  }
+
+  int _estimateExistingLineCount(File file) {
+    try {
+      if (!file.existsSync()) {
+        return 0;
+      }
+      final List<String> lines = file.readAsLinesSync();
+      return lines.length;
+    } catch (_) {
+      return 0;
+    }
   }
 
   Future<void> _rotate() async {

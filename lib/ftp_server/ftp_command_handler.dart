@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import '/ftp_server/ftp_session.dart';
-import '/ftp_server/server_type.dart';
+import 'package:jhentai/ftp_server/ftp_session.dart';
+import 'package:jhentai/ftp_server/server_type.dart';
 
 typedef SiteCommandCallback = FutureOr<SiteCommandResult> Function(String args, FtpSession session);
 
@@ -329,28 +329,29 @@ class FTPCommandHandler {
 
     final List<String> lines = <String>[
       '214-Commands supported:',
-      ' USER PASS QUIT',
-      ' PASV EPSV PORT',
-      ' LIST NLST MLSD MLST',
-      ' RETR STOR APPE REST',
-      ' RNFR RNTO RENAME',
-      ' CWD CDUP MKD RMD DELE',
-      ' SIZE PWD XPWD SYST NOOP TYPE',
-      ' MODE STRU STAT',
-      ' HELP SITE',
+      '214 USER PASS QUIT',
+      '214 PASV EPSV PORT',
+      '214 LIST NLST MLSD MLST',
+      '214 RETR STOR APPE REST',
+      '214 RNFR RNTO RENAME',
+      '214 CWD CDUP MKD RMD DELE',
+      '214 SIZE PWD XPWD SYST NOOP TYPE',
+      '214  MODE STRU STAT',
+      '214 HELP',
     ];
+    lines.add('214 End');
 
     if (topic == 'SITE') {
-      lines.add(' SITE <subcommand> [args]');
+      lines.clear();
       if (_siteCommands.isEmpty) {
-        lines.add('  (no custom SITE subcommands registered)');
+        lines.add('502 No SITE subcommands registered');
       } else {
+        lines.add('214-SITE commands:');
         final List<String> names = _siteCommands.keys.toList()..sort();
-        lines.add('  Registered SITE subcommands: ${names.join(' ')}');
+        lines.add(names.join(' '));
+        lines.add('214 End');
       }
     }
-
-    lines.add('214 End');
     session.sendMultiLineResponse(lines);
   }
 

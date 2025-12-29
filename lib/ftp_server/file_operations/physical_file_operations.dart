@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'file_operations.dart';
+import 'package:jhentai/ftp_server/file_operations/file_operations.dart';
 
 /// Provides direct access to the physical file system, with no virtual mapping.
 /// All operations are performed relative to a single root directory.

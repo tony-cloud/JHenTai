@@ -8,10 +8,10 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/utils/uuid_util.dart';
 
-import '../../base/base_page.dart';
-import '../mixin/search_page_mixin.dart';
-import '../mixin/search_page_state_mixin.dart';
-import '../quick_search/quick_search_page.dart';
+import 'package:jhentai/pages/base/base_page.dart';
+import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
+import 'package:jhentai/pages/search/mixin/search_page_state_mixin.dart';
+import 'package:jhentai/pages/search/quick_search/quick_search_page.dart';
 
 class SearchPageMobileV2 extends BasePage<SearchPageMobileV2Logic, SearchPageMobileV2State>
     with SearchPageMixin<SearchPageMobileV2Logic, SearchPageMobileV2State> {

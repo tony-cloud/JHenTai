@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/log.dart';
 
-import '../service/jh_service.dart';
+import 'package:jhentai/service/jh_service.dart';
 
 ReadSetting readSetting = ReadSetting();
 

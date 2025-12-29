@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../model/gallery_page.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/model/gallery_page.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 class EHFavoriteSortOrderDialog extends StatefulWidget {
   final FavoriteSortOrder? init;

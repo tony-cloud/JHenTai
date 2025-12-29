@@ -10,11 +10,11 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
-import '../exception/eh_site_exception.dart';
-import '../setting/favorite_setting.dart';
-import '../service/log.dart';
-import '../utils/route_util.dart';
-import '../utils/snack_util.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/setting/favorite_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/snack_util.dart';
 
 typedef GalleryNoteFetchFunction = Future<GalleryNote> Function();
 

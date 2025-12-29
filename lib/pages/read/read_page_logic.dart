@@ -29,18 +29,18 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:throttling/throttling.dart';
 
-import '../../model/detail_page_info.dart';
-import '../../model/gallery_image.dart';
-import '../../model/read_page_info.dart';
-import '../../network/eh_request.dart';
-import '../../service/gallery_download_service.dart';
-import '../../setting/read_setting.dart';
-import '../../utils/eh_spider_parser.dart';
-import '../../service/log.dart';
-import '../../service/wakelock_service.dart';
-import '../../widget/auto_mode_interval_dialog.dart';
-import '../../widget/loading_state_indicator.dart';
-import '../../service/read_progress_service.dart';
+import 'package:jhentai/model/detail_page_info.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/read_page_info.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/wakelock_service.dart';
+import 'package:jhentai/widget/auto_mode_interval_dialog.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
+import 'package:jhentai/service/read_progress_service.dart';
 
 class ReadPageLogic extends GetxController {
   final String pageId = 'pageId';

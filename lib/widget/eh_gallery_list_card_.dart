@@ -13,12 +13,12 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
-import '../consts/locale_consts.dart';
-import '../utils/date_util.dart';
-import 'eh_image.dart';
-import 'eh_tag.dart';
-import 'eh_gallery_category_tag.dart';
-import '../service/read_progress_service.dart';
+import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/utils/date_util.dart';
+import 'package:jhentai/widget/eh_image.dart';
+import 'package:jhentai/widget/eh_tag.dart';
+import 'package:jhentai/widget/eh_gallery_category_tag.dart';
+import 'package:jhentai/service/read_progress_service.dart';
 
 typedef CardCallback = FutureOr<void> Function(Gallery gallery);
 

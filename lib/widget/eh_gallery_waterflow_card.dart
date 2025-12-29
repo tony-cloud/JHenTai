@@ -11,13 +11,13 @@ import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
-import '../config/ui_config.dart';
-import '../consts/locale_consts.dart';
-import '../model/gallery.dart';
-import '../model/gallery_tag.dart';
-import 'eh_gallery_category_tag.dart';
-import 'eh_gallery_list_card_.dart';
-import 'eh_image.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_tag.dart';
+import 'package:jhentai/widget/eh_gallery_category_tag.dart';
+import 'package:jhentai/widget/eh_gallery_list_card_.dart';
+import 'package:jhentai/widget/eh_image.dart';
 
 class EHGalleryWaterFlowCard extends StatelessWidget {
   final Gallery gallery;

@@ -1,11 +1,11 @@
 library;
 
 import 'dart:io';
-import '/ftp_server/ftp_session.dart';
-import '/ftp_server/server_type.dart';
-import 'logger_handler.dart';
-import '/ftp_server/file_operations/file_operations.dart';
-import 'data_connection_pool.dart';
+import 'package:jhentai/ftp_server/ftp_session.dart';
+import 'package:jhentai/ftp_server/server_type.dart';
+import 'package:jhentai/ftp_server/logger_handler.dart';
+import 'package:jhentai/ftp_server/file_operations/file_operations.dart';
+import 'package:jhentai/ftp_server/data_connection_pool.dart';
 
 class FtpServer {
   ServerSocket? _server;

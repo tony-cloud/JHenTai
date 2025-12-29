@@ -3,11 +3,11 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/utils/route_util.dart';
 
-import '../../../../../service/local_block_rule_service.dart';
-import '../../../../../utils/snack_util.dart';
-import '../../../../../utils/toast_util.dart';
-import '../../../../../utils/uuid_util.dart';
-import 'configure_blocking_rule_page_state.dart';
+import 'package:jhentai/service/local_block_rule_service.dart';
+import 'package:jhentai/utils/snack_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/utils/uuid_util.dart';
+import 'package:jhentai/pages/setting/preference/block_rule/add_block_rule/configure_blocking_rule_page_state.dart';
 
 enum ConfigureBlockingRulePageMode { add, edit }
 

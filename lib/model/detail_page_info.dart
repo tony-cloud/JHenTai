@@ -1,4 +1,4 @@
-import 'gallery_thumbnail.dart';
+import 'package:jhentai/model/gallery_thumbnail.dart';
 
 class DetailPageInfo {
   final int imageNoFrom;

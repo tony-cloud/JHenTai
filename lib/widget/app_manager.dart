@@ -9,15 +9,15 @@ import 'package:flutter_windowmanager_plus/flutter_windowmanager_plus.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 
-import '../config/theme_config.dart';
-import '../config/ui_config.dart';
-import '../routes/routes.dart';
-import '../setting/performance_setting.dart';
-import '../setting/security_setting.dart';
-import '../setting/style_setting.dart';
-import '../service/log.dart';
-import '../service/wakelock_service.dart';
-import '../utils/route_util.dart';
+import 'package:jhentai/config/theme_config.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/setting/performance_setting.dart';
+import 'package:jhentai/setting/security_setting.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/wakelock_service.dart';
+import 'package:jhentai/utils/route_util.dart';
 
 typedef DidChangePlatformBrightnessCallback = void Function();
 typedef DidChangeAppLifecycleStateCallback = void Function(AppLifecycleState state);

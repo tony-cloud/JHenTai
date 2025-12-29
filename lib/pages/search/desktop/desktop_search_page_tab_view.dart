@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import 'package:jhentai/pages/search/desktop/desktop_search_page_tab_logic.dart';
 import 'package:jhentai/pages/search/desktop/desktop_search_page_tab_state.dart';
 
-import '../../../config/ui_config.dart';
-import '../../base/base_page.dart';
-import '../mixin/search_page_mixin.dart';
-import '../mixin/search_page_state_mixin.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/pages/base/base_page.dart';
+import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
+import 'package:jhentai/pages/search/mixin/search_page_state_mixin.dart';
 
 class DesktopSearchPageTabView
     extends BasePage<DesktopSearchPageTabLogic, DesktopSearchPageTabState>

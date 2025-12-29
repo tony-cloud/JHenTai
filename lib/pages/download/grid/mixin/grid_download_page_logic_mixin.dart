@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
 import 'package:jhentai/utils/toast_util.dart';
 
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../service/local_gallery_service.dart';
-import 'grid_download_page_service_mixin.dart';
-import 'grid_download_page_state_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/service/local_gallery_service.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_service_mixin.dart';
+import 'package:jhentai/pages/download/grid/mixin/grid_download_page_state_mixin.dart';
 
 mixin GridBasePageLogic on GetxController implements Scroll2TopLogicMixin {
   final String bodyId = 'bodyId';

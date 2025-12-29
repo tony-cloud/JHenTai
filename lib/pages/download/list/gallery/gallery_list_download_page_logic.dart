@@ -9,16 +9,16 @@ import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_logic
 import 'package:jhentai/service/download_filter_service.dart';
 import 'package:jhentai/setting/performance_setting.dart';
 
-import '../../../../database/database.dart';
-import '../../../../mixin/scroll_to_top_logic_mixin.dart';
-import '../../../../mixin/scroll_to_top_state_mixin.dart';
-import '../../../../mixin/update_global_gallery_status_logic_mixin.dart';
-import '../../../../service/local_config_service.dart';
-import '../../../../widget/eh_alert_dialog.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
-import '../../mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
-import '../../widget/download_filter_dialog.dart';
-import 'gallery_list_download_page_state.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
+import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/widget/eh_alert_dialog.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
+import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_state_mixin.dart';
+import 'package:jhentai/pages/download/widget/download_filter_dialog.dart';
+import 'package:jhentai/pages/download/list/gallery/gallery_list_download_page_state.dart';
 
 class GalleryListDownloadPageLogic extends GetxController
     with

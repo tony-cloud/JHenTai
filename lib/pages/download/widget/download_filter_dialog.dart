@@ -13,7 +13,7 @@ import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 
-import '../../../service/log.dart';
+import 'package:jhentai/service/log.dart';
 
 Future<DownloadFilter?> showDownloadFilterDialog({
   required BuildContext context,

@@ -45,7 +45,6 @@ class JDownloadTask {
     DownloadProgressCallback? onProgress,
     VoidCallback? onDone,
     ValueCallback<JDownloadException>? onError,
-    JDownloadLogCallback? onLog,
     ProxyConfig? proxyConfig,
   })  : _isolateCount = isolateCount,
         _connectionTimeout = headConnectionTimeout,
@@ -73,9 +72,6 @@ class JDownloadTask {
       ..registerOnError((value) {
         _status = TaskStatus.failed;
         onError?.call(value);
-      })
-      ..registerOnLog((log) {
-        onLog?.call(log);
       })
       ..proxyConfig = proxyConfig;
 

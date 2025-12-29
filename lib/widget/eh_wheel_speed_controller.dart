@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import '../setting/mouse_setting.dart';
+import 'package:jhentai/setting/mouse_setting.dart';
 
 class EHWheelSpeedController extends StatelessWidget {
   final ScrollController? controller;

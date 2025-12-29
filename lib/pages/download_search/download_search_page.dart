@@ -8,18 +8,18 @@ import 'package:jhentai/widget/eh_image.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
-import '../../config/ui_config.dart';
-import '../../model/gallery_image.dart';
-import '../../model/gallery_url.dart';
-import '../../routes/routes.dart';
-import '../../service/gallery_download_service.dart';
-import '../../service/super_resolution_service.dart';
-import '../../utils/byte_util.dart';
-import '../../utils/date_util.dart';
-import '../../utils/route_util.dart';
-import '../../widget/eh_gallery_category_tag.dart';
-import '../details/details_page_logic.dart';
-import 'download_search_logic.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/gallery_url.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/super_resolution_service.dart';
+import 'package:jhentai/utils/byte_util.dart';
+import 'package:jhentai/utils/date_util.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/widget/eh_gallery_category_tag.dart';
+import 'package:jhentai/pages/details/details_page_logic.dart';
+import 'package:jhentai/pages/download_search/download_search_logic.dart';
 
 class DownloadSearchPage extends StatelessWidget {
   DownloadSearchPage({super.key});

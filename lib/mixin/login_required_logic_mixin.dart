@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
-import '../setting/user_setting.dart';
-import '../utils/toast_util.dart';
+import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 mixin LoginRequiredMixin {
   bool checkLogin() {

@@ -17,14 +17,14 @@ import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 import 'package:throttling/throttling.dart';
 
-import '../config/ui_config.dart';
-import '../consts/locale_consts.dart';
-import '../database/database.dart';
-import '../model/eh_raw_tag.dart';
-import '../network/eh_request.dart';
-import '../utils/eh_spider_parser.dart';
-import '../service/log.dart';
-import 'eh_gallery_category_tag.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/model/eh_raw_tag.dart';
+import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/service/log.dart';
+import 'package:jhentai/widget/eh_gallery_category_tag.dart';
 
 enum EHSearchConfigDialogType { update, add, filter }
 

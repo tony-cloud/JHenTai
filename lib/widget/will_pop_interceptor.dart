@@ -7,7 +7,7 @@ import 'package:jhentai/pages/home_page.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/utils/route_util.dart';
 
-import '../utils/toast_util.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class WillPopInterceptor extends StatefulWidget {
   final Widget child;

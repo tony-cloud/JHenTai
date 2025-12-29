@@ -4,12 +4,12 @@ import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/pages/read/layout/vertical_list/vertical_list_layout_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../../../../setting/read_setting.dart';
-import '../../../../utils/screen_size_util.dart';
-import '../../../../widget/eh_wheel_speed_controller_for_read_page.dart';
-import '../../../../widget/photo_view/j_photo_view_gallery.dart';
-import '../base/base_layout.dart';
-import 'vertical_list_layout_logic.dart';
+import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/utils/screen_size_util.dart';
+import 'package:jhentai/widget/eh_wheel_speed_controller_for_read_page.dart';
+import 'package:jhentai/widget/photo_view/j_photo_view_gallery.dart';
+import 'package:jhentai/pages/read/layout/base/base_layout.dart';
+import 'package:jhentai/pages/read/layout/vertical_list/vertical_list_layout_logic.dart';
 
 class VerticalListLayout extends BaseLayout {
   VerticalListLayout({super.key});

@@ -1,4 +1,4 @@
-import '../database.dart';
+import 'package:jhentai/database/database.dart';
 
 class BlockRuleDao {
   static Future<List<BlockRuleData>> selectBlockRules() {

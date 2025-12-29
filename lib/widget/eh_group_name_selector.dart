@@ -5,7 +5,7 @@ import 'package:jhentai/extension/widget_extension.dart';
 import 'package:simple_animations/animation_controller_extension/animation_controller_extension.dart';
 import 'package:simple_animations/animation_mixin/animation_mixin.dart';
 
-import '../config/ui_config.dart';
+import 'package:jhentai/config/ui_config.dart';
 
 class EHGroupNameSelectorLogic extends GetxController {}
 

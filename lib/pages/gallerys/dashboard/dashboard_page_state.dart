@@ -1,9 +1,9 @@
 import 'package:jhentai/pages/base/base_page_state.dart';
 
-import '../../../model/gallery.dart';
-import '../../../model/search_config.dart';
-import '../../../routes/routes.dart';
-import '../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/search_config.dart';
+import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class DashboardPageState extends BasePageState {
   DashboardPageState() {

@@ -7,11 +7,11 @@ import 'package:jhentai/downloader/src/model/main_isolate_message.dart';
 import 'package:jhentai/downloader/src/model/proxy_config.dart';
 import 'package:jhentai/downloader/src/model/sub_isolate_message.dart';
 import 'package:jhentai/downloader/src/function/function.dart';
+import 'package:jhentai/service/log.dart';
 import 'package:logger/logger.dart';
 
 class MainIsolateManager {
   final ProxyConfig? _proxyConfig;
-  final Logger _logger;
 
   bool _ready = false;
 
@@ -31,9 +31,7 @@ class MainIsolateManager {
 
   Completer<void>? _closeCompleter;
 
-  MainIsolateManager({ProxyConfig? proxyConfig, required Logger logger})
-      : _proxyConfig = proxyConfig,
-        _logger = logger;
+  MainIsolateManager({ProxyConfig? proxyConfig}) : _proxyConfig = proxyConfig;
 
   Future<void> initIsolate() async {
     if (_ready) {
@@ -55,8 +53,8 @@ class MainIsolateManager {
       message ??= SubIsolateMessage<Null>(SubIsolateMessageType.closed, null);
 
       if (message.type != SubIsolateMessageType.log) {
-        _logger.log(
-            message.type == SubIsolateMessageType.progress ? Level.trace : Level.debug, message);
+        log.download(message,
+            level: message.type == SubIsolateMessageType.progress ? Level.trace : Level.debug);
       }
 
       switch (message.type) {
@@ -101,10 +99,10 @@ class MainIsolateManager {
           break;
         case SubIsolateMessageType.log:
           message = message as SubIsolateMessage<LogEvent>;
-          _logger.log(
-            message.data.level,
+          log.download(
             message.data.message,
-            time: message.data.time,
+            level: message.data.level,
+            //time: message.data.time,
             error: message.data.error,
             stackTrace: message.data.stackTrace,
           );

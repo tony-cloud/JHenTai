@@ -10,9 +10,9 @@ import 'package:jhentai/pages/setting/eh/tagsets/tag_sets_page_state.dart';
 import 'package:jhentai/utils/search_util.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
-import '../../../../utils/route_util.dart';
-import '../../../../utils/text_input_formatter.dart';
-import '../../../../widget/loading_state_indicator.dart';
+import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/text_input_formatter.dart';
+import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class TagSetsPage extends StatelessWidget {
   final TagSetsLogic logic = Get.put<TagSetsLogic>(TagSetsLogic());
