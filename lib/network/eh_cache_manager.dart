@@ -339,6 +339,7 @@ class SqliteCacheStore {
   SqliteCacheStore({required this.appDb}) {
     try {
       cleanExpired();
+      log.info('Expired cache cleaned up successfully');
     } catch (e) {
       log.error('cleanExpired failed', e);
     }

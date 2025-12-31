@@ -29,6 +29,8 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   Logger? _verboseFileLogger;
   Logger? _errorFileLogger;
   Logger? _downloadFileLogger;
+  Future<void>? _initFuture;
+  String? _baseFileName;
 
   static const int _maxLogLinesPerFile = 1000;
   final DateTime _startupTime = DateTime.now();
@@ -160,6 +162,23 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   }
 
   Future<void> _initLogger() async {
+    final Future<void>? inFlight = _initFuture;
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final Future<void> initTask = _initLoggerUnsafe();
+    _initFuture = initTask;
+    try {
+      await initTask;
+    } finally {
+      if (identical(_initFuture, initTask)) {
+        _initFuture = null;
+      }
+    }
+  }
+
+  Future<void> _initLoggerUnsafe() async {
     final bool verboseEnabled = advancedSetting.enableVerboseLogging.isTrue;
     // Verbose logging toggles additional log channels/files, but must not
     // override the user-selected minimum log level.
@@ -176,7 +195,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     _consoleLogger ??= Logger(printer: devPrinter, level: selectedLevel);
 
     await _initLogDir();
-    String fileName = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
+    final String fileName = baseFileName;
 
     _verboseFileLogger ??= Logger(
       level: selectedLevel,
@@ -186,6 +205,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         baseFilePath: path.join(logDirPath!, '$fileName.log'),
         headerBuilder: () => _buildLogHeader('Main'),
         maxLines: _maxLogLinesPerFile,
+        append: true,
       ),
     );
     if (verboseEnabled) {
@@ -197,6 +217,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
           baseFilePath: path.join(logDirPath!, '${fileName}_error.log'),
           headerBuilder: () => _buildLogHeader('Errors'),
           maxLines: _maxLogLinesPerFile,
+          append: true,
         ),
       );
       _downloadFileLogger ??= Logger(
@@ -207,6 +228,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
           baseFilePath: path.join(logDirPath!, '${fileName}_download.log'),
           headerBuilder: () => _buildLogHeader('Downloads'),
           maxLines: _maxLogLinesPerFile,
+          append: true,
         ),
       );
     }
@@ -229,6 +251,21 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     _errorFileLogger = null;
     _downloadFileLogger = null;
   }
+
+  /// Resolve per-process base file name so all isolates can align without
+  /// temporary marker files.
+  String get baseFileName => _baseFileName ??= _defaultBaseFileName();
+
+  /// Adopt a base file name propagated from another isolate. Safe no-op if
+  /// already set.
+  void adoptBaseFileName(String? name) {
+    if (_baseFileName != null || name == null || name.isEmpty) {
+      return;
+    }
+    _baseFileName = name;
+  }
+
+  String _defaultBaseFileName() => DateFormat('yyyy-MM-dd_HH-mm-ss').format(_startupTime);
 
   Future<PackageInfo?> _resolvePackageInfo() async {
     try {

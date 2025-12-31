@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
@@ -28,7 +29,6 @@ import 'package:jhentai/model/gallery_torrent.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/model/profile.dart';
 import 'package:jhentai/model/tag_set.dart';
-import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/setting/eh_setting.dart';
 import 'package:jhentai/setting/site_setting.dart';
@@ -36,17 +36,17 @@ import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/color_util.dart';
 import 'package:jhentai/utils/string_uril.dart';
 
-import '../config/ui_config.dart';
-import '../consts/eh_consts.dart';
-import '../database/database.dart';
-import '../exception/eh_parse_exception.dart';
-import '../model/archive_unlock_result.dart';
-import '../model/detail_page_info.dart';
-import '../model/gallery.dart';
-import '../model/gallery_metadata.dart';
-import 'byte_util.dart';
-import 'check_util.dart';
-import '../service/log.dart';
+import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/consts/eh_consts.dart';
+import 'package:jhentai/database/database.dart';
+import 'package:jhentai/exception/eh_parse_exception.dart';
+import 'package:jhentai/model/archive_unlock_result.dart';
+import 'package:jhentai/model/detail_page_info.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_metadata.dart';
+import 'package:jhentai/utils/byte_util.dart';
+import 'package:jhentai/utils/check_util.dart';
+import 'package:jhentai/service/log.dart';
 
 typedef HtmlParser<T> = T Function(Headers headers, dynamic data);
 
@@ -56,13 +56,30 @@ class EHSpiderParser {
   static Future<void>? _dependencyInitFuture;
 
   /// Ensures config-driven singletons are ready inside background isolates.
-  static Future<void> ensureSettingsLoadedForIsolate({RootIsolateToken? rootIsolateToken}) async {
-    await _ensureDependenciesReady(rootIsolateToken: rootIsolateToken);
-    await userSetting.refreshBean();
-    await ehSetting.refreshBean();
+  static Future<void> ensureSettingsLoadedForIsolate({
+    RootIsolateToken? rootIsolateToken,
+    Map<String, String?>? pathServiceSnapshot,
+    String? userSettingConfig,
+    String? ehSettingConfig,
+    String? logBaseFileName,
+  }) async {
+    await _ensureDependenciesReady(
+      rootIsolateToken: rootIsolateToken,
+      pathServiceSnapshot: pathServiceSnapshot,
+    );
+    log.adoptBaseFileName(logBaseFileName);
+    if (userSettingConfig != null) {
+      userSetting.applyBeanConfig(userSettingConfig);
+    }
+    if (ehSettingConfig != null) {
+      ehSetting.applyBeanConfig(ehSettingConfig);
+    }
   }
 
-  static Future<void> _ensureDependenciesReady({RootIsolateToken? rootIsolateToken}) {
+  static Future<void> _ensureDependenciesReady({
+    RootIsolateToken? rootIsolateToken,
+    Map<String, String?>? pathServiceSnapshot,
+  }) {
     final Future<void>? initialized = _dependencyInitFuture;
     if (initialized != null) {
       return initialized;
@@ -76,19 +93,7 @@ class EHSpiderParser {
         BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
       }
 
-      try {
-        await pathService.initBean();
-      } on MissingPluginException catch (_) {
-        if (rootIsolateToken == null) {
-          throw StateError(
-              'RootIsolateToken is required to initialize pathService in a background isolate.');
-        }
-        rethrow;
-      }
-      await log.initBean();
-      await localConfigService.initBean();
-      await userSetting.initBean();
-      await ehSetting.initBean();
+      _hydratePathServiceFromSnapshot(pathServiceSnapshot);
     }()
         .then((_) {
       completer.complete();
@@ -98,6 +103,55 @@ class EHSpiderParser {
     });
 
     return completer.future;
+  }
+
+  static Map<String, String?> buildPathServiceSnapshot() {
+    try {
+      return {
+        'tempDir': pathService.tempDir.path,
+        'appDocDir': pathService.appDocDir?.path,
+        'appSupportDir': pathService.appSupportDir?.path,
+        'externalStorageDir': pathService.externalStorageDir?.path,
+        'systemDownloadDir': pathService.systemDownloadDir?.path,
+      };
+    } catch (error) {
+      throw StateError('PathService must be initialized before sharing with isolate: $error');
+    }
+  }
+
+  static void _hydratePathServiceFromSnapshot(Map<String, String?>? snapshot) {
+    if (_isPathServiceReady()) {
+      return;
+    }
+
+    if (snapshot == null || snapshot['tempDir'] == null) {
+      throw StateError('PathService snapshot is required to access configuration in isolate.');
+    }
+
+    pathService.tempDir = Directory(snapshot['tempDir']!);
+    pathService.appDocDir = _nullableDirectory(snapshot['appDocDir']);
+    pathService.appSupportDir = _nullableDirectory(snapshot['appSupportDir']);
+    pathService.externalStorageDir = _nullableDirectory(snapshot['externalStorageDir']);
+    pathService.systemDownloadDir = _nullableDirectory(snapshot['systemDownloadDir']) ??
+        pathService.appDocDir ??
+        pathService.appSupportDir ??
+        pathService.externalStorageDir ??
+        pathService.tempDir;
+  }
+
+  static bool _isPathServiceReady() {
+    try {
+      return pathService.systemDownloadDir != null && pathService.tempDir.path.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Directory? _nullableDirectory(String? path) {
+    if (path == null) {
+      return null;
+    }
+    return Directory(path);
   }
 
   static Map<String, dynamic> loginPage2UserInfoOrErrorMsg(Headers headers, dynamic data) {

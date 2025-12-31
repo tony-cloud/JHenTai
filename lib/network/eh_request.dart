@@ -32,11 +32,11 @@ import 'package:logger/logger.dart';
 import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:path/path.dart';
 import 'package:webview_flutter/webview_flutter.dart' show WebViewCookieManager;
-import '../service/jh_service.dart';
-import '../service/local_config_service.dart';
-import '../setting/network_setting.dart';
-import 'eh_cache_manager.dart';
-import 'eh_cookie_manager.dart';
+import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/setting/network_setting.dart';
+import 'package:jhentai/network/eh_cache_manager.dart';
+import 'package:jhentai/network/eh_cookie_manager.dart';
 
 EHRequest ehRequest = EHRequest();
 
@@ -1146,11 +1146,28 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       return response as T;
     }
     RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
+    Map<String, String?> pathServiceSnapshot = EHSpiderParser.buildPathServiceSnapshot();
+    final String userSettingSnapshot = userSetting.toConfigString();
+    final String ehSettingSnapshot = ehSetting.toConfigString();
+    final String logBaseFileName = log.baseFileName;
     return isolateService.run((list) async {
       await EHSpiderParser.ensureSettingsLoadedForIsolate(
-          rootIsolateToken: list.length > 2 ? list[2] as RootIsolateToken? : null);
+        rootIsolateToken: list.length > 2 ? list[2] as RootIsolateToken? : null,
+        pathServiceSnapshot: list.length > 3 ? list[3] as Map<String, String?>? : null,
+        userSettingConfig: list.length > 4 ? list[4] as String? : null,
+        ehSettingConfig: list.length > 5 ? list[5] as String? : null,
+        logBaseFileName: list.length > 6 ? list[6] as String? : null,
+      );
       return parser(list[0] as Headers, list[1]);
-    }, [response.headers, response.data, rootIsolateToken]);
+    }, [
+      response.headers,
+      response.data,
+      rootIsolateToken,
+      pathServiceSnapshot,
+      userSettingSnapshot,
+      ehSettingSnapshot,
+      logBaseFileName
+    ]);
   }
 
   Future<Response> _getWithErrorHandler<T>(
