@@ -15,6 +15,7 @@ import 'package:get/get_utils/get_utils.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/setting/download_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/permission_util.dart';
@@ -146,6 +147,13 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
               saveOnlineImage(index);
             },
           ),
+          CupertinoActionSheetAction(
+            child: Text('blockThisImage'.tr),
+            onPressed: () async {
+              backRoute();
+              await blockImageByHash(index, isLocal: false);
+            },
+          ),
           if (readPageState.images[index]!.originalImageUrl != null && userSetting.hasLoggedIn())
             CupertinoActionSheetAction(
               child: Text('${'save'.tr}(${'originalImage'.tr})'),
@@ -183,6 +191,13 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
             onPressed: () {
               backRoute();
               saveLocalImage(index);
+            },
+          ),
+          CupertinoActionSheetAction(
+            child: Text('blockThisImage'.tr),
+            onPressed: () async {
+              backRoute();
+              await blockImageByHash(index, isLocal: true);
             },
           ),
           CupertinoActionSheetAction(
@@ -434,5 +449,18 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
     log.info('Save image to album: $saveResult');
 
     return saveResult.isSuccess;
+  }
+
+  Future<void> blockImageByHash(int index, {required bool isLocal}) async {
+    GalleryImage image = readPageState.images[index]!;
+    String? key = imageBlockService.buildCacheKey(image);
+
+    if (key == null) {
+      toast('blockImageFailed'.tr);
+      return;
+    }
+
+    await imageBlockService.addUserBlockedHash(key);
+    toast('blockImageSuccess'.tr);
   }
 }

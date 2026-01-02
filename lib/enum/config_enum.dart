@@ -16,6 +16,7 @@ enum ConfigEnum {
   performanceSetting('performanceSetting'),
   preferenceSetting('preferenceSetting'),
   readSetting('readSetting'),
+  imageBlockSetting('imageBlockSetting'),
   securitySetting('securitySetting'),
   siteSetting('siteSetting'),
   styleSetting('styleSetting'),

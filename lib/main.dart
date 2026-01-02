@@ -15,6 +15,7 @@ import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/history_service.dart';
 import 'package:jhentai/service/isolate_service.dart';
 import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/local_block_rule_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/local_gallery_service.dart';
@@ -71,6 +72,7 @@ List<JHLifeCircleBean> lifeCircleBeans = [
   historyService,
   isolateService,
   localBlockRuleService,
+  imageBlockService,
   localConfigService,
   readProgressService,
   log,

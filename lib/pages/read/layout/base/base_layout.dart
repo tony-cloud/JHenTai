@@ -1,14 +1,18 @@
+import 'dart:io' as io;
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
+import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/setting/read_setting.dart';
 
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/widget/eh_image.dart';
@@ -17,6 +21,7 @@ import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:jhentai/pages/read/read_page_logic.dart';
 import 'package:jhentai/pages/read/read_page_state.dart';
 import 'package:jhentai/pages/read/layout/base/base_layout_logic.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 abstract class BaseLayout extends StatelessWidget {
   BaseLayout({super.key});
@@ -145,25 +150,44 @@ abstract class BaseLayout extends StatelessWidget {
   }
 
   Widget _buildOnlineImage(BuildContext context, int index) {
-    return GestureDetector(
-      onLongPress: () => logic.showBottomMenuInOnlineMode(index, context),
-      onSecondaryTap: () => logic.showBottomMenuInOnlineMode(index, context),
-      child: EHImage(
-        galleryImage: readPageState.images[index]!,
-        containerWidth: logic.readPageState.imageContainerSizes[index]?.width ??
-            logic.getPlaceHolderSize(index).width,
-        containerHeight: logic.readPageState.imageContainerSizes[index]?.height ??
-            logic.getPlaceHolderSize(index).height,
-        clearMemoryCacheWhenDispose: true,
-        loadingProgressWidgetBuilder: (double progress) =>
-            _loadingProgressWidgetBuilder(index, progress),
-        failedWidgetBuilder: (ExtendedImageState state) => _failedWidgetBuilder(index, state),
-        completedWidgetBuilder: (state) => completedWidgetBuilderCallBack(index, state),
-        maxBytes: readSetting.enableMaxImageKilobyte.isTrue
-            ? readSetting.maxImageKilobyte.toInt() * 1024
-            : null,
-      ),
-    );
+    return Obx(() {
+      imageBlockService.version.value;
+      GalleryImage image = readPageState.images[index]!;
+      String? key = imageBlockService.buildCacheKey(image);
+      ImageBlockReason? reason =
+          imageBlockService.shouldBlock(image.imageHash, fallbackKey: image.url);
+      if (reason != null) {
+        return _buildBlockedIndicator(
+          reason,
+          index,
+          logic.getPlaceHolderSize(index),
+          key,
+        );
+      }
+
+      return GestureDetector(
+        onLongPress: () => logic.showBottomMenuInOnlineMode(index, context),
+        onSecondaryTap: () => logic.showBottomMenuInOnlineMode(index, context),
+        child: EHImage(
+          galleryImage: image,
+          containerWidth: logic.readPageState.imageContainerSizes[index]?.width ??
+              logic.getPlaceHolderSize(index).width,
+          containerHeight: logic.readPageState.imageContainerSizes[index]?.height ??
+              logic.getPlaceHolderSize(index).height,
+          clearMemoryCacheWhenDispose: true,
+          loadingProgressWidgetBuilder: (double progress) =>
+              _loadingProgressWidgetBuilder(index, progress),
+          failedWidgetBuilder: (ExtendedImageState state) => _failedWidgetBuilder(index, state),
+          completedWidgetBuilder: (state) {
+            _scheduleQrScanForOnline(image, index, state);
+            return completedWidgetBuilderCallBack(index, state);
+          },
+          maxBytes: readSetting.enableMaxImageKilobyte.isTrue
+              ? readSetting.maxImageKilobyte.toInt() * 1024
+              : null,
+        ),
+      );
+    });
   }
 
   /// loading for online mode
@@ -258,28 +282,49 @@ abstract class BaseLayout extends StatelessWidget {
           return _buildLocalImage(context, index);
         }
 
-        return GestureDetector(
-          onLongPress: () => logic.showBottomMenuInLocalMode(index, context),
-          onSecondaryTap: () => logic.showBottomMenuInLocalMode(index, context),
-          child: EHImage(
-            galleryImage: readPageState.images[index]!.copyWith(
-              path: superResolutionService
-                  .computeImageOutputRelativePath(readPageState.images[index]!.path!),
+        return Obx(() {
+          imageBlockService.version.value;
+          GalleryImage image = readPageState.images[index]!.copyWith(
+            path: superResolutionService
+                .computeImageOutputRelativePath(readPageState.images[index]!.path!),
+          );
+          String? key = imageBlockService.buildCacheKey(image);
+
+          ImageBlockReason? reason = imageBlockService.shouldBlock(
+            image.imageHash,
+            fallbackKey: image.path ?? image.url,
+          );
+          if (reason != null) {
+            return _buildBlockedIndicator(
+              reason,
+              index,
+              logic.getPlaceHolderSize(index),
+              key,
+            );
+          }
+
+          return GestureDetector(
+            onLongPress: () => logic.showBottomMenuInLocalMode(index, context),
+            onSecondaryTap: () => logic.showBottomMenuInLocalMode(index, context),
+            child: EHImage(
+              galleryImage: image,
+              containerWidth: logic.readPageState.imageContainerSizes[index]?.width ??
+                  logic.getPlaceHolderSize(index).width,
+              containerHeight: logic.readPageState.imageContainerSizes[index]?.height ??
+                  logic.getPlaceHolderSize(index).height,
+              clearMemoryCacheWhenDispose: true,
+              loadingWidgetBuilder: () => _loadingWidgetBuilder(context, index),
+              failedWidgetBuilder: (state) => _failedWidgetBuilderForLocalMode(index, state),
+              completedWidgetBuilder: (state) {
+                _scheduleQrScanForLocal(image, index, null, state);
+                return completedWidgetBuilderForLocalModeCallBack(index, state);
+              },
+              maxBytes: readSetting.enableMaxImageKilobyte.isTrue
+                  ? readSetting.maxImageKilobyte.toInt() * 1024
+                  : null,
             ),
-            containerWidth: logic.readPageState.imageContainerSizes[index]?.width ??
-                logic.getPlaceHolderSize(index).width,
-            containerHeight: logic.readPageState.imageContainerSizes[index]?.height ??
-                logic.getPlaceHolderSize(index).height,
-            clearMemoryCacheWhenDispose: true,
-            loadingWidgetBuilder: () => _loadingWidgetBuilder(context, index),
-            failedWidgetBuilder: (state) => _failedWidgetBuilderForLocalMode(index, state),
-            completedWidgetBuilder: (state) =>
-                completedWidgetBuilderForLocalModeCallBack(index, state),
-            maxBytes: readSetting.enableMaxImageKilobyte.isTrue
-                ? readSetting.maxImageKilobyte.toInt() * 1024
-                : null,
-          ),
-        );
+          );
+        });
       },
     );
   }
@@ -333,27 +378,48 @@ abstract class BaseLayout extends StatelessWidget {
     final memoryBytes = readPageLogic.getLocalMemoryImage(index);
     final bool keepMemoryCache = readPageLogic.shouldKeepLocalMemoryCache(index);
 
-    return GestureDetector(
-      onLongPress: () => logic.showBottomMenuInLocalMode(index, context),
-      onSecondaryTap: () => logic.showBottomMenuInLocalMode(index, context),
-      child: EHImage(
-        galleryImage: readPageState.images[index]!,
-        containerWidth: logic.readPageState.imageContainerSizes[index]?.width ??
-            logic.getPlaceHolderSize(index).width,
-        containerHeight: logic.readPageState.imageContainerSizes[index]?.height ??
-            logic.getPlaceHolderSize(index).height,
-        memoryBytes: memoryBytes,
-        clearMemoryCacheWhenDispose: !keepMemoryCache,
-        downloadingWidgetBuilder: () => _downloadingWidgetBuilder(index),
-        pausedWidgetBuilder: () => _pausedWidgetBuilder(index),
-        loadingWidgetBuilder: () => _loadingWidgetBuilder(context, index),
-        failedWidgetBuilder: (state) => _failedWidgetBuilderForLocalMode(index, state),
-        completedWidgetBuilder: (state) => completedWidgetBuilderForLocalModeCallBack(index, state),
-        maxBytes: readSetting.enableMaxImageKilobyte.isTrue
-            ? readSetting.maxImageKilobyte.toInt() * 1024
-            : null,
-      ),
-    );
+    return Obx(() {
+      imageBlockService.version.value;
+      GalleryImage image = readPageState.images[index]!;
+      String? key = imageBlockService.buildCacheKey(image);
+      ImageBlockReason? reason = imageBlockService.shouldBlock(
+        image.imageHash,
+        fallbackKey: image.path ?? image.url,
+      );
+      if (reason != null) {
+        return _buildBlockedIndicator(
+          reason,
+          index,
+          logic.getPlaceHolderSize(index),
+          key,
+        );
+      }
+
+      return GestureDetector(
+        onLongPress: () => logic.showBottomMenuInLocalMode(index, context),
+        onSecondaryTap: () => logic.showBottomMenuInLocalMode(index, context),
+        child: EHImage(
+          galleryImage: image,
+          containerWidth: logic.readPageState.imageContainerSizes[index]?.width ??
+              logic.getPlaceHolderSize(index).width,
+          containerHeight: logic.readPageState.imageContainerSizes[index]?.height ??
+              logic.getPlaceHolderSize(index).height,
+          memoryBytes: memoryBytes,
+          clearMemoryCacheWhenDispose: !keepMemoryCache,
+          downloadingWidgetBuilder: () => _downloadingWidgetBuilder(index),
+          pausedWidgetBuilder: () => _pausedWidgetBuilder(index),
+          loadingWidgetBuilder: () => _loadingWidgetBuilder(context, index),
+          failedWidgetBuilder: (state) => _failedWidgetBuilderForLocalMode(index, state),
+          completedWidgetBuilder: (state) {
+            _scheduleQrScanForLocal(image, index, memoryBytes, state);
+            return completedWidgetBuilderForLocalModeCallBack(index, state);
+          },
+          maxBytes: readSetting.enableMaxImageKilobyte.isTrue
+              ? readSetting.maxImageKilobyte.toInt() * 1024
+              : null,
+        ),
+      );
+    });
   }
 
   /// downloading for local mode
@@ -439,5 +505,132 @@ abstract class BaseLayout extends StatelessWidget {
     });
 
     return null;
+  }
+
+  Widget _buildBlockedIndicator(
+    ImageBlockReason reason,
+    int index,
+    Size placeHolderSize,
+    String? key,
+  ) {
+    if (imageBlockService.blockedImageHandling.value == BlockedImageHandling.hide) {
+      return const SizedBox.shrink();
+    }
+
+    String reasonText;
+    switch (reason) {
+      case ImageBlockReason.hash:
+        reasonText = 'blockedImageReasonHash'.tr;
+        break;
+      case ImageBlockReason.builtInHash:
+        reasonText = 'blockedImageReasonBuiltIn'.tr;
+        break;
+      case ImageBlockReason.qrCode:
+        reasonText = 'blockedImageReasonQr'.tr;
+        break;
+    }
+
+    return GestureDetector(
+      onLongPress: () => _maybeUnblockUserHash(reason, key),
+      child: Container(
+        alignment: Alignment.center,
+        height: placeHolderSize.height,
+        width: placeHolderSize.width,
+        color: UIConfig.readPageBackGroundColor,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.block, color: UIConfig.readPageWarningButtonColor),
+            Text('blockedImageMessage'.tr),
+            Text(reasonText).marginOnly(top: 4),
+            Text((index + 1).toString()).marginOnly(top: 4),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _maybeUnblockUserHash(ImageBlockReason reason, String? key) {
+    if (reason != ImageBlockReason.hash || key == null) {
+      return;
+    }
+
+    imageBlockService.removeUserBlockedHash(key).then((_) {
+      toast('unblockImageSuccess'.tr);
+    });
+  }
+
+  void _scheduleQrScanForOnline(
+    GalleryImage image,
+    int index,
+    ExtendedImageState state,
+  ) {
+    if (imageBlockService.enableQrBlocking.isFalse) {
+      return;
+    }
+
+    imageBlockService
+        .scanQrIfNeeded(
+      imageHash: image.imageHash,
+      fallbackKey: image.url,
+      bytesLoader: () async {
+        if (state.extendedImageInfo != null) {
+          return state.extendedImageInfo!.image;
+        }
+
+        return null;
+      },
+    )
+        .then((blocked) {
+      if (blocked) {
+        logic.readPageLogic.updateSafely(['${readPageLogic.onlineImageId}::$index']);
+      }
+    });
+  }
+
+  void _scheduleQrScanForLocal(
+    GalleryImage image,
+    int index,
+    Uint8List? memoryBytes,
+    ExtendedImageState state,
+  ) {
+    if (imageBlockService.enableQrBlocking.isFalse) {
+      return;
+    }
+
+    imageBlockService
+        .scanQrIfNeeded(
+      imageHash: image.imageHash,
+      fallbackKey: image.path ?? image.url,
+      bytesLoader: () async {
+        if (memoryBytes != null && memoryBytes.isNotEmpty) {
+          return memoryBytes;
+        }
+
+        if (state.extendedImageInfo != null) {
+          return state.extendedImageInfo!.image;
+        }
+
+        String? path = image.path;
+        if (path != null) {
+          String absolutePath =
+              GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(path);
+          try {
+            return await io.File(absolutePath).readAsBytes();
+          } on io.FileSystemException catch (e, stack) {
+            log.error('Failed to read local image for qr scan: $absolutePath', e, stack);
+          }
+        }
+
+        return null;
+      },
+    )
+        .then((blocked) {
+      if (blocked) {
+        galleryDownloadService.updateSafely([
+          '${galleryDownloadService.downloadImageId}::${readPageState.readPageInfo.gid}::$index'
+        ]);
+      }
+    });
   }
 }

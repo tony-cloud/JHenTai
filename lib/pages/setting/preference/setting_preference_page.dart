@@ -57,6 +57,7 @@ class SettingPreferencePage extends StatelessWidget {
               _buildShowDawnInfo(),
               _buildShowEncounterMonster(),
               _buildUseBuiltInBlockedUsers(),
+              _buildAdBlockerSetting(),
               _buildBlockRules(),
             ],
           ).withListTileTheme(context),
@@ -436,6 +437,15 @@ class SettingPreferencePage extends StatelessWidget {
       subtitle: Text('blockingRulesHint'.tr),
       trailing: const Icon(Icons.keyboard_arrow_right),
       onTap: () => toRoute(Routes.blockingRules),
+    );
+  }
+
+  Widget _buildAdBlockerSetting() {
+    return ListTile(
+      title: Text('adBlocker'.tr),
+      subtitle: Text('adBlockerHint'.tr),
+      trailing: const Icon(Icons.keyboard_arrow_right),
+      onTap: () => toRoute(Routes.settingAdBlock),
     );
   }
 

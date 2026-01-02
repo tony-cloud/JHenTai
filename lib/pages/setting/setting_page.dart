@@ -49,6 +49,11 @@ class SettingPage extends StatelessWidget {
               onTap: () => toRoute('${Routes.settingPrefix}read'),
             ),
             ListTile(
+              leading: const Icon(Icons.block),
+              title: Text('adBlocker'.tr),
+              onTap: () => toRoute(Routes.settingAdBlock),
+            ),
+            ListTile(
               leading: const Icon(Icons.stars),
               title: Text('preference'.tr),
               onTap: () => toRoute('${Routes.settingPrefix}preference'),

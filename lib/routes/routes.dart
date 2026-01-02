@@ -23,6 +23,7 @@ import 'package:jhentai/pages/setting/cloud/config_sync/config_sync_page.dart';
 import 'package:jhentai/pages/setting/cloud/setting_cloud_page.dart';
 import 'package:jhentai/pages/setting/download/extra_gallery_scan_path/extra_gallery_scan_path_page.dart';
 import 'package:jhentai/pages/setting/download/setting_download_page.dart';
+import 'package:jhentai/pages/setting/adblock/setting_adblock_page.dart';
 import 'package:jhentai/pages/setting/eh/profile/setting_eh_profile_page.dart';
 import 'package:jhentai/pages/setting/eh/setting_eh_page.dart';
 import 'package:jhentai/pages/setting/eh/tagsets/tag_sets_page.dart';
@@ -99,6 +100,7 @@ class Routes {
   static const String settingNetwork = "/setting_network";
   static const String settingDownload = "/setting_download";
   static const String settingAdvanced = "/setting_advanced";
+  static const String settingAdBlock = "/setting_adblock";
   static const String settingPerformance = "/setting_performance";
   static const String settingMouseWheel = "/setting_mouse_wheel";
   static const String settingCloud = "/setting_cloud";
@@ -302,6 +304,11 @@ class Routes {
     EHPage(
       name: settingPreference,
       page: () => SettingPreferencePage().withEscOrFifthButton2BackRightRoute(),
+      transition: defaultTransition,
+    ),
+    EHPage(
+      name: settingAdBlock,
+      page: () => const SettingAdBlockPage().withEscOrFifthButton2BackRightRoute(),
       transition: defaultTransition,
     ),
     EHPage(
