@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jhentai/database/database.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/model/read_page_info.dart';
@@ -15,6 +16,7 @@ import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/widget/eh_image.dart';
 import 'package:jhentai/widget/icon_text_button.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
@@ -580,6 +582,7 @@ abstract class BaseLayout extends StatelessWidget {
 
         return null;
       },
+      galleryTags: _getGalleryTagsForQr(),
     )
         .then((blocked) {
       if (blocked) {
@@ -624,6 +627,7 @@ abstract class BaseLayout extends StatelessWidget {
 
         return null;
       },
+      galleryTags: _getGalleryTagsForQr(),
     )
         .then((blocked) {
       if (blocked) {
@@ -632,5 +636,24 @@ abstract class BaseLayout extends StatelessWidget {
         ]);
       }
     });
+  }
+
+  List<TagData>? _getGalleryTagsForQr() {
+    if (imageBlockService.enableQrBlockingForTags.isFalse) {
+      return null;
+    }
+
+    int? gid = readPageState.readPageInfo.gid;
+    if (gid == null) {
+      return null;
+    }
+
+    GalleryDownloadedData? gallery =
+        galleryDownloadService.gallerys.firstWhereOrNull((g) => g.gid == gid);
+    if (gallery == null) {
+      return null;
+    }
+
+    return tagDataString2TagDataList(gallery.tags);
   }
 }

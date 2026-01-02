@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:get/get.dart';
 import 'package:image/image.dart' as img;
+import 'package:jhentai/database/database.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/service/jh_service.dart';
@@ -19,10 +20,12 @@ enum ImageBlockReason { hash, builtInHash, qrCode }
 class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxBool enableHashBlocking = true.obs;
   RxBool enableQrBlocking = false.obs;
+  RxBool enableQrBlockingForTags = false.obs;
   RxBool useBuiltInList = true.obs;
   Rx<BlockedImageHandling> blockedImageHandling = BlockedImageHandling.placeholder.obs;
   RxSet<String> userBlockedHashes = <String>{}.obs;
   RxSet<String> qrBlockedHashes = <String>{}.obs;
+  RxList<String> qrBlockingTagFilters = <String>[].obs;
 
   final Set<String> builtInBlockedHashes = {
     'a1a1ad7f2fd9d0c447ddb5a0f0c5bc3c',
@@ -32,6 +35,7 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   final Set<String> _scannedKeys = {};
   final Set<String> _scanningKeys = {};
   final RxInt _version = 0.obs;
+  List<_QrTagRule> _qrTagRules = [];
 
   RxInt get version => _version;
 
@@ -44,6 +48,7 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
     enableHashBlocking.value = map['enableHashBlocking'] ?? enableHashBlocking.value;
     enableQrBlocking.value = map['enableQrBlocking'] ?? enableQrBlocking.value;
+    enableQrBlockingForTags.value = map['enableQrBlockingForTags'] ?? enableQrBlockingForTags.value;
     useBuiltInList.value = map['useBuiltInList'] ?? useBuiltInList.value;
     blockedImageHandling.value = BlockedImageHandling
         .values[map['blockedImageHandling'] ?? blockedImageHandling.value.index];
@@ -56,6 +61,11 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       ..clear()
       ..addAll(Set<String>.from(map['qrBlockedHashes'] ?? const <String>[]))
       ..refresh();
+    qrBlockingTagFilters
+      ..clear()
+      ..addAll(List<String>.from(map['qrBlockingTagFilters'] ?? const <String>[]))
+      ..refresh();
+    _qrTagRules = _parseQrTagFilters(qrBlockingTagFilters);
   }
 
   @override
@@ -63,10 +73,12 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     return jsonEncode({
       'enableHashBlocking': enableHashBlocking.value,
       'enableQrBlocking': enableQrBlocking.value,
+      'enableQrBlockingForTags': enableQrBlockingForTags.value,
       'useBuiltInList': useBuiltInList.value,
       'blockedImageHandling': blockedImageHandling.value.index,
       'userBlockedHashes': userBlockedHashes.toList(),
       'qrBlockedHashes': qrBlockedHashes.toList(),
+      'qrBlockingTagFilters': qrBlockingTagFilters.toList(),
     });
   }
 
@@ -117,6 +129,27 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
   Future<void> saveEnableQrBlocking(bool value) async {
     enableQrBlocking.value = value;
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> saveEnableQrBlockingForTags(bool value) async {
+    enableQrBlockingForTags.value = value;
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> saveQrBlockingTagFilters(String raw) async {
+    List<String> filters =
+        raw.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(growable: false);
+
+    qrBlockingTagFilters
+      ..clear()
+      ..addAll(filters)
+      ..refresh();
+
+    _qrTagRules = _parseQrTagFilters(filters);
+
     await saveBeanConfig();
     _bumpVersion();
   }
@@ -172,10 +205,14 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   Future<bool> scanQrIfNeeded({
     String? imageHash,
     String? fallbackKey,
+    List<TagData>? galleryTags,
     required Future<Object?> Function() bytesLoader,
   }) async {
     String? key = _normalizeKey(imageHash, fallbackKey);
     if (enableQrBlocking.isFalse || key == null) {
+      return false;
+    }
+    if (!_shouldScanQrForTags(galleryTags)) {
       return false;
     }
     if (qrBlockedHashes.contains(key)) {
@@ -221,6 +258,31 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
   String? buildCacheKey(GalleryImage image) {
     return _normalizeKey(image.imageHash, image.path ?? image.url);
+  }
+
+  bool _shouldScanQrForTags(List<TagData>? galleryTags) {
+    if (enableQrBlockingForTags.isFalse) {
+      return true;
+    }
+    if (_qrTagRules.isEmpty) {
+      return false;
+    }
+    if (galleryTags == null || galleryTags.isEmpty) {
+      return false;
+    }
+
+    for (TagData tag in galleryTags) {
+      for (_QrTagRule rule in _qrTagRules) {
+        if (tag.namespace.toLowerCase() != rule.namespace) {
+          continue;
+        }
+        if (rule.pattern.hasMatch(tag.key)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   Future<img.Image?> _convertUiImageToImgImage(ui.Image image) async {
@@ -274,6 +336,41 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     return _normalizeString(imageHash) ?? _normalizeString(fallbackKey);
   }
 
+  List<_QrTagRule> _parseQrTagFilters(List<String> filters) {
+    List<_QrTagRule> rules = [];
+    for (String raw in filters) {
+      String filter = raw.trim();
+      if (filter.isEmpty) {
+        continue;
+      }
+
+      int splitterIndex = filter.indexOf(':');
+      if (splitterIndex <= 0 || splitterIndex >= filter.length - 1) {
+        log.info('Ignore invalid qr tag filter: $filter');
+        continue;
+      }
+
+      String namespace = filter.substring(0, splitterIndex).trim().toLowerCase();
+      String patternRaw = filter.substring(splitterIndex + 1).trim();
+      if (patternRaw.startsWith('"') && patternRaw.endsWith('"') && patternRaw.length >= 2) {
+        patternRaw = patternRaw.substring(1, patternRaw.length - 1);
+      }
+
+      try {
+        rules.add(
+          _QrTagRule(
+            namespace: namespace,
+            pattern: RegExp(patternRaw, caseSensitive: false),
+          ),
+        );
+      } on FormatException catch (e, stack) {
+        log.error('Invalid qr tag regex: $filter', e, stack);
+      }
+    }
+
+    return rules;
+  }
+
   String? _normalizeString(String? value) {
     if (value == null) {
       return null;
@@ -288,4 +385,11 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   void _bumpVersion() {
     _version.value++;
   }
+}
+
+class _QrTagRule {
+  _QrTagRule({required this.namespace, required this.pattern});
+
+  final String namespace;
+  final RegExp pattern;
 }
