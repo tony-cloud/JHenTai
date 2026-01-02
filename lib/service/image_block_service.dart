@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/services.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:image/image.dart' as img;
 import 'package:jhentai/database/database.dart';
@@ -17,25 +18,38 @@ enum BlockedImageHandling { hide, placeholder }
 
 enum ImageBlockReason { hash, builtInHash, qrCode }
 
+const String _defaultQrFilterTag = 'other:"extraneous ads\$"';
+
 class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxBool enableHashBlocking = true.obs;
   RxBool enableQrBlocking = false.obs;
   RxBool enableQrBlockingForTags = false.obs;
   RxBool useBuiltInList = true.obs;
+  RxBool autoUpdateExternalHashFiles = false.obs;
   Rx<BlockedImageHandling> blockedImageHandling = BlockedImageHandling.placeholder.obs;
   RxSet<String> userBlockedHashes = <String>{}.obs;
   RxSet<String> qrBlockedHashes = <String>{}.obs;
-  RxList<String> qrBlockingTagFilters = <String>[].obs;
+  RxList<String> qrBlockingTagFilters = <String>[_defaultQrFilterTag].obs;
 
-  final Set<String> builtInBlockedHashes = {
-    'a1a1ad7f2fd9d0c447ddb5a0f0c5bc3c',
-    '4e3d70f7ae404c9089c9ed24b7b0f2c4',
-  };
+  final Set<String> builtInBlockedHashes = <String>{};
+  RxList<BuiltInHashList> builtInHashLists = <BuiltInHashList>[].obs;
+  RxList<ExternalHashFile> externalHashFiles = <ExternalHashFile>[].obs;
+  final Set<String> _externalBlockedHashes = <String>{};
 
   final Set<String> _scannedKeys = {};
   final Set<String> _scanningKeys = {};
   final RxInt _version = 0.obs;
   List<_QrTagRule> _qrTagRules = [];
+  Map<String, bool> _builtInListEnabledConfig = {};
+
+  final dio.Dio _dio = dio.Dio(
+    dio.BaseOptions(
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+      responseType: dio.ResponseType.plain,
+    ),
+  );
 
   RxInt get version => _version;
 
@@ -50,6 +64,8 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     enableQrBlocking.value = map['enableQrBlocking'] ?? enableQrBlocking.value;
     enableQrBlockingForTags.value = map['enableQrBlockingForTags'] ?? enableQrBlockingForTags.value;
     useBuiltInList.value = map['useBuiltInList'] ?? useBuiltInList.value;
+    autoUpdateExternalHashFiles.value =
+        map['autoUpdateExternalHashFiles'] ?? autoUpdateExternalHashFiles.value;
     blockedImageHandling.value = BlockedImageHandling
         .values[map['blockedImageHandling'] ?? blockedImageHandling.value.index];
 
@@ -63,9 +79,25 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       ..refresh();
     qrBlockingTagFilters
       ..clear()
-      ..addAll(List<String>.from(map['qrBlockingTagFilters'] ?? const <String>[]))
-      ..refresh();
+      ..addAll(List<String>.from(map['qrBlockingTagFilters'] ?? const <String>[]));
+    if (qrBlockingTagFilters.isEmpty) {
+      qrBlockingTagFilters.add(_defaultQrFilterTag);
+    }
+    qrBlockingTagFilters.refresh();
     _qrTagRules = _parseQrTagFilters(qrBlockingTagFilters);
+
+    externalHashFiles
+      ..clear()
+      ..addAll(_parseExternalHashFiles(map['externalHashFiles']))
+      ..refresh();
+    _rebuildExternalHashCache();
+
+    Map<String, dynamic>? rawBuiltInStates = map['builtInHashListStates'] as Map<String, dynamic>?;
+    if (rawBuiltInStates != null) {
+      _builtInListEnabledConfig = rawBuiltInStates.map(
+        (String key, dynamic value) => MapEntry(key, value == true),
+      );
+    }
   }
 
   @override
@@ -75,18 +107,31 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       'enableQrBlocking': enableQrBlocking.value,
       'enableQrBlockingForTags': enableQrBlockingForTags.value,
       'useBuiltInList': useBuiltInList.value,
+      'autoUpdateExternalHashFiles': autoUpdateExternalHashFiles.value,
       'blockedImageHandling': blockedImageHandling.value.index,
       'userBlockedHashes': userBlockedHashes.toList(),
       'qrBlockedHashes': qrBlockedHashes.toList(),
       'qrBlockingTagFilters': qrBlockingTagFilters.toList(),
+      'externalHashFiles': externalHashFiles.map((ExternalHashFile file) => file.toJson()).toList(),
+      'builtInHashListStates': Map<String, bool>.fromEntries(
+        builtInHashLists.map(
+          (BuiltInHashList list) => MapEntry(list.assetPath, list.enabled),
+        ),
+      ),
     });
   }
 
   @override
-  Future<void> doInitBean() async {}
+  Future<void> doInitBean() async {
+    await _loadBuiltInHashesFromAssets();
+  }
 
   @override
-  void doAfterBeanReady() {}
+  void doAfterBeanReady() {
+    if (autoUpdateExternalHashFiles.isTrue) {
+      updateAllExternalHashFiles();
+    }
+  }
 
   ImageBlockReason? shouldBlock(String? imageHash, {String? fallbackKey}) {
     String? key = _normalizeKey(imageHash, fallbackKey);
@@ -95,6 +140,9 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
         return ImageBlockReason.hash;
       }
       if (useBuiltInList.isTrue && builtInBlockedHashes.contains(key)) {
+        return ImageBlockReason.builtInHash;
+      }
+      if (_externalBlockedHashes.contains(key)) {
         return ImageBlockReason.builtInHash;
       }
     }
@@ -156,6 +204,96 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
   Future<void> saveUseBuiltInList(bool value) async {
     useBuiltInList.value = value;
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> toggleBuiltInHashList(BuiltInHashList list, bool enabled) async {
+    int index =
+        builtInHashLists.indexWhere((BuiltInHashList item) => item.assetPath == list.assetPath);
+    if (index < 0) {
+      return;
+    }
+
+    builtInHashLists[index] = builtInHashLists[index].copyWith(enabled: enabled);
+    builtInHashLists.refresh();
+    _rebuildBuiltInHashCache();
+
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> saveAutoUpdateExternalHashFiles(bool value) async {
+    autoUpdateExternalHashFiles.value = value;
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> addExternalHashFile(String url) async {
+    ExternalHashFile? file = await _fetchExternalHashFile(url);
+
+    int existingIndex = externalHashFiles.indexWhere((ExternalHashFile f) => f.url == url);
+    if (file == null) {
+      // Network failed: add a placeholder for new entries; keep cache for existing ones.
+      if (existingIndex < 0) {
+        externalHashFiles.add(
+          ExternalHashFile(
+            url: url,
+            hashes: const <String>[],
+            updatedAtMillis: 0,
+            enabled: true,
+          ),
+        );
+        externalHashFiles.refresh();
+        _rebuildExternalHashCache();
+        await saveBeanConfig();
+        _bumpVersion();
+      }
+      return;
+    }
+
+    if (existingIndex >= 0) {
+      bool enabled = externalHashFiles[existingIndex].enabled;
+      externalHashFiles[existingIndex] = file.copyWith(enabled: enabled);
+    } else {
+      externalHashFiles.add(file);
+    }
+    externalHashFiles.refresh();
+    _rebuildExternalHashCache();
+
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> refreshExternalHashFile(ExternalHashFile file) async {
+    await addExternalHashFile(file.url);
+  }
+
+  Future<void> removeExternalHashFile(ExternalHashFile file) async {
+    externalHashFiles.removeWhere((ExternalHashFile f) => f.url == file.url);
+    externalHashFiles.refresh();
+    _rebuildExternalHashCache();
+
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> updateAllExternalHashFiles() async {
+    for (ExternalHashFile file in List<ExternalHashFile>.from(externalHashFiles)) {
+      await addExternalHashFile(file.url);
+    }
+  }
+
+  Future<void> toggleExternalHashFile(ExternalHashFile file, bool enabled) async {
+    int index = externalHashFiles.indexWhere((ExternalHashFile f) => f.url == file.url);
+    if (index < 0) {
+      return;
+    }
+
+    externalHashFiles[index] = externalHashFiles[index].copyWith(enabled: enabled);
+    externalHashFiles.refresh();
+    _rebuildExternalHashCache();
+
     await saveBeanConfig();
     _bumpVersion();
   }
@@ -371,6 +509,153 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     return rules;
   }
 
+  ExternalHashFile? _externalFromJson(dynamic data) {
+    if (data is! Map) {
+      return null;
+    }
+    try {
+      return ExternalHashFile.fromJson(data);
+    } catch (e, stack) {
+      log.error('Parse external hash file json failed', e, stack);
+      return null;
+    }
+  }
+
+  List<ExternalHashFile> _parseExternalHashFiles(dynamic data) {
+    if (data is! List) {
+      return <ExternalHashFile>[];
+    }
+    return data.map(_externalFromJson).whereType<ExternalHashFile>().toList();
+  }
+
+  Future<ExternalHashFile?> _fetchExternalHashFile(String url) async {
+    try {
+      dio.Response<String> response = await _dio.get<String>(url);
+      if (response.data == null) {
+        log.error('External hash file empty: $url');
+        return null;
+      }
+      List<String> hashes = _parseHashLines(response.data!);
+      return ExternalHashFile(
+        url: url,
+        hashes: hashes,
+        updatedAtMillis: DateTime.now().millisecondsSinceEpoch,
+        enabled: true,
+      );
+    } catch (e, stack) {
+      log.error('Download external hash file failed: $url', e, stack);
+      return null;
+    }
+  }
+
+  List<String> _parseHashLines(String raw) {
+    return raw
+        .split('\n')
+        .map(_normalizeString)
+        .whereType<String>()
+        .toSet()
+        .toList(growable: false);
+  }
+
+  void _rebuildExternalHashCache() {
+    _externalBlockedHashes
+      ..clear()
+      ..addAll(
+        externalHashFiles
+            .where((ExternalHashFile file) => file.enabled)
+            .expand((ExternalHashFile file) => file.hashes)
+            .toSet(),
+      );
+  }
+
+  Future<void> _loadBuiltInHashesFromAssets() async {
+    builtInHashLists.clear();
+    builtInBlockedHashes.clear();
+
+    List<String> assetPaths = await _readBuiltInAssetPaths();
+    for (String path in assetPaths) {
+      BuiltInHashList? list = await _readBuiltInHashList(path);
+      if (list == null) {
+        continue;
+      }
+      bool enabled = _builtInListEnabledConfig[path] ?? true;
+      BuiltInHashList applied = list.copyWith(enabled: enabled);
+      builtInHashLists.add(applied);
+      if (applied.enabled) {
+        builtInBlockedHashes.addAll(applied.hashes);
+      }
+    }
+
+    builtInHashLists.refresh();
+  }
+
+  Future<List<String>> _readBuiltInAssetPaths() async {
+    try {
+      String manifestContent = await rootBundle.loadString('AssetManifest.json');
+      Map<String, dynamic> manifestMap = json.decode(manifestContent) as Map<String, dynamic>;
+      return manifestMap.keys
+          .where((String key) => key.startsWith('assets/blocked_hashes/'))
+          .toList(growable: false);
+    } catch (e, stack) {
+      log.error('Load built-in hash manifest failed', e, stack);
+      return <String>[];
+    }
+  }
+
+  Future<BuiltInHashList?> _readBuiltInHashList(String assetPath) async {
+    try {
+      String raw = await rootBundle.loadString(assetPath);
+      return _parseBuiltInHashList(assetPath, raw);
+    } catch (e, stack) {
+      log.error('Load built-in hash file failed: $assetPath', e, stack);
+      return null;
+    }
+  }
+
+  BuiltInHashList _parseBuiltInHashList(String assetPath, String raw) {
+    List<String> hashes = <String>[];
+    String name = assetPath.split('/').isNotEmpty ? assetPath.split('/').last : assetPath;
+
+    for (String line in raw.split('\n')) {
+      String trimmed = line.trim();
+      if (trimmed.isEmpty) {
+        continue;
+      }
+      if (trimmed.startsWith('#')) {
+        if (trimmed.toLowerCase().startsWith('#name:')) {
+          name = trimmed.substring(6).trim();
+        }
+        continue;
+      }
+
+      String? normalized = _normalizeString(trimmed);
+      if (normalized == null) {
+        continue;
+      }
+      if (normalized.length != 40) {
+        continue;
+      }
+      hashes.add(normalized);
+    }
+
+    return BuiltInHashList(
+      assetPath: assetPath,
+      name: name,
+      hashes: hashes,
+      enabled: true,
+    );
+  }
+
+  void _rebuildBuiltInHashCache() {
+    builtInBlockedHashes
+      ..clear()
+      ..addAll(
+        builtInHashLists.where((BuiltInHashList list) => list.enabled).expand(
+              (BuiltInHashList list) => list.hashes,
+            ),
+      );
+  }
+
   String? _normalizeString(String? value) {
     if (value == null) {
       return null;
@@ -392,4 +677,74 @@ class _QrTagRule {
 
   final String namespace;
   final RegExp pattern;
+}
+
+class ExternalHashFile {
+  ExternalHashFile({
+    required this.url,
+    required this.hashes,
+    required this.updatedAtMillis,
+    required this.enabled,
+  });
+
+  final String url;
+  final List<String> hashes;
+  final int updatedAtMillis;
+  final bool enabled;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'hashes': hashes,
+      'updatedAtMillis': updatedAtMillis,
+      'enabled': enabled,
+    };
+  }
+
+  factory ExternalHashFile.fromJson(Map<dynamic, dynamic> json) {
+    List<dynamic> rawHashes = json['hashes'] as List<dynamic>? ?? const <dynamic>[];
+    return ExternalHashFile(
+      url: json['url'] as String? ?? '',
+      hashes: rawHashes
+          .map((dynamic e) => e.toString().trim().toLowerCase())
+          .where((String e) => e.isNotEmpty)
+          .toList(),
+      updatedAtMillis: json['updatedAtMillis'] as int? ?? 0,
+      enabled: json['enabled'] as bool? ?? true,
+    );
+  }
+
+  ExternalHashFile copyWith({bool? enabled}) {
+    return ExternalHashFile(
+      url: url,
+      hashes: hashes,
+      updatedAtMillis: updatedAtMillis,
+      enabled: enabled ?? this.enabled,
+    );
+  }
+
+  DateTime get updatedAt => DateTime.fromMillisecondsSinceEpoch(updatedAtMillis);
+}
+
+class BuiltInHashList {
+  BuiltInHashList({
+    required this.assetPath,
+    required this.name,
+    required this.hashes,
+    required this.enabled,
+  });
+
+  final String assetPath;
+  final String name;
+  final List<String> hashes;
+  final bool enabled;
+
+  BuiltInHashList copyWith({bool? enabled}) {
+    return BuiltInHashList(
+      assetPath: assetPath,
+      name: name,
+      hashes: hashes,
+      enabled: enabled ?? this.enabled,
+    );
+  }
 }

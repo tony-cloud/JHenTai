@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'package:jhentai/config/ui_config.dart';
@@ -13,6 +14,7 @@ import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/utils/toast_util.dart';
 
 class SettingAdBlockPage extends StatelessWidget {
   const SettingAdBlockPage({super.key});
@@ -29,9 +31,10 @@ class SettingAdBlockPage extends StatelessWidget {
             _buildQrBlocking(),
             _buildQrBlockingForTags(),
             _buildBuiltInListToggle(),
+            _buildExternalHashFiles(context),
             _buildHandlingDropdown(),
-            _buildBlocklistActions(),
-            _buildUserBlockedList(),
+            _buildBlocklistActions(context),
+            _buildCustomHashManager(context),
           ],
         ),
       ),
@@ -79,14 +82,41 @@ class SettingAdBlockPage extends StatelessWidget {
   }
 
   Widget _buildBuiltInListToggle() {
-    return SwitchListTile(
-      title: Text('useBuiltInAdBlockList'.tr),
-      subtitle: Text(
-        'useBuiltInAdBlockListHint'
-            .trParams({'count': imageBlockService.builtInBlockedHashes.length.toString()}),
+    return Obx(
+      () => Column(
+        children: [
+          SwitchListTile(
+            title: Text('useBuiltInAdBlockList'.tr),
+            subtitle: Text(
+              'useBuiltInAdBlockListHint'
+                  .trParams({'count': imageBlockService.builtInBlockedHashes.length.toString()}),
+            ),
+            value: imageBlockService.useBuiltInList.value,
+            onChanged: imageBlockService.saveUseBuiltInList,
+          ),
+          if (imageBlockService.builtInHashLists.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: imageBlockService.builtInHashLists
+                    .map(
+                      (BuiltInHashList list) => SwitchListTile(
+                        dense: true,
+                        title: Text(list.name),
+                        subtitle: Text(
+                          'hashCount'.trParams({'count': list.hashes.length.toString()}),
+                        ),
+                        value: list.enabled,
+                        onChanged: imageBlockService.useBuiltInList.isTrue
+                            ? (bool value) => imageBlockService.toggleBuiltInHashList(list, value)
+                            : null,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+        ],
       ),
-      value: imageBlockService.useBuiltInList.value,
-      onChanged: imageBlockService.saveUseBuiltInList,
     );
   }
 
@@ -114,51 +144,154 @@ class SettingAdBlockPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBlocklistActions() {
-    return ListTile(
-      title: Text('blockedImageTools'.tr),
-      subtitle: Text('blockedImageToolsHint'.tr),
-      trailing: Wrap(
-        spacing: 8,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.cleaning_services),
-            tooltip: 'clearBlockedImages'.tr,
-            onPressed: imageBlockService.clearUserBlockedHashes,
-          ),
-          IconButton(
-            icon: const Icon(Icons.qr_code_2),
-            tooltip: 'clearQrCache'.tr,
-            onPressed: imageBlockService.clearQrBlockedHashes,
-          ),
-        ],
+  Widget _buildBlocklistActions(BuildContext context) {
+    return Obx(
+      () => ListTile(
+        title: Text('blockedImageTools'.tr),
+        subtitle: Text(
+          'blockedImageToolsHint'
+              .trParams({'count': imageBlockService.qrBlockedHashes.length.toString()}),
+        ),
+        trailing: Wrap(
+          spacing: 8,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.qr_code_2),
+              tooltip: 'clearQrCache'.tr,
+              onPressed: () => _confirmClearQrCache(context),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildUserBlockedList() {
-    if (imageBlockService.userBlockedHashes.isEmpty) {
-      return ListTile(
-        title: Text('blockedImageList'.tr),
-        subtitle: Text('blockedImageListEmpty'.tr),
-      );
-    }
-
-    return ExpansionTile(
+  Widget _buildCustomHashManager(BuildContext context) {
+    return ListTile(
       title: Text('blockedImageList'.tr),
-      children: imageBlockService.userBlockedHashes
-          .map(
-            (hash) => ListTile(
-              dense: true,
-              title: Text(hash),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => imageBlockService.removeUserBlockedHash(hash),
-              ),
-            ),
-          )
-          .toList(),
+      subtitle: Text('blockedImageListManageHint'.tr),
+      trailing: OutlinedButton(
+        onPressed: () => _showCustomHashDialog(context),
+        child: Text('manage'.tr),
+      ),
+      onTap: () => _showCustomHashDialog(context),
     );
+  }
+
+  Widget _buildExternalHashFiles(BuildContext context) {
+    return Column(
+      children: [
+        SwitchListTile(
+          title: Text('autoUpdateExternalHashFiles'.tr),
+          subtitle: Text('autoUpdateExternalHashFilesHint'.tr),
+          value: imageBlockService.autoUpdateExternalHashFiles.value,
+          onChanged: imageBlockService.saveAutoUpdateExternalHashFiles,
+        ),
+        ListTile(
+          title: Text('externalHashFiles'.tr),
+          subtitle: Text('externalHashFilesHint'.tr),
+          trailing: IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _showAddExternalHashFileDialog(context),
+          ),
+        ),
+        ...imageBlockService.externalHashFiles.map(
+          (ExternalHashFile file) => SwitchListTile(
+            dense: true,
+            title: Text(file.url),
+            subtitle: Text(
+              'externalHashFileMeta'
+                  .trParams({'count': '${file.hashes.length}', 'time': _formatTime(file)}),
+            ),
+            value: file.enabled,
+            onChanged: (bool value) => imageBlockService.toggleExternalHashFile(file, value),
+            secondary: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'refresh'.tr,
+                  onPressed: () => imageBlockService.refreshExternalHashFile(file),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'delete'.tr,
+                  onPressed: () => imageBlockService.removeExternalHashFile(file),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showCustomHashDialog(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => const _CustomHashDialog(),
+    );
+  }
+
+  Future<void> _confirmClearQrCache(BuildContext context) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text('confirm'.tr),
+        content: Text('clearQrCacheConfirm'.tr),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text('cancel'.tr)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('ok'.tr)),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await imageBlockService.clearQrBlockedHashes();
+    }
+  }
+
+  Future<void> _showAddExternalHashFileDialog(BuildContext context) async {
+    final TextEditingController controller = TextEditingController();
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('addExternalHashFile'.tr),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(hintText: 'externalHashFileUrlHint'.tr),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('cancel'.tr),
+            ),
+            TextButton(
+              onPressed: () async {
+                String url = controller.text.trim();
+                if (url.isNotEmpty) {
+                  await imageBlockService.addExternalHashFile(url);
+                }
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('ok'.tr),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _formatTime(ExternalHashFile file) {
+    if (file.updatedAtMillis <= 0) {
+      return 'externalHashFileNever'.tr;
+    }
+    DateTime dt = file.updatedAt.toLocal();
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${dt.year}-${two(dt.month)}-${two(dt.day)} ${two(dt.hour)}:${two(dt.minute)}';
   }
 }
 
@@ -195,6 +328,9 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
   void initState() {
     super.initState();
     _tags.addAll(widget.initialTags.map(_SelectedTag.fromFilterValue));
+    for (final _SelectedTag tag in _tags) {
+      _maybeTranslateTag(tag);
+    }
     _controller.addListener(_handleTextChanged);
   }
 
@@ -270,6 +406,24 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
     });
     _controller.clear();
     _emitChange();
+    _maybeTranslateTag(tag);
+  }
+
+  void _addTagFromSuggestion(TagAutoCompletionMatch suggestion) {
+    final _SelectedTag tag = _SelectedTag.fromSuggestion(suggestion);
+    if (tag.normalized.isEmpty) {
+      return;
+    }
+    if (_tags.any((t) => t.normalized == tag.normalized)) {
+      _controller.clear();
+      return;
+    }
+    setState(() {
+      _tags.add(tag);
+    });
+    _controller.clear();
+    _emitChange();
+    _maybeTranslateTag(tag);
   }
 
   void _updateFieldHeight() {
@@ -299,11 +453,14 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
   Widget _buildChip(_SelectedTag tag, int index) {
     final Color fg = UIConfig.ehTagTextColor(context);
     final Color bg = UIConfig.ehTagBackGroundColor(context);
+    final String formatted = _formatTagLabel(tag);
+    final String label =
+        tag.operator == null || tag.operator!.isEmpty ? formatted : '${tag.operator}$formatted';
     return FilterChip(
       label: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: _fieldWidth - 40),
         child: Text(
-          tag.displayLabel,
+          label,
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -503,9 +660,7 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
                     subtitle:
                         subtitle == null ? null : Text(subtitle, overflow: TextOverflow.ellipsis),
                     onTap: () {
-                      _addTag(suggestion.operator == null || suggestion.operator!.isEmpty
-                          ? label
-                          : '${suggestion.operator}$label');
+                      _addTagFromSuggestion(suggestion);
                       _hideOverlay();
                     },
                   );
@@ -517,12 +672,42 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
       },
     );
   }
+
+  String _formatTagLabel(_SelectedTag tag) {
+    final TagData data = tag.tagData;
+    if (data.translatedNamespace != null && data.tagName != null) {
+      return '${data.translatedNamespace}:${data.tagName}';
+    }
+    if (data.tagName != null) {
+      return '${data.namespace}:${data.tagName}';
+    }
+    if (data.namespace.isEmpty) {
+      return data.key;
+    }
+    return '${data.namespace}:${data.key}';
+  }
+
+  void _maybeTranslateTag(_SelectedTag tag) {
+    if (tagTranslationService.isReady == false) {
+      return;
+    }
+
+    tagTranslationService
+        .getTagTranslation(tag.tagData.namespace, tag.tagData.key)
+        .then((TagData? translated) {
+      if (!mounted || translated == null) {
+        return;
+      }
+
+      setState(() => tag.updateTagData(translated));
+    });
+  }
 }
 
 class _SelectedTag {
   _SelectedTag(this.tagData, {this.operator});
 
-  final TagData tagData;
+  TagData tagData;
   final String? operator;
 
   String get filterValue =>
@@ -530,10 +715,12 @@ class _SelectedTag {
 
   String get normalized => filterValue.trim().toLowerCase();
 
-  String get displayLabel => filterValue;
-
   String get _rawValue =>
       tagData.namespace.isEmpty ? tagData.key : '${tagData.namespace}:${tagData.key}';
+
+  void updateTagData(TagData newData) {
+    tagData = newData;
+  }
 
   static _SelectedTag fromFilterValue(String value) {
     String trimmed = value.trim();
@@ -559,5 +746,151 @@ class _SelectedTag {
     }
 
     return _SelectedTag(tagData, operator: operator);
+  }
+
+  static _SelectedTag fromSuggestion(TagAutoCompletionMatch suggestion) {
+    final TagData source = suggestion.tagData;
+    final TagData tagData = TagData(
+      namespace: source.namespace,
+      key: source.key,
+      translatedNamespace: source.translatedNamespace,
+      tagName: source.tagName,
+      fullTagName: source.fullTagName,
+      intro: source.intro,
+      links: source.links,
+    );
+
+    return _SelectedTag(tagData, operator: suggestion.operator);
+  }
+}
+
+class _CustomHashDialog extends StatefulWidget {
+  const _CustomHashDialog();
+
+  @override
+  State<_CustomHashDialog> createState() => _CustomHashDialogState();
+}
+
+class _CustomHashDialogState extends State<_CustomHashDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('blockedImageList'.tr),
+      content: SizedBox(
+        width: 360,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _controller,
+              autofocus: true,
+              decoration: InputDecoration(hintText: 'customHashHint'.tr),
+              onSubmitted: _addHash,
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 240,
+              child: Obx(
+                () {
+                  if (imageBlockService.userBlockedHashes.isEmpty) {
+                    return Center(child: Text('blockedImageListEmpty'.tr));
+                  }
+                  return ListView(
+                    children: imageBlockService.userBlockedHashes
+                        .map(
+                          (String hash) => ListTile(
+                            dense: true,
+                            title: Text(hash),
+                            onTap: () => _copyHash(hash),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => imageBlockService.removeUserBlockedHash(hash),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('close'.tr),
+        ),
+        TextButton(
+          onPressed: _copyAllHashes,
+          child: Text('copyAllHashes'.tr),
+        ),
+        TextButton(
+          onPressed: () async {
+            final bool? confirmed = await showDialog<bool>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: Text('confirm'.tr),
+                content: Text('clearBlockedImagesConfirm'.tr),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('cancel'.tr),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text('ok'.tr),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true) {
+              await imageBlockService.clearUserBlockedHashes();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+            }
+          },
+          child: Text('clearBlockedImages'.tr),
+        ),
+        TextButton(
+          onPressed: () => _addHash(_controller.text),
+          child: Text('add'.tr),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _addHash(String raw) async {
+    String hash = raw.trim();
+    if (hash.isEmpty) {
+      return;
+    }
+    await imageBlockService.addUserBlockedHash(hash);
+    _controller.clear();
+    setState(() {});
+  }
+
+  Future<void> _copyHash(String hash) async {
+    await Clipboard.setData(ClipboardData(text: hash));
+    toast('hasCopiedToClipboard'.tr);
+  }
+
+  Future<void> _copyAllHashes() async {
+    if (imageBlockService.userBlockedHashes.isEmpty) {
+      return;
+    }
+    await Clipboard.setData(
+      ClipboardData(text: imageBlockService.userBlockedHashes.join('\n')),
+    );
+    toast('hasCopiedToClipboard'.tr);
   }
 }

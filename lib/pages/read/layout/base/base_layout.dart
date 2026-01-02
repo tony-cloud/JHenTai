@@ -1,10 +1,12 @@
 import 'dart:io' as io;
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/model/gallery_image.dart';
@@ -14,8 +16,8 @@ import 'package:jhentai/setting/read_setting.dart';
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/image_block_service.dart';
-import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/widget/eh_image.dart';
 import 'package:jhentai/widget/icon_text_button.dart';
@@ -160,6 +162,7 @@ abstract class BaseLayout extends StatelessWidget {
           imageBlockService.shouldBlock(image.imageHash, fallbackKey: image.url);
       if (reason != null) {
         return _buildBlockedIndicator(
+          context,
           reason,
           index,
           logic.getPlaceHolderSize(index),
@@ -298,6 +301,7 @@ abstract class BaseLayout extends StatelessWidget {
           );
           if (reason != null) {
             return _buildBlockedIndicator(
+              context,
               reason,
               index,
               logic.getPlaceHolderSize(index),
@@ -390,6 +394,7 @@ abstract class BaseLayout extends StatelessWidget {
       );
       if (reason != null) {
         return _buildBlockedIndicator(
+          context,
           reason,
           index,
           logic.getPlaceHolderSize(index),
@@ -510,6 +515,7 @@ abstract class BaseLayout extends StatelessWidget {
   }
 
   Widget _buildBlockedIndicator(
+    BuildContext context,
     ImageBlockReason reason,
     int index,
     Size placeHolderSize,
@@ -533,7 +539,7 @@ abstract class BaseLayout extends StatelessWidget {
     }
 
     return GestureDetector(
-      onLongPress: () => _maybeUnblockUserHash(reason, key),
+      onLongPress: () => _showBlockedMenu(context, reason, key),
       child: Container(
         alignment: Alignment.center,
         height: placeHolderSize.height,
@@ -552,11 +558,41 @@ abstract class BaseLayout extends StatelessWidget {
     );
   }
 
-  void _maybeUnblockUserHash(ImageBlockReason reason, String? key) {
+  void _showBlockedMenu(BuildContext context, ImageBlockReason reason, String? key) {
     if (reason != ImageBlockReason.hash || key == null) {
       return;
     }
 
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (_) => CupertinoActionSheet(
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _removeUserBlockedHash(key);
+            },
+            isDestructiveAction: true,
+            child: Text('unblockImage'.tr),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Clipboard.setData(ClipboardData(text: key));
+              toast('hasCopiedToClipboard'.tr);
+            },
+            child: Text('copyHash'.tr),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('cancel'.tr),
+        ),
+      ),
+    );
+  }
+
+  void _removeUserBlockedHash(String key) {
     imageBlockService.removeUserBlockedHash(key).then((_) {
       toast('unblockImageSuccess'.tr);
     });
