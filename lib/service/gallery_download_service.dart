@@ -28,6 +28,7 @@ import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/model/jh_response/fetch_image_hashes_vo.dart';
 import 'package:jhentai/model/jh_response/jh_response.dart';
 import 'package:jhentai/network/jh_request.dart';
+import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/setting/download_setting.dart';
@@ -1570,6 +1571,16 @@ class GalleryDownloadService extends GetxController
       GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
       GalleryImage image = galleryDownloadInfo.images[serialNo]!;
 
+      ImageBlockReason? blockReason = _resolveBlockReason(galleryDownloadInfo, image, serialNo);
+      if (_isHashBlocked(blockReason)) {
+        log.download(
+          'Skip blocked image download, gid: ${gallery.gid}, index: $serialNo',
+          level: Level.info,
+        );
+        await _markBlockedImageAsDownloaded(gallery, image, serialNo);
+        return;
+      }
+
       _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloading);
 
       /// If this is a update from old gallery, try to copy from existing old image first
@@ -1789,6 +1800,45 @@ class GalleryDownloadService extends GetxController
 
       await _updateProgressAfterImageDownloaded(gallery, serialNo);
     };
+  }
+
+  ImageBlockReason? _resolveBlockReason(
+    GalleryDownloadInfo galleryDownloadInfo,
+    GalleryImage image,
+    int serialNo,
+  ) {
+    String? hash = image.imageHash?.isNotEmpty == true ? image.imageHash : null;
+    hash ??= galleryDownloadInfo.imageHrefs[serialNo]?.originImageHash;
+
+    String? fallbackKey = imageBlockService.buildCacheKey(image);
+    fallbackKey ??= galleryDownloadInfo.imageHrefs[serialNo]?.originImageHash;
+    fallbackKey ??= galleryDownloadInfo.imageHrefs[serialNo]?.href;
+
+    return imageBlockService.shouldBlock(hash, fallbackKey: fallbackKey);
+  }
+
+  bool _isHashBlocked(ImageBlockReason? reason) {
+    return reason == ImageBlockReason.hash || reason == ImageBlockReason.builtInHash;
+  }
+
+  Future<void> _markBlockedImageAsDownloaded(
+    GalleryDownloadedData gallery,
+    GalleryImage image,
+    int serialNo,
+  ) async {
+    final bool statusUpdated =
+        await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloaded);
+    if (!statusUpdated) {
+      log.download(
+        'Mark blocked image as downloaded failed, queue re-parse. '
+        'Gid: ${gallery.gid}, index: $serialNo',
+        level: Level.error,
+      );
+      await _resetImageForReparse(gallery, serialNo, existingImage: image);
+      return;
+    }
+
+    await _updateProgressAfterImageDownloaded(gallery, serialNo);
   }
 
   Future<bool> _retryDownloadWithLegacyReloadKey(
@@ -2405,6 +2455,11 @@ class GalleryDownloadService extends GetxController
       }
 
       if (image.downloadStatus != DownloadStatus.downloaded) {
+        continue;
+      }
+
+      ImageBlockReason? blockReason = _resolveBlockReason(galleryDownloadInfo, image, serialNo);
+      if (_isHashBlocked(blockReason)) {
         continue;
       }
 
