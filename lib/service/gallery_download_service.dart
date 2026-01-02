@@ -975,11 +975,21 @@ class GalleryDownloadService extends GetxController
 
   String _computeImageDownloadAbsolutePath(String title, int gid, String imageUrl, int serialNo) {
     /// original image's url doesn't has an ext
-    String? ext = imageUrl.contains('fullimg.php') ? 'jpg' : imageUrl.split('.').last;
+    String sanitizedUrl = _stripQueryOrFragment(imageUrl);
+
+    String? ext;
+    if (sanitizedUrl.contains('fullimg.php')) {
+      ext = 'jpg';
+    } else {
+      int lastDot = sanitizedUrl.lastIndexOf('.');
+      if (lastDot != -1 && lastDot < sanitizedUrl.length - 1) {
+        ext = sanitizedUrl.substring(lastDot + 1);
+      }
+    }
 
     return path.join(
       computeGalleryDownloadAbsolutePath(title, gid),
-      '$serialNo.$ext',
+      '$serialNo.${ext ?? 'jpg'}',
     );
   }
 
@@ -999,6 +1009,24 @@ class GalleryDownloadService extends GetxController
     }
 
     return join(rootPrefix(path), relative(path, from: rootPrefix(path)));
+  }
+
+  String _stripQueryOrFragment(String url) {
+    int queryIndex = url.indexOf('?');
+    int fragmentIndex = url.indexOf('#');
+
+    int cutIndex;
+    if (queryIndex == -1 && fragmentIndex == -1) {
+      return url;
+    } else if (queryIndex == -1) {
+      cutIndex = fragmentIndex;
+    } else if (fragmentIndex == -1) {
+      cutIndex = queryIndex;
+    } else {
+      cutIndex = queryIndex < fragmentIndex ? queryIndex : fragmentIndex;
+    }
+
+    return url.substring(0, cutIndex);
   }
 
   void _sortGallerys() {
