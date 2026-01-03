@@ -29,6 +29,11 @@ const List<String> _defaultQrContentWhitelist = <String>[
   'booth',
   'poipiku',
   'marshmallow',
+  'twitter',
+  'pixiv',
+  'instagram',
+  'misskey',
+  'docs.google.com',
 ];
 
 class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
@@ -620,10 +625,10 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);
     } on FormatReaderException {
       log.debug('QR code found but format is invalid');
-      return const _QrScanOutcome(hasQr: true, isWhitelisted: false, content: null);
+      return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);
     } on ChecksumException {
       log.debug('QR code found but checksum validation failed');
-      return const _QrScanOutcome(hasQr: true, isWhitelisted: false, content: null);
+      return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);
     } catch (e) {
       log.error('Error while scanning QR code: $e');
       return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);

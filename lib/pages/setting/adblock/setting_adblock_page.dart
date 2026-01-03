@@ -1124,6 +1124,8 @@ class _CustomHashDialogState extends State<_CustomHashDialog> {
   }
 }
 
+enum _QrBlockSource { online, downloaded }
+
 enum _QrBlockSort { recent, oldest, rating }
 
 class _QrScanEntry {
@@ -1131,6 +1133,13 @@ class _QrScanEntry {
 
   final int index;
   final GalleryThumbnail thumbnail;
+}
+
+class _DownloadedScanEntry {
+  const _DownloadedScanEntry({required this.index, required this.image});
+
+  final int index;
+  final GalleryImage image;
 }
 
 class _ScanImageResult {
@@ -1151,6 +1160,7 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
   final TextEditingController _tagController = TextEditingController();
   final TextEditingController _galleryCountController = TextEditingController(text: '10');
 
+  _QrBlockSource _source = _QrBlockSource.online;
   _QrBlockSort _sort = _QrBlockSort.recent;
   QrBlockMode _mode = imageBlockService.qrBlockMode.value;
   int _tailImages =
@@ -1191,12 +1201,35 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
                 ),
               ),
               const SizedBox(height: 12),
+              DropdownButtonFormField<_QrBlockSource>(
+                initialValue: _source,
+                decoration: InputDecoration(labelText: 'qrBlockSourceLabel'.tr),
+                items: [
+                  DropdownMenuItem(
+                    value: _QrBlockSource.online,
+                    child: Text('qrBlockSourceOnline'.tr),
+                  ),
+                  DropdownMenuItem(
+                    value: _QrBlockSource.downloaded,
+                    child: Text('qrBlockSourceDownloaded'.tr),
+                  ),
+                ],
+                onChanged: _running
+                    ? null
+                    : (_QrBlockSource? value) {
+                        if (value != null) {
+                          setState(() => _source = value);
+                        }
+                      },
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _galleryCountController,
                       keyboardType: TextInputType.number,
+                      enabled: _source == _QrBlockSource.online && !_running,
                       decoration: InputDecoration(
                         labelText: 'qrBlockGalleryCount'.tr,
                       ),
@@ -1346,8 +1379,8 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
       return;
     }
 
-    int limit = _parseGalleryLimit();
-    _cancelToken = CancelToken();
+    int limit = _source == _QrBlockSource.online ? _parseGalleryLimit() : 0;
+    _cancelToken = _source == _QrBlockSource.online ? CancelToken() : null;
 
     setState(() {
       _running = true;
@@ -1359,28 +1392,11 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     });
 
     try {
-      List<Gallery> galleries = await _fetchGalleries(keyword, limit, _cancelToken!);
-      if (!mounted) {
-        return;
+      if (_source == _QrBlockSource.downloaded) {
+        await _scanDownloadedGalleries(keyword);
+      } else {
+        await _scanOnlineGalleries(keyword, limit);
       }
-
-      setState(() => _totalGallery = galleries.length);
-
-      for (int i = 0; i < galleries.length; i++) {
-        if (!_running) {
-          break;
-        }
-
-        setState(() {
-          _currentGallery = i + 1;
-          _currentImage = 0;
-          _totalImages = 0;
-          _status = galleries[i].title;
-        });
-
-        await _processGallery(galleries[i]);
-      }
-
       if (mounted) {
         setState(() => _status = 'qrBlockFinished'.tr);
       }
@@ -1402,12 +1418,110 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     setState(() => _running = false);
   }
 
+  Future<void> _scanOnlineGalleries(String keyword, int limit) async {
+    final CancelToken token = _cancelToken ?? CancelToken();
+    List<Gallery> galleries = await _fetchGalleries(keyword, limit, token);
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _totalGallery = galleries.length);
+
+    for (int i = 0; i < galleries.length; i++) {
+      if (!_running) {
+        break;
+      }
+
+      setState(() {
+        _currentGallery = i + 1;
+        _currentImage = 0;
+        _totalImages = 0;
+        _status = galleries[i].title;
+      });
+
+      await _processGallery(galleries[i]);
+    }
+  }
+
+  Future<void> _scanDownloadedGalleries(String keyword) async {
+    List<GalleryDownloadedData> galleries = await _fetchDownloadedGalleries(keyword);
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _totalGallery = galleries.length);
+
+    if (galleries.isEmpty) {
+      setState(() => _status = 'qrBlockNoDownloadedMatch'.tr);
+      return;
+    }
+
+    for (int i = 0; i < galleries.length; i++) {
+      if (!_running) {
+        break;
+      }
+
+      setState(() {
+        _currentGallery = i + 1;
+        _currentImage = 0;
+        _totalImages = 0;
+        _status = galleries[i].title;
+      });
+
+      await _processDownloadedGallery(galleries[i]);
+    }
+  }
+
   int _parseGalleryLimit() {
     int? parsed = int.tryParse(_galleryCountController.text.trim());
     if (parsed == null || parsed <= 0) {
       return 10;
     }
     return parsed.clamp(1, 1000);
+  }
+
+  Future<List<GalleryDownloadedData>> _fetchDownloadedGalleries(String keyword) async {
+    await galleryDownloadService.completed;
+
+    String normalized = keyword.toLowerCase();
+    String cleaned = normalized.replaceAll('"', '');
+    Set<String> terms = {
+      normalized,
+      cleaned,
+    };
+
+    int colonIndex = cleaned.indexOf(':');
+    if (colonIndex != -1 && colonIndex < cleaned.length - 1) {
+      String tail = cleaned.substring(colonIndex + 1).trim();
+      if (tail.isNotEmpty) {
+        terms.add(tail);
+      }
+    }
+
+    List<GalleryDownloadedData> downloaded = galleryDownloadService.gallerys
+        .where(
+          (GalleryDownloadedData g) => g.downloadStatusIndex == DownloadStatus.downloaded.index,
+        )
+        .toList();
+
+    List<GalleryDownloadedData> matches = downloaded.where((GalleryDownloadedData g) {
+      String tags = g.tags.toLowerCase();
+      String title = g.title.toLowerCase();
+      String uploader = g.uploader?.toLowerCase() ?? '';
+
+      for (String term in terms) {
+        if (term.isEmpty) {
+          continue;
+        }
+        if (tags.contains(term) || title.contains(term) || uploader.contains(term)) {
+          return true;
+        }
+      }
+      return false;
+    }).toList();
+
+    matches.sort(_compareDownloadedGalleries);
+    return matches;
   }
 
   Future<List<Gallery>> _fetchGalleries(
@@ -1445,6 +1559,22 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     return sorted;
   }
 
+  int _compareDownloadedGalleries(
+    GalleryDownloadedData a,
+    GalleryDownloadedData b,
+  ) {
+    switch (_sort) {
+      case _QrBlockSort.recent:
+        return _parsePublishTimeString(b.publishTime)
+            .compareTo(_parsePublishTimeString(a.publishTime));
+      case _QrBlockSort.oldest:
+        return _parsePublishTimeString(a.publishTime)
+            .compareTo(_parsePublishTimeString(b.publishTime));
+      case _QrBlockSort.rating:
+        return 0;
+    }
+  }
+
   int _compareGalleries(Gallery a, Gallery b) {
     switch (_sort) {
       case _QrBlockSort.recent:
@@ -1458,6 +1588,10 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
 
   DateTime _parsePublishTime(Gallery gallery) {
     return DateTime.tryParse(gallery.publishTime) ?? DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  DateTime _parsePublishTimeString(String publishTime) {
+    return DateTime.tryParse(publishTime) ?? DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   Future<void> _processGallery(Gallery gallery) async {
@@ -1506,7 +1640,11 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
       return;
     }
 
-    List<String> toBlock = _resolveBlockKeys(entries, keys, qrIndexes);
+    List<String> toBlock = _resolveBlockKeys(
+      entries.map((e) => e.index).toList(growable: false),
+      keys,
+      qrIndexes,
+    );
     if (toBlock.isEmpty) {
       return;
     }
@@ -1515,8 +1653,122 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     await imageBlockService.addQrBlockedKeys(toBlock);
   }
 
+  Future<void> _processDownloadedGallery(GalleryDownloadedData gallery) async {
+    if (!_running) {
+      return;
+    }
+
+    GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gallery.gid];
+    if (info == null) {
+      return;
+    }
+
+    List<_DownloadedScanEntry> entries = _collectDownloadedEntries(info);
+    if (entries.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _totalImages = entries.length;
+      _currentImage = 0;
+    });
+
+    Map<int, String> keys = <int, String>{};
+    Set<int> qrIndexes = <int>{};
+
+    for (int i = 0; i < entries.length; i++) {
+      if (!_running) {
+        break;
+      }
+      setState(() => _currentImage = i + 1);
+
+      _ScanImageResult? result = await _scanDownloadedImage(entries[i]);
+      if (result == null) {
+        continue;
+      }
+
+      if (result.key != null) {
+        keys[entries[i].index] = result.key!;
+      }
+      if (result.hasQr) {
+        qrIndexes.add(entries[i].index);
+      }
+    }
+
+    if (qrIndexes.isEmpty) {
+      return;
+    }
+
+    List<String> toBlock = _resolveBlockKeys(
+      entries.map((e) => e.index).toList(growable: false),
+      keys,
+      qrIndexes,
+    );
+    if (toBlock.isEmpty) {
+      return;
+    }
+
+    await imageBlockService.addUserBlockedHashes(toBlock);
+    await imageBlockService.addQrBlockedKeys(toBlock);
+  }
+
+  List<_DownloadedScanEntry> _collectDownloadedEntries(GalleryDownloadInfo info) {
+    List<_DownloadedScanEntry> downloaded = <_DownloadedScanEntry>[];
+
+    for (int i = 0; i < info.images.length; i++) {
+      GalleryImage? image = info.images[i];
+      if (image == null) {
+        continue;
+      }
+      if (image.downloadStatus != DownloadStatus.downloaded) {
+        continue;
+      }
+      if (image.path == null) {
+        continue;
+      }
+      downloaded.add(_DownloadedScanEntry(index: i, image: image));
+    }
+
+    if (downloaded.isEmpty) {
+      return downloaded;
+    }
+
+    downloaded.sort((a, b) => a.index.compareTo(b.index));
+
+    int desired = _tailImages <= 0 ? downloaded.length : _tailImages;
+    desired = desired.clamp(1, downloaded.length).toInt();
+
+    return downloaded.sublist(downloaded.length - desired);
+  }
+
+  Future<_ScanImageResult?> _scanDownloadedImage(_DownloadedScanEntry entry) async {
+    try {
+      String? relativePath = entry.image.path;
+      if (relativePath == null) {
+        return null;
+      }
+
+      String absolutePath = GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
+        relativePath,
+      );
+
+      File file = File(absolutePath);
+      if (!await file.exists()) {
+        return null;
+      }
+
+      Uint8List bytes = await file.readAsBytes();
+      String? cacheKey = imageBlockService.buildCacheKey(entry.image);
+      bool hasQr = await imageBlockService.containsQrCodeInBytes(bytes);
+      return _ScanImageResult(hasQr: hasQr, key: cacheKey);
+    } catch (e, stack) {
+      log.error('Scan downloaded image failed', e, stack);
+      return null;
+    }
+  }
+
   List<String> _resolveBlockKeys(
-    List<_QrScanEntry> entries,
+    List<int> indexes,
     Map<int, String> keys,
     Set<int> qrIndexes,
   ) {
@@ -1526,7 +1778,8 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
 
     int start = qrIndexes.reduce((int a, int b) => a < b ? a : b);
     int end = qrIndexes.reduce((int a, int b) => a > b ? a : b);
-    int lastScannedIndex = entries.last.index;
+    List<int> sortedIndexes = List<int>.from(indexes)..sort();
+    int lastScannedIndex = sortedIndexes.isEmpty ? 0 : sortedIndexes.last;
 
     Set<int> targets;
     switch (_mode) {
