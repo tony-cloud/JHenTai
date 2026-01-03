@@ -24,6 +24,7 @@ import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
+import 'package:jhentai/service/wakelock_service.dart';
 import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/toast_util.dart';
@@ -1273,6 +1274,8 @@ class _AdvancedQrBlockDialog extends StatefulWidget {
 }
 
 class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
+  static const String _wakelockName = 'advancedQrBlockDialog';
+
   final TextEditingController _galleryCountController = TextEditingController(text: '10');
   List<String> _tagFilters = <String>[];
 
@@ -1292,6 +1295,7 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
 
   @override
   void dispose() {
+    wakelockService.release(_wakelockName);
     _cancelToken?.cancel('dialog closed');
     _galleryCountController.dispose();
     super.dispose();
@@ -1495,6 +1499,8 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     int limit = _source == _QrBlockSource.online ? _parseGalleryLimit() : 0;
     _cancelToken = _source == _QrBlockSource.online ? CancelToken() : null;
 
+    await wakelockService.acquire(_wakelockName);
+
     setState(() {
       _running = true;
       _status = null;
@@ -1520,6 +1526,7 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
       }
     } finally {
       _cancelToken = null;
+      await wakelockService.release(_wakelockName);
       if (mounted) {
         setState(() => _running = false);
       }
@@ -1528,6 +1535,7 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
 
   void _stop() {
     _cancelToken?.cancel('stopped');
+    wakelockService.release(_wakelockName);
     setState(() => _running = false);
   }
 

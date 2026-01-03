@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
@@ -27,6 +28,9 @@ const List<String> _defaultQrContentWhitelist = <String>[
   'fantia',
   'skeb',
   'booth',
+  'ci-en',
+  'dlsite',
+  'fanza',
   'poipiku',
   'marshmallow',
   'twitter',
@@ -34,7 +38,29 @@ const List<String> _defaultQrContentWhitelist = <String>[
   'instagram',
   'misskey',
   'docs.google.com',
+  'privatter',
+  'odaibako',
+  'blog',
+  'tumblr',
+  'youtube',
+  'live.jp',
+  'x.com',
+  'facebook.com',
+  'discord.gg',
+  'patreon.com',
+  'paypal.me',
+  'pawoo.net',
+  'gumroad.com',
+  'ko-fi.com',
+  'linktr.ee',
+  'line.me',
+  'gmail.com',
+  'ktcom.jp',
+  '.jp',
+  'yahoo',
 ];
+
+const int _qrMaxDimension = 800;
 
 class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxBool enableHashBlocking = true.obs;
@@ -597,11 +623,12 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   }
 
   Future<_QrScanOutcome> _scanQrContent(img.Image image) async {
+    final img.Image prepared = _prepareImageForQr(image);
     try {
       LuminanceSource source = RGBLuminanceSource(
-        image.width,
-        image.height,
-        image.convert(numChannels: 4).getBytes(order: img.ChannelOrder.abgr).buffer.asInt32List(),
+        prepared.width,
+        prepared.height,
+        prepared.getBytes(order: img.ChannelOrder.abgr).buffer.asInt32List(),
       );
       BinaryBitmap bitmap = BinaryBitmap(HybridBinarizer(source));
       QRCodeReader reader = QRCodeReader();
@@ -655,6 +682,30 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);
     }
     return _scanQrContent(image);
+  }
+
+  img.Image _prepareImageForQr(img.Image source) {
+    img.Image working = source;
+
+    final int maxSide = math.max(source.width, source.height);
+    if (maxSide > _qrMaxDimension) {
+      final double scale = _qrMaxDimension / maxSide;
+      final int targetWidth = math.max(1, (source.width * scale).round());
+      final int targetHeight = math.max(1, (source.height * scale).round());
+
+      working = img.copyResize(
+        source,
+        width: targetWidth,
+        height: targetHeight,
+        interpolation: img.Interpolation.average,
+      );
+    }
+
+    if (working.numChannels == 4) {
+      return working;
+    }
+
+    return working.convert(numChannels: 4);
   }
 
   Future<bool> containsQrCodeInBytes(Uint8List bytes) async {
