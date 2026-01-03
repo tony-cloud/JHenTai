@@ -18,11 +18,13 @@ import 'package:jhentai/model/gallery_thumbnail.dart';
 import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/download_filter_service.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
+import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/toast_util.dart';
 
@@ -459,182 +461,163 @@ class _QrTagSelector extends StatefulWidget {
 }
 
 class _QrTagSelectorState extends State<_QrTagSelector> {
-  final LayerLink _layerLink = LayerLink();
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final GlobalKey _fieldKey = GlobalKey();
-  final List<_SelectedTag> _tags = [];
+  final LayerLink _layerLink = LayerLink();
+  final GlobalKey _textFieldKey = GlobalKey();
+
+  final List<_SelectedTag> _tags = <_SelectedTag>[];
   List<TagAutoCompletionMatch> _suggestions = <TagAutoCompletionMatch>[];
+
   OverlayEntry? _overlayEntry;
   Timer? _debounce;
+  Timer? _hideOnUnfocusTimer;
   int _requestId = 0;
-  double _fieldHeight = 0;
-
-  double get _fieldWidth => MediaQuery.of(context).size.width - 32;
+  double _fieldWidth = 0;
+  double _fieldHeight = 40;
 
   @override
   void initState() {
     super.initState();
-    _tags.addAll(widget.initialTags.map(_SelectedTag.fromFilterValue));
-    for (final _SelectedTag tag in _tags) {
-      _maybeTranslateTag(tag);
+    for (final String raw in widget.initialTags) {
+      final _SelectedTag tag = _createSelectedTagFromRaw(raw);
+      _addTagInternal(tag, notifyParent: false);
     }
-    _controller.addListener(_handleTextChanged);
+
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        _hideOnUnfocusTimer?.cancel();
+        _hideOnUnfocusTimer = Timer(const Duration(milliseconds: 200), _hideOverlay);
+      }
+    });
   }
 
   @override
   void didUpdateWidget(covariant _QrTagSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!listEquals(oldWidget.initialTags, widget.initialTags)) {
-      _tags
-        ..clear()
-        ..addAll(widget.initialTags.map(_SelectedTag.fromFilterValue));
-      _emitChange();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _tags.clear();
+        for (final String raw in widget.initialTags) {
+          _tags.add(_createSelectedTagFromRaw(raw));
+        }
+      });
+      for (final _SelectedTag tag in _tags) {
+        _populateTranslation(tag);
+      }
     }
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
-    _overlayEntry?.remove();
-    _overlayEntry?.dispose();
+    _hideOnUnfocusTimer?.cancel();
+    _hideOverlay();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _handleTextChanged() {
-    _scheduleSearch(_controller.text);
-  }
-
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateFieldHeight());
+    final double screenWidth = MediaQuery.of(context).size.width;
+    double containerWidth = screenWidth.isFinite ? screenWidth - 96 : 280;
+    if (containerWidth < 200) {
+      containerWidth = 200;
+    } else if (containerWidth > 360) {
+      containerWidth = 360;
+    }
+    _fieldWidth = containerWidth;
+    _updateFieldSize();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CompositedTransformTarget(
           link: _layerLink,
           child: TextField(
-            key: _fieldKey,
+            key: _textFieldKey,
             controller: _controller,
             focusNode: _focusNode,
             enabled: widget.enabled,
             decoration: InputDecoration(
               labelText: 'qrBlockFilterTagList'.tr,
               hintText: 'qrBlockFilterTagListHint'.tr,
+              isDense: true,
             ),
-            onSubmitted: _addTag,
+            onChanged: _onTextChanged,
+            onSubmitted: (_) => _hideOverlay(),
+            textInputAction: TextInputAction.search,
+            minLines: 1,
+            maxLines: 1,
           ),
         ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: List<Widget>.generate(
-            _tags.length,
-            (int index) => _buildChip(_tags[index], index),
-          ),
-        ),
+        if (_tags.isNotEmpty) const SizedBox(height: 8),
+        _buildSelectedTagChips(context, containerWidth),
       ],
     );
   }
 
-  void _addTag(String raw) {
-    final _SelectedTag tag = _SelectedTag.fromFilterValue(raw);
-    if (tag.normalized.isEmpty) {
+  void _onTextChanged(String value) {
+    _scheduleSearch(value);
+  }
+
+  void _addTagInternal(_SelectedTag tag, {bool notifyParent = true}) {
+    if (tag.filterValue.trim().isEmpty) {
       return;
     }
-    if (_tags.any((t) => t.normalized == tag.normalized)) {
-      _controller.clear();
+    if (_tags.any((existing) => existing.normalized == tag.normalized)) {
       return;
     }
-    setState(() {
-      _tags.add(tag);
-    });
+    if (!mounted) {
+      return;
+    }
+    setState(() => _tags.add(tag));
+    if (notifyParent) {
+      widget.onChanged(
+        _tags.map((t) => t.filterValue).toList(growable: false),
+      );
+    }
+
+    _populateTranslation(tag);
+
     _controller.clear();
-    _emitChange();
-    _maybeTranslateTag(tag);
+    _hideOverlay();
+    if (widget.enabled) {
+      _focusNode.requestFocus();
+    }
   }
 
-  void _addTagFromSuggestion(TagAutoCompletionMatch suggestion) {
-    final _SelectedTag tag = _SelectedTag.fromSuggestion(suggestion);
-    if (tag.normalized.isEmpty) {
-      return;
-    }
-    if (_tags.any((t) => t.normalized == tag.normalized)) {
-      _controller.clear();
-      return;
-    }
-    setState(() {
-      _tags.add(tag);
+  void _removeTagAt(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _tags.removeAt(index));
+      widget.onChanged(
+        _tags.map((t) => t.filterValue).toList(growable: false),
+      );
+      _scheduleSearch(_controller.text);
     });
-    _controller.clear();
-    _emitChange();
-    _maybeTranslateTag(tag);
   }
 
-  void _updateFieldHeight() {
-    final RenderBox? box = _fieldKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null) {
-      return;
-    }
-    final double height = box.size.height;
-    if ((height - _fieldHeight).abs() > 0.5) {
-      setState(() {
-        _fieldHeight = height;
-      });
-    }
-  }
-
-  void _removeTag(int index) {
-    setState(() {
-      _tags.removeAt(index);
-    });
-    _emitChange();
-  }
-
-  void _emitChange() {
-    widget.onChanged(_tags.map((t) => t.filterValue).toList(growable: false));
-  }
-
-  Widget _buildChip(_SelectedTag tag, int index) {
-    final Color fg = UIConfig.ehTagTextColor(context);
-    final Color bg = UIConfig.ehTagBackGroundColor(context);
-    final String formatted = _formatTagLabel(tag);
-    final String label =
-        tag.operator == null || tag.operator!.isEmpty ? formatted : '${tag.operator}$formatted';
-    return FilterChip(
-      label: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: _fieldWidth - 40),
-        child: Text(
-          label,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      labelStyle: TextStyle(color: fg, fontSize: 12),
-      backgroundColor: bg,
-      selectedColor: bg,
-      showCheckmark: false,
-      onSelected: (_) {},
-      deleteIcon: const Icon(Icons.close, size: 16),
-      deleteIconColor: fg,
-      onDeleted: () => _removeTag(index),
-    );
-  }
-
-  void _scheduleSearch(String raw) {
+  void _scheduleSearch(String rawQuery) {
     _debounce?.cancel();
-    final String query = raw.trim();
-    if (query.isEmpty) {
+
+    final String query = rawQuery.trim();
+    if (query.isEmpty || !widget.enabled) {
       _suggestions = <TagAutoCompletionMatch>[];
       _hideOverlay();
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 200), () => _search(query));
+
+    _debounce = Timer(const Duration(milliseconds: 200), () => _searchSuggestions(query));
   }
 
-  Future<void> _search(String query) async {
+  Future<void> _searchSuggestions(String query) async {
     final int captured = ++_requestId;
     List<TagAutoCompletionMatch> translationMatches = <TagAutoCompletionMatch>[];
     if (tagTranslationService.isReady) {
@@ -644,26 +627,40 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
       }
     }
 
-    final List<TagAutoCompletionMatch> rawMatches = await _fetchRawSuggestions(query);
+    final List<TagAutoCompletionMatch> rawMatches = await _fetchRawTagSuggestions(query);
     if (!mounted || captured != _requestId) {
       return;
     }
 
-    final List<TagAutoCompletionMatch> matches = _mergeMatches(translationMatches, rawMatches)
-        .where((m) => !_tags.any((t) => t.normalized == _normalizeMatch(m)))
-        .toList();
+    final List<TagAutoCompletionMatch> uploaderMatches =
+        await downloadFilterService.buildUploaderSuggestions(query);
+    if (!mounted || captured != _requestId) {
+      return;
+    }
 
-    if (matches.isEmpty) {
+    final List<TagAutoCompletionMatch> matches =
+        _mergeMatches(translationMatches, rawMatches, uploaderMatches);
+    if (!mounted || captured != _requestId) {
+      return;
+    }
+
+    final Set<String> existing = _tags.map((tag) => tag.normalized).toSet();
+    final List<TagAutoCompletionMatch> filtered = matches.where((TagAutoCompletionMatch match) {
+      final String normalized = _normalizeMatch(match);
+      return !existing.contains(normalized);
+    }).toList();
+
+    if (filtered.isEmpty) {
       _suggestions = <TagAutoCompletionMatch>[];
       _hideOverlay();
       return;
     }
 
-    _suggestions = matches;
+    _suggestions = filtered;
     _showOverlay();
   }
 
-  Future<List<TagAutoCompletionMatch>> _fetchRawSuggestions(String rawQuery) async {
+  Future<List<TagAutoCompletionMatch>> _fetchRawTagSuggestions(String rawQuery) async {
     final String trimmed = rawQuery.trim();
     if (trimmed.isEmpty) {
       return <TagAutoCompletionMatch>[];
@@ -717,6 +714,7 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
   List<TagAutoCompletionMatch> _mergeMatches(
     List<TagAutoCompletionMatch> translationMatches,
     List<TagAutoCompletionMatch> rawMatches,
+    List<TagAutoCompletionMatch> uploaderMatches,
   ) {
     final List<TagAutoCompletionMatch> merged = <TagAutoCompletionMatch>[];
     final Set<String> seen = <String>{};
@@ -729,6 +727,13 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
     }
 
     for (final TagAutoCompletionMatch match in rawMatches) {
+      final String normalized = _normalizeMatch(match);
+      if (seen.add(normalized)) {
+        merged.add(match);
+      }
+    }
+
+    for (final TagAutoCompletionMatch match in uploaderMatches) {
       final String normalized = _normalizeMatch(match);
       if (seen.add(normalized)) {
         merged.add(match);
@@ -781,7 +786,7 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
         return CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: Offset(0, (_fieldHeight == 0 ? 56 : _fieldHeight) + 4),
+          offset: Offset(0, _fieldHeight + 4),
           child: Material(
             elevation: 4,
             borderRadius: BorderRadius.circular(8),
@@ -792,32 +797,66 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
                 maxWidth: width,
                 maxHeight: 240,
               ),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: _suggestions.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final TagAutoCompletionMatch suggestion = _suggestions[index];
-                  final TagData data = suggestion.tagData;
-                  final String label =
-                      data.namespace.isEmpty ? data.key : '${data.namespace}:${data.key}';
-                  final String? subtitle = data.tagName ?? data.fullTagName;
-                  return ListTile(
-                    dense: true,
-                    visualDensity: const VisualDensity(vertical: -2),
-                    title: Text(label, overflow: TextOverflow.ellipsis),
-                    subtitle:
-                        subtitle == null ? null : Text(subtitle, overflow: TextOverflow.ellipsis),
-                    onTap: () {
-                      _addTagFromSuggestion(suggestion);
-                      _hideOverlay();
-                    },
-                  );
+              child: _QrTagSuggestionList(
+                suggestions: _suggestions,
+                onTap: (TagAutoCompletionMatch suggestion) {
+                  _addTagInternal(_createSelectedTagFromSuggestion(suggestion));
                 },
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSelectedTagChips(BuildContext context, double maxWidth) {
+    if (_tags.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: List<Widget>.generate(
+          _tags.length,
+          (int index) => _buildSelectedTagChip(context, _tags[index], index),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedTagChip(BuildContext context, _SelectedTag tag, int index) {
+    final String formatted = _formatTagLabel(tag);
+    final String label =
+        tag.operator == null || tag.operator!.isEmpty ? formatted : '${tag.operator}$formatted';
+    final Color foreground = UIConfig.ehTagTextColor(context);
+    final Color background = UIConfig.ehTagBackGroundColor(context);
+
+    return FilterChip(
+      key: ValueKey(tag.filterValue),
+      label: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: _fieldWidth - 40),
+        child: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+      ),
+      labelStyle: TextStyle(color: foreground, fontSize: 12),
+      selected: true,
+      showCheckmark: false,
+      backgroundColor: background,
+      selectedColor: background,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      deleteIcon: const Icon(Icons.close, size: 16),
+      deleteIconColor: foreground,
+      onDeleted: () => _removeTagAt(index),
+      onSelected: (_) => _removeTagAt(index),
     );
   }
 
@@ -835,8 +874,24 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
     return '${data.namespace}:${data.key}';
   }
 
-  void _maybeTranslateTag(_SelectedTag tag) {
-    if (tagTranslationService.isReady == false) {
+  void _updateFieldSize() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final RenderObject? renderObject = _textFieldKey.currentContext?.findRenderObject();
+      if (renderObject is RenderBox && renderObject.hasSize) {
+        _fieldHeight = renderObject.size.height;
+        _overlayEntry?.markNeedsBuild();
+      }
+    });
+  }
+
+  void _populateTranslation(_SelectedTag tag) {
+    if (!tagTranslationService.isReady) {
+      return;
+    }
+    if (tag.tagData.tagName != null || tag.tagData.translatedNamespace != null) {
       return;
     }
 
@@ -846,9 +901,105 @@ class _QrTagSelectorState extends State<_QrTagSelector> {
       if (!mounted || translated == null) {
         return;
       }
-
       setState(() => tag.updateTagData(translated));
     });
+  }
+
+  _SelectedTag _createSelectedTagFromRaw(String raw) {
+    String trimmed = raw.trim();
+    if (trimmed.isEmpty) {
+      return _SelectedTag(TagData(namespace: '', key: ''));
+    }
+
+    String? operator;
+    if (trimmed.startsWith('-') || trimmed.startsWith('~')) {
+      operator = trimmed[0];
+      trimmed = trimmed.substring(1).trim();
+    }
+
+    final TagData tagData = _parseTagData(trimmed) ?? TagData(namespace: '', key: trimmed);
+    return _SelectedTag(tagData, operator: operator);
+  }
+
+  _SelectedTag _createSelectedTagFromSuggestion(TagAutoCompletionMatch suggestion) {
+    final TagData source = suggestion.tagData;
+    final TagData tagData = TagData(
+      namespace: source.namespace,
+      key: source.key,
+      translatedNamespace: source.translatedNamespace,
+      tagName: source.tagName,
+      fullTagName: source.fullTagName,
+      intro: source.intro,
+      links: source.links,
+    );
+    return _SelectedTag(tagData, operator: suggestion.operator);
+  }
+
+  TagData? _parseTagData(String raw) {
+    final String trimmed = raw.trim();
+    if (trimmed.isEmpty || !trimmed.contains(':')) {
+      return null;
+    }
+
+    final int colonIndex = trimmed.indexOf(':');
+    if (colonIndex <= 0 || colonIndex >= trimmed.length - 1) {
+      return null;
+    }
+
+    String namespace = trimmed.substring(0, colonIndex).trim();
+    String key = trimmed.substring(colonIndex + 1).trim();
+
+    if (key.startsWith('"') && key.endsWith('"') && key.length > 1) {
+      key = key.substring(1, key.length - 1);
+    }
+
+    return TagData(namespace: namespace, key: key);
+  }
+}
+
+class _QrTagSuggestionList extends StatelessWidget {
+  const _QrTagSuggestionList({required this.suggestions, required this.onTap});
+
+  final List<TagAutoCompletionMatch> suggestions;
+  final ValueChanged<TagAutoCompletionMatch> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle titleStyle =
+        Theme.of(context).textTheme.bodyMedium ?? const TextStyle(fontSize: 14);
+    final TextStyle highlightStyle = titleStyle.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      fontWeight: FontWeight.w600,
+    );
+    final TextStyle subtitleStyle =
+        Theme.of(context).textTheme.bodySmall ?? const TextStyle(fontSize: 12);
+    final TextStyle subtitleHighlight = subtitleStyle.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      fontWeight: FontWeight.w600,
+    );
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: suggestions.length,
+      itemBuilder: (BuildContext context, int index) {
+        final TagAutoCompletionMatch suggestion = suggestions[index];
+        return ListTile(
+          dense: true,
+          visualDensity: const VisualDensity(vertical: -2),
+          title: highlightRawTag(context, suggestion, titleStyle, highlightStyle, singleLine: true),
+          subtitle: suggestion.tagData.tagName == null
+              ? null
+              : highlightTranslatedTag(
+                  context,
+                  suggestion,
+                  subtitleStyle,
+                  subtitleHighlight,
+                  singleLine: true,
+                ),
+          onTap: () => onTap(suggestion),
+        );
+      },
+    );
   }
 }
 
@@ -868,47 +1019,6 @@ class _SelectedTag {
 
   void updateTagData(TagData newData) {
     tagData = newData;
-  }
-
-  static _SelectedTag fromFilterValue(String value) {
-    String trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return _SelectedTag(TagData(namespace: '', key: ''));
-    }
-
-    String? operator;
-    if (trimmed.startsWith('-') || trimmed.startsWith('~')) {
-      operator = trimmed[0];
-      trimmed = trimmed.substring(1).trimLeft();
-    }
-
-    final int colonIndex = trimmed.indexOf(':');
-    TagData tagData;
-    if (colonIndex <= 0 || colonIndex >= trimmed.length - 1) {
-      tagData = TagData(namespace: '', key: trimmed);
-    } else {
-      tagData = TagData(
-        namespace: trimmed.substring(0, colonIndex).trim(),
-        key: trimmed.substring(colonIndex + 1).trim(),
-      );
-    }
-
-    return _SelectedTag(tagData, operator: operator);
-  }
-
-  static _SelectedTag fromSuggestion(TagAutoCompletionMatch suggestion) {
-    final TagData source = suggestion.tagData;
-    final TagData tagData = TagData(
-      namespace: source.namespace,
-      key: source.key,
-      translatedNamespace: source.translatedNamespace,
-      tagName: source.tagName,
-      fullTagName: source.fullTagName,
-      intro: source.intro,
-      links: source.links,
-    );
-
-    return _SelectedTag(tagData, operator: suggestion.operator);
   }
 }
 
@@ -980,6 +1090,9 @@ class _QrContentWhitelistDialogState extends State<_QrContentWhitelistDialog> {
   }
 
   void _restoreDefaults() {
+    if (!mounted) {
+      return;
+    }
     setState(
       () => _controller.text = imageBlockService.defaultQrContentWhitelist.join('\n'),
     );
@@ -1105,6 +1218,9 @@ class _CustomHashDialogState extends State<_CustomHashDialog> {
     }
     await imageBlockService.addUserBlockedHash(hash);
     _controller.clear();
+    if (!mounted) {
+      return;
+    }
     setState(() {});
   }
 
@@ -1157,8 +1273,8 @@ class _AdvancedQrBlockDialog extends StatefulWidget {
 }
 
 class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
-  final TextEditingController _tagController = TextEditingController();
   final TextEditingController _galleryCountController = TextEditingController(text: '10');
+  List<String> _tagFilters = <String>[];
 
   _QrBlockSource _source = _QrBlockSource.online;
   _QrBlockSort _sort = _QrBlockSort.recent;
@@ -1177,7 +1293,6 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
   @override
   void dispose() {
     _cancelToken?.cancel('dialog closed');
-    _tagController.dispose();
     _galleryCountController.dispose();
     super.dispose();
   }
@@ -1193,12 +1308,10 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                controller: _tagController,
-                decoration: InputDecoration(
-                  labelText: 'qrBlockTagLabel'.tr,
-                  hintText: 'qrBlockTagHint'.tr,
-                ),
+              _QrTagSelector(
+                enabled: !_running,
+                initialTags: _tagFilters,
+                onChanged: _handleTagFiltersChanged,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<_QrBlockSource>(
@@ -1373,7 +1486,7 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
       return;
     }
 
-    String keyword = _tagController.text.trim();
+    final String keyword = _tagFilters.join(' ').trim();
     if (keyword.isEmpty) {
       setState(() => _status = 'qrBlockTagEmpty'.tr);
       return;
@@ -1416,6 +1529,18 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
   void _stop() {
     _cancelToken?.cancel('stopped');
     setState(() => _running = false);
+  }
+
+  void _handleTagFiltersChanged(List<String> tags) {
+    if (!mounted) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _tagFilters = tags);
+    });
   }
 
   Future<void> _scanOnlineGalleries(String keyword, int limit) async {
