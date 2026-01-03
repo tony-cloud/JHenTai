@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:clipboard/clipboard.dart';
 import 'package:dio/dio.dart';
@@ -39,6 +40,10 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
 
   final ReadPageLogic readPageLogic = Get.find<ReadPageLogic>();
   final ReadPageState readPageState = Get.find<ReadPageLogic>().state;
+
+  int? qrFirstDetectedIndex;
+  int? qrLastDetectedIndex;
+  int? qrSuperModeStartIndex;
 
   Timer? autoModeTimer;
   Worker? doubleTapGestureSwitcherListener;
@@ -462,5 +467,92 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
 
     await imageBlockService.addUserBlockedHash(key);
     toast('blockImageSuccess'.tr);
+  }
+
+  void registerQrDetection(int index, QrBlockMode mode) {
+    qrFirstDetectedIndex = qrFirstDetectedIndex == null ? index : min(qrFirstDetectedIndex!, index);
+    qrLastDetectedIndex = qrLastDetectedIndex == null ? index : max(qrLastDetectedIndex!, index);
+
+    if (mode == QrBlockMode.superRange && qrSuperModeStartIndex == null) {
+      qrSuperModeStartIndex = index;
+    }
+  }
+
+  List<String> collectRangeKeysAfterDetection({
+    required QrBlockMode mode,
+    required List<GalleryImage?> images,
+  }) {
+    switch (mode) {
+      case QrBlockMode.normal:
+        return const <String>[];
+      case QrBlockMode.advanced:
+        if (qrFirstDetectedIndex == null || qrLastDetectedIndex == null) {
+          return const <String>[];
+        }
+        return _collectKeysInRange(images, qrFirstDetectedIndex!, qrLastDetectedIndex!);
+      case QrBlockMode.superRange:
+        if (qrSuperModeStartIndex == null) {
+          return const <String>[];
+        }
+        return _collectKeysInRange(images, qrSuperModeStartIndex!, images.length - 1);
+    }
+  }
+
+  List<String> collectRangeKeysForIndex({
+    required int index,
+    required String? key,
+    required QrBlockMode mode,
+  }) {
+    if (key == null) {
+      return const <String>[];
+    }
+
+    switch (mode) {
+      case QrBlockMode.normal:
+        return const <String>[];
+      case QrBlockMode.advanced:
+        if (qrFirstDetectedIndex != null &&
+            qrLastDetectedIndex != null &&
+            index >= qrFirstDetectedIndex! &&
+            index <= qrLastDetectedIndex!) {
+          return <String>[key];
+        }
+        return const <String>[];
+      case QrBlockMode.superRange:
+        if (qrSuperModeStartIndex != null && index >= qrSuperModeStartIndex!) {
+          return <String>[key];
+        }
+        return const <String>[];
+    }
+  }
+
+  List<String> _collectKeysInRange(
+    List<GalleryImage?> images,
+    int start,
+    int end,
+  ) {
+    if (images.isEmpty) {
+      return const <String>[];
+    }
+
+    int safeStart = max(0, start);
+    int safeEnd = min(end, images.length - 1);
+    if (safeStart > safeEnd) {
+      return const <String>[];
+    }
+
+    Set<String> keys = <String>{};
+    for (int i = safeStart; i <= safeEnd; i++) {
+      GalleryImage? image = images[i];
+      if (image == null) {
+        continue;
+      }
+      String? key = imageBlockService.buildCacheKey(image);
+      if (key != null) {
+        keys.add(key);
+      }
+    }
+
+    return keys.toList(growable: false);
   }
 }

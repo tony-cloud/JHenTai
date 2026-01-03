@@ -1,18 +1,27 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/database/database.dart';
+import 'package:jhentai/model/detail_page_info.dart';
 import 'package:jhentai/model/eh_raw_tag.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_page.dart';
+import 'package:jhentai/model/gallery_thumbnail.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/toast_util.dart';
@@ -31,6 +40,7 @@ class SettingAdBlockPage extends StatelessWidget {
             _buildHashBlocking(),
             _buildQrBlocking(),
             _buildQrBlockingForTags(),
+            _buildQrBlockOptions(context),
             _buildBuiltInListToggle(),
             _buildExternalHashFiles(context),
             _buildHandlingDropdown(),
@@ -77,6 +87,66 @@ class SettingAdBlockPage extends StatelessWidget {
             initialTags: imageBlockService.qrBlockingTagFilters.toList(),
             onChanged: (List<String> filters) =>
                 imageBlockService.saveQrBlockingTagFilters(filters.join('\n')),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQrBlockOptions(BuildContext context) {
+    final List<int> tailOptions = <int>{0, 4, 8, 12, 16, 24}.toList()..sort();
+    final int currentTail = imageBlockService.qrScanTailCount.value;
+    if (!tailOptions.contains(currentTail)) {
+      tailOptions.add(currentTail);
+      tailOptions.sort();
+    }
+
+    return Column(
+      children: [
+        ListTile(
+          title: Text('qrBlockModeSetting'.tr),
+          subtitle: Text('qrBlockModeSettingHint'.tr),
+          trailing: DropdownButton<QrBlockMode>(
+            value: imageBlockService.qrBlockMode.value,
+            onChanged: (QrBlockMode? mode) {
+              if (mode != null) {
+                imageBlockService.saveQrBlockMode(mode);
+              }
+            },
+            items: [
+              DropdownMenuItem(
+                value: QrBlockMode.normal,
+                child: Text('qrBlockModeNormal'.tr),
+              ),
+              DropdownMenuItem(
+                value: QrBlockMode.advanced,
+                child: Text('qrBlockModeAdvanced'.tr),
+              ),
+              DropdownMenuItem(
+                value: QrBlockMode.superRange,
+                child: Text('qrBlockModeSuper'.tr),
+              ),
+            ],
+          ),
+        ),
+        ListTile(
+          title: Text('qrScanTailCount'.tr),
+          subtitle: Text('qrScanTailCountHint'.tr),
+          trailing: DropdownButton<int>(
+            value: currentTail,
+            onChanged: (int? value) {
+              if (value != null) {
+                imageBlockService.saveQrScanTailCount(value);
+              }
+            },
+            items: tailOptions
+                .map(
+                  (int value) => DropdownMenuItem(
+                    value: value,
+                    child: Text(value == 0 ? 'qrScanTailAll'.tr : value.toString()),
+                  ),
+                )
+                .toList(),
           ),
         ),
       ],
@@ -157,6 +227,11 @@ class SettingAdBlockPage extends StatelessWidget {
         trailing: Wrap(
           spacing: 8,
           children: [
+            IconButton(
+              icon: const Icon(Icons.psychology_alt_outlined),
+              tooltip: 'qrBlockAdvancedTool'.tr,
+              onPressed: () => _showAdvancedQrBlockDialog(context),
+            ),
             IconButton(
               icon: const Icon(Icons.qr_code_2),
               tooltip: 'clearQrCache'.tr,
@@ -241,6 +316,13 @@ class SettingAdBlockPage extends StatelessWidget {
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) => const _CustomHashDialog(),
+    );
+  }
+
+  Future<void> _showAdvancedQrBlockDialog(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => const _AdvancedQrBlockDialog(),
     );
   }
 
@@ -933,5 +1015,536 @@ class _CustomHashDialogState extends State<_CustomHashDialog> {
       ClipboardData(text: imageBlockService.userBlockedHashes.join('\n')),
     );
     toast('hasCopiedToClipboard'.tr);
+  }
+}
+
+enum _QrBlockSort { recent, oldest, rating }
+
+class _QrScanEntry {
+  const _QrScanEntry({required this.index, required this.thumbnail});
+
+  final int index;
+  final GalleryThumbnail thumbnail;
+}
+
+class _ScanImageResult {
+  const _ScanImageResult({required this.hasQr, this.key});
+
+  final bool hasQr;
+  final String? key;
+}
+
+class _AdvancedQrBlockDialog extends StatefulWidget {
+  const _AdvancedQrBlockDialog();
+
+  @override
+  State<_AdvancedQrBlockDialog> createState() => _AdvancedQrBlockDialogState();
+}
+
+class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
+  final TextEditingController _tagController = TextEditingController();
+  final TextEditingController _galleryCountController = TextEditingController(text: '10');
+
+  _QrBlockSort _sort = _QrBlockSort.recent;
+  QrBlockMode _mode = imageBlockService.qrBlockMode.value;
+  int _tailImages =
+      imageBlockService.qrScanTailCount.value == 0 ? 8 : imageBlockService.qrScanTailCount.value;
+
+  bool _running = false;
+  int _currentGallery = 0;
+  int _totalGallery = 0;
+  int _currentImage = 0;
+  int _totalImages = 0;
+  String? _status;
+  CancelToken? _cancelToken;
+
+  @override
+  void dispose() {
+    _cancelToken?.cancel('dialog closed');
+    _tagController.dispose();
+    _galleryCountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('qrBlockAdvancedTool'.tr),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _tagController,
+                decoration: InputDecoration(
+                  labelText: 'qrBlockTagLabel'.tr,
+                  hintText: 'qrBlockTagHint'.tr,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _galleryCountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'qrBlockGalleryCount'.tr,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      initialValue: _tailImages,
+                      decoration: InputDecoration(
+                        labelText: 'qrBlockTailImageCount'.tr,
+                      ),
+                      items: <int>{4, 8, 12, 16, 24, 32}
+                          .map(
+                            (int value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(value.toString()),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: _running
+                          ? null
+                          : (int? value) {
+                              if (value != null) {
+                                setState(() => _tailImages = value);
+                              }
+                            },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<_QrBlockSort>(
+                      initialValue: _sort,
+                      decoration: InputDecoration(labelText: 'qrBlockSortLabel'.tr),
+                      items: [
+                        DropdownMenuItem(
+                          value: _QrBlockSort.recent,
+                          child: Text('qrBlockSortRecent'.tr),
+                        ),
+                        DropdownMenuItem(
+                          value: _QrBlockSort.oldest,
+                          child: Text('qrBlockSortOldest'.tr),
+                        ),
+                        DropdownMenuItem(
+                          value: _QrBlockSort.rating,
+                          child: Text('qrBlockSortRating'.tr),
+                        ),
+                      ],
+                      onChanged: _running
+                          ? null
+                          : (_QrBlockSort? value) {
+                              if (value != null) {
+                                setState(() => _sort = value);
+                              }
+                            },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonFormField<QrBlockMode>(
+                      initialValue: _mode,
+                      decoration: InputDecoration(labelText: 'qrBlockModeLabel'.tr),
+                      items: [
+                        DropdownMenuItem(
+                          value: QrBlockMode.normal,
+                          child: Text('qrBlockModeNormal'.tr),
+                        ),
+                        DropdownMenuItem(
+                          value: QrBlockMode.advanced,
+                          child: Text('qrBlockModeAdvanced'.tr),
+                        ),
+                        DropdownMenuItem(
+                          value: QrBlockMode.superRange,
+                          child: Text('qrBlockModeSuper'.tr),
+                        ),
+                      ],
+                      onChanged: _running
+                          ? null
+                          : (QrBlockMode? value) {
+                              if (value != null) {
+                                setState(() => _mode = value);
+                              }
+                            },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildProgress(context),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _running ? null : () => Navigator.of(context).pop(),
+          child: Text('close'.tr),
+        ),
+        if (_running)
+          TextButton(
+            onPressed: _stop,
+            child: Text('qrBlockStop'.tr),
+          )
+        else
+          TextButton(
+            onPressed: _start,
+            child: Text('qrBlockStart'.tr),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildProgress(BuildContext context) {
+    if (!_running) {
+      return Text(_status ?? 'qrBlockReady'.tr);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'qrBlockProgress'.trParams({
+            'gallery': '$_currentGallery/$_totalGallery',
+            'image': _totalImages == 0 ? '0' : '$_currentImage/$_totalImages',
+          }),
+        ),
+        const SizedBox(height: 8),
+        LinearProgressIndicator(
+          value: _totalGallery == 0 ? null : _currentGallery / _totalGallery.toDouble(),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _start() async {
+    if (_running) {
+      return;
+    }
+
+    String keyword = _tagController.text.trim();
+    if (keyword.isEmpty) {
+      setState(() => _status = 'qrBlockTagEmpty'.tr);
+      return;
+    }
+
+    int limit = _parseGalleryLimit();
+    _cancelToken = CancelToken();
+
+    setState(() {
+      _running = true;
+      _status = null;
+      _currentGallery = 0;
+      _totalGallery = 0;
+      _currentImage = 0;
+      _totalImages = 0;
+    });
+
+    try {
+      List<Gallery> galleries = await _fetchGalleries(keyword, limit, _cancelToken!);
+      if (!mounted) {
+        return;
+      }
+
+      setState(() => _totalGallery = galleries.length);
+
+      for (int i = 0; i < galleries.length; i++) {
+        if (!_running) {
+          break;
+        }
+
+        setState(() {
+          _currentGallery = i + 1;
+          _currentImage = 0;
+          _totalImages = 0;
+          _status = galleries[i].title;
+        });
+
+        await _processGallery(galleries[i]);
+      }
+
+      if (mounted) {
+        setState(() => _status = 'qrBlockFinished'.tr);
+      }
+    } catch (e, stack) {
+      log.error('Advanced QR block failed', e, stack);
+      if (mounted) {
+        setState(() => _status = e.toString());
+      }
+    } finally {
+      _cancelToken = null;
+      if (mounted) {
+        setState(() => _running = false);
+      }
+    }
+  }
+
+  void _stop() {
+    _cancelToken?.cancel('stopped');
+    setState(() => _running = false);
+  }
+
+  int _parseGalleryLimit() {
+    int? parsed = int.tryParse(_galleryCountController.text.trim());
+    if (parsed == null || parsed <= 0) {
+      return 10;
+    }
+    return parsed.clamp(1, 1000);
+  }
+
+  Future<List<Gallery>> _fetchGalleries(
+    String keyword,
+    int limit,
+    CancelToken cancelToken,
+  ) async {
+    SearchConfig config = SearchConfig(keyword: keyword);
+    List<Gallery> result = <Gallery>[];
+    String? nextGid;
+
+    while (result.length < limit) {
+      if (cancelToken.isCancelled) {
+        break;
+      }
+      GalleryPageInfo page = await ehRequest.requestGalleryPage<GalleryPageInfo>(
+        nextGid: nextGid,
+        searchConfig: config,
+        parser: EHSpiderParser.galleryPage2GalleryPageInfo,
+      );
+
+      result.addAll(page.gallerys);
+      nextGid = page.nextGid;
+
+      if (nextGid == null || cancelToken.isCancelled) {
+        break;
+      }
+    }
+
+    List<Gallery> sorted = List<Gallery>.from(result);
+    sorted.sort(_compareGalleries);
+    if (sorted.length > limit) {
+      sorted = sorted.sublist(0, limit);
+    }
+    return sorted;
+  }
+
+  int _compareGalleries(Gallery a, Gallery b) {
+    switch (_sort) {
+      case _QrBlockSort.recent:
+        return _parsePublishTime(b).compareTo(_parsePublishTime(a));
+      case _QrBlockSort.oldest:
+        return _parsePublishTime(a).compareTo(_parsePublishTime(b));
+      case _QrBlockSort.rating:
+        return b.rating.compareTo(a.rating);
+    }
+  }
+
+  DateTime _parsePublishTime(Gallery gallery) {
+    return DateTime.tryParse(gallery.publishTime) ?? DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  Future<void> _processGallery(Gallery gallery) async {
+    if (!_running) {
+      return;
+    }
+
+    CancelToken? token = _cancelToken;
+    if (token == null) {
+      return;
+    }
+
+    List<_QrScanEntry> entries = await _collectTailEntries(gallery, token);
+    if (entries.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _totalImages = entries.length;
+      _currentImage = 0;
+    });
+
+    Map<int, String> keys = <int, String>{};
+    Set<int> qrIndexes = <int>{};
+
+    for (int i = 0; i < entries.length; i++) {
+      if (!_running) {
+        break;
+      }
+      setState(() => _currentImage = i + 1);
+
+      _ScanImageResult? result = await _loadAndScanImage(gallery, entries[i], token);
+      if (result == null) {
+        continue;
+      }
+
+      if (result.key != null) {
+        keys[entries[i].index] = result.key!;
+      }
+      if (result.hasQr) {
+        qrIndexes.add(entries[i].index);
+      }
+    }
+
+    if (qrIndexes.isEmpty) {
+      return;
+    }
+
+    List<String> toBlock = _resolveBlockKeys(entries, keys, qrIndexes);
+    if (toBlock.isEmpty) {
+      return;
+    }
+
+    await imageBlockService.addUserBlockedHashes(toBlock);
+    await imageBlockService.addQrBlockedKeys(toBlock);
+  }
+
+  List<String> _resolveBlockKeys(
+    List<_QrScanEntry> entries,
+    Map<int, String> keys,
+    Set<int> qrIndexes,
+  ) {
+    if (qrIndexes.isEmpty) {
+      return const <String>[];
+    }
+
+    int start = qrIndexes.reduce((int a, int b) => a < b ? a : b);
+    int end = qrIndexes.reduce((int a, int b) => a > b ? a : b);
+    int lastScannedIndex = entries.last.index;
+
+    Set<int> targets;
+    switch (_mode) {
+      case QrBlockMode.normal:
+        targets = qrIndexes;
+        break;
+      case QrBlockMode.advanced:
+        targets = {
+          for (int i = start; i <= end; i++) i,
+        };
+        break;
+      case QrBlockMode.superRange:
+        targets = {
+          for (int i = start; i <= lastScannedIndex; i++) i,
+        };
+        break;
+    }
+
+    return targets
+        .map((int index) => keys[index])
+        .whereType<String>()
+        .toSet()
+        .toList(growable: false);
+  }
+
+  Future<List<_QrScanEntry>> _collectTailEntries(
+    Gallery gallery,
+    CancelToken cancelToken,
+  ) async {
+    int totalCount = gallery.pageCount ?? 0;
+    int desired = _tailImages <= 0 ? totalCount : _tailImages;
+    if (desired <= 0) {
+      desired = 1;
+    }
+
+    int pageIndex = totalCount > 0 ? totalCount - 1 : 0;
+
+    DetailPageInfo page = await _loadDetailPage(
+      gallery.galleryUrl.url,
+      pageIndex,
+      cancelToken,
+    );
+    List<_QrScanEntry> entries = _buildEntriesFromPage(page);
+
+    int currentPage = page.pageCount - 2;
+    while (entries.length < desired && currentPage >= 0 && _running) {
+      DetailPageInfo more = await _loadDetailPage(
+        gallery.galleryUrl.url,
+        currentPage,
+        cancelToken,
+      );
+      entries.addAll(_buildEntriesFromPage(more));
+      currentPage--;
+    }
+
+    entries.sort((a, b) => a.index.compareTo(b.index));
+
+    if (entries.length > desired) {
+      entries = entries.sublist(entries.length - desired);
+    }
+
+    return entries;
+  }
+
+  Future<DetailPageInfo> _loadDetailPage(
+    String url,
+    int pageIndex,
+    CancelToken cancelToken,
+  ) {
+    return ehRequest.requestDetailPage<DetailPageInfo>(
+      galleryUrl: url,
+      thumbnailsPageIndex: pageIndex,
+      useCacheIfAvailable: false,
+      cancelToken: cancelToken,
+      parser: EHSpiderParser.detailPage2RangeAndThumbnails,
+    );
+  }
+
+  List<_QrScanEntry> _buildEntriesFromPage(DetailPageInfo info) {
+    return List<_QrScanEntry>.generate(
+      info.thumbnails.length,
+      (int i) => _QrScanEntry(index: info.imageNoFrom + i, thumbnail: info.thumbnails[i]),
+    );
+  }
+
+  Future<_ScanImageResult?> _loadAndScanImage(
+    Gallery gallery,
+    _QrScanEntry entry,
+    CancelToken cancelToken,
+  ) async {
+    try {
+      GalleryImage imagePage = await ehRequest.requestImagePage<GalleryImage>(
+        entry.thumbnail.href,
+        useCacheIfAvailable: false,
+        cancelToken: cancelToken,
+        parser: EHSpiderParser.imagePage2GalleryImage,
+      );
+
+      GalleryImage cacheImage = imagePage.copyWith(
+        imageHash: imagePage.imageHash ?? entry.thumbnail.originImageHash,
+      );
+      String? cacheKey = imageBlockService.buildCacheKey(cacheImage);
+
+      String tempPath = p.join(
+        pathService.tempDir.path,
+        'qr_${gallery.gid}_${entry.index}_${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      await ehRequest.download<void>(
+        url: imagePage.url,
+        path: tempPath,
+        cancelToken: cancelToken,
+        deleteOnError: true,
+        receiveTimeout: const Duration(minutes: 1).inMilliseconds,
+      );
+
+      Uint8List bytes = await File(tempPath).readAsBytes();
+      await File(tempPath).delete().catchError((_) => File(tempPath));
+
+      bool hasQr = await imageBlockService.containsQrCodeInBytes(bytes);
+      return _ScanImageResult(hasQr: hasQr, key: cacheKey);
+    } catch (e, stack) {
+      log.error('Scan qr image failed', e, stack);
+      return null;
+    }
   }
 }

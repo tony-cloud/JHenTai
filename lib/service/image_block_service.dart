@@ -18,6 +18,8 @@ enum BlockedImageHandling { hide, placeholder }
 
 enum ImageBlockReason { hash, builtInHash, qrCode }
 
+enum QrBlockMode { normal, advanced, superRange }
+
 const String _defaultQrFilterTag = 'other:"extraneous ads\$"';
 
 class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
@@ -27,6 +29,8 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   RxBool useBuiltInList = true.obs;
   RxBool autoUpdateExternalHashFiles = false.obs;
   Rx<BlockedImageHandling> blockedImageHandling = BlockedImageHandling.placeholder.obs;
+  Rx<QrBlockMode> qrBlockMode = QrBlockMode.normal.obs;
+  RxInt qrScanTailCount = 0.obs;
   RxSet<String> userBlockedHashes = <String>{}.obs;
   RxSet<String> qrBlockedHashes = <String>{}.obs;
   RxList<String> qrBlockingTagFilters = <String>[_defaultQrFilterTag].obs;
@@ -69,6 +73,18 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     blockedImageHandling.value = BlockedImageHandling
         .values[map['blockedImageHandling'] ?? blockedImageHandling.value.index];
 
+    int? rawQrBlockMode = map['qrBlockMode'] as int?;
+    if (rawQrBlockMode != null &&
+        rawQrBlockMode >= 0 &&
+        rawQrBlockMode < QrBlockMode.values.length) {
+      qrBlockMode.value = QrBlockMode.values[rawQrBlockMode];
+    }
+
+    int? rawTailCount = map['qrScanTailCount'] as int?;
+    if (rawTailCount != null && rawTailCount >= 0) {
+      qrScanTailCount.value = rawTailCount;
+    }
+
     userBlockedHashes
       ..clear()
       ..addAll(Set<String>.from(map['userBlockedHashes'] ?? const <String>[]))
@@ -109,6 +125,8 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       'useBuiltInList': useBuiltInList.value,
       'autoUpdateExternalHashFiles': autoUpdateExternalHashFiles.value,
       'blockedImageHandling': blockedImageHandling.value.index,
+      'qrBlockMode': qrBlockMode.value.index,
+      'qrScanTailCount': qrScanTailCount.value,
       'userBlockedHashes': userBlockedHashes.toList(),
       'qrBlockedHashes': qrBlockedHashes.toList(),
       'qrBlockingTagFilters': qrBlockingTagFilters.toList(),
@@ -169,6 +187,28 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     _bumpVersion();
   }
 
+  Future<void> addUserBlockedHashes(Iterable<String> hashes) async {
+    Set<String> normalized = hashes.map(_normalizeString).whereType<String>().toSet();
+    if (normalized.isEmpty) {
+      return;
+    }
+
+    bool changed = false;
+    for (String hash in normalized) {
+      if (userBlockedHashes.add(hash)) {
+        changed = true;
+      }
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    userBlockedHashes.refresh();
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
   Future<void> saveEnableHashBlocking(bool value) async {
     enableHashBlocking.value = value;
     await saveBeanConfig();
@@ -183,6 +223,19 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
   Future<void> saveEnableQrBlockingForTags(bool value) async {
     enableQrBlockingForTags.value = value;
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> saveQrBlockMode(QrBlockMode mode) async {
+    qrBlockMode.value = mode;
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> saveQrScanTailCount(int count) async {
+    int value = count < 0 ? 0 : count;
+    qrScanTailCount.value = value;
     await saveBeanConfig();
     _bumpVersion();
   }
@@ -344,6 +397,7 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     String? imageHash,
     String? fallbackKey,
     List<TagData>? galleryTags,
+    Iterable<String> extraKeysOnDetect = const <String>[],
     required Future<Object?> Function() bytesLoader,
   }) async {
     String? key = _normalizeKey(imageHash, fallbackKey);
@@ -380,10 +434,15 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
         return false;
       }
 
-      qrBlockedHashes.add(key);
-      qrBlockedHashes.refresh();
-      await saveBeanConfig();
-      _bumpVersion();
+      Set<String> targets = {key};
+      for (String? extra in extraKeysOnDetect) {
+        String? normalized = _normalizeString(extra);
+        if (normalized != null) {
+          targets.add(normalized);
+        }
+      }
+
+      await addQrBlockedKeys(targets);
       log.info('Image blocked due to QR code, key: $key');
       return true;
     } catch (e, stack) {
@@ -396,6 +455,39 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
   String? buildCacheKey(GalleryImage image) {
     return _normalizeKey(image.imageHash, image.path ?? image.url);
+  }
+
+  bool shouldScanQrForIndex(int index, {int? totalImages}) {
+    if (qrScanTailCount.value <= 0) {
+      return true;
+    }
+    if (totalImages == null || totalImages <= 0) {
+      return true;
+    }
+
+    return index >= totalImages - qrScanTailCount.value;
+  }
+
+  Future<void> addQrBlockedKeys(Iterable<String> keys) async {
+    Set<String> normalized = keys.map(_normalizeString).whereType<String>().toSet();
+    if (normalized.isEmpty) {
+      return;
+    }
+
+    bool changed = false;
+    for (String key in normalized) {
+      if (qrBlockedHashes.add(key)) {
+        changed = true;
+      }
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    qrBlockedHashes.refresh();
+    await saveBeanConfig();
+    _bumpVersion();
   }
 
   bool _shouldScanQrForTags(List<TagData>? galleryTags) {
@@ -468,6 +560,14 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       log.error('Error while scanning QR code: $e');
       return false;
     }
+  }
+
+  Future<bool> containsQrCodeInBytes(Uint8List bytes) async {
+    img.Image? image = img.decodeImage(bytes);
+    if (image == null) {
+      return false;
+    }
+    return _containsQrCode(image);
   }
 
   String? _normalizeKey(String? imageHash, String? fallbackKey) {

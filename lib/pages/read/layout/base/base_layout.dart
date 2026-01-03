@@ -607,6 +607,15 @@ abstract class BaseLayout extends StatelessWidget {
       return;
     }
 
+    if (imageBlockService.shouldScanQrForIndex(index,
+            totalImages: readPageState.readPageInfo.pageCount) ==
+        false) {
+      return;
+    }
+
+    final String? cacheKey = imageBlockService.buildCacheKey(image);
+    final QrBlockMode mode = imageBlockService.qrBlockMode.value;
+
     imageBlockService
         .scanQrIfNeeded(
       imageHash: image.imageHash,
@@ -622,6 +631,32 @@ abstract class BaseLayout extends StatelessWidget {
     )
         .then((blocked) {
       if (blocked) {
+        logic.registerQrDetection(index, mode);
+      }
+
+      final List<String> extraKeys = <String>[];
+      if (blocked) {
+        extraKeys.addAll(
+          logic.collectRangeKeysAfterDetection(
+            mode: mode,
+            images: readPageState.images,
+          ),
+        );
+      }
+
+      extraKeys.addAll(
+        logic.collectRangeKeysForIndex(
+          index: index,
+          key: cacheKey,
+          mode: mode,
+        ),
+      );
+
+      if (extraKeys.isNotEmpty) {
+        imageBlockService.addQrBlockedKeys(extraKeys);
+      }
+
+      if (blocked) {
         logic.readPageLogic.updateSafely(['${readPageLogic.onlineImageId}::$index']);
       }
     });
@@ -636,6 +671,15 @@ abstract class BaseLayout extends StatelessWidget {
     if (imageBlockService.enableQrBlocking.isFalse) {
       return;
     }
+
+    if (imageBlockService.shouldScanQrForIndex(index,
+            totalImages: readPageState.readPageInfo.pageCount) ==
+        false) {
+      return;
+    }
+
+    final String? cacheKey = imageBlockService.buildCacheKey(image);
+    final QrBlockMode mode = imageBlockService.qrBlockMode.value;
 
     imageBlockService
         .scanQrIfNeeded(
@@ -666,6 +710,32 @@ abstract class BaseLayout extends StatelessWidget {
       galleryTags: _getGalleryTagsForQr(),
     )
         .then((blocked) {
+      if (blocked) {
+        logic.registerQrDetection(index, mode);
+      }
+
+      final List<String> extraKeys = <String>[];
+      if (blocked) {
+        extraKeys.addAll(
+          logic.collectRangeKeysAfterDetection(
+            mode: mode,
+            images: readPageState.images,
+          ),
+        );
+      }
+
+      extraKeys.addAll(
+        logic.collectRangeKeysForIndex(
+          index: index,
+          key: cacheKey,
+          mode: mode,
+        ),
+      );
+
+      if (extraKeys.isNotEmpty) {
+        imageBlockService.addQrBlockedKeys(extraKeys);
+      }
+
       if (blocked) {
         galleryDownloadService.updateSafely([
           '${galleryDownloadService.downloadImageId}::${readPageState.readPageInfo.gid}::$index'
