@@ -87,6 +87,12 @@ class ru_RU {
       'qrScanTailCount': 'QR scan tail images',
       'qrScanTailCountHint': 'Only scan the last N images (0 scans all)',
       'qrScanTailAll': 'All',
+      'qrContentWhitelist': 'Белый список содержимого QR',
+      'qrContentWhitelistHint': 'Не блокировать QR, если в тексте есть разрешённые слова (@count)',
+      'qrContentWhitelistDialogHint': 'По одному ключевому слову на строку, без учета регистра',
+      'qrContentWhitelistNote': 'Для пропуска QR от wavebox и '
+          'marshmallow, которые чаще всего про обратную связь, а не про рекламу.',
+      'restoreDefaults': 'Восстановить по умолчанию',
       'qrBlockAdvancedTool': 'Advanced QR block tool',
       'qrBlockTagLabel': 'Tag or keyword',
       'qrBlockTagHint': 'Tag to search galleries',

@@ -102,6 +102,12 @@ class zh_TW {
       'qrScanTailCount': '掃描尾端圖片數量',
       'qrScanTailCountHint': '只掃描最後 N 張（0 代表全部）',
       'qrScanTailAll': '全部',
+      'qrContentWhitelist': 'QR 內容白名單',
+      'qrContentWhitelistHint': '包含白名單關鍵字的 QR 不會被封鎖（@count 條）',
+      'qrContentWhitelistDialogHint': '每行一個關鍵字，大小寫不敏感',
+      'qrContentWhitelistNote': '用於放行 wavebox/marshmallow '
+          '等回饋 QR，視為非廣告。',
+      'restoreDefaults': '恢復預設',
       'qrBlockAdvancedTool': '進階 QR 封鎖工具',
       'qrBlockTagLabel': '標籤或關鍵字',
       'qrBlockTagHint': '用於搜尋畫廊的標籤',

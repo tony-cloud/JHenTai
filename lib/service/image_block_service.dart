@@ -21,6 +21,15 @@ enum ImageBlockReason { hash, builtInHash, qrCode }
 enum QrBlockMode { normal, advanced, superRange }
 
 const String _defaultQrFilterTag = 'other:"extraneous ads\$"';
+const List<String> _defaultQrContentWhitelist = <String>[
+  'wavebox',
+  'fanbox',
+  'fantia',
+  'skeb',
+  'booth',
+  'poipiku',
+  'marshmallow',
+];
 
 class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxBool enableHashBlocking = true.obs;
@@ -34,6 +43,7 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   RxSet<String> userBlockedHashes = <String>{}.obs;
   RxSet<String> qrBlockedHashes = <String>{}.obs;
   RxList<String> qrBlockingTagFilters = <String>[_defaultQrFilterTag].obs;
+  RxList<String> qrContentWhitelist = _defaultQrContentWhitelist.obs;
 
   final Set<String> builtInBlockedHashes = <String>{};
   RxList<BuiltInHashList> builtInHashLists = <BuiltInHashList>[].obs;
@@ -56,6 +66,8 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   );
 
   RxInt get version => _version;
+
+  List<String> get defaultQrContentWhitelist => List<String>.from(_defaultQrContentWhitelist);
 
   @override
   ConfigEnum get configEnum => ConfigEnum.imageBlockSetting;
@@ -102,6 +114,24 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     qrBlockingTagFilters.refresh();
     _qrTagRules = _parseQrTagFilters(qrBlockingTagFilters);
 
+    List<String> parsedWhitelist;
+    dynamic rawWhitelist = map['qrContentWhitelist'];
+    if (rawWhitelist is List) {
+      parsedWhitelist = rawWhitelist
+          .whereType<String>()
+          .map(_normalizeString)
+          .whereType<String>()
+          .where((String e) => e.isNotEmpty)
+          .toSet()
+          .toList(growable: false);
+    } else {
+      parsedWhitelist = _defaultQrContentWhitelist;
+    }
+    qrContentWhitelist
+      ..clear()
+      ..addAll(parsedWhitelist)
+      ..refresh();
+
     externalHashFiles
       ..clear()
       ..addAll(_parseExternalHashFiles(map['externalHashFiles']))
@@ -130,6 +160,7 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       'userBlockedHashes': userBlockedHashes.toList(),
       'qrBlockedHashes': qrBlockedHashes.toList(),
       'qrBlockingTagFilters': qrBlockingTagFilters.toList(),
+      'qrContentWhitelist': qrContentWhitelist.toList(),
       'externalHashFiles': externalHashFiles.map((ExternalHashFile file) => file.toJson()).toList(),
       'builtInHashListStates': Map<String, bool>.fromEntries(
         builtInHashLists.map(
@@ -250,6 +281,23 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       ..refresh();
 
     _qrTagRules = _parseQrTagFilters(filters);
+
+    await saveBeanConfig();
+    _bumpVersion();
+  }
+
+  Future<void> saveQrContentWhitelist(String raw) async {
+    Set<String> entries = raw
+        .split('\n')
+        .map(_normalizeString)
+        .whereType<String>()
+        .where((String e) => e.isNotEmpty)
+        .toSet();
+
+    qrContentWhitelist
+      ..clear()
+      ..addAll(entries)
+      ..refresh();
 
     await saveBeanConfig();
     _bumpVersion();
@@ -429,8 +477,12 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       }
 
       _scannedKeys.add(key);
-      bool blocked = await _containsQrCode(image);
-      if (!blocked) {
+      _QrScanOutcome outcome = await _scanQrContent(image);
+      if (!outcome.hasQr) {
+        return false;
+      }
+      if (outcome.isWhitelisted) {
+        log.debug('QR content whitelisted, skip blocking: ${outcome.content}');
         return false;
       }
 
@@ -530,7 +582,7 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     );
   }
 
-  Future<bool> _containsQrCode(img.Image image) async {
+  Future<_QrScanOutcome> _scanQrContent(img.Image image) async {
     try {
       LuminanceSource source = RGBLuminanceSource(
         image.width,
@@ -539,35 +591,61 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
       );
       BinaryBitmap bitmap = BinaryBitmap(HybridBinarizer(source));
       QRCodeReader reader = QRCodeReader();
-      reader.decode(bitmap);
-      log.debug('QR code detected in image for blocking');
-      return true;
+      final result = reader.decode(bitmap);
+
+      String? content = result.text;
+      bool whitelisted = _isQrContentWhitelisted(content);
+      if (whitelisted) {
+        log.debug('QR content matched whitelist: $content');
+      } else {
+        log.debug('QR code detected in image for blocking');
+      }
+
+      return _QrScanOutcome(
+        hasQr: true,
+        isWhitelisted: whitelisted,
+        content: content,
+      );
     } on NotFoundException {
-      // No QR code found in the image
       log.debug('No QR code found in image');
-      return false;
+      return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);
     } on FormatReaderException {
-      // QR code found but couldn't be decoded properly
       log.debug('QR code found but format is invalid');
-      return true;
+      return const _QrScanOutcome(hasQr: true, isWhitelisted: false, content: null);
     } on ChecksumException {
-      // QR code found but checksum validation failed
-      // Again, for blocking ads, you might want to return true
       log.debug('QR code found but checksum validation failed');
-      return true;
+      return const _QrScanOutcome(hasQr: true, isWhitelisted: false, content: null);
     } catch (e) {
-      // Any other error - assume no QR code
       log.error('Error while scanning QR code: $e');
-      return false;
+      return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);
     }
   }
 
-  Future<bool> containsQrCodeInBytes(Uint8List bytes) async {
-    img.Image? image = img.decodeImage(bytes);
-    if (image == null) {
+  bool _isQrContentWhitelisted(String? content) {
+    if (content == null || qrContentWhitelist.isEmpty) {
       return false;
     }
-    return _containsQrCode(image);
+
+    String lower = content.toLowerCase();
+    for (String keyword in qrContentWhitelist) {
+      if (lower.contains(keyword)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<_QrScanOutcome> _scanQrContentInBytes(Uint8List bytes) async {
+    img.Image? image = img.decodeImage(bytes);
+    if (image == null) {
+      return const _QrScanOutcome(hasQr: false, isWhitelisted: false, content: null);
+    }
+    return _scanQrContent(image);
+  }
+
+  Future<bool> containsQrCodeInBytes(Uint8List bytes) async {
+    _QrScanOutcome outcome = await _scanQrContentInBytes(bytes);
+    return outcome.hasQr && !outcome.isWhitelisted;
   }
 
   String? _normalizeKey(String? imageHash, String? fallbackKey) {
@@ -770,6 +848,18 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
   void _bumpVersion() {
     _version.value++;
   }
+}
+
+class _QrScanOutcome {
+  const _QrScanOutcome({
+    required this.hasQr,
+    required this.isWhitelisted,
+    required this.content,
+  });
+
+  final bool hasQr;
+  final bool isWhitelisted;
+  final String? content;
 }
 
 class _QrTagRule {

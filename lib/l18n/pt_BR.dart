@@ -87,6 +87,13 @@ class pt_BR {
       'qrScanTailCount': 'QR scan tail images',
       'qrScanTailCountHint': 'Only scan the last N images (0 scans all)',
       'qrScanTailAll': 'All',
+      'qrContentWhitelist': 'Lista branca de conteúdo QR',
+      'qrContentWhitelistHint': 'Não bloqueia QR que contenham palavras permitidas (@count itens)',
+      'qrContentWhitelistDialogHint':
+          'Uma palavra por linha; sem diferenciar maiúsculas ou minúsculas',
+      'qrContentWhitelistNote':
+          'Use para permitir QR de wavebox e marshmallow que normalmente são feedback, não anúncios.',
+      'restoreDefaults': 'Restaurar padrão',
       'qrBlockAdvancedTool': 'Advanced QR block tool',
       'qrBlockTagLabel': 'Tag or keyword',
       'qrBlockTagHint': 'Tag to search galleries',

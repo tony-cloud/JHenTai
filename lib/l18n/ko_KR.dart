@@ -63,6 +63,12 @@ class ko_KR {
       'ftpServerChangesApplied': '변경 사항은 즉시 적용됩니다',
 
       'home': "홈",
+      'qrContentWhitelist': 'QR 콘텐츠 화이트리스트',
+      'qrContentWhitelistHint': '허용된 키워드가 포함된 QR은 차단하지 않습니다 (@count개)',
+      'qrContentWhitelistDialogHint': '한 줄에 하나, 대소문자 무시',
+      'qrContentWhitelistNote': 'wavebox/marshmallow 등 제작자 '
+          '피드백용 QR은 광고로 간주하지 않습니다.',
+      'restoreDefaults': '기본값으로 복원',
       'gallery': "갤러리",
       'setting': '설정',
 

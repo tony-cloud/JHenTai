@@ -64,6 +64,12 @@ class zh_CN {
       'qrScanTailCount': '扫描尾部图片数量',
       'qrScanTailCountHint': '只扫描最后 N 张图片（0 表示全部）',
       'qrScanTailAll': '全部',
+      'qrContentWhitelist': '二维码内容白名单',
+      'qrContentWhitelistHint': '包含白名单关键词的二维码不会被屏蔽（@count 条）',
+      'qrContentWhitelistDialogHint': '每行一个关键词，大小写不敏感',
+      'qrContentWhitelistNote': '用于放行 wavebox/marshmallow '
+          '等反馈二维码，不视为广告。',
+      'restoreDefaults': '恢复默认',
       'qrBlockAdvancedTool': '高级二维码屏蔽工具',
       'qrBlockTagLabel': '标签或关键词',
       'qrBlockTagHint': '用于检索画廊的标签',

@@ -41,6 +41,7 @@ class SettingAdBlockPage extends StatelessWidget {
             _buildQrBlocking(),
             _buildQrBlockingForTags(),
             _buildQrBlockOptions(context),
+            _buildQrContentWhitelist(context),
             _buildBuiltInListToggle(),
             _buildExternalHashFiles(context),
             _buildHandlingDropdown(),
@@ -150,6 +151,23 @@ class SettingAdBlockPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildQrContentWhitelist(BuildContext context) {
+    return Obx(
+      () => ListTile(
+        title: Text('qrContentWhitelist'.tr),
+        subtitle: Text(
+          'qrContentWhitelistHint'
+              .trParams({'count': imageBlockService.qrContentWhitelist.length.toString()}),
+        ),
+        trailing: OutlinedButton(
+          onPressed: () => _showQrContentWhitelistDialog(context),
+          child: Text('manage'.tr),
+        ),
+        onTap: () => _showQrContentWhitelistDialog(context),
+      ),
     );
   }
 
@@ -323,6 +341,13 @@ class SettingAdBlockPage extends StatelessWidget {
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) => const _AdvancedQrBlockDialog(),
+    );
+  }
+
+  Future<void> _showQrContentWhitelistDialog(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => const _QrContentWhitelistDialog(),
     );
   }
 
@@ -884,6 +909,87 @@ class _SelectedTag {
     );
 
     return _SelectedTag(tagData, operator: suggestion.operator);
+  }
+}
+
+class _QrContentWhitelistDialog extends StatefulWidget {
+  const _QrContentWhitelistDialog();
+
+  @override
+  State<_QrContentWhitelistDialog> createState() => _QrContentWhitelistDialogState();
+}
+
+class _QrContentWhitelistDialogState extends State<_QrContentWhitelistDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: imageBlockService.qrContentWhitelist.join('\n'),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('qrContentWhitelist'.tr),
+      content: SizedBox(
+        width: 360,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _controller,
+              minLines: 6,
+              maxLines: 10,
+              decoration: InputDecoration(
+                hintText: 'qrContentWhitelistDialogHint'.tr,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'qrContentWhitelistNote'.tr,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('close'.tr),
+        ),
+        TextButton(
+          onPressed: _restoreDefaults,
+          child: Text('restoreDefaults'.tr),
+        ),
+        TextButton(
+          onPressed: _save,
+          child: Text('save'.tr),
+        ),
+      ],
+    );
+  }
+
+  void _restoreDefaults() {
+    setState(
+      () => _controller.text = imageBlockService.defaultQrContentWhitelist.join('\n'),
+    );
+  }
+
+  Future<void> _save() async {
+    await imageBlockService.saveQrContentWhitelist(_controller.text);
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 }
 

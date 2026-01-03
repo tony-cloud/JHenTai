@@ -81,6 +81,13 @@ class en_US {
       'qrScanTailCount': 'QR scan tail images',
       'qrScanTailCountHint': 'Only scan the last N images (0 scans all)',
       'qrScanTailAll': 'All',
+      'qrContentWhitelist': 'QR content whitelist',
+      'qrContentWhitelistHint': 'Skip QR hits containing whitelisted keywords (@count entries)',
+      'qrContentWhitelistDialogHint':
+          'One keyword per line. Matches are case-insensitive substrings.',
+      'qrContentWhitelistNote':
+          'Allow QR codes for creator services (wavebox, marshmallow) that are usually feedback, not ads.',
+      'restoreDefaults': 'Restore defaults',
       'qrBlockAdvancedTool': 'Advanced QR block tool',
       'qrBlockTagLabel': 'Tag or keyword',
       'qrBlockTagHint': 'Tag to search galleries',
