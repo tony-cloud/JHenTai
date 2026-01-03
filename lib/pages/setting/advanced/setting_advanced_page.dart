@@ -14,6 +14,7 @@ import 'package:jhentai/model/config.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/service/cloud_service.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/read_progress_service.dart';
@@ -53,6 +54,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
   LoadingState _importDataLoadingState = LoadingState.idle;
   LoadingState _refreshGalleryTagsState = LoadingState.idle;
   LoadingState _refreshArchiveTagsState = LoadingState.idle;
+  LoadingState _repairMissingImagesState = LoadingState.idle;
 
   @override
   void initState() {
@@ -79,6 +81,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildClearImageCache(context),
             _buildClearNetworkCache(),
             _buildClearReadProgress(),
+            _buildRepairMissingImages(context),
             _buildFtpServer(context),
             if (GetPlatform.isDesktop) _buildSuperResolution(),
             _buildCheckUpdate(),
@@ -230,6 +233,34 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
           toast('internalError'.tr);
         }
       },
+    );
+  }
+
+  Widget _buildRepairMissingImages(BuildContext context) {
+    final BuildContext tileContext = context;
+
+    return ListTile(
+      title: Text('repairMissingImages'.tr),
+      subtitle: Text('repairMissingImagesHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LoadingStateIndicator(
+            loadingState: _repairMissingImagesState,
+            useCupertinoIndicator: true,
+            idleWidgetBuilder: () =>
+                Icon(Icons.refresh, color: UIConfig.resumePauseButtonColor(tileContext)),
+            successWidgetBuilder: () =>
+                Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
+            errorWidgetBuilder: () => Icon(
+              Icons.error_outline,
+              color: Theme.of(tileContext).colorScheme.error,
+            ),
+            errorTapCallback: _repairMissingImages,
+          ).marginOnly(right: 8)
+        ],
+      ),
+      onLongPress: _repairMissingImages,
     );
   }
 
@@ -473,6 +504,41 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
     await _getImagesCacheSize();
 
     toast('clearSuccess'.tr, isCenter: false);
+  }
+
+  Future<void> _repairMissingImages() async {
+    if (_repairMissingImagesState == LoadingState.loading) {
+      return;
+    }
+
+    setStateSafely(() => _repairMissingImagesState = LoadingState.loading);
+
+    try {
+      final result = await galleryDownloadService.repairMissingImagesForAllGalleries();
+      if (!mounted) {
+        return;
+      }
+      setStateSafely(() => _repairMissingImagesState = LoadingState.success);
+      toast(
+        'repairMissingImagesResult'
+            .trParams({'count': '${result.repaired}', 'renamed': '${result.renamed}'}),
+        isCenter: false,
+      );
+    } catch (e, s) {
+      log.error('Repair missing images failed', e, s);
+      if (mounted) {
+        setStateSafely(() => _repairMissingImagesState = LoadingState.error);
+        toast('internalError'.tr);
+      }
+    }
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted || _repairMissingImagesState == LoadingState.loading) {
+        return;
+      }
+
+      setStateSafely(() => _repairMissingImagesState = LoadingState.idle);
+    });
   }
 
   Future<void> _importData(BuildContext context) async {

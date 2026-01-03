@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io' as io;
+import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
@@ -993,6 +994,16 @@ class GalleryDownloadService extends GetxController
     );
   }
 
+  String _computeLegacyImageDownloadAbsolutePathWithQuery(
+      String title, int gid, String imageUrl, int serialNo) {
+    String ext = imageUrl.contains('fullimg.php') ? 'jpg' : imageUrl.split('.').last;
+
+    return path.join(
+      computeGalleryDownloadAbsolutePath(title, gid),
+      '$serialNo.$ext',
+    );
+  }
+
   String _computeImageDownloadRelativePath(String title, int gid, String imageUrl, int serialNo) {
     return path.relative(
       _computeImageDownloadAbsolutePath(title, gid, imageUrl, serialNo),
@@ -1027,6 +1038,28 @@ class GalleryDownloadService extends GetxController
     }
 
     return url.substring(0, cutIndex);
+  }
+
+  Future<bool> _isValidImageFile(io.File file) async {
+    ui.Codec? codec;
+    try {
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) {
+        return false;
+      }
+
+      codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      frame.image.dispose();
+      return true;
+    } catch (e, stack) {
+      log.error('Validate image file failed', e, stack);
+      return false;
+    } finally {
+      try {
+        codec?.dispose();
+      } catch (_) {}
+    }
   }
 
   void _sortGallerys() {
@@ -2466,15 +2499,18 @@ class GalleryDownloadService extends GetxController
     }
   }
 
-  Future<int> checkAndRedownloadMissingImages(GalleryDownloadedData gallery) async {
+  Future<({int repaired, int renamed})> checkAndRedownloadMissingImages(
+      GalleryDownloadedData gallery) async {
     await completed;
 
     GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gallery.gid];
     if (galleryDownloadInfo == null) {
-      return 0;
+      return (repaired: 0, renamed: 0);
     }
 
     int repaired = 0;
+    int renamed = 0;
+    bool scheduledDownload = false;
 
     for (int serialNo = 0; serialNo < galleryDownloadInfo.images.length; serialNo++) {
       GalleryImage? image = galleryDownloadInfo.images[serialNo];
@@ -2500,23 +2536,119 @@ class GalleryDownloadService extends GetxController
         continue;
       }
 
+      bool renamedLegacy = await _tryRenameLegacyReloadImage(
+        gallery,
+        image,
+        serialNo,
+        absolutePath,
+      );
+
+      if (renamedLegacy) {
+        renamed++;
+        repaired++;
+        continue;
+      }
+
       await _resetImageForReparse(gallery, serialNo, existingImage: image);
 
       repaired++;
+      scheduledDownload = true;
 
       _processImage(gallery, serialNo);
     }
 
     if (repaired > 0) {
-      if (galleryDownloadInfo.downloadProgress.downloadStatus == DownloadStatus.downloaded) {
+      if (scheduledDownload &&
+          galleryDownloadInfo.downloadProgress.downloadStatus == DownloadStatus.downloaded) {
         await _updateGalleryDownloadStatus(gallery, DownloadStatus.downloading);
       }
+
+      if (!scheduledDownload &&
+          galleryDownloadInfo.downloadProgress.downloadStatus == DownloadStatus.downloading) {
+        await _updateGalleryDownloadStatus(gallery, DownloadStatus.downloaded);
+      }
+
       _saveGalleryMetadataInDisk(gallery);
       update(['$galleryDownloadProgressId::${gallery.gid}']);
       _notifyDownloadActivityChanged();
     }
 
-    return repaired;
+    return (repaired: repaired, renamed: renamed);
+  }
+
+  Future<({int repaired, int renamed})> repairMissingImagesForAllGalleries() async {
+    await completed;
+
+    int repaired = 0;
+    int renamed = 0;
+
+    for (GalleryDownloadedData gallery in gallerys) {
+      final result = await checkAndRedownloadMissingImages(gallery);
+      repaired += result.repaired;
+      renamed += result.renamed;
+    }
+
+    return (repaired: repaired, renamed: renamed);
+  }
+
+  Future<bool> _tryRenameLegacyReloadImage(
+    GalleryDownloadedData gallery,
+    GalleryImage image,
+    int serialNo,
+    String targetPath,
+  ) async {
+    String legacyPath = _computeLegacyImageDownloadAbsolutePathWithQuery(
+      gallery.title,
+      gallery.gid,
+      image.url,
+      serialNo,
+    );
+
+    io.File legacyFile = io.File(legacyPath);
+    if (!legacyFile.existsSync()) {
+      return false;
+    }
+
+    if (!await _isValidImageFile(legacyFile)) {
+      return false;
+    }
+
+    try {
+      await legacyFile.rename(targetPath);
+    } on io.FileSystemException catch (e, stack) {
+      log.error('Rename legacy reload image failed, fallback to copy', e, stack);
+      try {
+        await legacyFile.copy(targetPath);
+        await legacyFile.delete();
+      } catch (e2, stack2) {
+        log.error('Copy legacy reload image failed', e2, stack2);
+        return false;
+      }
+    }
+
+    String relativePath = _computeImageDownloadRelativePath(
+      gallery.title,
+      gallery.gid,
+      image.url,
+      serialNo,
+    );
+
+    image.path = relativePath;
+    galleryDownloadInfos[gallery.gid]!.images[serialNo] = image;
+
+    bool updated = await _updateImageInDatabase(
+      ImageCompanion(
+        gid: Value(gallery.gid),
+        serialNo: Value(serialNo),
+        path: Value(relativePath),
+      ),
+    );
+    if (!updated) {
+      await GalleryImageDao.deleteImage(gallery.gid, serialNo);
+      await _saveNewImageInfoInDatabase(image, serialNo, gallery.gid);
+    }
+
+    return true;
   }
 
   Future<void> _tryLoadFromCacheInsteadDownload(

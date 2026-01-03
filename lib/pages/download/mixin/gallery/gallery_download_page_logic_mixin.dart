@@ -136,11 +136,12 @@ mixin GalleryDownloadPageLogicMixin on GetxController
   }
 
   Future<void> handleCheckMissingImages(GalleryDownloadedData gallery) async {
-    int repaired = await downloadService.checkAndRedownloadMissingImages(gallery);
-    if (repaired == 0) {
-      toast('No missing images detected');
+    final result = await downloadService.checkAndRedownloadMissingImages(gallery);
+    if (result.repaired == 0) {
+      toast('noMissingImagesDetected'.tr);
     } else {
-      toast('Re-downloading $repaired missing image(s)');
+      toast('repairMissingImagesResult'
+          .trParams({'count': '${result.repaired}', 'renamed': '${result.renamed}'}));
     }
   }
 
@@ -242,7 +243,7 @@ mixin GalleryDownloadPageLogicMixin on GetxController
             },
           ),
           CupertinoActionSheetAction(
-            child: const Text('Check missing images'),
+            child: Text('repairMissingImages'.tr),
             onPressed: () async {
               backRoute();
               await handleCheckMissingImages(gallery);
