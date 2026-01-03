@@ -211,6 +211,9 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
     if (userBlockedHashes.contains(normalized)) {
       return;
     }
+    if (builtInBlockedHashes.contains(normalized)) {
+      return;
+    }
 
     userBlockedHashes.add(normalized);
     userBlockedHashes.refresh();
@@ -226,6 +229,12 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
     bool changed = false;
     for (String hash in normalized) {
+      if (builtInBlockedHashes.contains(hash)) {
+        continue;
+      }
+      if (userBlockedHashes.contains(hash)) {
+        continue;
+      }
       if (userBlockedHashes.add(hash)) {
         changed = true;
       }
