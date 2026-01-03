@@ -10,6 +10,7 @@ import 'package:jhentai/pages/download/filter/download_filter.dart';
 import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
 import 'package:jhentai/model/eh_raw_tag.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/download_filter_service.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 
@@ -209,6 +210,7 @@ class _TagSelectorState extends State<_TagSelector> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final LayerLink _layerLink = LayerLink();
+  final GlobalKey _textFieldKey = GlobalKey();
 
   final List<_SelectedTag> _tags = <_SelectedTag>[];
   List<TagAutoCompletionMatch> _suggestions = <TagAutoCompletionMatch>[];
@@ -217,6 +219,7 @@ class _TagSelectorState extends State<_TagSelector> {
   Timer? _debounce;
   int _requestId = 0;
   double _fieldWidth = 280;
+  double _fieldHeight = 40;
 
   Timer? _hideOnUnfocusTimer;
 
@@ -269,6 +272,7 @@ class _TagSelectorState extends State<_TagSelector> {
       containerWidth = 360;
     }
     _fieldWidth = containerWidth;
+    _updateFieldSize();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,6 +286,7 @@ class _TagSelectorState extends State<_TagSelector> {
           child: CompositedTransformTarget(
             link: _layerLink,
             child: TextField(
+              key: _textFieldKey,
               controller: _controller,
               focusNode: _focusNode,
               decoration: InputDecoration(
@@ -371,7 +376,14 @@ class _TagSelectorState extends State<_TagSelector> {
       return;
     }
 
-    final List<TagAutoCompletionMatch> matches = _mergeMatches(translationMatches, rawMatches);
+    final List<TagAutoCompletionMatch> uploaderMatches =
+        await downloadFilterService.buildUploaderSuggestions(query);
+    if (!mounted || captured != _requestId) {
+      return;
+    }
+
+    final List<TagAutoCompletionMatch> matches =
+        _mergeMatches(translationMatches, rawMatches, uploaderMatches);
     if (!mounted || captured != _requestId) {
       return;
     }
@@ -444,6 +456,7 @@ class _TagSelectorState extends State<_TagSelector> {
   List<TagAutoCompletionMatch> _mergeMatches(
     List<TagAutoCompletionMatch> translationMatches,
     List<TagAutoCompletionMatch> rawMatches,
+    List<TagAutoCompletionMatch> uploaderMatches,
   ) {
     final List<TagAutoCompletionMatch> merged = <TagAutoCompletionMatch>[];
     final Set<String> seen = <String>{};
@@ -456,6 +469,13 @@ class _TagSelectorState extends State<_TagSelector> {
     }
 
     for (final TagAutoCompletionMatch match in rawMatches) {
+      final String normalized = _normalizeMatch(match);
+      if (seen.add(normalized)) {
+        merged.add(match);
+      }
+    }
+
+    for (final TagAutoCompletionMatch match in uploaderMatches) {
       final String normalized = _normalizeMatch(match);
       if (seen.add(normalized)) {
         merged.add(match);
@@ -502,7 +522,7 @@ class _TagSelectorState extends State<_TagSelector> {
         return CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: const Offset(0, 4),
+          offset: Offset(0, _fieldHeight + 4),
           child: Material(
             elevation: 4,
             borderRadius: BorderRadius.circular(8),
@@ -560,6 +580,19 @@ class _TagSelectorState extends State<_TagSelector> {
     _overlayEntry?.remove();
     _overlayEntry?.dispose();
     _overlayEntry = null;
+  }
+
+  void _updateFieldSize() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final RenderObject? renderObject = _textFieldKey.currentContext?.findRenderObject();
+      if (renderObject is RenderBox && renderObject.hasSize) {
+        _fieldHeight = renderObject.size.height;
+        _overlayEntry?.markNeedsBuild();
+      }
+    });
   }
 
   Widget _buildSelectedTagChips(BuildContext context, double maxWidth) {
