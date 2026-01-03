@@ -333,7 +333,8 @@ class en_US {
       'back': 'Back',
       'toggleMenu': 'Toggle menu',
       'share': 'Share',
-      'save': 'Save to Pictures',
+      'saveToGallery': 'Save to Gallery',
+      'save': 'Save',
 
       /// setting page
       'account': 'Account',

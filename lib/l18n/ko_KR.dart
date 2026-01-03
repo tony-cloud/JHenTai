@@ -357,7 +357,8 @@ class ko_KR {
       'back': '뒤로',
       'toggleMenu': '토글 메뉴',
       'share': '공유',
-      'save': '사진으로 저장',
+      'saveToGallery': '사진으로 저장',
+      'save': '저장',
 
       /// setting page
       'account': '계정',

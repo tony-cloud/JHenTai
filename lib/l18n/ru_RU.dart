@@ -363,7 +363,8 @@ class ru_RU {
       'back': 'Назад',
       'toggleMenu': 'Переключить меню',
       'share': 'Поделиться',
-      'save': 'Сохранить в Изображения',
+      'saveToGallery': 'Сохранить в Изображения',
+      'save': 'Сохранить',
 
       /// setting page
       'account': 'Аккаунт',

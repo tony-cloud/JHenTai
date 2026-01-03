@@ -146,7 +146,7 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
             },
           ),
           CupertinoActionSheetAction(
-            child: Text('${'save'.tr}(${'resampleImage'.tr})'),
+            child: Text('${'saveToGallery'.tr}(${'resampleImage'.tr})'),
             onPressed: () async {
               backRoute();
               saveOnlineImage(index);
@@ -161,7 +161,7 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
           ),
           if (readPageState.images[index]!.originalImageUrl != null && userSetting.hasLoggedIn())
             CupertinoActionSheetAction(
-              child: Text('${'save'.tr}(${'originalImage'.tr})'),
+              child: Text('${'saveToGallery'.tr}(${'originalImage'.tr})'),
               onPressed: () async {
                 backRoute();
                 saveOriginalOnlineImage(index);
@@ -192,7 +192,7 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
             },
           ),
           CupertinoActionSheetAction(
-            child: Text('save'.tr),
+            child: Text('saveToGallery'.tr),
             onPressed: () {
               backRoute();
               saveLocalImage(index);

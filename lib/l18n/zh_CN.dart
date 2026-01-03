@@ -325,7 +325,8 @@ class zh_CN {
       'back': '返回',
       'toggleMenu': '展示/隐藏菜单',
       'share': '分享',
-      'save': '保存至图库',
+      'saveToGallery': '保存至图库',
+      'save': '保存',
 
       /// setting page
       'account': '账户',

@@ -363,7 +363,8 @@ class pt_BR {
       'back': 'Voltar',
       'toggleMenu': 'Alternar menu',
       'share': 'Compartilhar',
-      'save': 'Salvar em imagens',
+      'saveToGallery': 'Salvar em Imagens',
+      'save': 'Salvar',
 
       /// setting page
       'account': 'Conta',

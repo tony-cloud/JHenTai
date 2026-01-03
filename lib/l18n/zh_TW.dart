@@ -352,7 +352,8 @@ class zh_TW {
       'back': '返回',
       'toggleMenu': '顯示/隱藏選單',
       'share': '分享',
-      'save': '儲存至相簿',
+      'saveToGallery': '儲存至相簿',
+      'save': '儲存',
 
       /// setting page
       'account': '帳戶',
