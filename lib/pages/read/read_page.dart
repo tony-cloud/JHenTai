@@ -10,10 +10,12 @@ import 'package:jhentai/mixin/window_widget_mixin.dart';
 import 'package:jhentai/mixin/scroll_status_listener.dart';
 import 'package:jhentai/mixin/scroll_status_listener_state.dart';
 import 'package:jhentai/model/read_page_info.dart';
+import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/pages/read/layout/horizontal_list/horizontal_list_layout.dart';
 import 'package:jhentai/pages/read/layout/horizontal_page/horizontal_page_layout.dart';
 import 'package:jhentai/pages/read/read_page_logic.dart';
 import 'package:jhentai/pages/read/read_page_state.dart';
+import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/widget/eh_mouse_button_listener.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -615,16 +617,40 @@ class _ReadPageState extends State<ReadPage>
         if (state.images[index]?.downloadStatus != DownloadStatus.downloaded) {
           return Center(child: UIConfig.loadingAnimation(context));
         }
+        final GalleryImage image = state.images[index]!;
+        final ImageBlockReason? reason = imageBlockService.shouldBlock(
+          image.imageHash,
+          fallbackKey: image.path ?? image.url,
+        );
+
         return LayoutBuilder(
-          builder: (_, constraints) => EHImage(
-            galleryImage: state.images[index]!,
-            containerHeight: constraints.maxHeight,
-            containerWidth: constraints.maxWidth,
-            borderRadius: BorderRadius.circular(8),
-            maxBytes: 1024 * 50,
-          ),
+          builder: (_, constraints) {
+            if (reason != null) {
+              return _buildBlockedThumbnail(constraints);
+            }
+            return EHImage(
+              galleryImage: image,
+              containerHeight: constraints.maxHeight,
+              containerWidth: constraints.maxWidth,
+              borderRadius: BorderRadius.circular(8),
+              maxBytes: 1024 * 50,
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildBlockedThumbnail(BoxConstraints constraints) {
+    return Container(
+      width: constraints.maxWidth,
+      height: constraints.maxHeight,
+      decoration: BoxDecoration(
+        color: UIConfig.readPageBackGroundColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      alignment: Alignment.center,
+      child: const Icon(Icons.remove_circle_outline, color: UIConfig.readPageWarningButtonColor),
     );
   }
 

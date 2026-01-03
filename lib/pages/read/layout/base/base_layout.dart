@@ -392,6 +392,19 @@ abstract class BaseLayout extends StatelessWidget {
         image.imageHash,
         fallbackKey: image.path ?? image.url,
       );
+      if (image.path != null) {
+        final String absolutePath =
+            GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(image.path!);
+        if (!io.File(absolutePath).existsSync()) {
+          return _buildBlockedIndicator(
+            context,
+            reason ?? ImageBlockReason.builtInHash,
+            index,
+            logic.getPlaceHolderSize(index),
+            key,
+          );
+        }
+      }
       if (reason != null) {
         return _buildBlockedIndicator(
           context,
@@ -548,7 +561,7 @@ abstract class BaseLayout extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.block, color: UIConfig.readPageWarningButtonColor),
+            const Icon(Icons.remove_circle_outline, color: UIConfig.readPageWarningButtonColor),
             Text('blockedImageMessage'.tr),
             Text(reasonText).marginOnly(top: 4),
             Text((index + 1).toString()).marginOnly(top: 4),
