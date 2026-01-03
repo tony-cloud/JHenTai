@@ -10,6 +10,7 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/model/eh_raw_tag.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
@@ -34,6 +35,7 @@ class SettingAdBlockPage extends StatelessWidget {
             _buildExternalHashFiles(context),
             _buildHandlingDropdown(),
             _buildBlocklistActions(context),
+            _buildRemoveAdsImagesAction(context),
             _buildCustomHashManager(context),
           ],
         ),
@@ -166,6 +168,15 @@ class SettingAdBlockPage extends StatelessWidget {
     );
   }
 
+  Widget _buildRemoveAdsImagesAction(BuildContext context) {
+    return ListTile(
+      title: Text('removeAdsImages'.tr),
+      subtitle: Text('removeAdsImagesHint'.tr),
+      trailing: const Icon(Icons.cleaning_services_outlined),
+      onLongPress: () => _confirmRemoveAdsImages(context),
+    );
+  }
+
   Widget _buildCustomHashManager(BuildContext context) {
     return ListTile(
       title: Text('blockedImageList'.tr),
@@ -241,13 +252,43 @@ class SettingAdBlockPage extends StatelessWidget {
         content: Text('clearQrCacheConfirm'.tr),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text('cancel'.tr)),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('ok'.tr)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('OK'.tr)),
         ],
       ),
     );
     if (confirmed == true) {
       await imageBlockService.clearQrBlockedHashes();
     }
+  }
+
+  Future<void> _confirmRemoveAdsImages(BuildContext context) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text('confirm'.tr),
+        content: Text('removeAdsImagesConfirm'.tr),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('OK'.tr),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    int removed = await galleryDownloadService.removeHashBlockedImages();
+    String message = removed == 0
+        ? 'removeAdsImagesEmpty'.tr
+        : 'removeAdsImagesResult'.trParams({'count': removed.toString()});
+    toast(message);
   }
 
   Future<void> _showAddExternalHashFileDialog(BuildContext context) async {
@@ -277,7 +318,7 @@ class SettingAdBlockPage extends StatelessWidget {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text('ok'.tr),
+              child: Text('OK'.tr),
             ),
           ],
         );
@@ -847,7 +888,7 @@ class _CustomHashDialogState extends State<_CustomHashDialog> {
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    child: Text('ok'.tr),
+                    child: Text('OK'.tr),
                   ),
                 ],
               ),

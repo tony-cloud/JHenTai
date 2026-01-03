@@ -1638,6 +1638,7 @@ class GalleryDownloadService extends GetxController
           'Skip blocked image download, gid: ${gallery.gid}, index: $serialNo',
           level: Level.info,
         );
+        await _removeHashBlockedImageFromDisk(gallery, image, serialNo);
         await _markBlockedImageAsDownloaded(gallery, image, serialNo);
         return;
       }
@@ -1900,6 +1901,53 @@ class GalleryDownloadService extends GetxController
     }
 
     await _updateProgressAfterImageDownloaded(gallery, serialNo);
+  }
+
+  Future<bool> _removeHashBlockedImageFromDisk(
+    GalleryDownloadedData gallery,
+    GalleryImage image,
+    int serialNo,
+  ) async {
+    bool removed = false;
+
+    try {
+      final io.File file = io.File(
+        _resolveAbsoluteImagePath(gallery, image, serialNo),
+      );
+      if (file.existsSync()) {
+        file.deleteSync();
+        removed = true;
+      }
+    } catch (e, stack) {
+      log.error(
+        'Remove hash blocked image failed, gid: ${gallery.gid}, index: $serialNo',
+        e,
+        stack,
+      );
+    }
+
+    await _removeCacheSafe(image.url);
+    if (image.originalImageUrl?.isNotEmpty == true) {
+      await _removeCacheSafe(image.originalImageUrl!);
+    }
+
+    return removed;
+  }
+
+  String _resolveAbsoluteImagePath(
+    GalleryDownloadedData gallery,
+    GalleryImage image,
+    int serialNo,
+  ) {
+    String? relativePath = image.path;
+    return relativePath == null
+        ? _computeImageDownloadAbsolutePath(
+            gallery.title,
+            gallery.gid,
+            image.url,
+            serialNo,
+          )
+        : path.join(pathService.getVisibleDir().path, relativePath);
   }
 
   Future<bool> _retryDownloadWithLegacyReloadKey(
@@ -2574,6 +2622,38 @@ class GalleryDownloadService extends GetxController
     }
 
     return (repaired: repaired, renamed: renamed);
+  }
+
+  Future<int> removeHashBlockedImages() async {
+    await completed;
+
+    int removed = 0;
+
+    for (GalleryDownloadedData gallery in gallerys) {
+      final GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gallery.gid];
+      if (galleryDownloadInfo == null) {
+        continue;
+      }
+
+      for (int serialNo = 0; serialNo < galleryDownloadInfo.images.length; serialNo++) {
+        final GalleryImage? image = galleryDownloadInfo.images[serialNo];
+        if (image == null || image.downloadStatus != DownloadStatus.downloaded) {
+          continue;
+        }
+
+        final ImageBlockReason? blockReason =
+            _resolveBlockReason(galleryDownloadInfo, image, serialNo);
+        if (!_isHashBlocked(blockReason)) {
+          continue;
+        }
+
+        if (await _removeHashBlockedImageFromDisk(gallery, image, serialNo)) {
+          removed++;
+        }
+      }
+    }
+
+    return removed;
   }
 
   Future<({int repaired, int renamed})> repairMissingImagesForAllGalleries() async {
