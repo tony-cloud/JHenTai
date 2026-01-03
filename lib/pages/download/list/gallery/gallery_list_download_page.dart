@@ -85,7 +85,12 @@ class GalleryListDownloadPage extends StatelessWidget
         GetBuilder<DownloadFilterService>(
           init: downloadFilterService,
           builder: (_) => IconButton(
-            icon: const Icon(Icons.filter_alt_outlined, size: 28),
+            icon: Icon(
+              downloadFilterService.hasActiveFilter
+                  ? Icons.filter_alt_outlined
+                  : Icons.filter_alt_off_outlined,
+              size: 28,
+            ),
             color: downloadFilterService.hasActiveFilter
                 ? Theme.of(context).colorScheme.primary
                 : null,
