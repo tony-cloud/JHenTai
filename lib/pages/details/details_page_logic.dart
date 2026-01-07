@@ -995,6 +995,7 @@ class DetailsPageLogic extends GetxController
           .firstWhereOrNull((g) => g.gid == currentDetail.galleryUrl.gid);
       if (downloadedGallery != null) {
         downloadedGalleries.add(downloadedGallery);
+        break;
       }
 
       GalleryUrl? parentUrl = currentDetail.parentGalleryUrl;
