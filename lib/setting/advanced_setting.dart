@@ -19,6 +19,7 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   RxBool inNoImageMode = false.obs;
   RxBool enableRefreshGalleryTags = true.obs;
   RxBool enableRefreshArchiveTags = true.obs;
+  RxInt historySearchLimit = 0.obs;
 
   @override
   ConfigEnum get configEnum => ConfigEnum.advancedSetting;
@@ -40,6 +41,7 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
         map['enableRefreshGalleryTags'] ?? enableRefreshGalleryTags.value;
     enableRefreshArchiveTags.value =
         map['enableRefreshArchiveTags'] ?? enableRefreshArchiveTags.value;
+    historySearchLimit.value = map['historySearchLimit'] ?? historySearchLimit.value;
   }
 
   @override
@@ -53,6 +55,7 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
       'inNoImageMode': inNoImageMode.value,
       'enableRefreshGalleryTags': enableRefreshGalleryTags.value,
       'enableRefreshArchiveTags': enableRefreshArchiveTags.value,
+      'historySearchLimit': historySearchLimit.value,
     });
   }
 
@@ -107,6 +110,12 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   Future<void> saveEnableRefreshArchiveTags(bool enableRefreshArchiveTags) async {
     log.debug('saveEnableRefreshArchiveTags:$enableRefreshArchiveTags');
     this.enableRefreshArchiveTags.value = enableRefreshArchiveTags;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveHistorySearchLimit(int historySearchLimit) async {
+    log.debug('saveHistorySearchLimit:$historySearchLimit');
+    this.historySearchLimit.value = historySearchLimit;
     await saveBeanConfig();
   }
 }

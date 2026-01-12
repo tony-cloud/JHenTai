@@ -575,6 +575,8 @@ class pt_BR {
       'checkUpdateAfterLaunchingApp': 'Buscar atualizações após abrir o app',
       'refreshGalleryTagsAutomatically': 'Atualizar tags de galerias automaticamente',
       'refreshArchiveTagsAutomatically': 'Atualizar tags de arquivos automaticamente',
+      'historySearchLimit': 'Limite de busca de histórico',
+      'historySearchLimitHint': '0 para ilimitado; usado ao buscar galerias pai/filha',
       'checkClipboard': 'Verificar se há URL de Galeria na área de transferência',
       'clearPageCache': 'Limpar cache de página',
       'clearReadProgress': 'Limpar progresso de leitura',

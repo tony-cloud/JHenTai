@@ -110,6 +110,7 @@ class DetailsPageLogic extends GetxController
   /// there may be more than one DetailsPages in route stack at same time, eg: tap a link in a comment.
   /// use this param as a 'tag' to get target [DetailsPageLogic] and [DetailsPageState].
   static final List<DetailsPageLogic> _stack = <DetailsPageLogic>[];
+  static final Map<int, GalleryDetail> _historyDetailCache = <int, GalleryDetail>{};
 
   static DetailsPageLogic? get current => _stack.isEmpty ? null : _stack.last;
 
@@ -145,6 +146,10 @@ class DetailsPageLogic extends GetxController
     state.gallery = argument.gallery;
     state.galleryDetails = argument.detailsPageInfo?.galleryDetails;
     state.apikey = argument.detailsPageInfo?.apikey;
+
+    if (state.galleryDetails != null) {
+      _cacheHistoryDetail(state.galleryDetails!);
+    }
   }
 
   @override
@@ -235,6 +240,7 @@ class DetailsPageLogic extends GetxController
     }
 
     state.galleryDetails = detailPageInfo.galleryDetails;
+    _cacheHistoryDetail(state.galleryDetails!);
     state.apikey = detailPageInfo.apikey;
     state.nextPageIndexToLoadThumbnails = 1;
 
@@ -844,9 +850,15 @@ class DetailsPageLogic extends GetxController
   }
 
   void handleTapHistoryButton(BuildContext context) {
+    if (state.galleryDetails == null) {
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (_) => EHGalleryHistoryDialog(
+        logic: this,
+        baseDetail: state.galleryDetails!,
         currentGalleryTitle: state.gallery?.title ??
             state.galleryDetails?.japaneseTitle ??
             state.galleryDetails?.rawTitle ??
@@ -854,6 +866,20 @@ class DetailsPageLogic extends GetxController
         parentUrl: state.galleryDetails?.parentGalleryUrl,
         childrenGallerys: state.galleryDetails?.childrenGallerys,
       ),
+    );
+  }
+
+  void handleTapParentGallery() {
+    GalleryUrl? parentUrl = state.galleryDetails?.parentGalleryUrl;
+    if (parentUrl == null) {
+      return;
+    }
+
+    toRoute(
+      Routes.details,
+      arguments: DetailsPageArgument(galleryUrl: parentUrl),
+      offAllBefore: false,
+      preventDuplicates: false,
     );
   }
 
@@ -1005,7 +1031,8 @@ class DetailsPageLogic extends GetxController
 
       visitedGids.add(parentUrl.gid);
 
-      GalleryDetail? parentDetail = await _fetchGalleryDetailForHistory(parentUrl);
+      GalleryDetail? parentDetail =
+          await fetchGalleryDetailForHistory(parentUrl, useCacheIfAvailable: false);
       await Future.delayed(const Duration(milliseconds: 500));
       if (parentDetail == null) {
         return null;
@@ -1028,7 +1055,8 @@ class DetailsPageLogic extends GetxController
       }
       visitedGids.add(nextUrl.gid);
 
-      GalleryDetail? nextDetail = await _fetchGalleryDetailForHistory(nextUrl);
+      GalleryDetail? nextDetail =
+          await fetchGalleryDetailForHistory(nextUrl, useCacheIfAvailable: false);
       if (nextDetail == null) {
         return null;
       }
@@ -1039,14 +1067,23 @@ class DetailsPageLogic extends GetxController
     return currentDetail;
   }
 
-  Future<GalleryDetail?> _fetchGalleryDetailForHistory(GalleryUrl galleryUrl) async {
+  Future<GalleryDetail?> fetchGalleryDetailForHistory(
+    GalleryUrl galleryUrl, {
+    bool useCacheIfAvailable = true,
+  }) async {
+    GalleryDetail? cachedDetail = _historyDetailCache[galleryUrl.gid];
+    if (cachedDetail != null && useCacheIfAvailable) {
+      return cachedDetail;
+    }
+
     try {
       ({GalleryDetail galleryDetails, String apikey}) detailPageInfo =
           await ehRequest.requestDetailPage<({GalleryDetail galleryDetails, String apikey})>(
         galleryUrl: galleryUrl.url,
         parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey,
-        useCacheIfAvailable: false,
+        useCacheIfAvailable: useCacheIfAvailable,
       );
+      _cacheHistoryDetail(detailPageInfo.galleryDetails);
       return detailPageInfo.galleryDetails;
     } on DioException catch (e) {
       log.error('updateGalleryError'.tr, e.errorMsg);
@@ -1060,6 +1097,10 @@ class DetailsPageLogic extends GetxController
     }
 
     return null;
+  }
+
+  void _cacheHistoryDetail(GalleryDetail detail) {
+    _historyDetailCache[detail.galleryUrl.gid] = detail;
   }
 
   void onCommentVoted(GalleryComment comment, bool isVotingUp, String score) {

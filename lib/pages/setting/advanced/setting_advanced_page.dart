@@ -7,6 +7,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:jhentai/extension/widget_extension.dart';
@@ -56,12 +57,24 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
   LoadingState _refreshArchiveTagsState = LoadingState.idle;
   LoadingState _repairMissingImagesState = LoadingState.idle;
 
+  late final TextEditingController _historySearchLimitController;
+
   @override
   void initState() {
     super.initState();
 
     _loadingLogSize();
     _getImagesCacheSize();
+
+    _historySearchLimitController = TextEditingController(
+      text: _formatHistoryLimitText(advancedSetting.historySearchLimit.value),
+    );
+  }
+
+  @override
+  void dispose() {
+    _historySearchLimitController.dispose();
+    super.dispose();
   }
 
   @override
@@ -87,6 +100,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildCheckUpdate(),
             _buildRefreshGalleryTags(),
             _buildRefreshArchiveTags(),
+            _buildHistorySearchLimit(),
             _buildCheckClipboard(),
             if (GetPlatform.isAndroid) _buildVerifyAppLinks(),
             _buildInNoImageMode(),
@@ -713,6 +727,29 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
     );
   }
 
+  Widget _buildHistorySearchLimit() {
+    return ListTile(
+      title: Text('historySearchLimit'.tr),
+      subtitle: Text('historySearchLimitHint'.tr),
+      trailing: SizedBox(
+        width: 96,
+        child: TextField(
+          controller: _historySearchLimitController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          textAlign: TextAlign.end,
+          decoration: InputDecoration(
+            hintText: '0',
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            border: const OutlineInputBorder(),
+          ),
+          onSubmitted: _saveHistorySearchLimit,
+        ),
+      ),
+    );
+  }
+
   Future<void> _refreshGalleryTagsManually() async {
     if (_refreshGalleryTagsState == LoadingState.loading) {
       return;
@@ -774,5 +811,21 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
         }
       });
     });
+  }
+
+  String _formatHistoryLimitText(int value) {
+    return value <= 0 ? '' : value.toString();
+  }
+
+  void _saveHistorySearchLimit(String text) {
+    final int? parsed = text.isEmpty ? 0 : int.tryParse(text);
+    if (parsed == null) {
+      _historySearchLimitController.text =
+          _formatHistoryLimitText(advancedSetting.historySearchLimit.value);
+      return;
+    }
+
+    advancedSetting.saveHistorySearchLimit(parsed);
+    _historySearchLimitController.text = _formatHistoryLimitText(parsed);
   }
 }

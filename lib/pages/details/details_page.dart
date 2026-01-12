@@ -170,6 +170,14 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                           children: [Text('history'.tr), const Icon(Icons.history)],
                         ),
                       ),
+                    if (state.galleryDetails?.parentGalleryUrl != null)
+                      PopupMenuItem(
+                        value: 7,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [Text('parentGallery'.tr), const Icon(Icons.exit_to_app)],
+                        ),
+                      ),
                   ];
                 },
                 onSelected: (value) {
@@ -199,6 +207,9 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                   }
                   if (value == 6) {
                     logic.handleTapHistoryButton(context);
+                  }
+                  if (value == 7) {
+                    logic.handleTapParentGallery();
                   }
                 },
               );

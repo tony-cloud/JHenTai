@@ -569,6 +569,8 @@ class ko_KR {
       'checkUpdateAfterLaunchingApp': '앱 실행 후 업데이트 확인',
       'refreshGalleryTagsAutomatically': '갤러리 태그 자동 새로고침',
       'refreshArchiveTagsAutomatically': '아카이브 태그 자동 새로고침',
+      'historySearchLimit': '히스토리 탐색 개수 제한',
+      'historySearchLimitHint': '0이면 무제한, 부모/자식 갤러리 탐색 시 적용',
       'checkClipboard': '클립보드에서 갤러리 주소 검사',
       'clearPageCache': '페이지 캐시 삭제',
       'clearReadProgress': '읽기 진행 초기화',

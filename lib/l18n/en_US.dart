@@ -547,6 +547,8 @@ class en_US {
       'checkUpdateAfterLaunchingApp': 'Check update after launching app',
       'refreshGalleryTagsAutomatically': 'Refresh gallery tags automatically',
       'refreshArchiveTagsAutomatically': 'Refresh archive tags automatically',
+      'historySearchLimit': 'History search limit',
+      'historySearchLimitHint': '0 for unlimited; applies when finding parent/child history',
       'checkClipboard': 'Check Gallery URL in Clipboard',
       'clearPageCache': 'Clear Page Cache',
       'clearReadProgress': 'Clear Read Progress',

@@ -557,6 +557,8 @@ class zh_TW {
       'checkUpdateAfterLaunchingApp': '啟動程式時檢查更新',
       'refreshGalleryTagsAutomatically': '自動刷新畫廊標籤',
       'refreshArchiveTagsAutomatically': '自動刷新存檔標籤',
+      'historySearchLimit': '歷史查找數量上限',
+      'historySearchLimitHint': '0 為不限，用於遞迴搜尋父子畫廊時',
       'checkClipboard': '讀取剪貼簿中的畫廊連結',
       'clearPageCache': '清除頁面快取',
       'clearReadProgress': '清除閱讀進度',

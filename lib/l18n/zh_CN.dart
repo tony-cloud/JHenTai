@@ -532,6 +532,8 @@ class zh_CN {
       'checkUpdateAfterLaunchingApp': '启动应用时检查更新',
       'refreshGalleryTagsAutomatically': '自动刷新画廊标签',
       'refreshArchiveTagsAutomatically': '自动刷新归档标签',
+      'historySearchLimit': '历史查找数量限制',
+      'historySearchLimitHint': '0 为不限，应用于递归查找父子画廊时',
       'checkClipboard': '检测剪切板中的画廊链接',
       'clearPageCache': '清除页面缓存',
       'clearReadProgress': '清除阅读进度',

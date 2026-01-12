@@ -574,6 +574,9 @@ class ru_RU {
       'checkUpdateAfterLaunchingApp': 'Проверять обновления при запуске',
       'refreshGalleryTagsAutomatically': 'Автоматически обновлять теги галерей',
       'refreshArchiveTagsAutomatically': 'Автоматически обновлять теги архивов',
+      'historySearchLimit': 'Лимит поиска истории',
+      'historySearchLimitHint':
+          '0 — без ограничений; применяется при поиске родительских/дочерних галерей',
       'checkClipboard': 'Проверять URL галереи в буфере обмена',
       'clearPageCache': 'Очистить кэш страниц',
       'clearReadProgress': 'Очистить прогресс чтения',
