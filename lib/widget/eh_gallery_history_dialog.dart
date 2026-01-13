@@ -32,7 +32,8 @@ class EHGalleryHistoryDialog extends StatefulWidget {
   State<EHGalleryHistoryDialog> createState() => _EHGalleryHistoryDialogState();
 }
 
-class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog> {
+class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
+    with SingleTickerProviderStateMixin {
   late final List<GalleryHistoryEntry> _descendants;
   final List<GalleryHistoryEntry> _ancestors = [];
   GalleryHistoryEntry? _parentEntry;
@@ -42,10 +43,18 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog> {
   late final int _searchLimit;
   late final bool _unlimited;
   int _addedCount = 0;
+  late final AnimationController _marqueeController;
+  bool _marqueeStarted = false;
+  int _marqueeSubscribers = 0;
 
   @override
   void initState() {
     super.initState();
+
+    _marqueeController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    );
 
     _descendants = List<GalleryHistoryEntry>.from(
       widget.childrenGallerys ?? <GalleryHistoryEntry>[],
@@ -66,6 +75,7 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog> {
 
   @override
   void dispose() {
+    _marqueeController.dispose();
     _running = false;
     super.dispose();
   }
@@ -287,13 +297,9 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog> {
     }
 
     return ListTile(
+      key: ValueKey<int>(entry.galleryUrl.gid),
       dense: true,
-      title: Text(
-        entry.title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: UIConfig.galleryHistoryTitleSize),
-      ),
+      title: _buildMarqueeTitle(entry.title),
       trailing: trailingWidgets.isEmpty
           ? null
           : Row(mainAxisSize: MainAxisSize.min, children: trailingWidgets),
@@ -357,5 +363,194 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog> {
 
   bool _isDownloaded(GalleryUrl url) {
     return galleryDownloadService.gallerys.any((g) => g.gid == url.gid);
+  }
+
+  Widget _buildMarqueeTitle(String title) {
+    return _MarqueeTitle(
+      title: title,
+      style: const TextStyle(fontSize: UIConfig.galleryHistoryTitleSize),
+      animation: _marqueeController,
+      onOverflowChanged: _handleOverflowChange,
+    );
+  }
+
+  void _handleOverflowChange(bool overflow) {
+    if (overflow) {
+      _marqueeSubscribers++;
+      if (!_marqueeStarted) {
+        _marqueeStarted = true;
+        _marqueeController.repeat();
+      }
+      return;
+    }
+
+    if (_marqueeSubscribers == 0) {
+      return;
+    }
+
+    _marqueeSubscribers = _marqueeSubscribers > 0 ? _marqueeSubscribers - 1 : 0;
+
+    if (_marqueeSubscribers == 0 && _marqueeStarted) {
+      _marqueeStarted = false;
+      _marqueeController.stop();
+      _marqueeController.reset();
+    }
+  }
+}
+
+class _MarqueeTitle extends StatefulWidget {
+  final String title;
+  final TextStyle style;
+  final Animation<double> animation;
+  final ValueChanged<bool> onOverflowChanged;
+
+  const _MarqueeTitle({
+    required this.title,
+    required this.style,
+    required this.animation,
+    required this.onOverflowChanged,
+  });
+
+  @override
+  State<_MarqueeTitle> createState() => _MarqueeTitleState();
+}
+
+class _MarqueeTitleState extends State<_MarqueeTitle> {
+  static const double _gap = 32;
+  double? _maxWidth;
+  double? _textWidth;
+  double? _textHeight;
+  bool _isOverflow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final Size textSize = _calculateTextSize(widget.title, widget.style);
+    _textWidth = textSize.width;
+    _textHeight = textSize.height;
+  }
+
+  @override
+  void didUpdateWidget(covariant _MarqueeTitle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.title != widget.title || oldWidget.style != widget.style) {
+      final Size textSize = _calculateTextSize(widget.title, widget.style);
+      if (textSize.width != _textWidth || textSize.height != _textHeight) {
+        setState(() {
+          _textWidth = textSize.width;
+          _textHeight = textSize.height;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _scheduleWidthMeasurement();
+
+    final bool hasWidths = _maxWidth != null && _textWidth != null && _maxWidth! > 0;
+    final bool overflow = hasWidths && _textWidth! > _maxWidth!;
+
+    if (overflow != _isOverflow) {
+      _isOverflow = overflow;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => widget.onOverflowChanged(overflow),
+      );
+    }
+
+    if (!overflow || _textWidth == null) {
+      return Text(
+        widget.title,
+        maxLines: 1,
+        overflow: TextOverflow.visible,
+        style: widget.style,
+      );
+    }
+
+    final double scrollWidth = _textWidth! + (_gap * 2);
+    final double textHeight = _textHeight ?? (widget.style.fontSize ?? 14);
+
+    return ClipRect(
+      child: SizedBox(
+        height: textHeight,
+        child: AnimatedBuilder(
+          animation: widget.animation,
+          builder: (BuildContext context, Widget? child) {
+            final double offset = -scrollWidth * widget.animation.value;
+
+            return Transform.translate(
+              offset: Offset(offset, 0),
+              child: SizedBox(
+                width: scrollWidth * 2,
+                height: textHeight,
+                child: Row(
+                  children: <Widget>[
+                    SizedBox(
+                      width: _textWidth! + _gap,
+                      height: textHeight,
+                      child: Text(
+                        widget.title,
+                        style: widget.style,
+                        maxLines: 1,
+                        softWrap: true,
+                      ),
+                    ),
+                    const SizedBox(width: _gap),
+                    SizedBox(
+                      width: _textWidth! + _gap,
+                      height: textHeight,
+                      child: Text(
+                        widget.title,
+                        style: widget.style,
+                        maxLines: 1,
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _scheduleWidthMeasurement() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      final RenderBox? box = context.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) {
+        return;
+      }
+
+      final double width = box.size.width;
+      if (_maxWidth == width) {
+        return;
+      }
+
+      setState(() => _maxWidth = width);
+    });
+  }
+
+  Size _calculateTextSize(String title, TextStyle style) {
+    final TextPainter painter = TextPainter(
+      text: TextSpan(text: title, style: style),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: double.infinity);
+
+    return painter.size;
+  }
+
+  @override
+  void dispose() {
+    if (_isOverflow) {
+      widget.onOverflowChanged(false);
+    }
+    super.dispose();
   }
 }
