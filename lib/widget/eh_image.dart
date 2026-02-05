@@ -1,17 +1,20 @@
-import 'package:animate_do/animate_do.dart';
-import 'package:extended_image/extended_image.dart';
+import 'dart:io' as io;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'package:animate_do/animate_do.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:get/get.dart';
+
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/model/gallery_image.dart';
-import 'package:jhentai/setting/advanced_setting.dart';
-import 'package:jhentai/setting/style_setting.dart';
-import 'dart:io' as io;
-
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/setting/advanced_setting.dart';
+import 'package:jhentai/setting/style_setting.dart';
+import 'package:jhentai/utils/domain_fronting_util.dart';
 
 typedef LoadingProgressWidgetBuilder = Widget Function(double);
 typedef FailedWidgetBuilder = Widget Function(ExtendedImageState state);
@@ -123,11 +126,15 @@ class EHImage extends StatelessWidget {
   }
 
   Widget buildNetworkImage(BuildContext context) {
+    final String rawUrl = _replaceEXUrl(galleryImage.url);
+    final DomainFrontingResult fronting = DomainFrontingUtil.build(rawUrl);
+
     return ExtendedImage.network(
-      _replaceEXUrl(galleryImage.url),
+      fronting.url,
       fit: fit,
       height: containerHeight,
       width: containerWidth,
+      headers: fronting.headers,
       handleLoadingProgress: loadingProgressWidgetBuilder != null,
       printError: kDebugMode,
       enableSlideOutPage: enableSlideOutPage,
@@ -140,6 +147,7 @@ class EHImage extends StatelessWidget {
                     .call(_computeLoadingProgress(state.loadingProgress, state.extendedImageInfo))
                 : Center(child: UIConfig.loadingAnimation(context));
           case LoadState.failed:
+            DomainFrontingUtil.markUnavailableFromResult(fronting);
             return failedWidgetBuilder?.call(state) ??
                 Center(
                   child: GestureDetector(

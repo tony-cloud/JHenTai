@@ -529,6 +529,11 @@ class zh_TW {
       /// advanced setting page
       'enableDomainFronting': '開啟域名前置',
       'bypassSNIBlocking': '繞過SNI封鎖',
+      'enableDnsOverHttps': '啟用DNS over HTTPS',
+      'enableDnsOverHttpsHint': '透過HTTPS解析網域而非系統DNS',
+      'dnsOverHttpsEndpoint': 'DNS over HTTPS位址',
+      'dnsOverHttpsEndpointHint': '選擇公共解析服務或輸入自訂URL',
+      'dnsOverHttpsPreset': '常用DoH服務商',
       'hostMapping': 'Host映射',
       'hostMappingHint': '用於域名前置',
       'proxyAddress': '代理伺服器地址',

@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
+
 import 'package:blur/blur.dart';
 import 'package:extended_image/extended_image.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:jhentai/config/ui_config.dart';
+import 'package:jhentai/utils/domain_fronting_util.dart';
 
 class EHWarningImage extends StatefulWidget {
   final bool warning;
@@ -25,6 +28,8 @@ class _EHWarningImageState extends State<EHWarningImage> {
 
   @override
   Widget build(BuildContext context) {
+    final DomainFrontingResult fronting = DomainFrontingUtil.build(widget.src);
+
     return GestureDetector(
       onTap: () {
         if (warning) {
@@ -44,9 +49,15 @@ class _EHWarningImageState extends State<EHWarningImage> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              child: ExtendedImage.network(widget.src),
+              child: ExtendedImage.network(
+                fronting.url,
+                headers: fronting.headers,
+              ),
             )
-          : ExtendedImage.network(widget.src),
+          : ExtendedImage.network(
+              fronting.url,
+              headers: fronting.headers,
+            ),
     );
   }
 }

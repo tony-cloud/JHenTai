@@ -548,6 +548,11 @@ class pt_BR {
       /// advanced setting page
       'enableDomainFronting': 'Ativar frente de Domínio',
       'bypassSNIBlocking': 'Ignorar bloqueio de SNI',
+      'enableDnsOverHttps': 'Ativar DNS sobre HTTPS',
+      'enableDnsOverHttpsHint': 'Resolver domínios via HTTPS em vez do DNS do sistema',
+      'dnsOverHttpsEndpoint': 'Endpoint de DNS sobre HTTPS',
+      'dnsOverHttpsEndpointHint': 'Escolha um resolvedor público ou informe um URL personalizado',
+      'dnsOverHttpsPreset': 'Provedores DoH comuns',
       'hostMapping': 'Mapeamento de host',
       'hostMappingHint': 'Usado para frente de domínio',
       'proxyAddress': 'Endereço de proxy',

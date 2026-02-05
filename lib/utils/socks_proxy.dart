@@ -2,6 +2,11 @@ import 'dart:io';
 
 import 'package:socks5_proxy/socks_client.dart';
 
+typedef LookupCallback = Future<List<InternetAddress>> Function(
+  String host, {
+  InternetAddressType type,
+});
+
 typedef SocksProxyConfigProvider = SocksProxyConfiguration? Function();
 
 class SocksProxy {
@@ -16,11 +21,16 @@ class SocksProxy {
     void Function(HttpClient client)? onCreate,
     String Function(Uri url)? findProxy,
     SocksProxyConfigProvider? socksConfig,
+    LookupCallback? lookup,
   }) {
+    if (lookup != null) {
+      IOOverrides.global = _LookupOverrides(lookup);
+    }
     HttpOverrides.global = _ProxyOverrides(
       onCreate: onCreate,
       findProxy: findProxy,
       socksConfig: socksConfig,
+      lookupCallback: lookup,
     );
   }
 }
@@ -28,11 +38,20 @@ class SocksProxy {
 HttpClient createProxyHttpClient({
   SecurityContext? context,
   SocksProxyConfiguration? socksConfig,
+  LookupCallback? lookup,
 }) {
-  final HttpClient client = HttpOverrides.runWithHttpOverrides(
-    () => HttpClient(context: context),
-    _PassthroughHttpOverrides(),
-  );
+  final HttpClient client = lookup == null
+      ? HttpOverrides.runWithHttpOverrides(
+          () => HttpClient(context: context),
+          _PassthroughHttpOverrides(),
+        )
+      : IOOverrides.runWithIOOverrides(
+          () => HttpOverrides.runWithHttpOverrides(
+            () => HttpClient(context: context),
+            _PassthroughHttpOverrides(lookupCallback: lookup),
+          ),
+          _LookupOverrides(lookup),
+        );
   if (socksConfig != null) {
     _applySocksProxy(client, socksConfig);
   }
@@ -88,34 +107,117 @@ class _ProxyOverrides extends HttpOverrides {
     this.onCreate,
     this.findProxy,
     this.socksConfig,
+    this.lookupCallback,
   });
 
   final void Function(HttpClient client)? onCreate;
   final String Function(Uri url)? findProxy;
   final SocksProxyConfigProvider? socksConfig;
+  final LookupCallback? lookupCallback;
 
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    final SocksProxyConfiguration? config = socksConfig?.call();
-    final HttpClient client = super.createHttpClient(context);
+    HttpClient build() {
+      final SocksProxyConfiguration? config = socksConfig?.call();
+      final HttpClient client = super.createHttpClient(context);
 
-    if (config != null) {
-      _applySocksProxy(client, config);
-      client.findProxy = (_) => 'DIRECT';
-    } else if (findProxy != null) {
-      client.findProxy = findProxy!;
+      if (config != null) {
+        _applySocksProxy(client, config);
+        client.findProxy = (_) => 'DIRECT';
+      } else if (findProxy != null) {
+        client.findProxy = findProxy!;
+      }
+
+      onCreate?.call(client);
+      return client;
     }
 
-    onCreate?.call(client);
-    return client;
+    if (lookupCallback == null) {
+      return build();
+    }
+
+    return IOOverrides.runWithIOOverrides(
+      build,
+      _LookupOverrides(lookupCallback!),
+    );
   }
 }
 
 class _PassthroughHttpOverrides extends HttpOverrides {
+  _PassthroughHttpOverrides({this.lookupCallback});
+
+  final LookupCallback? lookupCallback;
+
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     // This is a passthrough HttpClient that does not modify requests.
-    return super.createHttpClient(context);
+    if (lookupCallback == null) {
+      return super.createHttpClient(context);
+    }
+
+    return IOOverrides.runWithIOOverrides(
+      () => super.createHttpClient(context),
+      _LookupOverrides(lookupCallback!),
+    );
+  }
+}
+
+class _LookupOverrides extends IOOverrides {
+  _LookupOverrides(this.lookupCallback);
+
+  final LookupCallback lookupCallback;
+
+  @override
+  Future<Socket> socketConnect(
+    dynamic host,
+    int port, {
+    dynamic sourceAddress,
+    int sourcePort = 0,
+    Duration? timeout,
+  }) async {
+    final InternetAddress resolved = await _resolveHost(host);
+    return super.socketConnect(
+      resolved,
+      port,
+      sourceAddress: sourceAddress,
+      sourcePort: sourcePort,
+      timeout: timeout,
+    );
+  }
+
+  @override
+  Future<ConnectionTask<Socket>> socketStartConnect(
+    dynamic host,
+    int port, {
+    dynamic sourceAddress,
+    int sourcePort = 0,
+  }) async {
+    final InternetAddress resolved = await _resolveHost(host);
+    return super.socketStartConnect(
+      resolved,
+      port,
+      sourceAddress: sourceAddress,
+      sourcePort: sourcePort,
+    );
+  }
+
+  Future<InternetAddress> _resolveHost(Object host) async {
+    if (host is InternetAddress) {
+      return host;
+    }
+
+    final List<InternetAddress> addresses = await lookupCallback(
+      host.toString(),
+      type: InternetAddressType.any,
+    );
+    if (addresses.isEmpty) {
+      throw SocketException(
+        'Failed to resolve host',
+        address: host is InternetAddress ? host : null,
+        port: null,
+      );
+    }
+    return addresses.first;
   }
 }
 

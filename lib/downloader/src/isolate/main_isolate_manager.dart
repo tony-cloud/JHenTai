@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:logger/logger.dart';
+
 import 'package:jhentai/downloader/src/exception/j_download_exception.dart';
 import 'package:jhentai/downloader/src/isolate/sub_ioslate_manager.dart';
 import 'package:jhentai/downloader/src/model/main_isolate_message.dart';
@@ -8,10 +10,11 @@ import 'package:jhentai/downloader/src/model/proxy_config.dart';
 import 'package:jhentai/downloader/src/model/sub_isolate_message.dart';
 import 'package:jhentai/downloader/src/function/function.dart';
 import 'package:jhentai/service/log.dart';
-import 'package:logger/logger.dart';
 
 class MainIsolateManager {
   final ProxyConfig? _proxyConfig;
+  final bool _enableDoh;
+  final String _dohEndpoint;
 
   bool _ready = false;
 
@@ -31,7 +34,13 @@ class MainIsolateManager {
 
   Completer<void>? _closeCompleter;
 
-  MainIsolateManager({ProxyConfig? proxyConfig}) : _proxyConfig = proxyConfig;
+  MainIsolateManager({
+    ProxyConfig? proxyConfig,
+    required bool enableDoh,
+    required String? dohEndpoint,
+  })  : _proxyConfig = proxyConfig,
+        _enableDoh = enableDoh,
+        _dohEndpoint = dohEndpoint ?? '';
 
   Future<void> initIsolate() async {
     if (_ready) {
@@ -62,9 +71,18 @@ class MainIsolateManager {
           message = message as SubIsolateMessage<SendPort>;
           _subSendPort = message.data;
           _subSendPort!.send(
-            MainIsolateMessage<ProxyConfig?>(
+            MainIsolateMessage<
+                ({
+                  ProxyConfig? proxyConfig,
+                  bool enableDoh,
+                  String dohEndpoint,
+                })>(
               MainIsolateMessageType.init,
-              _proxyConfig,
+              (
+                proxyConfig: _proxyConfig,
+                enableDoh: _enableDoh,
+                dohEndpoint: _dohEndpoint,
+              ),
             ),
           );
           break;

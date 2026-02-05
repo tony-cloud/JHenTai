@@ -23,6 +23,7 @@ import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/setting/eh_setting.dart';
 import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/service/doh_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/proxy_util.dart';
@@ -67,7 +68,7 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
-      super.initDependencies..addAll([networkSetting, ehSetting]);
+      super.initDependencies..addAll([networkSetting, ehSetting, dohService]);
 
   @override
   Future<void> doInitBean() async {
@@ -130,6 +131,7 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         return baseFindProxy(uri);
       },
       socksConfig: _buildSocksProxyConfiguration,
+      lookup: dohService.lookup,
     );
   }
 

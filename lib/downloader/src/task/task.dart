@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:jhentai/downloader/j_downloader.dart';
 import 'package:jhentai/downloader/src/download/download_manager.dart';
 import 'package:jhentai/downloader/src/function/function.dart';
+import 'package:jhentai/utils/socks_proxy.dart';
 
 typedef DownloadProgressCallback = void Function(int current, int total);
 
@@ -46,6 +47,9 @@ class JDownloadTask {
     VoidCallback? onDone,
     ValueCallback<JDownloadException>? onError,
     ProxyConfig? proxyConfig,
+    LookupCallback? lookup,
+    bool enableDnsOverHttps = false,
+    String? dnsOverHttpsEndpoint,
   })  : _isolateCount = isolateCount,
         _connectionTimeout = headConnectionTimeout,
         _receiveTimeout = headReceiveTimeout,
@@ -61,6 +65,9 @@ class JDownloadTask {
       isolateCount: isolateCount,
       connectionTimeout: headConnectionTimeout,
       receiveTimeout: headReceiveTimeout,
+      lookup: lookup,
+      enableDoh: enableDnsOverHttps,
+      dohEndpoint: dnsOverHttpsEndpoint,
     )
       ..registerOnProgress((current, total) {
         onProgress?.call(current, total);

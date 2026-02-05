@@ -545,6 +545,11 @@ class ru_RU {
       /// advanced setting page
       'enableDomainFronting': 'Включить Domain Fronting',
       'bypassSNIBlocking': 'Обход блокировки SNI',
+      'enableDnsOverHttps': 'Включить DNS over HTTPS',
+      'enableDnsOverHttpsHint': 'Разрешать домены через HTTPS, а не системный DNS',
+      'dnsOverHttpsEndpoint': 'Адрес DNS over HTTPS',
+      'dnsOverHttpsEndpointHint': 'Выберите публичный резолвер или укажите URL',
+      'dnsOverHttpsPreset': 'Популярные DoH-провайдеры',
       'hostMapping': 'Сопоставление хостов',
       'hostMappingHint': 'Используется для domain fronting',
       'proxyAddress': 'Адрес прокси',

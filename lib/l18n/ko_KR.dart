@@ -541,6 +541,11 @@ class ko_KR {
       /// advanced setting page
       'enableDomainFronting': '도메인 우회 활성화',
       'bypassSNIBlocking': 'SNI 우회 차단',
+      'enableDnsOverHttps': 'DNS over HTTPS 사용',
+      'enableDnsOverHttpsHint': '시스템 DNS 대신 HTTPS로 도메인 조회',
+      'dnsOverHttpsEndpoint': 'DNS over HTTPS 주소',
+      'dnsOverHttpsEndpointHint': '공용 서버를 선택하거나 사용자 지정 URL 입력',
+      'dnsOverHttpsPreset': '자주 사용하는 DoH 제공자',
       'hostMapping': '호스트 매핑',
       'hostMappingHint': '도메인 프론팅에 사용됨',
       'proxyAddress': '프록시 주소',

@@ -25,6 +25,7 @@ import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/setting/download_setting.dart';
 import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/service/doh_service.dart';
 import 'package:jhentai/utils/archive_bot_response_parser.dart';
 import 'package:jhentai/utils/speed_computer.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
@@ -652,6 +653,9 @@ class ArchiveDownloadService extends GetxController
       onError: (JDownloadException e) async {
         archiveDownloadInfos[archive.gid]!.downloadCompleter?.completeError(e);
       },
+      lookup: dohService.lookup,
+      enableDnsOverHttps: networkSetting.enableDnsOverHttps.value,
+      dnsOverHttpsEndpoint: networkSetting.dnsOverHttpsEndpoint.value,
     );
   }
 

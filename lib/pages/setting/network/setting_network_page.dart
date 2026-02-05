@@ -17,6 +17,8 @@ class SettingNetworkPage extends StatelessWidget {
       TextEditingController(text: networkSetting.connectTimeout.value.toString());
   final TextEditingController receiveTimeoutController =
       TextEditingController(text: networkSetting.receiveTimeout.value.toString());
+  final TextEditingController dnsOverHttpsController =
+      TextEditingController(text: networkSetting.dnsOverHttpsEndpoint.value);
 
   SettingNetworkPage({super.key});
 
@@ -28,6 +30,8 @@ class SettingNetworkPage extends StatelessWidget {
         () => ListView(
           padding: const EdgeInsets.only(top: 16),
           children: [
+            _buildEnableDnsOverHttps(),
+            _buildDnsOverHttpsEndpoint(context),
             _buildEnableDomainFronting(),
             _buildProxyAddress(),
             _buildPageCacheMaxAge(),
@@ -47,6 +51,65 @@ class SettingNetworkPage extends StatelessWidget {
       value: networkSetting.enableDomainFronting.value,
       onChanged: networkSetting.saveEnableDomainFronting,
     );
+  }
+
+  Widget _buildEnableDnsOverHttps() {
+    return SwitchListTile(
+      title: Text('enableDnsOverHttps'.tr),
+      subtitle: Text('enableDnsOverHttpsHint'.tr),
+      value: networkSetting.enableDnsOverHttps.value,
+      onChanged: networkSetting.saveEnableDnsOverHttps,
+    );
+  }
+
+  Widget _buildDnsOverHttpsEndpoint(BuildContext context) {
+    return ListTile(
+      title: Text('dnsOverHttpsEndpoint'.tr),
+      subtitle: Text('dnsOverHttpsEndpointHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 210,
+            child: TextField(
+              controller: dnsOverHttpsController,
+              decoration: const InputDecoration(
+                isDense: true,
+                labelStyle: TextStyle(fontSize: 12),
+              ),
+              enabled: networkSetting.enableDnsOverHttps.value,
+              onSubmitted: (_) => _saveDnsOverHttps(),
+            ),
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'dnsOverHttpsPreset'.tr,
+            onSelected: (value) {
+              dnsOverHttpsController.text = value;
+              _saveDnsOverHttps();
+            },
+            itemBuilder: (_) => NetworkSetting.defaultDohEndpoints
+                .map((e) => PopupMenuItem(value: e, child: Text(e)))
+                .toList(),
+          ),
+          IconButton(
+            onPressed: networkSetting.enableDnsOverHttps.isFalse
+                ? null
+                : () {
+                    _saveDnsOverHttps();
+                    toast('saveSuccess'.tr);
+                  },
+            icon: Icon(
+              Icons.check,
+              color: UIConfig.resumePauseButtonColor(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _saveDnsOverHttps() {
+    networkSetting.saveDnsOverHttpsEndpoint(dnsOverHttpsController.text.trim());
   }
 
   Widget _buildProxyAddress() {

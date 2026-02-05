@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:retry/retry.dart';
+
 import 'package:jhentai/downloader/j_downloader.dart';
 import 'package:jhentai/downloader/src/extension/file_extension.dart';
 import 'package:jhentai/downloader/src/file/file_manager.dart';
@@ -14,7 +16,6 @@ import 'package:jhentai/downloader/src/model/download_chunk.dart';
 import 'package:jhentai/downloader/src/model/download_progress.dart';
 import 'package:jhentai/downloader/src/util/lock.dart';
 import 'package:jhentai/service/log.dart';
-import 'package:retry/retry.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
 
 typedef AsyncVoidCallback<T> = Future Function();
@@ -25,6 +26,9 @@ class DownloadManager {
   final String savePath;
 
   ProxyConfig? proxyConfig;
+  final LookupCallback? lookup;
+  final bool enableDoh;
+  final String? dohEndpoint;
 
   late int _isolateCount;
 
@@ -66,12 +70,18 @@ class DownloadManager {
     required int isolateCount,
     required Duration connectionTimeout,
     required Duration receiveTimeout,
+    this.lookup,
+    this.enableDoh = false,
+    this.dohEndpoint,
   }) : _isolateCount = isolateCount {
     _dio = Dio(BaseOptions(connectTimeout: connectionTimeout, receiveTimeout: receiveTimeout));
     final IOHttpClientAdapter adapter = _dio.httpClientAdapter as IOHttpClientAdapter;
     adapter.createHttpClient = () {
       final SocksProxyConfiguration? socksConfig = _buildSocksConfig(proxyConfig);
-      final HttpClient client = createProxyHttpClient(socksConfig: socksConfig);
+      final HttpClient client = createProxyHttpClient(
+        socksConfig: socksConfig,
+        lookup: lookup,
+      );
       if (socksConfig != null) {
         client.findProxy = (_) => 'DIRECT';
       } else if (proxyConfig?.type == ProxyType.socks4) {
@@ -335,7 +345,11 @@ class DownloadManager {
       List<Completer<void>> readyCompleters = List.generate(
           min(_isolateCount, _chunks.where((c) => !c.completed).length), (_) => Completer<void>());
       for (int i = 0; i < readyCompleters.length; i++) {
-        MainIsolateManager isolateManager = MainIsolateManager(proxyConfig: proxyConfig)
+        MainIsolateManager isolateManager = MainIsolateManager(
+          proxyConfig: proxyConfig,
+          enableDoh: enableDoh,
+          dohEndpoint: dohEndpoint,
+        )
           ..registerOnReady(readyCompleters[i].complete)
           ..initIsolate();
         _isolates.add(isolateManager);

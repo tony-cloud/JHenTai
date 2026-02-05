@@ -19,9 +19,20 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
   RxnString proxyPassword = RxnString();
   RxInt connectTimeout = 6000.obs;
   RxInt receiveTimeout = 6000.obs;
+  RxBool enableDnsOverHttps = false.obs;
+  RxString dnsOverHttpsEndpoint = defaultDohEndpoint.obs;
+
+  static const String defaultDohEndpoint = 'https://1.1.1.1/dns-query';
+
+  static const List<String> defaultDohEndpoints = [
+    defaultDohEndpoint,
+    'https://1.0.0.1/dns-query',
+    'https://dns.google/dns-query',
+  ];
 
   static const Map<String, List<String>> host2IPs = {
     'e-hentai.org': ['172.66.132.196', '172.66.140.62'],
+    'ehgt.org': ['62.112.8.21', '89.39.106.43', '109.236.85.28'],
     'exhentai.org': [
       '178.175.128.251',
       '178.175.128.252',
@@ -70,6 +81,8 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
     proxyPassword.value = map['proxyPassword'] ?? proxyPassword.value;
     connectTimeout.value = map['connectTimeout'] ?? connectTimeout.value;
     receiveTimeout.value = map['receiveTimeout'] ?? receiveTimeout.value;
+    enableDnsOverHttps.value = map['enableDnsOverHttps'] ?? enableDnsOverHttps.value;
+    dnsOverHttpsEndpoint.value = map['dnsOverHttpsEndpoint'] ?? dnsOverHttpsEndpoint.value;
   }
 
   @override
@@ -84,6 +97,8 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
       'proxyPassword': proxyPassword.value,
       'connectTimeout': connectTimeout.value,
       'receiveTimeout': receiveTimeout.value,
+      'enableDnsOverHttps': enableDnsOverHttps.value,
+      'dnsOverHttpsEndpoint': dnsOverHttpsEndpoint.value,
     });
   }
 
@@ -130,6 +145,18 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
   Future<void> saveReceiveTimeout(int receiveTimeout) async {
     log.debug('saveReceiveTimeout:$receiveTimeout');
     this.receiveTimeout.value = receiveTimeout;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEnableDnsOverHttps(bool enableDnsOverHttps) async {
+    log.debug('saveEnableDnsOverHttps:$enableDnsOverHttps');
+    this.enableDnsOverHttps.value = enableDnsOverHttps;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveDnsOverHttpsEndpoint(String dnsOverHttpsEndpoint) async {
+    log.debug('saveDnsOverHttpsEndpoint:$dnsOverHttpsEndpoint');
+    this.dnsOverHttpsEndpoint.value = dnsOverHttpsEndpoint;
     await saveBeanConfig();
   }
 }

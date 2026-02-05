@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'package:logger/web.dart';
+
 import 'package:jhentai/downloader/src/exception/j_download_exception.dart';
 import 'package:jhentai/downloader/src/model/main_isolate_message.dart';
 import 'package:jhentai/downloader/src/model/proxy_config.dart';
 import 'package:jhentai/downloader/src/model/sub_isolate_message.dart';
-import 'package:logger/web.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
 
 class SubIsolateManager {
@@ -16,6 +19,18 @@ class SubIsolateManager {
   final SendPort _mainSendPort;
 
   late final ProxyConfig? _proxyConfig;
+  final Dio _dohClient = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ),
+  );
+  final Map<String, _SubDnsCacheEntry> _dnsCache = {};
+
+  bool _enableDoh = false;
+  String _dohEndpoint = '';
+
+  static const Duration _defaultTtl = Duration(minutes: 5);
 
   CancelToken? _cancelToken;
 
@@ -31,15 +46,24 @@ class SubIsolateManager {
 
       switch (message.type) {
         case MainIsolateMessageType.init:
-          message = message as MainIsolateMessage<ProxyConfig?>;
-          _proxyConfig = message.data;
+          message = message as MainIsolateMessage<
+              ({
+                ProxyConfig? proxyConfig,
+                bool enableDoh,
+                String dohEndpoint,
+              })>;
+          _proxyConfig = message.data.proxyConfig;
+          _enableDoh = message.data.enableDoh;
+          _dohEndpoint = message.data.dohEndpoint;
           SocksProxy.initProxy(
             findProxy:
                 _proxyConfig?.type == ProxyType.socks5 || _proxyConfig?.type == ProxyType.socks4
                     ? (_) => 'DIRECT'
                     : ProxyConfig.toFindProxy(_proxyConfig),
             socksConfig: () => _buildSocksConfig(_proxyConfig),
+            lookup: _enableDoh ? _lookupHost : null,
           );
+          _configureDohClient();
           _mainSendPort.send(SubIsolateMessage<Null>(SubIsolateMessageType.inited, null));
           break;
         case MainIsolateMessageType.download:
@@ -189,6 +213,166 @@ class SubIsolateManager {
       _mainSendPort.send(SubIsolateMessage<Null>(SubIsolateMessageType.closeReady, null));
     });
   }
+
+  void _configureDohClient() {
+    final IOHttpClientAdapter adapter = _dohClient.httpClientAdapter as IOHttpClientAdapter;
+    adapter.createHttpClient = () {
+      final SocksProxyConfiguration? socksConfig = _buildSocksConfig(_proxyConfig);
+      final HttpClient client = createProxyHttpClient(
+        socksConfig: socksConfig,
+      );
+      if (socksConfig != null) {
+        client.findProxy = (_) => 'DIRECT';
+      } else if (_proxyConfig?.type == ProxyType.socks4) {
+        client.findProxy = (_) => 'DIRECT';
+      } else {
+        client.findProxy = ProxyConfig.toFindProxy(_proxyConfig);
+      }
+      return client;
+    };
+  }
+
+  Future<List<InternetAddress>> _lookupHost(
+    String host, {
+    InternetAddressType type = InternetAddressType.any,
+  }) async {
+    final InternetAddress? ip = InternetAddress.tryParse(host);
+    if (ip != null) {
+      return [ip];
+    }
+
+    if (!_enableDoh || _dohEndpoint.trim().isEmpty) {
+      return InternetAddress.lookup(host, type: type);
+    }
+
+    final String cacheKey = '$host-${type.name}';
+    final _SubDnsCacheEntry? cached = _dnsCache[cacheKey];
+    if (cached != null && cached.expireAt.isAfter(DateTime.now())) {
+      return cached.addresses;
+    }
+
+    try {
+      final _SubLookupResult result = await _queryDoh(host, type: type);
+      if (result.addresses.isNotEmpty) {
+        _dnsCache[cacheKey] = _SubDnsCacheEntry(
+          addresses: result.addresses,
+          expireAt: DateTime.now().add(result.ttl),
+        );
+        return result.addresses;
+      }
+    } catch (_) {}
+
+    return InternetAddress.lookup(host, type: type);
+  }
+
+  Future<_SubLookupResult> _queryDoh(
+    String host, {
+    InternetAddressType type = InternetAddressType.any,
+  }) async {
+    final List<_SubLookupResult> results = [];
+    if (type == InternetAddressType.any || type == InternetAddressType.IPv4) {
+      results.add(await _querySingle(host, 1));
+    }
+    if (type == InternetAddressType.any || type == InternetAddressType.IPv6) {
+      results.add(await _querySingle(host, 28));
+    }
+
+    final List<InternetAddress> addresses =
+        results.expand((r) => r.addresses).toSet().toList(growable: false);
+    if (addresses.isEmpty) {
+      return _SubLookupResult.empty();
+    }
+
+    final Duration ttl = results.map((r) => r.ttl).reduce((a, b) => a < b ? a : b);
+    return _SubLookupResult(addresses: addresses, ttl: ttl);
+  }
+
+  Future<_SubLookupResult> _querySingle(String host, int recordType) async {
+    if (_dohEndpoint.trim().isEmpty) {
+      return _SubLookupResult.empty();
+    }
+
+    final Uri base = Uri.parse(_dohEndpoint);
+    final Map<String, String> params = Map.of(base.queryParameters);
+    params['name'] = host;
+    params['type'] = recordType.toString();
+
+    final Uri uri = base.replace(queryParameters: params);
+    final Response response = await _dohClient.getUri(
+      uri,
+      options: Options(
+        headers: {'accept': 'application/dns-json'},
+        responseType: ResponseType.json,
+      ),
+    );
+
+    final dynamic data = response.data;
+    if (data is! Map) {
+      return _SubLookupResult.empty();
+    }
+
+    final int? status = (data['Status'] as num?)?.toInt();
+    if (status != null && status != 0) {
+      return _SubLookupResult.empty();
+    }
+
+    final List answers = data['Answer'] as List? ?? const [];
+    final List<InternetAddress> addresses = [];
+    int? minTtl;
+    for (final dynamic answer in answers) {
+      if (answer is! Map) {
+        continue;
+      }
+
+      final int? typeValue = (answer['type'] as num?)?.toInt();
+      if (typeValue != recordType) {
+        continue;
+      }
+
+      final String? dataStr = answer['data'] as String?;
+      if (dataStr == null) {
+        continue;
+      }
+
+      final InternetAddress? address = InternetAddress.tryParse(dataStr);
+      if (address == null) {
+        continue;
+      }
+      addresses.add(address);
+
+      final int? ttl = (answer['TTL'] as num?)?.toInt();
+      if (ttl != null && ttl > 0) {
+        minTtl = minTtl == null ? ttl : min(minTtl, ttl);
+      }
+    }
+
+    if (addresses.isEmpty) {
+      return _SubLookupResult.empty();
+    }
+
+    final int minTtlSeconds = minTtl == null || minTtl <= 0 ? _defaultTtl.inSeconds : minTtl;
+    return _SubLookupResult(
+      addresses: addresses,
+      ttl: Duration(seconds: minTtlSeconds),
+    );
+  }
+}
+
+class _SubLookupResult {
+  _SubLookupResult({required this.addresses, required this.ttl});
+
+  factory _SubLookupResult.empty() =>
+      _SubLookupResult(addresses: const [], ttl: SubIsolateManager._defaultTtl);
+
+  final List<InternetAddress> addresses;
+  final Duration ttl;
+}
+
+class _SubDnsCacheEntry {
+  _SubDnsCacheEntry({required this.addresses, required this.expireAt});
+
+  final List<InternetAddress> addresses;
+  final DateTime expireAt;
 }
 
 SocksProxyConfiguration? _buildSocksConfig(ProxyConfig? config) {

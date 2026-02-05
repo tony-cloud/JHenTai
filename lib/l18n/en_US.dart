@@ -520,6 +520,11 @@ class en_US {
       /// advanced setting page
       'enableDomainFronting': 'Enable Domain Fronting',
       'bypassSNIBlocking': 'Bypass SNI blocking',
+      'enableDnsOverHttps': 'Enable DNS over HTTPS',
+      'enableDnsOverHttpsHint': 'Resolve domains through HTTPS instead of system DNS',
+      'dnsOverHttpsEndpoint': 'DNS over HTTPS Endpoint',
+      'dnsOverHttpsEndpointHint': 'Pick a public resolver or enter a custom URL',
+      'dnsOverHttpsPreset': 'Common DoH providers',
       'hostMapping': 'Host Mapping',
       'hostMappingHint': 'Used for domain fronting',
       'proxyAddress': 'Proxy Address',

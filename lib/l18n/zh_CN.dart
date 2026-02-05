@@ -504,6 +504,11 @@ class zh_CN {
       /// advanced setting page
       'enableDomainFronting': '开启域名前置',
       'bypassSNIBlocking': '绕过SNI封锁',
+      'enableDnsOverHttps': '启用DNS over HTTPS',
+      'enableDnsOverHttpsHint': '通过HTTPS解析域名，而非系统DNS',
+      'dnsOverHttpsEndpoint': 'DNS over HTTPS地址',
+      'dnsOverHttpsEndpointHint': '选择公共解析服务或填写自定义URL',
+      'dnsOverHttpsPreset': '常用DoH服务商',
       'hostMapping': 'Host映射',
       'hostMappingHint': '用于域名前置',
       'proxyAddress': '代理服务器地址',

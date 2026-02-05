@@ -16,6 +16,7 @@ import 'package:jhentai/pages/gallery_image/gallery_image_page_logic.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/date_util.dart';
+import 'package:jhentai/utils/domain_fronting_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
@@ -282,6 +283,7 @@ class _EHCommentTextBody extends StatelessWidget {
       }
 
       String url = node.attributes['src']!.replaceAll('s.exhentai.org', 'ehgt.org');
+      DomainFrontingResult fronting = DomainFrontingUtil.build(url);
       return WidgetSpan(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -290,13 +292,15 @@ class _EHCommentTextBody extends StatelessWidget {
                 maxWidth: _computeImageMaxWidth(constraints, node),
               ),
               child: ExtendedImage.network(
-                url,
+                fronting.url,
+                headers: fronting.headers,
                 handleLoadingProgress: true,
                 loadStateChanged: (ExtendedImageState state) {
                   switch (state.extendedImageLoadState) {
                     case LoadState.loading:
                       return Center(child: UIConfig.loadingAnimation(context));
                     case LoadState.failed:
+                      DomainFrontingUtil.markUnavailableFromResult(fronting);
                       return Center(
                         child: GestureDetector(
                             onTap: state.reLoadImage,
