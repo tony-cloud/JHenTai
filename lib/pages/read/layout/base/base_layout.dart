@@ -387,6 +387,9 @@ abstract class BaseLayout extends StatelessWidget {
     return Obx(() {
       imageBlockService.version.value;
       GalleryImage image = readPageState.images[index]!;
+      if (image.downloadStatus == DownloadStatus.downloadFailed) {
+        return _buildDownloadFailedIndicator(index, logic.getPlaceHolderSize(index));
+      }
       String? key = imageBlockService.buildCacheKey(image);
       ImageBlockReason? reason = imageBlockService.shouldBlock(
         image.imageHash,
@@ -440,6 +443,28 @@ abstract class BaseLayout extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Widget _buildDownloadFailedIndicator(int index, Size placeHolderSize) {
+    final int? gid = readPageState.readPageInfo.gid;
+
+    return SizedBox(
+      height: placeHolderSize.height,
+      width: placeHolderSize.width,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: UIConfig.readPageWarningButtonColor),
+          Text('downloadFailed'.tr).marginOnly(top: 8),
+          TextButton(
+            onPressed:
+                gid == null ? null : () => galleryDownloadService.reDownloadImage(gid, index),
+            child: Text('reDownload'.tr),
+          ),
+          Text((index + 1).toString()).marginOnly(top: 4),
+        ],
+      ),
+    );
   }
 
   /// downloading for local mode
