@@ -16,6 +16,7 @@ import 'package:jhentai/exception/eh_site_exception.dart';
 import 'package:jhentai/model/gallery_page.dart';
 import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/network/eh_ip_provider.dart';
+import 'package:jhentai/network/request_retrier.dart';
 import 'package:jhentai/network/eh_timeout_translator.dart';
 import 'package:jhentai/pages/ranklist/ranklist_page_state.dart';
 import 'package:jhentai/service/isolate_service.dart';
@@ -1186,12 +1187,19 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     Response response;
 
     try {
-      response = await _dio.get(
-        url,
-        queryParameters: queryParameters,
-        options: options,
-        cancelToken: cancelToken,
-        onReceiveProgress: onReceiveProgress,
+      response = await runWithNetworkRetry(
+        send: () => _dio.get(
+          url,
+          queryParameters: queryParameters,
+          options: options,
+          cancelToken: cancelToken,
+          onReceiveProgress: onReceiveProgress,
+        ),
+        onRetry: (error, category, attempt, maxRetries) {
+          log.warning(
+            '[REQ#$requestId] GET retry $attempt/$maxRetries reason:${retryCategoryLabel(category)} url:$url status:${error.response?.statusCode} type:${error.type}',
+          );
+        },
       );
     } on DioException catch (e) {
       log.warning(
@@ -1228,14 +1236,21 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
         '[REQ#$requestId] POST start url:$url query:${queryParameters?.keys.join(',') ?? 'none'}');
     Response response;
     try {
-      response = await _dio.post(
-        url,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
+      response = await runWithNetworkRetry(
+        send: () => _dio.post(
+          url,
+          data: data,
+          queryParameters: queryParameters,
+          options: options,
+          cancelToken: cancelToken,
+          onSendProgress: onSendProgress,
+          onReceiveProgress: onReceiveProgress,
+        ),
+        onRetry: (error, category, attempt, maxRetries) {
+          log.warning(
+            '[REQ#$requestId] POST retry $attempt/$maxRetries reason:${retryCategoryLabel(category)} url:$url status:${error.response?.statusCode} type:${error.type}',
+          );
+        },
       );
     } on DioException catch (e) {
       log.warning(

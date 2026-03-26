@@ -17,6 +17,10 @@ class SettingNetworkPage extends StatelessWidget {
       TextEditingController(text: networkSetting.connectTimeout.value.toString());
   final TextEditingController receiveTimeoutController =
       TextEditingController(text: networkSetting.receiveTimeout.value.toString());
+  final TextEditingController timeoutRetryTimesController =
+      TextEditingController(text: networkSetting.timeoutRetryTimes.value.toString());
+  final TextEditingController serverErrorRetryTimesController =
+      TextEditingController(text: networkSetting.serverErrorRetryTimes.value.toString());
   final TextEditingController dnsOverHttpsController =
       TextEditingController(text: networkSetting.dnsOverHttpsEndpoint.value);
 
@@ -38,6 +42,8 @@ class SettingNetworkPage extends StatelessWidget {
             _buildCacheImageExpireDuration(),
             _buildConnectTimeout(context),
             _buildReceiveTimeout(context),
+            _buildTimeoutRetryTimes(context),
+            _buildServerErrorRetryTimes(context),
           ],
         ).withListTileTheme(context),
       ),
@@ -224,6 +230,78 @@ class SettingNetworkPage extends StatelessWidget {
                 return;
               }
               networkSetting.saveReceiveTimeout(value);
+              toast('saveSuccess'.tr);
+            },
+            icon: Icon(Icons.check, color: UIConfig.resumePauseButtonColor(context)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeoutRetryTimes(BuildContext context) {
+    return ListTile(
+      title: Text('timeoutRetryTimes'.tr),
+      subtitle: Text('timeoutRetryTimesHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 50,
+            child: TextField(
+              controller: timeoutRetryTimesController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
+              textAlign: TextAlign.center,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                IntRangeTextInputFormatter(minValue: 0),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              int? value = int.tryParse(timeoutRetryTimesController.value.text);
+              if (value == null) {
+                return;
+              }
+              networkSetting.saveTimeoutRetryTimes(value);
+              toast('saveSuccess'.tr);
+            },
+            icon: Icon(Icons.check, color: UIConfig.resumePauseButtonColor(context)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServerErrorRetryTimes(BuildContext context) {
+    return ListTile(
+      title: Text('serverErrorRetryTimes'.tr),
+      subtitle: Text('serverErrorRetryTimesHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 50,
+            child: TextField(
+              controller: serverErrorRetryTimesController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
+              textAlign: TextAlign.center,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                IntRangeTextInputFormatter(minValue: 0),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              int? value = int.tryParse(serverErrorRetryTimesController.value.text);
+              if (value == null) {
+                return;
+              }
+              networkSetting.saveServerErrorRetryTimes(value);
               toast('saveSuccess'.tr);
             },
             icon: Icon(Icons.check, color: UIConfig.resumePauseButtonColor(context)),

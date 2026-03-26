@@ -559,6 +559,11 @@ class ru_RU {
       'updateSuccess': 'Успешно обновлено',
       'connectTimeout': 'Тайм-аут подключения',
       'receiveTimeout': 'Тайм-аут получения данных',
+      'timeoutRetryTimes': 'Количество повторов при тайм-ауте',
+      'timeoutRetryTimesHint':
+          'Сколько раз повторять при ошибках соединения/получения. 0 — без повторов',
+      'serverErrorRetryTimes': 'Количество повторов при ошибке сервера',
+      'serverErrorRetryTimesHint': 'Повторы для ошибок 5xx или сетевых ошибок; 403 не повторяется',
       'pageCacheMaxAge': 'Время жизни кэша страниц',
       'pageCacheMaxAgeHint': 'Вы можете обновить кэш, обновив страницу',
       'cacheImageExpireDuration': 'Время жизни кэша изображений',

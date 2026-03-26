@@ -19,6 +19,8 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
   RxnString proxyPassword = RxnString();
   RxInt connectTimeout = 6000.obs;
   RxInt receiveTimeout = 6000.obs;
+  RxInt timeoutRetryTimes = 10.obs;
+  RxInt serverErrorRetryTimes = 3.obs;
   RxBool enableDnsOverHttps = false.obs;
   RxString dnsOverHttpsEndpoint = defaultDohEndpoint.obs;
 
@@ -81,6 +83,8 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
     proxyPassword.value = map['proxyPassword'] ?? proxyPassword.value;
     connectTimeout.value = map['connectTimeout'] ?? connectTimeout.value;
     receiveTimeout.value = map['receiveTimeout'] ?? receiveTimeout.value;
+    timeoutRetryTimes.value = map['timeoutRetryTimes'] ?? timeoutRetryTimes.value;
+    serverErrorRetryTimes.value = map['serverErrorRetryTimes'] ?? serverErrorRetryTimes.value;
     enableDnsOverHttps.value = map['enableDnsOverHttps'] ?? enableDnsOverHttps.value;
     dnsOverHttpsEndpoint.value = map['dnsOverHttpsEndpoint'] ?? dnsOverHttpsEndpoint.value;
   }
@@ -97,6 +101,8 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
       'proxyPassword': proxyPassword.value,
       'connectTimeout': connectTimeout.value,
       'receiveTimeout': receiveTimeout.value,
+      'timeoutRetryTimes': timeoutRetryTimes.value,
+      'serverErrorRetryTimes': serverErrorRetryTimes.value,
       'enableDnsOverHttps': enableDnsOverHttps.value,
       'dnsOverHttpsEndpoint': dnsOverHttpsEndpoint.value,
     });
@@ -145,6 +151,18 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
   Future<void> saveReceiveTimeout(int receiveTimeout) async {
     log.debug('saveReceiveTimeout:$receiveTimeout');
     this.receiveTimeout.value = receiveTimeout;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveTimeoutRetryTimes(int timeoutRetryTimes) async {
+    log.debug('saveTimeoutRetryTimes:$timeoutRetryTimes');
+    this.timeoutRetryTimes.value = timeoutRetryTimes;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveServerErrorRetryTimes(int serverErrorRetryTimes) async {
+    log.debug('saveServerErrorRetryTimes:$serverErrorRetryTimes');
+    this.serverErrorRetryTimes.value = serverErrorRetryTimes;
     await saveBeanConfig();
   }
 

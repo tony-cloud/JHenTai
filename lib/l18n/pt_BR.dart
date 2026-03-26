@@ -562,6 +562,11 @@ class pt_BR {
       'updateSuccess': 'Atualizado com sucesso',
       'connectTimeout': 'Tempo limite de conexão',
       'receiveTimeout': 'Tempo limite de recebimento de dados',
+      'timeoutRetryTimes': 'Tentativas de repetição por tempo limite',
+      'timeoutRetryTimesHint':
+          'Número de tentativas para erros de tempo limite de conexão/recepção; 0 desativa',
+      'serverErrorRetryTimes': 'Tentativas de repetição para erro do servidor',
+      'serverErrorRetryTimesHint': 'Repetir em erros 5xx ou de conexão; 403 nunca repete',
       'pageCacheMaxAge': 'Idade máxima do cache de página',
       'pageCacheMaxAgeHint': 'Você pode atualizar o cache atualizando a página',
       'cacheImageExpireDuration': 'Image Cache Expiration Time',

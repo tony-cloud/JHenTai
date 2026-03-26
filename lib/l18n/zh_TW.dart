@@ -33,6 +33,10 @@ class zh_TW {
       'connectionTimeoutHint': '建立網路連線超時',
       'receiveDataTimeoutHint': '接收網路資料超時',
       'archiveError': '下載歸檔錯誤',
+      'timeoutRetryTimes': '逾時重試次數',
+      'timeoutRetryTimesHint': '連線/接收逾時的重試次數，0 表示不重試',
+      'serverErrorRetryTimes': '伺服器錯誤重試次數',
+      'serverErrorRetryTimesHint': '5xx 或網路錯誤的重試次數，403 不會重試',
       'edit': '編輯',
 
       'ftpServer': 'FTP伺服器',

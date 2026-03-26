@@ -2,10 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:get/get_rx/src/rx_workers/rx_workers.dart';
 import 'package:jhentai/consts/archive_bot_consts.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/network/request_retrier.dart';
 import 'package:jhentai/setting/archive_bot_setting.dart';
 
 import 'package:jhentai/service/isolate_service.dart';
 import 'package:jhentai/service/jh_service.dart';
+import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 
@@ -44,17 +46,41 @@ class ArchiveBotRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleB
     _dio.options.receiveTimeout = Duration(milliseconds: receiveTimeout);
   }
 
+  Future<Response<T>> _sendWithRetry<T>({
+    required Future<Response<T>> Function() send,
+    required String method,
+    required String url,
+  }) {
+    return runWithNetworkRetry(
+      send: send,
+      onRetry: (error, category, attempt, maxRetries) {
+        log.warning(
+          '[ARCHIVE-BOT] $method retry $attempt/$maxRetries '
+          'reason:${retryCategoryLabel(category)} url:$url '
+          'status:${error.response?.statusCode} type:${error.type}',
+        );
+      },
+    );
+  }
+
   Future<T> requestBalance<T>({
     String? apiAddress,
     required String apiKey,
     HtmlParser<T>? parser,
   }) async {
-    Response response = await _dio.post(
-      '${archiveBotSetting.useProxyServer.value ? ArchiveBotConsts.proxyServerAddress : apiAddress}/balance',
-      options: Options(contentType: Headers.jsonContentType),
-      data: {
-        'apikey': apiKey,
-      },
+    final String? baseAddress =
+        archiveBotSetting.useProxyServer.value ? ArchiveBotConsts.proxyServerAddress : apiAddress;
+    final String url = '${baseAddress ?? ''}/balance';
+    Response response = await _sendWithRetry(
+      send: () => _dio.post(
+        url,
+        options: Options(contentType: Headers.jsonContentType),
+        data: {
+          'apikey': apiKey,
+        },
+      ),
+      method: 'POST',
+      url: url,
     );
 
     return _parseResponse(response, parser);
@@ -65,12 +91,19 @@ class ArchiveBotRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleB
     required String apiKey,
     HtmlParser<T>? parser,
   }) async {
-    Response response = await _dio.post(
-      '${archiveBotSetting.useProxyServer.value ? ArchiveBotConsts.proxyServerAddress : apiAddress}/checkin',
-      options: Options(contentType: Headers.jsonContentType),
-      data: {
-        'apikey': apiKey,
-      },
+    final String? baseAddress =
+        archiveBotSetting.useProxyServer.value ? ArchiveBotConsts.proxyServerAddress : apiAddress;
+    final String url = '${baseAddress ?? ''}/checkin';
+    Response response = await _sendWithRetry(
+      send: () => _dio.post(
+        url,
+        options: Options(contentType: Headers.jsonContentType),
+        data: {
+          'apikey': apiKey,
+        },
+      ),
+      method: 'POST',
+      url: url,
     );
 
     return _parseResponse(response, parser);
@@ -85,16 +118,23 @@ class ArchiveBotRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleB
     CancelToken? cancelToken,
     HtmlParser<T>? parser,
   }) async {
-    Response response = await _dio.post(
-      '${archiveBotSetting.useProxyServer.value ? ArchiveBotConsts.proxyServerAddress : apiAddress}/resolve',
-      options: Options(contentType: Headers.jsonContentType),
-      data: {
-        'apikey': apiKey,
-        'gid': gid,
-        'token': token,
-        'force_resolve': reParse,
-      },
-      cancelToken: cancelToken,
+    final String? baseAddress =
+        archiveBotSetting.useProxyServer.value ? ArchiveBotConsts.proxyServerAddress : apiAddress;
+    final String url = '${baseAddress ?? ''}/resolve';
+    Response response = await _sendWithRetry(
+      send: () => _dio.post(
+        url,
+        options: Options(contentType: Headers.jsonContentType),
+        data: {
+          'apikey': apiKey,
+          'gid': gid,
+          'token': token,
+          'force_resolve': reParse,
+        },
+        cancelToken: cancelToken,
+      ),
+      method: 'POST',
+      url: url,
     );
 
     return _parseResponse(response, parser);
