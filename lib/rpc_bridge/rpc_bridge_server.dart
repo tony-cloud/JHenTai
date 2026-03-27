@@ -5,8 +5,12 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:jhentai/consts/eh_consts.dart';
 import 'package:jhentai/consts/rpc_consts.dart';
+import 'package:jhentai/database/dao/gallery_history_dao.dart';
+import 'package:jhentai/database/database.dart';
 import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/setting/download_setting.dart';
+import 'package:path/path.dart' as path;
 
 const String rpcBridgeServerName = 'JHenTai RPC Bridge';
 const String rpcBridgeServerVersion = '0.1.0';
@@ -54,6 +58,9 @@ class RpcBridgeServer {
         RPCCapabilities.galleryImage,
         RPCCapabilities.downloadGalleryList,
         RPCCapabilities.downloadGalleryRead,
+        RPCCapabilities.downloadGalleryThumbnail,
+        RPCCapabilities.historyRead,
+        RPCCapabilities.historyWrite,
         RPCCapabilities.newsEvent,
         'system.reloadCertificates',
         RPCMethods.authSetCookie,
@@ -155,10 +162,25 @@ class RpcBridgeServer {
       return;
     }
 
+    if (request.method == 'GET' &&
+        request.uri.path == RPCConsts.rpcDownloadedGalleryThumbnailEndpoint) {
+      if (!_isAuthorized(request)) {
+        request.response
+          ..statusCode = HttpStatus.unauthorized
+          ..write('Unauthorized');
+        await request.response.close();
+        return;
+      }
+
+      await _handleDownloadedGalleryThumbnail(request);
+      return;
+    }
+
     if (request.method == 'OPTIONS' &&
         (request.uri.path == RPCConsts.rpcEndpoint ||
             request.uri.path == RPCConsts.rpcMediaEndpoint ||
-            request.uri.path == RPCConsts.rpcDownloadedGalleryImageEndpoint)) {
+            request.uri.path == RPCConsts.rpcDownloadedGalleryImageEndpoint ||
+            request.uri.path == RPCConsts.rpcDownloadedGalleryThumbnailEndpoint)) {
       request.response.statusCode = HttpStatus.noContent;
       await request.response.close();
       return;
@@ -293,6 +315,14 @@ class RpcBridgeServer {
         return _handleDownloadGalleryList();
       case RPCMethods.downloadGalleryImages:
         return _handleDownloadGalleryImages(params);
+      case RPCMethods.historyPage:
+        return _handleHistoryPage(params);
+      case RPCMethods.historyRecord:
+        return _handleHistoryRecord(params);
+      case RPCMethods.historyDelete:
+        return _handleHistoryDelete(params);
+      case RPCMethods.historyDeleteAll:
+        return _handleHistoryDeleteAll();
       case 'system.reloadCertificates':
         return _handleReloadCertificates();
       case RPCMethods.authSetCookie:
@@ -440,6 +470,72 @@ class RpcBridgeServer {
       'gid': gid,
       'downloadProgress': info.downloadProgress.toJson(),
       'images': info.images.map((GalleryImage? image) => image?.toJson()).toList(growable: false),
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleHistoryPage(Map<String, dynamic> params) async {
+    final int pageIndex = _asInt(params['pageIndex'], fallback: 0);
+    final int pageSize = _asInt(params['pageSize'], fallback: 100);
+
+    if (pageIndex < 0 || pageSize <= 0) {
+      throw RPCBridgeException(
+        code: -32602,
+        message: 'Invalid pageIndex/pageSize',
+      );
+    }
+
+    final List<GalleryHistoryV2Data> histories =
+        await GalleryHistoryDao.selectByPageIndex(pageIndex, pageSize);
+    final int totalCount = await GalleryHistoryDao.selectTotalCount();
+
+    return <String, dynamic>{
+      'pageIndex': pageIndex,
+      'pageSize': pageSize,
+      'totalCount': totalCount,
+      'records': histories.map((history) => history.toJson()).toList(growable: false),
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleHistoryRecord(Map<String, dynamic> params) async {
+    final int gid = _asInt(params['gid']);
+    final String jsonBody = _requireString(params, <String>['jsonBody']);
+    final String lastReadTime = _requireString(
+      params,
+      <String>['lastReadTime'],
+      fallback: DateTime.now().toString(),
+    );
+
+    await GalleryHistoryDao.replaceHistory(
+      GalleryHistoryV2Data(
+        gid: gid,
+        jsonBody: jsonBody,
+        lastReadTime: lastReadTime,
+      ),
+    );
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleHistoryDelete(Map<String, dynamic> params) async {
+    final int gid = _asInt(params['gid']);
+    final int deleted = await GalleryHistoryDao.deleteHistory(gid);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+      'deleted': deleted > 0,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleHistoryDeleteAll() async {
+    final int deletedCount = await GalleryHistoryDao.deleteAllHistory();
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'deletedCount': deletedCount,
     };
   }
 
@@ -591,35 +687,28 @@ class RpcBridgeServer {
   }
 
   Future<void> _handleDownloadedGalleryImage(HttpRequest request) async {
+    await _handleDownloadedGalleryAsset(request);
+  }
+
+  Future<void> _handleDownloadedGalleryThumbnail(HttpRequest request) async {
+    await _handleDownloadedGalleryAsset(request);
+  }
+
+  Future<void> _handleDownloadedGalleryAsset(HttpRequest request) async {
     final int gid = _asInt(request.uri.queryParameters['gid']);
     final int index = _asInt(request.uri.queryParameters['index'], fallback: -1);
-    final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gid];
+    final String? relativePath = request.uri.queryParameters['path'];
 
-    if (info == null || index < 0 || index >= info.images.length) {
+    final File? file = _resolveDownloadedGalleryFile(
+      gid: gid,
+      index: index,
+      relativePath: relativePath,
+    );
+
+    if (file == null || !file.existsSync()) {
       request.response
         ..statusCode = HttpStatus.notFound
         ..write('Downloaded image not found');
-      await request.response.close();
-      return;
-    }
-
-    final GalleryImage? image = info.images[index];
-    if (image?.path == null) {
-      request.response
-        ..statusCode = HttpStatus.notFound
-        ..write('Downloaded image path missing');
-      await request.response.close();
-      return;
-    }
-
-    final File file = File(
-      GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(image!.path!),
-    );
-
-    if (!file.existsSync()) {
-      request.response
-        ..statusCode = HttpStatus.notFound
-        ..write('Downloaded image file missing');
       await request.response.close();
       return;
     }
@@ -632,6 +721,93 @@ class RpcBridgeServer {
 
     await request.response.addStream(file.openRead());
     await request.response.close();
+  }
+
+  File? _resolveDownloadedGalleryFile({
+    required int gid,
+    required int index,
+    required String? relativePath,
+  }) {
+    if (relativePath != null && relativePath.trim().isNotEmpty) {
+      final File? file = _resolveByRelativePath(relativePath.trim());
+      if (file != null) {
+        return file;
+      }
+    }
+
+    if (gid <= 0 || index < 0) {
+      return null;
+    }
+
+    final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gid];
+    if (info != null && index < info.images.length) {
+      final GalleryImage? image = info.images[index];
+      final String? imagePath = image?.path;
+      if (imagePath != null && imagePath.isNotEmpty) {
+        final File? file = _resolveByRelativePath(imagePath);
+        if (file != null) {
+          return file;
+        }
+      }
+    }
+
+    return _resolveByGidAndIndex(gid: gid, index: index);
+  }
+
+  File? _resolveByRelativePath(String relativePath) {
+    final String absolutePath =
+        GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
+      relativePath,
+    );
+    final File file = File(absolutePath);
+
+    if (!_isUnderDownloadPath(file.path)) {
+      return null;
+    }
+
+    return file;
+  }
+
+  File? _resolveByGidAndIndex({required int gid, required int index}) {
+    final Directory downloadDir = Directory(downloadSetting.downloadPath.value);
+    if (!downloadDir.existsSync()) {
+      return null;
+    }
+
+    final String directoryPrefix = '$gid - ';
+    final String filePrefix = '$index.';
+
+    for (final FileSystemEntity entity in downloadDir.listSync()) {
+      if (entity is! Directory) {
+        continue;
+      }
+
+      final String galleryDirName = path.basename(entity.path);
+      if (!galleryDirName.startsWith(directoryPrefix)) {
+        continue;
+      }
+
+      for (final FileSystemEntity child in entity.listSync()) {
+        if (child is! File) {
+          continue;
+        }
+
+        final String fileName = path.basename(child.path);
+        if (fileName.startsWith(filePrefix) && _isUnderDownloadPath(child.path)) {
+          return child;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  bool _isUnderDownloadPath(String targetPath) {
+    final String downloadRoot = Directory(downloadSetting.downloadPath.value).absolute.path;
+    final String normalizedRoot = path.normalize(downloadRoot);
+    final String normalizedTarget = path.normalize(File(targetPath).absolute.path);
+
+    return normalizedTarget == normalizedRoot || path.isWithin(normalizedRoot, normalizedTarget);
   }
 
   Future<void> _writeRpcSuccess(

@@ -64,6 +64,47 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     );
   }
 
+  Future<Map<String, dynamic>> requestHistoryPage({
+    required int pageIndex,
+    required int pageSize,
+  }) {
+    return request(
+      method: RPCMethods.historyPage,
+      params: <String, dynamic>{
+        'pageIndex': pageIndex,
+        'pageSize': pageSize,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestRecordHistory({
+    required int gid,
+    required String jsonBody,
+    String? lastReadTime,
+  }) {
+    return request(
+      method: RPCMethods.historyRecord,
+      params: <String, dynamic>{
+        'gid': gid,
+        'jsonBody': jsonBody,
+        if (lastReadTime != null) 'lastReadTime': lastReadTime,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDeleteHistory({required int gid}) {
+    return request(
+      method: RPCMethods.historyDelete,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDeleteAllHistory() {
+    return request(method: RPCMethods.historyDeleteAll);
+  }
+
   Future<Map<String, dynamic>> requestSetCookie({required String cookie}) {
     return request(
       method: RPCMethods.authSetCookie,
@@ -143,7 +184,11 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     return '$address${RPCConsts.rpcEndpoint}';
   }
 
-  String buildDownloadedGalleryImageUrl({required int gid, required int index}) {
+  String buildDownloadedGalleryImageUrl({
+    required int gid,
+    required int index,
+    String? imagePath,
+  }) {
     String address = rpcSetting.serverAddress.value;
 
     while (address.endsWith('/')) {
@@ -151,6 +196,24 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     }
 
     return Uri.parse('$address${RPCConsts.rpcDownloadedGalleryImageEndpoint}')
+        .replace(queryParameters: <String, String>{
+      'gid': gid.toString(),
+      'index': index.toString(),
+      if (imagePath != null && imagePath.isNotEmpty) 'path': imagePath,
+    }).toString();
+  }
+
+  String buildDownloadedGalleryThumbnailUrl({
+    required int gid,
+    required int index,
+  }) {
+    String address = rpcSetting.serverAddress.value;
+
+    while (address.endsWith('/')) {
+      address = address.substring(0, address.length - 1);
+    }
+
+    return Uri.parse('$address${RPCConsts.rpcDownloadedGalleryThumbnailEndpoint}')
         .replace(queryParameters: <String, String>{
       'gid': gid.toString(),
       'index': index.toString(),

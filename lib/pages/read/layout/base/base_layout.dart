@@ -2,6 +2,7 @@ import 'dart:io' as io;
 import 'dart:math';
 
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -395,7 +396,7 @@ abstract class BaseLayout extends StatelessWidget {
         image.imageHash,
         fallbackKey: image.path ?? image.url,
       );
-      if (image.path != null) {
+      if (!kIsWeb && image.path != null) {
         final String absolutePath =
             GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(image.path!);
         if (!io.File(absolutePath).existsSync()) {
@@ -733,7 +734,7 @@ abstract class BaseLayout extends StatelessWidget {
         }
 
         String? path = image.path;
-        if (path != null) {
+        if (!kIsWeb && path != null) {
           String absolutePath =
               GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(path);
           try {

@@ -81,6 +81,10 @@ mixin GridBasePage on StatelessWidget implements Scroll2TopPageMixin {
           child: EHWheelSpeedController(
             controller: state.scrollController,
             child: Obx(() {
+              final int? crossAxisCountForGroup =
+                  styleSetting.crossAxisCountInGridDownloadPageForGroup.value;
+              final int? crossAxisCountForGallery =
+                  styleSetting.crossAxisCountInGridDownloadPageForGallery.value;
               final ScrollController controller = state.scrollController;
               final List<DraggableGridItem> children = getChildren(context);
 
@@ -126,7 +130,7 @@ mixin GridBasePage on StatelessWidget implements Scroll2TopPageMixin {
                     }
                   },
                   gridDelegate: state.isAtRoot
-                      ? styleSetting.crossAxisCountInGridDownloadPageForGroup.value == null
+                      ? crossAxisCountForGroup == null
                           ? const SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: UIConfig.downloadPageGridViewCardWidth,
                               mainAxisSpacing: 24,
@@ -134,13 +138,12 @@ mixin GridBasePage on StatelessWidget implements Scroll2TopPageMixin {
                               childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
                             )
                           : SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount:
-                                  styleSetting.crossAxisCountInGridDownloadPageForGroup.value!,
+                              crossAxisCount: crossAxisCountForGroup,
                               mainAxisSpacing: 24,
                               crossAxisSpacing: 12,
                               childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
                             )
-                      : styleSetting.crossAxisCountInGridDownloadPageForGallery.value == null
+                      : crossAxisCountForGallery == null
                           ? const SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: UIConfig.downloadPageGridViewCardWidth,
                               mainAxisSpacing: 24,
@@ -148,8 +151,7 @@ mixin GridBasePage on StatelessWidget implements Scroll2TopPageMixin {
                               childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,
                             )
                           : SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount:
-                                  styleSetting.crossAxisCountInGridDownloadPageForGallery.value!,
+                              crossAxisCount: crossAxisCountForGallery,
                               mainAxisSpacing: 24,
                               crossAxisSpacing: 12,
                               childAspectRatio: UIConfig.downloadPageGridViewCardAspectRatio,

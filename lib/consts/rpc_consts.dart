@@ -2,6 +2,7 @@ class RPCConsts {
   static const String rpcEndpoint = '/rpc';
   static const String rpcMediaEndpoint = '/rpc/media';
   static const String rpcDownloadedGalleryImageEndpoint = '/rpc/downloaded-gallery-image';
+  static const String rpcDownloadedGalleryThumbnailEndpoint = '/rpc/downloaded-gallery-thumbnail';
 
   const RPCConsts._();
 }
@@ -16,6 +17,10 @@ class RPCMethods {
   static const String galleryImagePage = 'gallery.imagePage';
   static const String downloadGalleryList = 'download.galleryList';
   static const String downloadGalleryImages = 'download.galleryImages';
+  static const String historyPage = 'history.page';
+  static const String historyRecord = 'history.record';
+  static const String historyDelete = 'history.delete';
+  static const String historyDeleteAll = 'history.deleteAll';
   static const String newsEvent = 'news.event';
   static const String authSetCookie = 'auth.setCookie';
 
@@ -28,6 +33,9 @@ class RPCCapabilities {
   static const String galleryImage = 'gallery.image';
   static const String downloadGalleryList = 'download.gallery.list';
   static const String downloadGalleryRead = 'download.gallery.read';
+  static const String downloadGalleryThumbnail = 'download.gallery.thumbnail';
+  static const String historyRead = 'history.read';
+  static const String historyWrite = 'history.write';
   static const String newsEvent = 'news.event';
   static const String archiveResolve = 'archive.resolve';
 

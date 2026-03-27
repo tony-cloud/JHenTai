@@ -8,7 +8,7 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:executor/executor.dart';
 import 'package:extended_image/extended_image.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_rx/get_rx.dart';
@@ -46,6 +46,7 @@ import 'package:retry/retry.dart';
 import 'package:drift/drift.dart';
 
 import 'package:jhentai/consts/locale_consts.dart';
+import 'package:jhentai/consts/rpc_consts.dart';
 import 'package:jhentai/database/dao/gallery_image_dao.dart';
 import 'package:jhentai/exception/cancel_exception.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
@@ -104,13 +105,27 @@ class GalleryDownloadService extends GetxController
 
   bool _galleryDownloadsActive = false;
   bool _archiveDownloadsActive = false;
+  bool _remoteRpcDataActive = false;
   static const String _downloadLockName = 'download';
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
       super.initDependencies..addAll([rpcSetting, rpcService, rpcRequest]);
 
-  bool get usesRemoteRpcData => GetPlatform.isWeb && rpcSetting.enableRpcMode.value;
+  bool get _shouldUseRemoteRpcData {
+    if (rpcSetting.enableRpcMode.isFalse) {
+      return false;
+    }
+
+    if (rpcService.capabilities.isEmpty) {
+      return true;
+    }
+
+    return rpcService.supportsCapability(RPCCapabilities.downloadGalleryList) &&
+        rpcService.supportsCapability(RPCCapabilities.downloadGalleryRead);
+  }
+
+  bool get usesRemoteRpcData => _remoteRpcDataActive;
 
   bool _hasActiveGalleryDownloads() {
     return galleryDownloadInfos.values.any((info) =>
@@ -150,11 +165,17 @@ class GalleryDownloadService extends GetxController
   Future<void> doInitBean() async {
     Get.put(this, permanent: true);
 
-    if (GetPlatform.isWeb) {
-      await refreshRemoteGallerys();
-      _completer.complete(true);
-      return;
+    if (_shouldUseRemoteRpcData) {
+      bool initializedRemote = await refreshRemoteGallerys();
+      if (initializedRemote) {
+        _completer.complete(true);
+        return;
+      }
+
+      log.warning('RPC download source is unavailable, fallback to local download data.');
     }
+
+    _remoteRpcDataActive = false;
 
     await _instantiateFromDB();
 
@@ -182,7 +203,7 @@ class GalleryDownloadService extends GetxController
 
   @override
   Future<void> doAfterBeanReady() async {
-    if (GetPlatform.isWeb) {
+    if (usesRemoteRpcData) {
       await refreshRemoteGallerys();
     }
   }
@@ -196,17 +217,23 @@ class GalleryDownloadService extends GetxController
     unawaited(wakelockService.release(_downloadLockName));
   }
 
-  Future<void> refreshRemoteGallerys() async {
-    if (!usesRemoteRpcData) {
+  Future<bool> refreshRemoteGallerys() async {
+    if (!_shouldUseRemoteRpcData) {
+      _remoteRpcDataActive = false;
       _clearRemoteGalleryInfos();
-      return;
+      return false;
     }
 
     try {
       final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryList();
       _applyRemoteGallerySnapshot(result);
+      _remoteRpcDataActive = true;
+      return true;
     } catch (e, stack) {
-      log.error('Refresh remote gallery download list failed', e, stack);
+      _remoteRpcDataActive = false;
+      log.warning('Refresh remote gallery download list failed, fallback to local', e, true);
+      log.debug(stack);
+      return false;
     }
   }
 
@@ -266,7 +293,7 @@ class GalleryDownloadService extends GetxController
       return false;
     }
 
-    log.trace('Skip $action for RPC-backed gallery downloads on web');
+    log.trace('Skip $action for RPC-backed gallery downloads in thin-client mode');
     return true;
   }
 
@@ -409,8 +436,14 @@ class GalleryDownloadService extends GetxController
   }
 
   GalleryImage _rewriteRemoteGalleryImage(int gid, int index, GalleryImage image) {
+    final String? imagePath = image.path;
+
     return image.copyWith(
-      url: rpcRequest.buildDownloadedGalleryImageUrl(gid: gid, index: index),
+      url: rpcRequest.buildDownloadedGalleryImageUrl(
+        gid: gid,
+        index: index,
+        imagePath: imagePath,
+      ),
       path: null,
     );
   }
@@ -1308,7 +1341,7 @@ class GalleryDownloadService extends GetxController
     String path = join(pathService.getVisibleDir().path, imageRelativePath);
 
     /// I don't know why some images can't be loaded on Windows... If you knows, please tell me
-    if (!GetPlatform.isWindows) {
+    if (kIsWeb || !GetPlatform.isWindows) {
       return path;
     }
 
@@ -3373,6 +3406,10 @@ class GalleryDownloadService extends GetxController
     if (gallery.downloadStatusIndex == DownloadStatus.downloading.index) {
       gallery = gallery.copyWith(downloadStatusIndex: DownloadStatus.paused.index);
     }
+
+    // Restore may be triggered repeatedly; clear stale rows to avoid unique
+    // constraint failures on gid and image composite keys.
+    await _clearGalleryDownloadInfoInDatabase(gallery.gid);
 
     if (!await _saveGalleryInfoAndGroupInDB(gallery)) {
       return false;
