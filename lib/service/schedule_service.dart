@@ -16,6 +16,7 @@ import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
@@ -39,6 +40,7 @@ import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/rpc_service.dart';
 import 'package:jhentai/utils/cookie_util.dart';
 import 'package:jhentai/utils/route_util.dart';
 
@@ -61,6 +63,9 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
 
     Timer(const Duration(seconds: 5), checkInArchiveBot);
     Timer.periodic(const Duration(minutes: 5), (_) => checkInArchiveBot());
+
+    Timer(const Duration(seconds: 6), checkRpcBackend);
+    Timer.periodic(const Duration(minutes: 2), (_) => checkRpcBackend());
   }
 
   Future<void> _checkUpdate() async {
@@ -103,6 +108,11 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> refreshGalleryTags({bool ignoreSetting = false}) async {
+    if (_shouldBypassLegacyNetwork) {
+      log.trace('Skip refreshGalleryTags in RPC mode');
+      return;
+    }
+
     if (!ignoreSetting && advancedSetting.enableRefreshGalleryTags.isFalse) {
       return;
     }
@@ -145,6 +155,11 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> refreshArchiveTags({bool ignoreSetting = false}) async {
+    if (_shouldBypassLegacyNetwork) {
+      log.trace('Skip refreshArchiveTags in RPC mode');
+      return;
+    }
+
     if (!ignoreSetting && advancedSetting.enableRefreshArchiveTags.isFalse) {
       return;
     }
@@ -209,6 +224,11 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> checkEHEvent() async {
+    if (_shouldBypassLegacyNetwork) {
+      log.trace('Skip checkEHEvent in RPC mode');
+      return;
+    }
+
     if (!userSetting.hasLoggedIn()) {
       return;
     }
@@ -260,6 +280,11 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> checkInArchiveBot() async {
+    if (_shouldBypassLegacyNetwork) {
+      log.trace('Skip checkInArchiveBot in RPC mode');
+      return;
+    }
+
     if (!archiveBotSetting.isReady) {
       return;
     }
@@ -284,4 +309,14 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
       log.error('Failed to auto checkin', e.toString(), StackTrace.current);
     }
   }
+
+  Future<void> checkRpcBackend() async {
+    if (rpcSetting.enableRpcMode.isFalse) {
+      return;
+    }
+
+    await rpcService.checkHealth();
+  }
+
+  bool get _shouldBypassLegacyNetwork => rpcSetting.enableRpcMode.isTrue;
 }

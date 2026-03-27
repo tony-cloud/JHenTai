@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/network/jh_request.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/service/app_update_service.dart';
 import 'package:jhentai/service/archive_download_service.dart';
 import 'package:jhentai/service/built_in_blocked_user_service.dart';
@@ -23,6 +24,7 @@ import 'package:jhentai/service/local_gallery_service.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/read_progress_service.dart';
 import 'package:jhentai/service/quick_search_service.dart';
+import 'package:jhentai/service/rpc_service.dart';
 import 'package:jhentai/service/schedule_service.dart';
 import 'package:jhentai/service/search_history_service.dart';
 import 'package:jhentai/service/storage_service.dart';
@@ -43,6 +45,7 @@ import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/setting/performance_setting.dart';
 import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/setting/site_setting.dart';
 import 'package:jhentai/setting/super_resolution_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
@@ -62,6 +65,7 @@ List<JHLifeCircleBean> lifeCircleBeans = [
   dohService,
   ehRequest,
   jhRequest,
+  rpcRequest,
   archiveBotRequest,
   appUpdateService,
   galleryDownloadService,
@@ -80,6 +84,7 @@ List<JHLifeCircleBean> lifeCircleBeans = [
   log,
   pathService,
   quickSearchService,
+  rpcService,
   scheduleService,
   searchHistoryService,
   storageService,
@@ -97,6 +102,7 @@ List<JHLifeCircleBean> lifeCircleBeans = [
   mouseSetting,
   myTagsSetting,
   networkSetting,
+  rpcSetting,
   performanceSetting,
   preferenceSetting,
   readSetting,

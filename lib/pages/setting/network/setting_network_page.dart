@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/setting/network_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 
 import 'package:jhentai/routes/routes.dart';
+import 'package:jhentai/service/rpc_service.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/utils/text_input_formatter.dart';
 import 'package:jhentai/utils/toast_util.dart';
@@ -23,6 +25,10 @@ class SettingNetworkPage extends StatelessWidget {
       TextEditingController(text: networkSetting.serverErrorRetryTimes.value.toString());
   final TextEditingController dnsOverHttpsController =
       TextEditingController(text: networkSetting.dnsOverHttpsEndpoint.value);
+  final TextEditingController rpcServerAddressController =
+      TextEditingController(text: rpcSetting.serverAddress.value);
+  final TextEditingController rpcAccessTokenController =
+      TextEditingController(text: rpcSetting.accessToken.value);
 
   SettingNetworkPage({super.key});
 
@@ -34,6 +40,13 @@ class SettingNetworkPage extends StatelessWidget {
         () => ListView(
           padding: const EdgeInsets.only(top: 16),
           children: [
+            _buildEnableRpcMode(),
+            _buildRpcServerProfile(),
+            _buildRpcServerAddress(context),
+            _buildRpcAccessToken(context),
+            _buildAllowSelfSignedCertificate(),
+            _buildRpcBackendStatus(context),
+            _buildRpcCapabilities(),
             _buildEnableDnsOverHttps(),
             _buildDnsOverHttpsEndpoint(context),
             _buildEnableDomainFronting(),
@@ -48,6 +61,212 @@ class SettingNetworkPage extends StatelessWidget {
         ).withListTileTheme(context),
       ),
     );
+  }
+
+  Widget _buildEnableRpcMode() {
+    return SwitchListTile(
+      title: Text('enableRpcMode'.tr),
+      subtitle: Text('enableRpcModeHint'.tr),
+      value: rpcSetting.enableRpcMode.value,
+      onChanged: (bool value) async {
+        await rpcSetting.saveEnableRpcMode(value);
+        if (!value) {
+          rpcService.isBackendReachable.value = false;
+          return;
+        }
+
+        await rpcService.checkHealth();
+      },
+    );
+  }
+
+  Widget _buildRpcServerProfile() {
+    return ListTile(
+      title: Text('rpcServerProfile'.tr),
+      subtitle: Text('rpcServerProfileHint'.tr),
+      trailing: DropdownButton<RPCServerProfile>(
+        value: rpcSetting.serverProfile.value,
+        alignment: AlignmentDirectional.centerEnd,
+        onChanged: rpcSetting.enableRpcMode.isFalse
+            ? null
+            : (RPCServerProfile? newValue) async {
+                if (newValue == null) {
+                  return;
+                }
+
+                await rpcSetting.saveServerProfile(newValue);
+                if (newValue != RPCServerProfile.custom) {
+                  rpcServerAddressController.text = rpcSetting.serverAddress.value;
+                }
+                toast('saveSuccess'.tr);
+              },
+        items: RPCServerProfile.values
+            .map(
+              (profile) => DropdownMenuItem(
+                value: profile,
+                child: Text(_rpcServerProfileText(profile)),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildRpcServerAddress(BuildContext context) {
+    return ListTile(
+      title: Text('rpcServerAddress'.tr),
+      subtitle: Text('rpcServerAddressHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 210,
+            child: TextField(
+              controller: rpcServerAddressController,
+              decoration: const InputDecoration(
+                isDense: true,
+                labelStyle: TextStyle(fontSize: 12),
+              ),
+              enabled: rpcSetting.enableRpcMode.value,
+              onSubmitted: (_) => _saveRpcServerAddress(),
+            ),
+          ),
+          IconButton(
+            onPressed: rpcSetting.enableRpcMode.isFalse
+                ? null
+                : () {
+                    _saveRpcServerAddress();
+                    toast('saveSuccess'.tr);
+                  },
+            icon: Icon(
+              Icons.check,
+              color: UIConfig.resumePauseButtonColor(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRpcAccessToken(BuildContext context) {
+    return ListTile(
+      title: Text('rpcAccessToken'.tr),
+      subtitle: Text('rpcAccessTokenHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 160,
+            child: TextField(
+              controller: rpcAccessTokenController,
+              decoration: const InputDecoration(
+                isDense: true,
+                labelStyle: TextStyle(fontSize: 12),
+              ),
+              obscureText: true,
+              enabled: rpcSetting.enableRpcMode.value,
+              onSubmitted: (_) => _saveRpcAccessToken(),
+            ),
+          ),
+          IconButton(
+            onPressed: rpcSetting.enableRpcMode.isFalse
+                ? null
+                : () {
+                    _saveRpcAccessToken();
+                    toast('saveSuccess'.tr);
+                  },
+            icon: Icon(
+              Icons.check,
+              color: UIConfig.resumePauseButtonColor(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAllowSelfSignedCertificate() {
+    return SwitchListTile(
+      title: Text('allowSelfSignedCertificate'.tr),
+      subtitle: Text('allowSelfSignedCertificateHint'.tr),
+      value: rpcSetting.allowSelfSignedCertificate.value,
+      onChanged:
+          rpcSetting.enableRpcMode.isFalse ? null : rpcSetting.saveAllowSelfSignedCertificate,
+    );
+  }
+
+  Widget _buildRpcBackendStatus(BuildContext context) {
+    return ListTile(
+      title: Text('rpcBackendStatus'.tr),
+      subtitle: Text(
+        rpcSetting.enableRpcMode.isFalse
+            ? 'rpcBackendDisabled'.tr
+            : rpcService.isBackendReachable.value
+                ? 'rpcBackendReachable'.tr
+                : 'rpcBackendUnreachable'.tr,
+      ),
+      isThreeLine: true,
+      dense: true,
+      trailing: IconButton(
+        onPressed: rpcSetting.enableRpcMode.isFalse
+            ? null
+            : () async {
+                final bool success = await rpcService.checkHealth();
+                toast(success ? 'rpcHealthCheckSuccess'.tr : 'rpcHealthCheckFailed'.tr);
+              },
+        icon: Icon(
+          Icons.refresh,
+          color: UIConfig.resumePauseButtonColor(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRpcCapabilities() {
+    final bool enabled = rpcSetting.enableRpcMode.isTrue;
+    final bool reachable = rpcService.isBackendReachable.value;
+    final String capabilityText;
+
+    if (!enabled) {
+      capabilityText = 'rpcBackendDisabled'.tr;
+    } else if (!reachable) {
+      capabilityText = 'rpcBackendUnreachable'.tr;
+    } else if (rpcService.capabilities.isEmpty) {
+      capabilityText = 'rpcCapabilitiesEmpty'.tr;
+    } else {
+      capabilityText = rpcService.capabilities.join(', ');
+    }
+
+    final String name = rpcService.backendName.value ?? '-';
+    final String version = rpcService.backendVersion.value ?? '-';
+
+    return ListTile(
+      title: Text('rpcCapabilities'.tr),
+      subtitle: Text(
+        'rpcCapabilitiesHint'.trArgs([name, version, capabilityText]),
+      ),
+      isThreeLine: true,
+      dense: true,
+    );
+  }
+
+  void _saveRpcServerAddress() {
+    rpcSetting.saveServerAddress(rpcServerAddressController.text.trim());
+    rpcServerAddressController.text = rpcSetting.serverAddress.value;
+  }
+
+  void _saveRpcAccessToken() {
+    final String token = rpcAccessTokenController.text.trim();
+    rpcSetting.saveAccessToken(token.isEmpty ? null : token);
+  }
+
+  String _rpcServerProfileText(RPCServerProfile profile) {
+    return switch (profile) {
+      RPCServerProfile.local => 'rpcProfileLocal'.tr,
+      RPCServerProfile.lan => 'rpcProfileLan'.tr,
+      RPCServerProfile.cloud => 'rpcProfileCloud'.tr,
+      RPCServerProfile.custom => 'rpcProfileCustom'.tr,
+    };
   }
 
   Widget _buildEnableDomainFronting() {
