@@ -5,21 +5,13 @@ import 'package:jhentai/pages/download/filter/download_filter.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/utils/convert_util.dart';
-import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3_simple/sqlite3_simple.dart';
 
 import 'package:jhentai/database/database.dart';
 
 DownloadFilterService downloadFilterService = DownloadFilterService();
 
 class DownloadFilterService extends GetxController {
-  DownloadFilterService() {
-    _ensureExtensionLoaded();
-    _db = sqlite3.openInMemory();
-    _createSchema();
-  }
-
-  late final Database _db;
+  DownloadFilterService();
 
   DownloadFilter _currentFilter = const DownloadFilter();
 
@@ -211,28 +203,6 @@ class DownloadFilterService extends GetxController {
     }).toList();
   }
 
-  @override
-  void onClose() {
-    _db.dispose();
-    super.onClose();
-  }
-
-  static bool _extensionLoaded = false;
-
-  void _ensureExtensionLoaded() {
-    if (_extensionLoaded) {
-      return;
-    }
-    sqlite3.loadSimpleExtension();
-    _extensionLoaded = true;
-  }
-
-  void _createSchema() {
-    _db.execute('DROP TABLE IF EXISTS download_index');
-    _db.execute(
-        'CREATE VIRTUAL TABLE download_index USING fts5(title, uploader, raw_tags, translated_tags, tokenize = "simple")');
-  }
-
   String _stripSurroundingQuotes(String value) {
     if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
       return value.substring(1, value.length - 1);
@@ -242,70 +212,132 @@ class DownloadFilterService extends GetxController {
 
   Future<Set<int>> _collectCandidates(
       DownloadFilter filter, List<GalleryDownloadedData> gallerys) async {
-    _clearIndex();
-
     if (gallerys.isEmpty) {
       return <int>{};
     }
 
     final Map<String, TagData> translatedTagMap = await _prepareTranslationMap(gallerys);
-
-    final PreparedStatement insertStmt = _db.prepare(
-      'INSERT INTO download_index(rowid, title, uploader, raw_tags, translated_tags) VALUES (?, ?, ?, ?, ?)',
-    );
+    final Set<int> matched = <int>{};
+    final List<String> keywordTokens = _tokenizeKeywords(filter.keyword.trim())
+        .map(_normalizeSearchToken)
+        .where((token) => token.isNotEmpty)
+        .toList();
 
     for (final GalleryDownloadedData gallery in gallerys) {
-      final List<TagData> tags = tagDataString2TagDataList(gallery.tags);
-      final List<String> rawTags = <String>[];
-      final List<String> translatedTags = <String>[];
-
-      for (final TagData tag in tags) {
-        final String key = '${tag.namespace}:${tag.key}';
-        rawTags.add(key);
-        final TagData? translated = translatedTagMap[key];
-        translatedTags.add(
-          '${translated?.translatedNamespace ?? tag.namespace}:${translated?.tagName ?? tag.key}',
-        );
+      final _SearchIndex index = _buildSearchIndex(gallery, translatedTagMap);
+      if (!_matchesKeywordTokens(index, keywordTokens)) {
+        continue;
       }
-
-      final String? uploader = gallery.uploader?.trim();
-      if (uploader != null && uploader.isNotEmpty) {
-        rawTags.addAll(<String>['uploader:$uploader', uploader]);
-        translatedTags.addAll(<String>['uploader:$uploader', uploader]);
+      if (!_matchesTagFilters(index, filter.includeTags)) {
+        continue;
       }
-
-      insertStmt.execute([
-        gallery.gid,
-        gallery.title,
-        gallery.uploader ?? '',
-        rawTags.join(' '),
-        translatedTags.join(' '),
-      ]);
+      matched.add(gallery.gid);
     }
-
-    insertStmt.dispose();
-
-    final String query = _buildMatchQuery(filter);
-    if (query.isEmpty) {
-      return gallerys.map((GalleryDownloadedData gallery) => gallery.gid).toSet();
-    }
-    final PreparedStatement selectStmt = _db.prepare(
-      'SELECT rowid FROM download_index WHERE download_index MATCH simple_query(?)',
-    );
-    final ResultSet resultSet = selectStmt.select([query]);
-
-    final Set<int> matched = <int>{};
-    for (final Row row in resultSet) {
-      matched.add(row['rowid'] as int);
-    }
-
-    selectStmt.dispose();
 
     return matched;
   }
 
-  void _clearIndex() {
-    _db.execute('DELETE FROM download_index');
+  void _clearIndex() {}
+
+  _SearchIndex _buildSearchIndex(
+    GalleryDownloadedData gallery,
+    Map<String, TagData> translatedTagMap,
+  ) {
+    final Set<String> rawTags = <String>{};
+    final Set<String> translatedTags = <String>{};
+
+    for (final TagData tag in tagDataString2TagDataList(gallery.tags)) {
+      final String rawTag = '${tag.namespace}:${tag.key}'.toLowerCase();
+      rawTags.add(rawTag);
+
+      final TagData? translated = translatedTagMap['${tag.namespace}:${tag.key}'];
+      translatedTags.add(
+          '${translated?.translatedNamespace ?? tag.namespace}:${translated?.tagName ?? tag.key}'
+              .toLowerCase());
+    }
+
+    final String uploader = (gallery.uploader ?? '').trim().toLowerCase();
+
+    final String searchText = [
+      gallery.title,
+      gallery.uploader ?? '',
+      rawTags.join(' '),
+      translatedTags.join(' '),
+    ].join(' ').toLowerCase();
+
+    return _SearchIndex(
+      searchText: searchText,
+      uploader: uploader,
+      rawTags: rawTags,
+      translatedTags: translatedTags,
+    );
+  }
+
+  bool _matchesKeywordTokens(_SearchIndex index, List<String> tokens) {
+    for (final String token in tokens) {
+      if (!index.searchText.contains(token)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool _matchesTagFilters(_SearchIndex index, Iterable<String> includeTags) {
+    for (final String rawTag in includeTags) {
+      String tag = rawTag.trim();
+      if (tag.isEmpty) {
+        continue;
+      }
+
+      bool negative = false;
+      if (tag.startsWith('-')) {
+        negative = true;
+        tag = tag.substring(1).trimLeft();
+      } else if (tag.startsWith('~')) {
+        tag = tag.substring(1).trimLeft();
+      }
+
+      if (tag.isEmpty) {
+        continue;
+      }
+
+      bool hit = false;
+      final int colonIndex = tag.indexOf(':');
+      if (colonIndex > 0) {
+        final String namespace = tag.substring(0, colonIndex).trim().toLowerCase();
+        final String key = _normalizeSearchToken(tag.substring(colonIndex + 1));
+
+        if (namespace == 'uploader') {
+          hit = key.isNotEmpty && index.uploader.contains(key);
+        } else {
+          final String namespaced = '$namespace:$key';
+          hit = index.rawTags.contains(namespaced) ||
+              index.translatedTags.contains(namespaced) ||
+              index.searchText.contains(namespaced);
+        }
+      } else {
+        final String token = _normalizeSearchToken(tag);
+        hit = token.isNotEmpty && index.searchText.contains(token);
+      }
+
+      if (negative && hit) {
+        return false;
+      }
+      if (!negative && !hit) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  String _normalizeSearchToken(String token) {
+    String value = token.trim().toLowerCase();
+    if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
+      value = value.substring(1, value.length - 1);
+    }
+    return value;
   }
 
   Future<Map<String, TagData>> _prepareTranslationMap(List<GalleryDownloadedData> gallerys) async {
@@ -335,98 +367,8 @@ class DownloadFilterService extends GetxController {
     return map;
   }
 
-  String _buildMatchQuery(DownloadFilter filter) {
-    final List<String> tokens = <String>[];
-
-    if (filter.keyword.trim().isNotEmpty) {
-      tokens.addAll(_tokenizeKeywords(filter.keyword.trim()));
-    }
-
-    for (final String tag in filter.includeTags) {
-      tokens.addAll(_buildTagTokens(tag));
-    }
-
-    if (tokens.isEmpty) {
-      return '';
-    }
-
-    // The simple_query() helper already combines terms with AND semantics, so we
-    // only need to provide the raw tokens separated by whitespace. Supplying
-    // explicit AND operators breaks matching when multiple tags are present.
-    return tokens.join(' ');
-  }
-
   List<String> _tokenizeKeywords(String text) {
     return text.split(RegExp(r'\s+')).where((String token) => token.isNotEmpty).toList();
-  }
-
-  List<String> _buildTagTokens(String raw) {
-    String text = raw.trim();
-    if (text.isEmpty) {
-      return const <String>[];
-    }
-
-    String prefix = '';
-    if (text.startsWith('-') || text.startsWith('~')) {
-      prefix = text[0];
-      text = text.substring(1).trimLeft();
-      if (text.isEmpty) {
-        return const <String>[];
-      }
-    }
-
-    final int colonIndex = text.indexOf(':');
-    if (colonIndex > 0) {
-      final String namespace = text.substring(0, colonIndex).trim();
-      final String value = text.substring(colonIndex + 1).trim();
-      final String normalizedValue = _normalizeTagValue(value);
-
-      if (namespace.toLowerCase() == 'uploader') {
-        // Prefer column-scoped query, but also add a plain token fallback to
-        // match when the simple_query helper ignores column syntax.
-        return <String>[
-          '$prefix$namespace:$normalizedValue',
-          if (normalizedValue.isNotEmpty) '$prefix$normalizedValue',
-        ];
-      }
-
-      return <String>['$prefix$namespace:$normalizedValue'];
-    }
-
-    return <String>['$prefix${_normalizeQueryValue(text)}'];
-  }
-
-  String _normalizeTagValue(String value) {
-    String trimmed = value.trim();
-    if (trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')) {
-      trimmed = trimmed.substring(1, trimmed.length - 1);
-    }
-    return _escapeQuotes(trimmed);
-  }
-
-  String _normalizeQueryValue(String value) {
-    String trimmed = value.trim();
-    if (trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')) {
-      trimmed = trimmed.substring(1, trimmed.length - 1);
-    }
-    return _quoteIfNeeded(trimmed);
-  }
-
-  String _quoteIfNeeded(String value) {
-    if (value.isEmpty) {
-      return '""';
-    }
-
-    final String escaped = _escapeQuotes(value);
-    if (escaped.contains(RegExp(r'\s')) || escaped != value) {
-      return '"$escaped"';
-    }
-
-    return escaped;
-  }
-
-  String _escapeQuotes(String value) {
-    return value.replaceAll('"', '""');
   }
 
   int _buildFingerprint(List<GalleryDownloadedData> gallerys) {
@@ -440,4 +382,18 @@ class DownloadFilterService extends GetxController {
     }
     return hash;
   }
+}
+
+class _SearchIndex {
+  const _SearchIndex({
+    required this.searchText,
+    required this.uploader,
+    required this.rawTags,
+    required this.translatedTags,
+  });
+
+  final String searchText;
+  final String uploader;
+  final Set<String> rawTags;
+  final Set<String> translatedTags;
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
-import 'package:sqlite3/sqlite3.dart';
 
 import 'package:jhentai/database/database.dart';
 
@@ -35,8 +34,8 @@ class GalleryImageDao {
               ..where((tbl) =>
                   tbl.gid.equals(image.gid.value) & tbl.serialNo.equals(image.serialNo.value)))
             .write(image);
-      } on SqliteException catch (e) {
-        if (e.resultCode == SqlError.SQLITE_BUSY && attempt < maxRetries) {
+      } on Exception catch (e) {
+        if (e.toString().toUpperCase().contains('SQLITE_BUSY') && attempt < maxRetries) {
           attempt++;
           await Future<void>.delayed(Duration(milliseconds: 50 * attempt));
           continue;

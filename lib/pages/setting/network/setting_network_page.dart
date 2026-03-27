@@ -47,16 +47,16 @@ class SettingNetworkPage extends StatelessWidget {
             _buildAllowSelfSignedCertificate(),
             _buildRpcBackendStatus(context),
             _buildRpcCapabilities(),
-            _buildEnableDnsOverHttps(),
-            _buildDnsOverHttpsEndpoint(context),
-            _buildEnableDomainFronting(),
-            _buildProxyAddress(),
-            _buildPageCacheMaxAge(),
-            _buildCacheImageExpireDuration(),
-            _buildConnectTimeout(context),
-            _buildReceiveTimeout(context),
-            _buildTimeoutRetryTimes(context),
-            _buildServerErrorRetryTimes(context),
+            if (!GetPlatform.isWeb) _buildEnableDnsOverHttps(),
+            if (!GetPlatform.isWeb) _buildDnsOverHttpsEndpoint(context),
+            if (!GetPlatform.isWeb) _buildEnableDomainFronting(),
+            if (!GetPlatform.isWeb) _buildProxyAddress(),
+            if (!GetPlatform.isWeb) _buildPageCacheMaxAge(),
+            if (!GetPlatform.isWeb) _buildCacheImageExpireDuration(),
+            if (!GetPlatform.isWeb) _buildConnectTimeout(context),
+            if (!GetPlatform.isWeb) _buildReceiveTimeout(context),
+            if (!GetPlatform.isWeb) _buildTimeoutRetryTimes(context),
+            if (!GetPlatform.isWeb) _buildServerErrorRetryTimes(context),
           ],
         ).withListTileTheme(context),
       ),
@@ -64,19 +64,23 @@ class SettingNetworkPage extends StatelessWidget {
   }
 
   Widget _buildEnableRpcMode() {
+    final bool isWebRpcOnly = GetPlatform.isWeb;
+
     return SwitchListTile(
       title: Text('enableRpcMode'.tr),
       subtitle: Text('enableRpcModeHint'.tr),
       value: rpcSetting.enableRpcMode.value,
-      onChanged: (bool value) async {
-        await rpcSetting.saveEnableRpcMode(value);
-        if (!value) {
-          rpcService.isBackendReachable.value = false;
-          return;
-        }
+      onChanged: isWebRpcOnly
+          ? null
+          : (bool value) async {
+              await rpcSetting.saveEnableRpcMode(value);
+              if (!value) {
+                rpcService.isBackendReachable.value = false;
+                return;
+              }
 
-        await rpcService.checkHealth();
-      },
+              await rpcService.checkHealth();
+            },
     );
   }
 

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
 import 'package:get/get_rx/get_rx.dart';
@@ -378,7 +377,7 @@ class ArchiveDownloadService extends GetxController
 
     try {
       return (await ArchiveGroupDao.deleteArchiveGroup(group) > 0);
-    } on SqliteException catch (e) {
+    } on Exception catch (e) {
       log.info(e);
       return false;
     }

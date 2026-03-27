@@ -34,6 +34,10 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     accessToken.value = map['accessToken'] ?? accessToken.value;
     allowSelfSignedCertificate.value =
         map['allowSelfSignedCertificate'] ?? allowSelfSignedCertificate.value;
+
+    if (GetPlatform.isWeb) {
+      enableRpcMode.value = true;
+    }
   }
 
   @override
@@ -48,12 +52,23 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
   }
 
   @override
-  Future<void> doInitBean() async {}
+  Future<void> doInitBean() async {
+    if (GetPlatform.isWeb) {
+      enableRpcMode.value = true;
+    }
+  }
 
   @override
   void doAfterBeanReady() {}
 
   Future<void> saveEnableRpcMode(bool enableRpcMode) async {
+    if (GetPlatform.isWeb && !enableRpcMode) {
+      log.warning('RPC mode cannot be disabled on web.');
+      this.enableRpcMode.value = true;
+      await saveBeanConfig();
+      return;
+    }
+
     log.debug('saveEnableRpcMode:$enableRpcMode');
     this.enableRpcMode.value = enableRpcMode;
     await saveBeanConfig();

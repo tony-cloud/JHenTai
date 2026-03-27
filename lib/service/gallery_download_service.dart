@@ -6,7 +6,6 @@ import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
-import 'package:drift/native.dart';
 import 'package:executor/executor.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
@@ -2733,8 +2732,8 @@ class GalleryDownloadService extends GetxController
 
   Future<void> _tryLoadFromCacheInsteadDownload(
       GalleryDownloadedData gallery, GalleryImage image, int serialNo, String path) async {
-    io.File? cachedImageFile = await getCachedImageFile(image.url);
-    if (cachedImageFile != null && cachedImageFile.existsSync()) {
+    final dynamic cachedImageFile = await getCachedImageFile(image.url);
+    if (cachedImageFile != null && cachedImageFile.existsSync() == true) {
       log.debug('download image from cache, gallery: ${gallery.gid}, serialNo:$serialNo');
       try {
         await cachedImageFile.copy(path);
@@ -2911,7 +2910,7 @@ class GalleryDownloadService extends GetxController
 
     try {
       return (await GalleryGroupDao.deleteGalleryGroup(group) > 0);
-    } on SqliteException catch (e) {
+    } on Exception catch (e) {
       log.info(e);
       return false;
     }

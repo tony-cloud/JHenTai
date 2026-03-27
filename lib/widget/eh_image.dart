@@ -244,13 +244,19 @@ class EHImage extends StatelessWidget {
       return downloadingWidgetBuilder?.call() ?? const Center(child: CircularProgressIndicator());
     }
 
+    if (kIsWeb) {
+      return const Center(
+        child: Icon(Icons.desktop_access_disabled),
+      );
+    }
+
     final String filePath = GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
       galleryImage.path!,
     );
     final io.File imageFile = io.File(filePath);
 
     return ExtendedImage.file(
-      imageFile,
+      imageFile as dynamic,
       fit: fit,
       height: containerHeight,
       width: containerWidth,

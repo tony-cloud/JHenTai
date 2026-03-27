@@ -1300,6 +1300,10 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   bool _shouldUseRpc(String capability) {
+    if (GetPlatform.isWeb) {
+      return true;
+    }
+
     if (rpcSetting.enableRpcMode.isFalse) {
       return false;
     }

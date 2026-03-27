@@ -1,14 +1,11 @@
 import 'dart:convert';
-import 'dart:io' as io;
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-
-import 'package:drift/native.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_utils/get_utils.dart';
+import 'package:jhentai/database/database_executor.dart' as database_executor;
 import 'package:jhentai/database/dao/gallery_group_dao.dart';
 import 'package:jhentai/database/dao/gallery_history_dao.dart';
 import 'package:jhentai/database/dao/super_resolution_info_dao.dart';
@@ -29,9 +26,6 @@ import 'package:jhentai/exception/upload_exception.dart';
 import 'package:jhentai/extension/directory_extension.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/log.dart';
-import 'package:path/path.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
-import 'package:sqlite3/sqlite3.dart';
 
 import 'package:jhentai/model/gallery.dart';
 import 'package:jhentai/model/gallery_history_model.dart';
@@ -403,26 +397,7 @@ class AppDb extends _$AppDb {
   }
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final file = io.File(join(pathService.getVisibleDir().path, 'db.sqlite'));
-
-    if (Platform.isAndroid) {
-      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
-    }
-
-    sqlite3.tempDirectory = pathService.tempDir.path;
-
-    return NativeDatabase(
-      file,
-      setup: (database) {
-        // Allow SQLite to wait for a short period instead of throwing SQLITE_BUSY immediately.
-        database.execute('PRAGMA busy_timeout = 1000');
-        database.execute('PRAGMA journal_mode = WAL');
-      },
-    );
-  });
-}
+QueryExecutor _openConnection() => database_executor.createAppQueryExecutor();
 
 AppDb appDb = AppDb();
 
@@ -430,10 +405,10 @@ extension _MigragateDuplicateIndexErrorCache on Future<void> {
   Future<void> ignoreDuplicateIndex() async {
     try {
       await this;
-    } on SqliteException catch (e) {
-      if (e.resultCode == SqlError.SQLITE_ERROR &&
-          RegExp(r'index \S+ already exists').hasMatch(e.message)) {
-        log.warning('Ignore duplicate index error: ${e.message}');
+    } on Exception catch (e) {
+      final String message = e.toString();
+      if (RegExp(r'index \S+ already exists').hasMatch(message)) {
+        log.warning('Ignore duplicate index error: $message');
       } else {
         rethrow;
       }
