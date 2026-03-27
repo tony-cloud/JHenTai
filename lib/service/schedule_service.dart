@@ -32,6 +32,7 @@ import 'package:jhentai/model/archive_bot_response/archive_bot_response.dart';
 import 'package:jhentai/model/archive_bot_response/check_in_vo.dart';
 import 'package:jhentai/model/gallery_metadata.dart';
 import 'package:jhentai/network/archive_bot_request.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/utils/archive_bot_response_parser.dart';
 import 'package:jhentai/utils/version_util.dart';
@@ -315,8 +316,30 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
       return;
     }
 
-    await rpcService.checkHealth();
+    final bool reachable = await rpcService.checkHealth();
+    if (!reachable) {
+      return;
+    }
+
+    await _syncRpcCookie();
   }
 
   bool get _shouldBypassLegacyNetwork => rpcSetting.enableRpcMode.isTrue;
+
+  Future<void> _syncRpcCookie() async {
+    if (ehRequest.cookies.isEmpty) {
+      return;
+    }
+
+    try {
+      await rpcRequest.requestSetCookie(
+        cookie: CookieUtil.parse2String(ehRequest.cookies),
+      );
+    } on RPCRequestException catch (e) {
+      // Older backend bridge may not implement auth.setCookie yet.
+      log.trace('Skip RPC cookie sync: $e');
+    } catch (e) {
+      log.warning('Sync RPC cookie failed', e, true);
+    }
+  }
 }

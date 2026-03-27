@@ -56,9 +56,19 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     return request(method: RPCMethods.systemCapabilities);
   }
 
+  Future<Map<String, dynamic>> requestSetCookie({required String cookie}) {
+    return request(
+      method: RPCMethods.authSetCookie,
+      params: {
+        'cookie': cookie,
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> request({
     required String method,
     Map<String, dynamic>? params,
+    CancelToken? cancelToken,
   }) async {
     final String url = _buildRpcUrl();
     final int requestId = _nextRequestId();
@@ -67,6 +77,7 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       send: () => _dio.post(
         url,
         options: Options(headers: _buildHeaders()),
+        cancelToken: cancelToken,
         data: {
           'jsonrpc': '2.0',
           'id': requestId,

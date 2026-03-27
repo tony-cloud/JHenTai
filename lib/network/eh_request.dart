@@ -11,11 +11,13 @@ import 'package:get/get_utils/src/platform/platform.dart';
 import 'package:intl/intl.dart';
 import 'package:jhentai/downloader/j_downloader.dart';
 import 'package:jhentai/consts/eh_consts.dart';
+import 'package:jhentai/consts/rpc_consts.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
 import 'package:jhentai/model/gallery_page.dart';
 import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/network/eh_ip_provider.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/network/request_retrier.dart';
 import 'package:jhentai/network/eh_timeout_translator.dart';
 import 'package:jhentai/pages/ranklist/ranklist_page_state.dart';
@@ -37,8 +39,10 @@ import 'package:webview_flutter/webview_flutter.dart' show WebViewCookieManager;
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/setting/network_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/network/eh_cache_manager.dart';
 import 'package:jhentai/network/eh_cookie_manager.dart';
+import 'package:jhentai/service/rpc_service.dart';
 
 EHRequest ehRequest = EHRequest();
 
@@ -388,6 +392,14 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestNews<T>(HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.newsEvent)) {
+      final Map<String, dynamic> result = await rpcRequest.request(
+        method: RPCMethods.newsEvent,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(EHConsts.ENews);
     return _parseResponse(response, parser);
   }
@@ -411,6 +423,22 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     SearchConfig? searchConfig,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.gallerySearch)) {
+      final Map<String, dynamic> result = await rpcRequest.request(
+        method: RPCMethods.galleryPage,
+        params: {
+          if (url != null) 'url': url,
+          if (prevGid != null) 'prevGid': prevGid,
+          if (nextGid != null) 'nextGid': nextGid,
+          if (seek != null) 'seek': DateFormat('yyyy-MM-dd').format(seek),
+          if (searchConfig != null) 'searchPath': searchConfig.toPath(),
+          if (searchConfig != null) 'searchQuery': searchConfig.toQueryParameters(),
+        },
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(
       url ?? searchConfig!.toPath(),
       queryParameters: {
@@ -430,6 +458,21 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     CancelToken? cancelToken,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.galleryDetail)) {
+      final Map<String, dynamic> result = await rpcRequest.request(
+        method: RPCMethods.galleryDetail,
+        cancelToken: cancelToken,
+        params: {
+          'galleryUrl': galleryUrl,
+          'thumbnailsPageIndex': thumbnailsPageIndex,
+          'showAllComments': preferenceSetting.showAllComments.isTrue,
+          'useCacheIfAvailable': useCacheIfAvailable,
+        },
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(
       galleryUrl,
       queryParameters: {
@@ -451,6 +494,18 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     required String token,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.galleryDetail)) {
+      final Map<String, dynamic> result = await rpcRequest.request(
+        method: RPCMethods.galleryMetadata,
+        params: {
+          'gid': gid,
+          'token': token,
+        },
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       EHConsts.EHApi,
       options: Options(contentType: Headers.jsonContentType),
@@ -469,6 +524,22 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     required List<({int gid, String token})> list,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.galleryDetail)) {
+      final Map<String, dynamic> result = await rpcRequest.request(
+        method: RPCMethods.galleryMetadatas,
+        params: {
+          'list': list
+              .map((item) => {
+                    'gid': item.gid,
+                    'token': item.token,
+                  })
+              .toList(),
+        },
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       EHConsts.EHApi,
       options: Options(contentType: Headers.jsonContentType),
@@ -602,6 +673,20 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     bool useCacheIfAvailable = true,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.galleryImage)) {
+      final Map<String, dynamic> result = await rpcRequest.request(
+        method: RPCMethods.galleryImagePage,
+        cancelToken: cancelToken,
+        params: {
+          'href': href,
+          if (reloadKey != null) 'reloadKey': reloadKey,
+          'useCacheIfAvailable': useCacheIfAvailable,
+        },
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(
       href,
       queryParameters: {
@@ -1171,6 +1256,67 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
       ehSettingSnapshot,
       logBaseFileName
     ]);
+  }
+
+  Future<T> _parseRpcResponse<T>({
+    required Map<String, dynamic> result,
+    required HtmlParser<T> parser,
+  }) {
+    final dynamic rawData = result['data'] ?? result['body'] ?? result['html'] ?? result;
+    final Headers headers = _parseRpcHeaders(result['headers']);
+
+    final Response response = Response(
+      requestOptions: RequestOptions(path: _buildRpcResponsePath()),
+      statusCode: 200,
+      headers: headers,
+      data: rawData,
+    );
+
+    return _parseResponse(response, parser);
+  }
+
+  Headers _parseRpcHeaders(dynamic headers) {
+    if (headers is! Map) {
+      return Headers();
+    }
+
+    final Map<String, List<String>> parsed = <String, List<String>>{};
+    headers.forEach((key, value) {
+      final String normalizedKey = key.toString();
+
+      if (value is List) {
+        parsed[normalizedKey] = value.map((e) => e.toString()).toList();
+        return;
+      }
+
+      if (value == null) {
+        return;
+      }
+
+      parsed[normalizedKey] = <String>[value.toString()];
+    });
+
+    return Headers.fromMap(parsed);
+  }
+
+  bool _shouldUseRpc(String capability) {
+    if (rpcSetting.enableRpcMode.isFalse) {
+      return false;
+    }
+
+    if (rpcService.capabilities.isNotEmpty && !rpcService.supportsCapability(capability)) {
+      log.warning('RPC capability $capability is not reported by backend, still trying RPC call');
+    }
+
+    return true;
+  }
+
+  String _buildRpcResponsePath() {
+    if (rpcSetting.serverAddress.value.isEmpty) {
+      return 'rpc://unknown';
+    }
+
+    return '${rpcSetting.serverAddress.value}${RPCConsts.rpcEndpoint}';
   }
 
   Future<Response> _getWithErrorHandler<T>(
