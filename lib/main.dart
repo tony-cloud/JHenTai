@@ -25,6 +25,7 @@ import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/read_progress_service.dart';
 import 'package:jhentai/service/quick_search_service.dart';
 import 'package:jhentai/service/rpc_service.dart';
+import 'package:jhentai/service/rpc_bridge_server_service.dart';
 import 'package:jhentai/service/schedule_service.dart';
 import 'package:jhentai/service/search_history_service.dart';
 import 'package:jhentai/service/storage_service.dart';
@@ -85,6 +86,7 @@ List<JHLifeCircleBean> lifeCircleBeans = [
   pathService,
   quickSearchService,
   rpcService,
+  rpcBridgeServerService,
   scheduleService,
   searchHistoryService,
   storageService,

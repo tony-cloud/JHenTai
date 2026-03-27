@@ -17,6 +17,7 @@ import path_provider_foundation
 import screen_brightness_macos
 import screen_retriever_macos
 import share_plus
+import shared_preferences_foundation
 import sqflite_darwin
 import sqlite3_flutter_libs
 import sqlite3_simple
@@ -39,6 +40,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   ScreenBrightnessMacosPlugin.register(with: registry.registrar(forPlugin: "ScreenBrightnessMacosPlugin"))
   ScreenRetrieverMacosPlugin.register(with: registry.registrar(forPlugin: "ScreenRetrieverMacosPlugin"))
   SharePlusMacosPlugin.register(with: registry.registrar(forPlugin: "SharePlusMacosPlugin"))
+  SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
   Sqlite3FlutterLibsPlugin.register(with: registry.registrar(forPlugin: "Sqlite3FlutterLibsPlugin"))
   Sqlite3SimplePlugin.register(with: registry.registrar(forPlugin: "Sqlite3SimplePlugin"))

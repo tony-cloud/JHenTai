@@ -169,11 +169,14 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   }
 
   void _initCacheManager() {
+    final CacheStore cacheStore =
+        GetPlatform.isWeb ? MemoryCacheStore() : SqliteCacheStore(appDb: appDb);
+
     _cacheManager = EHCacheManager(
       options: CacheOptions(
         policy: CachePolicy.disable,
         expire: networkSetting.pageCacheMaxAge.value,
-        store: SqliteCacheStore(appDb: appDb),
+        store: cacheStore,
       ),
     );
     _dio.interceptors.add(_cacheManager);
@@ -1233,8 +1236,13 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     if (parser == null) {
       return response as T;
     }
-    RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
-    Map<String, String?> pathServiceSnapshot = EHSpiderParser.buildPathServiceSnapshot();
+    final bool useBackgroundIsolate = isolateService.isInitialized;
+    final RootIsolateToken? rootIsolateToken =
+      kIsWeb || !useBackgroundIsolate ? null : RootIsolateToken.instance;
+    final Map<String, String?>? pathServiceSnapshot =
+      useBackgroundIsolate && pathService.isInitialized
+        ? EHSpiderParser.buildPathServiceSnapshot()
+        : null;
     final String userSettingSnapshot = userSetting.toConfigString();
     final String ehSettingSnapshot = ehSetting.toConfigString();
     final String logBaseFileName = log.baseFileName;

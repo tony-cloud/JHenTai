@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
@@ -53,6 +54,11 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
 
   @override
   Future<void> doAfterBeanReady() async {
+    if (kIsWeb) {
+      log.info('ScheduleService is disabled on web; tasks are handled by server');
+      return;
+    }
+
     Timer(const Duration(seconds: 3), _checkUpdate);
     Timer(const Duration(seconds: 10), refreshGalleryTags);
     Timer(const Duration(seconds: 10), refreshArchiveTags);
@@ -70,6 +76,10 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> _checkUpdate() async {
+    if (kIsWeb) {
+      return;
+    }
+
     if (advancedSetting.enableCheckUpdate.isFalse) {
       return;
     }
@@ -109,6 +119,10 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> refreshGalleryTags({bool ignoreSetting = false}) async {
+    if (kIsWeb) {
+      return;
+    }
+
     if (_shouldBypassLegacyNetwork) {
       log.trace('Skip refreshGalleryTags in RPC mode');
       return;
@@ -156,6 +170,10 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> refreshArchiveTags({bool ignoreSetting = false}) async {
+    if (kIsWeb) {
+      return;
+    }
+
     if (_shouldBypassLegacyNetwork) {
       log.trace('Skip refreshArchiveTags in RPC mode');
       return;
@@ -198,6 +216,10 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> clearOutdatedImageCache() async {
+    if (kIsWeb) {
+      return;
+    }
+
     Directory cacheImageDirectory =
         Directory(join((await getTemporaryDirectory()).path, cacheImageFolderName));
 
@@ -225,6 +247,10 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> checkEHEvent() async {
+    if (kIsWeb) {
+      return;
+    }
+
     if (_shouldBypassLegacyNetwork) {
       log.trace('Skip checkEHEvent in RPC mode');
       return;
@@ -281,6 +307,10 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> checkInArchiveBot() async {
+    if (kIsWeb) {
+      return;
+    }
+
     if (_shouldBypassLegacyNetwork) {
       log.trace('Skip checkInArchiveBot in RPC mode');
       return;
@@ -312,6 +342,10 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
   }
 
   Future<void> checkRpcBackend() async {
+    if (kIsWeb) {
+      return;
+    }
+
     if (rpcSetting.enableRpcMode.isFalse) {
       return;
     }

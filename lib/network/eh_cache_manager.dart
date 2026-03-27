@@ -11,7 +11,7 @@ import 'package:jhentai/database/database.dart';
 
 class EHCacheManager extends Interceptor {
   final CacheOptions _options;
-  final SqliteCacheStore _store;
+  final CacheStore _store;
 
   static const allowedStatusCodes = [
     // OK
@@ -96,7 +96,7 @@ class EHCacheManager extends Interceptor {
     return CacheOptions.fromExtra(request) ?? _options;
   }
 
-  SqliteCacheStore _getCacheStore(CacheOptions options) {
+  CacheStore _getCacheStore(CacheOptions options) {
     return options.store ?? _store;
   }
 
@@ -188,7 +188,7 @@ class CacheOptions {
 
   final Duration expire;
 
-  final SqliteCacheStore? store;
+  final CacheStore? store;
 
   final bool ignoreParams;
 
@@ -230,7 +230,7 @@ class CacheOptions {
     return Options(extra: toExtra());
   }
 
-  CacheOptions copyWith({CachePolicy? policy, Duration? expire, SqliteCacheStore? store}) {
+  CacheOptions copyWith({CachePolicy? policy, Duration? expire, CacheStore? store}) {
     return CacheOptions(
         policy: policy ?? this.policy, expire: expire ?? this.expire, store: store ?? this.store);
   }
@@ -333,7 +333,63 @@ class CacheResponse {
   }
 }
 
-class SqliteCacheStore {
+abstract class CacheStore {
+  Future<void> cleanExpired();
+
+  Future<void> cleanAll();
+
+  Future<void> delete(String key);
+
+  Future<void> deleteWithUrlPrefix(String urlPrefix);
+
+  Future<CacheResponse?> get(String key);
+
+  Future<void> upsertCache(CacheResponse response);
+}
+
+class MemoryCacheStore implements CacheStore {
+  final Map<String, CacheResponse> _cache = <String, CacheResponse>{};
+
+  @override
+  Future<void> cleanExpired() async {
+    _cache.removeWhere((_, CacheResponse response) => response.expired());
+  }
+
+  @override
+  Future<void> cleanAll() async {
+    _cache.clear();
+  }
+
+  @override
+  Future<void> delete(String key) async {
+    _cache.remove(key);
+  }
+
+  @override
+  Future<void> deleteWithUrlPrefix(String urlPrefix) async {
+    _cache.removeWhere((_, CacheResponse response) => response.url.startsWith(urlPrefix));
+  }
+
+  @override
+  Future<CacheResponse?> get(String key) async {
+    CacheResponse? response = _cache[key];
+    if (response == null) {
+      return null;
+    }
+    if (response.expired()) {
+      _cache.remove(key);
+      return null;
+    }
+    return response;
+  }
+
+  @override
+  Future<void> upsertCache(CacheResponse response) async {
+    _cache[response.cacheKey] = response;
+  }
+}
+
+class SqliteCacheStore implements CacheStore {
   final AppDb appDb;
 
   SqliteCacheStore({required this.appDb}) {
@@ -345,22 +401,27 @@ class SqliteCacheStore {
     }
   }
 
+  @override
   Future<void> cleanExpired() {
     return DioCacheDao.deleteCacheByDate(DateTime.now());
   }
 
+  @override
   Future<void> cleanAll() {
     return DioCacheDao.deleteAllCache();
   }
 
+  @override
   Future<void> delete(String key) {
     return DioCacheDao.deleteByCacheKey(key);
   }
 
+  @override
   Future<void> deleteWithUrlPrefix(String urlPrefix) {
     return DioCacheDao.deleteCacheLikeUrl('$urlPrefix%');
   }
 
+  @override
   Future<CacheResponse?> get(String key) {
     Future<DioCacheData?> future = DioCacheDao.selectByCacheKey(key);
 
@@ -377,6 +438,7 @@ class SqliteCacheStore {
     });
   }
 
+  @override
   Future<void> upsertCache(CacheResponse response) {
     return DioCacheDao.upsertCache(
       DioCacheData(

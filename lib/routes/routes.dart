@@ -19,6 +19,7 @@ import 'package:jhentai/pages/setting/about/setting_about_page.dart';
 import 'package:jhentai/pages/setting/account/cookie/cookie_page.dart';
 import 'package:jhentai/pages/setting/account/login/login_page.dart';
 import 'package:jhentai/pages/setting/advanced/setting_advanced_page.dart';
+import 'package:jhentai/pages/setting/advanced/setting_rpc_server_page.dart';
 import 'package:jhentai/pages/setting/cloud/config_sync/config_sync_page.dart';
 import 'package:jhentai/pages/setting/cloud/setting_cloud_page.dart';
 import 'package:jhentai/pages/setting/download/extra_gallery_scan_path/extra_gallery_scan_path_page.dart';
@@ -127,6 +128,7 @@ class Routes {
   static const String archiveBotSettings = '/setting/download/archive_bot';
 
   static const String superResolution = "/setting_advanced/superResolution";
+  static const String settingRpcServer = '/setting_advanced/rpcServer';
   static const String logList = "/setting_advanced/logList";
   static const String log = "/setting_advanced/logList/log";
 
@@ -334,6 +336,11 @@ class Routes {
     EHPage(
       name: settingAdvanced,
       page: () => const SettingAdvancedPage().withEscOrFifthButton2BackRightRoute(),
+      transition: defaultTransition,
+    ),
+    EHPage(
+      name: settingRpcServer,
+      page: () => const SettingRPCServerPage().withEscOrFifthButton2BackRightRoute(),
       transition: defaultTransition,
     ),
     EHPage(

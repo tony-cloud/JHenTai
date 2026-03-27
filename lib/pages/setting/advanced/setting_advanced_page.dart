@@ -95,6 +95,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildClearNetworkCache(),
             _buildClearReadProgress(),
             _buildRepairMissingImages(context),
+            _buildRpcSettings(),
             _buildFtpServer(context),
             if (GetPlatform.isDesktop) _buildSuperResolution(),
             _buildCheckUpdate(),
@@ -305,6 +306,15 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
         ],
       ),
       onTap: () => _showFtpServerDialog(context),
+    );
+  }
+
+  Widget _buildRpcSettings() {
+    return ListTile(
+      title: Text('rpcSettings'.tr),
+      subtitle: Text('rpcSettingsHint'.tr),
+      trailing: const Icon(Icons.keyboard_arrow_right).marginOnly(right: 4),
+      onTap: () => toRoute(Routes.settingRpcServer),
     );
   }
 

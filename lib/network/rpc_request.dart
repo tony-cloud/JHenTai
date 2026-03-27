@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:get/get_rx/src/rx_workers/rx_workers.dart';
 import 'package:jhentai/consts/rpc_consts.dart';
+import 'package:jhentai/network/rpc_http_client_adapter.dart';
 import 'package:jhentai/network/request_retrier.dart';
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/log.dart';
@@ -28,12 +26,9 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       contentType: Headers.jsonContentType,
     ));
 
-    _dio.httpClientAdapter = IOHttpClientAdapter(
-      createHttpClient: () {
-        HttpClient client = HttpClient();
-        client.badCertificateCallback = (_, __, ___) => rpcSetting.allowSelfSignedCertificate.value;
-        return client;
-      },
+    configureRpcHttpClientAdapter(
+      _dio,
+      allowSelfSignedCertificate: rpcSetting.allowSelfSignedCertificate.value,
     );
 
     ever(networkSetting.connectTimeout, (_) {

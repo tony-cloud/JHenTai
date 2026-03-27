@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
@@ -9,14 +10,18 @@ RpcSetting rpcSetting = RpcSetting();
 
 class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   RxBool enableRpcMode = false.obs;
-  RxString serverAddress = 'https://127.0.0.1:3210'.obs;
+  RxString serverAddress = 'http://127.0.0.1:3210'.obs;
   Rx<RPCServerProfile> serverProfile = RPCServerProfile.local.obs;
   RxnString accessToken = RxnString();
   RxBool allowSelfSignedCertificate = false.obs;
+  RxBool enableEmbeddedServer = false.obs;
+  RxString embeddedHost = '0.0.0.0'.obs;
+  RxInt embeddedPort = 3210.obs;
+  RxString embeddedToken = ''.obs;
 
   static const Map<RPCServerProfile, String> profilePresets = {
-    RPCServerProfile.local: 'https://127.0.0.1:3210',
-    RPCServerProfile.lan: 'https://192.168.1.100:3210',
+    RPCServerProfile.local: 'http://127.0.0.1:3210',
+    RPCServerProfile.lan: 'http://192.168.1.100:3210',
     RPCServerProfile.cloud: 'https://rpc.example.com',
   };
 
@@ -34,9 +39,24 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     accessToken.value = map['accessToken'] ?? accessToken.value;
     allowSelfSignedCertificate.value =
         map['allowSelfSignedCertificate'] ?? allowSelfSignedCertificate.value;
+    enableEmbeddedServer.value = map['enableEmbeddedServer'] ?? enableEmbeddedServer.value;
+    embeddedHost.value = map['embeddedHost'] ?? embeddedHost.value;
+    embeddedPort.value = _normalizePort(map['embeddedPort'], fallback: embeddedPort.value);
+    embeddedToken.value = map['embeddedToken'] ?? embeddedToken.value;
+
+    if (enableEmbeddedServer.isTrue) {
+      if (embeddedToken.value.trim().isEmpty) {
+        embeddedToken.value = _generateToken();
+      }
+
+      serverProfile.value = RPCServerProfile.custom;
+      serverAddress.value = _embeddedClientAddress();
+      accessToken.value = embeddedToken.value;
+    }
 
     if (GetPlatform.isWeb) {
       enableRpcMode.value = true;
+      enableEmbeddedServer.value = false;
     }
   }
 
@@ -48,6 +68,10 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
       'serverProfile': serverProfile.value.index,
       'accessToken': accessToken.value,
       'allowSelfSignedCertificate': allowSelfSignedCertificate.value,
+      'enableEmbeddedServer': enableEmbeddedServer.value,
+      'embeddedHost': embeddedHost.value,
+      'embeddedPort': embeddedPort.value,
+      'embeddedToken': embeddedToken.value,
     });
   }
 
@@ -55,6 +79,7 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
   Future<void> doInitBean() async {
     if (GetPlatform.isWeb) {
       enableRpcMode.value = true;
+      enableEmbeddedServer.value = false;
     }
   }
 
@@ -108,6 +133,80 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     await saveBeanConfig();
   }
 
+  Future<void> saveEnableEmbeddedServer(bool enabled) async {
+    if (GetPlatform.isWeb && enabled) {
+      log.warning('Embedded RPC server is not supported on web.');
+      enableEmbeddedServer.value = false;
+      await saveBeanConfig();
+      return;
+    }
+
+    log.debug('saveEnableEmbeddedServer:$enabled');
+    enableEmbeddedServer.value = enabled;
+
+    if (enabled) {
+      if (embeddedToken.value.trim().isEmpty) {
+        embeddedToken.value = _generateToken();
+      }
+      enableRpcMode.value = true;
+      serverProfile.value = RPCServerProfile.custom;
+      serverAddress.value = _embeddedClientAddress();
+      accessToken.value = embeddedToken.value;
+    }
+
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEmbeddedHost(String host) async {
+    final String normalizedHost = host.trim();
+    if (normalizedHost.isEmpty) {
+      return;
+    }
+
+    log.debug('saveEmbeddedHost:$normalizedHost');
+    embeddedHost.value = normalizedHost;
+    if (enableEmbeddedServer.isTrue) {
+      serverAddress.value = _embeddedClientAddress();
+    }
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEmbeddedPort(int port) async {
+    final int normalizedPort = _normalizePort(port, fallback: embeddedPort.value);
+    log.debug('saveEmbeddedPort:$normalizedPort');
+    embeddedPort.value = normalizedPort;
+
+    if (enableEmbeddedServer.isTrue) {
+      serverAddress.value = _embeddedClientAddress();
+    }
+
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEmbeddedToken(String token) async {
+    final String normalizedToken = token.trim();
+    if (normalizedToken.isEmpty) {
+      return;
+    }
+
+    log.debug('saveEmbeddedToken:******');
+    embeddedToken.value = normalizedToken;
+
+    if (enableEmbeddedServer.isTrue) {
+      accessToken.value = embeddedToken.value;
+    }
+
+    await saveBeanConfig();
+  }
+
+  Future<void> regenerateEmbeddedToken() async {
+    embeddedToken.value = _generateToken();
+    if (enableEmbeddedServer.isTrue) {
+      accessToken.value = embeddedToken.value;
+    }
+    await saveBeanConfig();
+  }
+
   String _normalizeServerAddress(String serverAddress) {
     String value = serverAddress.trim();
 
@@ -116,6 +215,33 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     }
 
     return value;
+  }
+
+  int _normalizePort(dynamic value, {required int fallback}) {
+    int? parsed;
+
+    if (value is int) {
+      parsed = value;
+    } else if (value is String) {
+      parsed = int.tryParse(value.trim());
+    }
+
+    if (parsed == null || parsed < 1 || parsed > 65535) {
+      return fallback;
+    }
+
+    return parsed;
+  }
+
+  String _embeddedClientAddress() {
+    return 'http://127.0.0.1:${embeddedPort.value}';
+  }
+
+  String _generateToken() {
+    final Random random = Random.secure();
+    const String chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+    return List<String>.generate(32, (_) => chars[random.nextInt(chars.length)]).join();
   }
 }
 

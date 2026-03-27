@@ -40,8 +40,17 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   Level? _lastSelectedLevel;
   bool? _lastVerboseEnabled;
 
-  LogPrinter devPrinter =
-      PrettyPrinter(stackTraceBeginIndex: 0, methodCount: 6, levelEmojis: {Level.trace: '✔ '});
+  LogPrinter get devPrinter {
+    if (kIsWeb) {
+      return SimplePrinter(printTime: true);
+    }
+
+    return PrettyPrinter(
+      stackTraceBeginIndex: 0,
+      methodCount: 6,
+      levelEmojis: {Level.trace: '✔ '},
+    );
+  }
 
   final FileLogPrinter fileLogPrinter = FileLogPrinter(printTime: true, useAnsiColor: true);
   final LogPrinter _errorTextPrinter = ErrorTextPrinter();
@@ -122,6 +131,10 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   }
 
   Future<String> getSize() async {
+    if (logDirPath == null) {
+      return byte2String(0);
+    }
+
     return compute(
       (logDirPath) {
         Directory logDirectory = Directory(logDirPath!);
@@ -147,12 +160,20 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     _errorFileLogger = null;
     _downloadFileLogger = null;
 
+    if (kIsWeb || logDirPath == null) {
+      return;
+    }
+
     if (await Directory(logDirPath!).exists()) {
       await Directory(logDirPath!).delete(recursive: true);
     }
   }
 
   Future<void> _initLogDir() async {
+    if (kIsWeb) {
+      return;
+    }
+
     logDirPath ??= path.join(pathService.getVisibleDir().path, 'logs');
 
     final Directory logDirectory = Directory(logDirPath!);
@@ -193,6 +214,10 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     }
 
     _consoleLogger ??= Logger(printer: devPrinter, level: selectedLevel);
+
+    if (kIsWeb) {
+      return;
+    }
 
     await _initLogDir();
     final String fileName = baseFileName;
@@ -334,7 +359,7 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       ..writeln(
           'Startup duration to first frame: ${_startupToFirstFrame?.inMilliseconds ?? -1} ms (logged later if -1)')
       ..writeln('Locale: $localeTag')
-      ..writeln('Platform: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}')
+      ..writeln('Platform: ${_platformDescription()}')
       ..writeln('===============================================');
 
     return buffer.toString();
@@ -359,6 +384,14 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   String _formatDateTime(DateTime time) =>
       '${DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(time)} ${time.timeZoneName}';
+
+  String _platformDescription() {
+    if (kIsWeb) {
+      return 'web';
+    }
+
+    return '${Platform.operatingSystem} ${Platform.operatingSystemVersion}';
+  }
 }
 
 class EHLogFilter extends LogFilter {

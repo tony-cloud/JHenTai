@@ -29,17 +29,17 @@ class RPCService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   }
 
   Future<bool> checkHealth() async {
+    final Map<String, dynamic> result = await rpcRequest.requestSystemHealth();
+    _applyHealthResult(result);
     try {
-      final Map<String, dynamic> result = await rpcRequest.requestSystemHealth();
-      _applyHealthResult(result);
       log.info('RPC health check success: $result');
 
       await _refreshCapabilities();
       return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
       isBackendReachable.value = false;
       capabilities.clear();
-      log.warning('RPC health check failed', e, true);
+      log.error('RPC health check failed', e, stackTrace);
       return false;
     }
   }

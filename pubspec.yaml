@@ -16,6 +16,7 @@ dependencies:
   dio: ^5.9.0
   get: ^4.7.2
   get_storage: ^2.1.1
+  shared_preferences: ^2.5.3
   extended_nested_scroll_view: ^6.2.1
   html: ^0.15.6
   logger: 2.2.0
@@ -105,7 +106,7 @@ dependency_overrides:
   test_api: 0.6.0
   matcher: 0.12.16
   chewie: 1.7.0
-  http: 1.1.0
+  http: 1.6.0
   cached_network_image: 3.3.0
   collection: 1.19.0
     

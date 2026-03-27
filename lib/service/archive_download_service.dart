@@ -91,6 +91,11 @@ class ArchiveDownloadService extends GetxController
   Future<void> doInitBean() async {
     Get.put(this, permanent: true);
 
+    if (GetPlatform.isWeb) {
+      _completer.complete(true);
+      return;
+    }
+
     await _instantiateFromDB();
 
     log.debug('Archive download tasks count: ${archives.length}');

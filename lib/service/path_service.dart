@@ -22,6 +22,14 @@ class PathService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   Directory? systemDownloadDir;
 
+  bool get isInitialized {
+    try {
+      return tempDir.path.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   List<JHLifeCircleBean> get initDependencies => [];
 
@@ -40,7 +48,7 @@ class PathService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   Future<void> doAfterBeanReady() async {}
 
   Directory getVisibleDir() {
-    if (Platform.isAndroid && externalStorageDir != null) {
+    if (GetPlatform.isAndroid && externalStorageDir != null) {
       return externalStorageDir!;
     }
     if (GetPlatform.isWindows && appSupportDir != null) {
