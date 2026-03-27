@@ -538,6 +538,8 @@ class zh_CN {
       'embeddedRpcServerHint': '在原生平台应用内运行RPC服务，支持本机或局域网访问',
       'enableEmbeddedRpcServer': '启用应用内RPC服务器',
       'enableEmbeddedRpcServerHint': '在应用进程内启动或停止RPC桥接服务',
+      'embeddedRpcServerAuthRequired': '要求身份验证',
+      'embeddedRpcServerAuthRequiredHint': '关闭后允许匿名访问应用内 RPC 服务器',
       'embeddedRpcServerHost': '应用内服务器Host',
       'embeddedRpcServerHostHint': '默认 0.0.0.0，可用于局域网访问',
       'embeddedRpcServerPort': '应用内服务器端口',

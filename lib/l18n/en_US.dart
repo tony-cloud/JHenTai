@@ -555,6 +555,9 @@ class en_US {
           'Run an RPC server in-app on native platforms for local or LAN access',
       'enableEmbeddedRpcServer': 'Enable Embedded RPC Server',
       'enableEmbeddedRpcServerHint': 'Start/stop the bridge server inside the app process',
+      'embeddedRpcServerAuthRequired': 'Require Authentication',
+      'embeddedRpcServerAuthRequiredHint':
+          'Disable to allow anonymous access to the embedded RPC server',
       'embeddedRpcServerHost': 'Embedded Server Host',
       'embeddedRpcServerHostHint': 'Default is 0.0.0.0 for LAN accessibility',
       'embeddedRpcServerPort': 'Embedded Server Port',

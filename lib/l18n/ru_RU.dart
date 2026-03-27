@@ -574,6 +574,9 @@ class ru_RU {
       'rpcBackendUnreachable': 'Backend недоступен',
       'rpcHealthCheckSuccess': 'RPC backend доступен',
       'rpcHealthCheckFailed': 'Не удалось подключиться к RPC backend',
+      'embeddedRpcServerAuthRequired': 'Требовать авторизацию',
+      'embeddedRpcServerAuthRequiredHint':
+          'Отключите, чтобы разрешить анонимный доступ к встроенному RPC-серверу',
       'hostMapping': 'Сопоставление хостов',
       'hostMappingHint': 'Используется для domain fronting',
       'proxyAddress': 'Адрес прокси',

@@ -15,6 +15,7 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
   RxnString accessToken = RxnString();
   RxBool allowSelfSignedCertificate = false.obs;
   RxBool enableEmbeddedServer = false.obs;
+  RxBool embeddedAuthRequired = true.obs;
   RxString embeddedHost = '0.0.0.0'.obs;
   RxInt embeddedPort = 3210.obs;
   RxString embeddedToken = ''.obs;
@@ -41,6 +42,7 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     allowSelfSignedCertificate.value =
         map['allowSelfSignedCertificate'] ?? allowSelfSignedCertificate.value;
     enableEmbeddedServer.value = map['enableEmbeddedServer'] ?? enableEmbeddedServer.value;
+    embeddedAuthRequired.value = map['embeddedAuthRequired'] ?? embeddedAuthRequired.value;
     embeddedHost.value = map['embeddedHost'] ?? embeddedHost.value;
     embeddedPort.value = _normalizePort(map['embeddedPort'], fallback: embeddedPort.value);
     embeddedToken.value = map['embeddedToken'] ?? embeddedToken.value;
@@ -52,13 +54,13 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     }
 
     if (enableEmbeddedServer.isTrue) {
-      if (embeddedToken.value.trim().isEmpty) {
+      if (embeddedAuthRequired.isTrue && embeddedToken.value.trim().isEmpty) {
         embeddedToken.value = _generateToken();
       }
 
       serverProfile.value = RPCServerProfile.custom;
       serverAddress.value = _embeddedClientAddress();
-      accessToken.value = embeddedToken.value;
+      accessToken.value = embeddedAuthRequired.isTrue ? embeddedToken.value : null;
     }
   }
 
@@ -71,6 +73,7 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
       'accessToken': accessToken.value,
       'allowSelfSignedCertificate': allowSelfSignedCertificate.value,
       'enableEmbeddedServer': enableEmbeddedServer.value,
+      'embeddedAuthRequired': embeddedAuthRequired.value,
       'embeddedHost': embeddedHost.value,
       'embeddedPort': embeddedPort.value,
       'embeddedToken': embeddedToken.value,
@@ -147,13 +150,28 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     enableEmbeddedServer.value = enabled;
 
     if (enabled) {
-      if (embeddedToken.value.trim().isEmpty) {
+      if (embeddedAuthRequired.isTrue && embeddedToken.value.trim().isEmpty) {
         embeddedToken.value = _generateToken();
       }
       enableRpcMode.value = true;
       serverProfile.value = RPCServerProfile.custom;
       serverAddress.value = _embeddedClientAddress();
-      accessToken.value = embeddedToken.value;
+      accessToken.value = embeddedAuthRequired.isTrue ? embeddedToken.value : null;
+    }
+
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEmbeddedAuthRequired(bool required) async {
+    log.debug('saveEmbeddedAuthRequired:$required');
+    embeddedAuthRequired.value = required;
+
+    if (required && embeddedToken.value.trim().isEmpty) {
+      embeddedToken.value = _generateToken();
+    }
+
+    if (enableEmbeddedServer.isTrue) {
+      accessToken.value = embeddedAuthRequired.isTrue ? embeddedToken.value : null;
     }
 
     await saveBeanConfig();
@@ -194,7 +212,7 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     log.debug('saveEmbeddedToken:******');
     embeddedToken.value = normalizedToken;
 
-    if (enableEmbeddedServer.isTrue) {
+    if (enableEmbeddedServer.isTrue && embeddedAuthRequired.isTrue) {
       accessToken.value = embeddedToken.value;
     }
 
@@ -203,7 +221,7 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
 
   Future<void> regenerateEmbeddedToken() async {
     embeddedToken.value = _generateToken();
-    if (enableEmbeddedServer.isTrue) {
+    if (enableEmbeddedServer.isTrue && embeddedAuthRequired.isTrue) {
       accessToken.value = embeddedToken.value;
     }
     await saveBeanConfig();

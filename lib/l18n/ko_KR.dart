@@ -569,6 +569,8 @@ class ko_KR {
       'rpcBackendUnreachable': '백엔드에 연결할 수 없습니다',
       'rpcHealthCheckSuccess': 'RPC 백엔드 연결 성공',
       'rpcHealthCheckFailed': 'RPC 백엔드 연결 실패',
+      'embeddedRpcServerAuthRequired': '인증 요구',
+      'embeddedRpcServerAuthRequiredHint': '끄면 내장 RPC 서버에 익명으로 접근할 수 있습니다',
       'hostMapping': '호스트 매핑',
       'hostMappingHint': '도메인 프론팅에 사용됨',
       'proxyAddress': '프록시 주소',

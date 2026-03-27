@@ -29,7 +29,7 @@ class ReadPageState with ScrollStatusListerState {
 
   bool autoMode = false;
   bool isMenuOpen = false;
-  Battery battery = Battery();
+  Battery? battery;
   int batteryLevel = 100;
   bool useSuperResolution = false;
   bool displayFirstPageAlone = readSetting.displayFirstPageAlone.value;
@@ -42,6 +42,10 @@ class ReadPageState with ScrollStatusListerState {
   final ScrollOffsetController thumbnailsScrollOffsetController = ScrollOffsetController();
 
   ReadPageState() {
+    if (GetPlatform.isMobile) {
+      battery = Battery();
+    }
+
     thumbnails = List.generate(readPageInfo.pageCount, (_) => null, growable: true);
 
     if (readPageInfo.mode == ReadMode.online) {

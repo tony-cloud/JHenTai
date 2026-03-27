@@ -577,6 +577,9 @@ class pt_BR {
       'rpcBackendUnreachable': 'Backend inacessível',
       'rpcHealthCheckSuccess': 'Backend RPC acessível',
       'rpcHealthCheckFailed': 'Falha ao acessar o backend RPC',
+      'embeddedRpcServerAuthRequired': 'Exigir autenticação',
+      'embeddedRpcServerAuthRequiredHint':
+          'Desative para permitir acesso anônimo ao servidor RPC embutido',
       'hostMapping': 'Mapeamento de host',
       'hostMappingHint': 'Usado para frente de domínio',
       'proxyAddress': 'Endereço de proxy',

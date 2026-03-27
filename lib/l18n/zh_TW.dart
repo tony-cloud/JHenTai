@@ -561,6 +561,8 @@ class zh_TW {
       'rpcBackendUnreachable': '後端無法連線',
       'rpcHealthCheckSuccess': 'RPC後端連線成功',
       'rpcHealthCheckFailed': '無法連線RPC後端',
+      'embeddedRpcServerAuthRequired': '要求驗證',
+      'embeddedRpcServerAuthRequiredHint': '關閉後允許匿名存取應用內 RPC 伺服器',
       'hostMapping': 'Host映射',
       'hostMappingHint': '用於域名前置',
       'proxyAddress': '代理伺服器地址',

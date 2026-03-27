@@ -50,6 +50,7 @@ class RPCBridgeServerService extends GetxService
       [
         rpcSetting.embeddedHost,
         rpcSetting.embeddedPort,
+        rpcSetting.embeddedAuthRequired,
         rpcSetting.embeddedToken,
       ],
       (_) => _restartIfRunning(),
@@ -89,7 +90,8 @@ class RPCBridgeServerService extends GetxService
 
     final String host = rpcSetting.embeddedHost.value.trim();
     final int port = rpcSetting.embeddedPort.value;
-    final String token = rpcSetting.embeddedToken.value.trim();
+    final String token =
+        rpcSetting.embeddedAuthRequired.isTrue ? rpcSetting.embeddedToken.value.trim() : '';
 
     final RpcBridgeServer server = RpcBridgeServer(
       host: host,

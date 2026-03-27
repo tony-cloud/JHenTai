@@ -64,6 +64,7 @@ class _SettingRPCServerPageState extends State<SettingRPCServerPage> {
             _buildRpcCapabilities(),
             if (!kIsWeb) _buildEmbeddedServerDivider(),
             if (!kIsWeb) _buildEnableEmbeddedServer(),
+            if (!kIsWeb) _buildEmbeddedServerAuthRequired(),
             if (!kIsWeb) _buildEmbeddedServerHost(context),
             if (!kIsWeb) _buildEmbeddedServerPort(context),
             if (!kIsWeb) _buildEmbeddedServerToken(context),
@@ -302,6 +303,22 @@ class _SettingRPCServerPageState extends State<SettingRPCServerPage> {
     );
   }
 
+  Widget _buildEmbeddedServerAuthRequired() {
+    return SwitchListTile(
+      title: Text('embeddedRpcServerAuthRequired'.tr),
+      subtitle: Text('embeddedRpcServerAuthRequiredHint'.tr),
+      value: rpcSetting.embeddedAuthRequired.value,
+      onChanged: rpcSetting.enableEmbeddedServer.isFalse
+          ? null
+          : (bool value) async {
+              await rpcSetting.saveEmbeddedAuthRequired(value);
+              embeddedTokenController.text = rpcSetting.embeddedToken.value;
+              rpcAccessTokenController.text = rpcSetting.accessToken.value ?? '';
+              toast('saveSuccess'.tr);
+            },
+    );
+  }
+
   Widget _buildEmbeddedServerHost(BuildContext context) {
     return ListTile(
       title: Text('embeddedRpcServerHost'.tr),
@@ -395,7 +412,8 @@ class _SettingRPCServerPageState extends State<SettingRPCServerPage> {
                 labelStyle: TextStyle(fontSize: 12),
               ),
               obscureText: !showEmbeddedToken,
-              enabled: rpcSetting.enableEmbeddedServer.value,
+              enabled:
+                  rpcSetting.enableEmbeddedServer.value && rpcSetting.embeddedAuthRequired.value,
               onSubmitted: (_) => _saveEmbeddedToken(),
             ),
           ),
@@ -416,26 +434,28 @@ class _SettingRPCServerPageState extends State<SettingRPCServerPage> {
             ),
           ),
           IconButton(
-            onPressed: rpcSetting.enableEmbeddedServer.isFalse
-                ? null
-                : () async {
-                    await _saveEmbeddedToken();
-                    toast('saveSuccess'.tr);
-                  },
+            onPressed:
+                rpcSetting.enableEmbeddedServer.isFalse || rpcSetting.embeddedAuthRequired.isFalse
+                    ? null
+                    : () async {
+                        await _saveEmbeddedToken();
+                        toast('saveSuccess'.tr);
+                      },
             icon: Icon(
               Icons.check,
               color: UIConfig.resumePauseButtonColor(context),
             ),
           ),
           IconButton(
-            onPressed: rpcSetting.enableEmbeddedServer.isFalse
-                ? null
-                : () async {
-                    await rpcSetting.regenerateEmbeddedToken();
-                    embeddedTokenController.text = rpcSetting.embeddedToken.value;
-                    rpcAccessTokenController.text = rpcSetting.accessToken.value ?? '';
-                    toast('saveSuccess'.tr);
-                  },
+            onPressed:
+                rpcSetting.enableEmbeddedServer.isFalse || rpcSetting.embeddedAuthRequired.isFalse
+                    ? null
+                    : () async {
+                        await rpcSetting.regenerateEmbeddedToken();
+                        embeddedTokenController.text = rpcSetting.embeddedToken.value;
+                        rpcAccessTokenController.text = rpcSetting.accessToken.value ?? '';
+                        toast('saveSuccess'.tr);
+                      },
             tooltip: 'regenerateToken'.tr,
             icon: Icon(
               Icons.refresh,

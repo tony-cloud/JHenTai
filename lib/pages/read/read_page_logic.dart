@@ -155,16 +155,16 @@ class ReadPageLogic extends GetxController {
     wakelockTimeLimitListener =
         ever(readSetting.wakelockTimeLimitMinutes, (_) => _rescheduleWakelockTimer());
 
-    if (!GetPlatform.isDesktop) {
-      state.battery.batteryLevel.then((value) => state.batteryLevel = value);
+    if (GetPlatform.isMobile && state.battery != null) {
+      state.battery!.batteryLevel.then((value) => state.batteryLevel = value);
     }
 
     /// refresh current time and battery level info
     refreshCurrentTimeAndBatteryLevelTimer = Timer.periodic(
       const Duration(seconds: 1),
       (_) {
-        if (!GetPlatform.isDesktop) {
-          state.battery.batteryLevel.then((value) {
+        if (GetPlatform.isMobile && state.battery != null) {
+          state.battery!.batteryLevel.then((value) {
             state.batteryLevel = value;
             update([batteryId]);
           });
