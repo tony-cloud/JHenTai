@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get_rx/src/rx_workers/rx_workers.dart';
 
 import 'package:jhentai/downloader/src/model/proxy_config.dart';
@@ -32,6 +33,10 @@ class DohService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         receiveTimeout: const Duration(seconds: 10),
       ),
     );
+
+    if (kIsWeb) {
+      return;
+    }
 
     _systemProxyAddress = await getSystemProxyAddress();
     _configureHttpClient();

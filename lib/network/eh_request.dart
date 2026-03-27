@@ -90,6 +90,25 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       ),
     ));
 
+    if (kIsWeb) {
+      systemProxyAddress = '';
+      await _initCookieManager();
+      _initCacheManager();
+      _ehIpProvider = RoundRobinIpProvider(NetworkSetting.host2IPs);
+      _initTimeOutTranslator();
+
+      ever(ehSetting.site, (_) {
+        _cookieManager.removeCookies(['sp']);
+      });
+      ever(networkSetting.connectTimeout, (_) {
+        setConnectTimeout(networkSetting.connectTimeout.value);
+      });
+      ever(networkSetting.receiveTimeout, (_) {
+        setReceiveTimeout(networkSetting.receiveTimeout.value);
+      });
+      return;
+    }
+
     systemProxyAddress = await getSystemProxyAddress();
     await _initProxy();
 
@@ -1236,13 +1255,11 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     if (parser == null) {
       return response as T;
     }
-    final bool useBackgroundIsolate = isolateService.isInitialized;
+    final bool useBackgroundIsolate = isolateService.isInitialized && pathService.isInitialized;
     final RootIsolateToken? rootIsolateToken =
-      kIsWeb || !useBackgroundIsolate ? null : RootIsolateToken.instance;
+        kIsWeb || !useBackgroundIsolate ? null : RootIsolateToken.instance;
     final Map<String, String?>? pathServiceSnapshot =
-      useBackgroundIsolate && pathService.isInitialized
-        ? EHSpiderParser.buildPathServiceSnapshot()
-        : null;
+        useBackgroundIsolate ? EHSpiderParser.buildPathServiceSnapshot() : null;
     final String userSettingSnapshot = userSetting.toConfigString();
     final String ehSettingSnapshot = ehSetting.toConfigString();
     final String logBaseFileName = log.baseFileName;

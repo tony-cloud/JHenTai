@@ -18,6 +18,7 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/date_util.dart';
 import 'package:jhentai/utils/domain_fronting_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/utils/rpc_media_proxy_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/eh_comment_score_details_dialog.dart';
@@ -283,7 +284,10 @@ class _EHCommentTextBody extends StatelessWidget {
       }
 
       String url = node.attributes['src']!.replaceAll('s.exhentai.org', 'ehgt.org');
-      DomainFrontingResult fronting = DomainFrontingUtil.build(url);
+      final RPCMediaProxyResult proxy = RPCMediaProxyUtil.build(url);
+      DomainFrontingResult fronting =
+          proxy.proxied ? DomainFrontingResult(url: proxy.url) : DomainFrontingUtil.build(url);
+      final Map<String, String>? headers = proxy.headers ?? fronting.headers;
       return WidgetSpan(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -293,14 +297,16 @@ class _EHCommentTextBody extends StatelessWidget {
               ),
               child: ExtendedImage.network(
                 fronting.url,
-                headers: fronting.headers,
+                headers: headers,
                 handleLoadingProgress: true,
                 loadStateChanged: (ExtendedImageState state) {
                   switch (state.extendedImageLoadState) {
                     case LoadState.loading:
                       return Center(child: UIConfig.loadingAnimation(context));
                     case LoadState.failed:
-                      DomainFrontingUtil.markUnavailableFromResult(fronting);
+                      if (!proxy.proxied) {
+                        DomainFrontingUtil.markUnavailableFromResult(fronting);
+                      }
                       return Center(
                         child: GestureDetector(
                             onTap: state.reLoadImage,

@@ -31,6 +31,7 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
   @override
   void applyBeanConfig(String configString) {
     Map map = jsonDecode(configString);
+    final bool isWeb = GetPlatform.isWeb;
 
     enableRpcMode.value = map['enableRpcMode'] ?? enableRpcMode.value;
     serverAddress.value = _normalizeServerAddress(map['serverAddress'] ?? serverAddress.value);
@@ -44,6 +45,12 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
     embeddedPort.value = _normalizePort(map['embeddedPort'], fallback: embeddedPort.value);
     embeddedToken.value = map['embeddedToken'] ?? embeddedToken.value;
 
+    if (isWeb) {
+      enableRpcMode.value = true;
+      enableEmbeddedServer.value = false;
+      return;
+    }
+
     if (enableEmbeddedServer.isTrue) {
       if (embeddedToken.value.trim().isEmpty) {
         embeddedToken.value = _generateToken();
@@ -52,11 +59,6 @@ class RpcSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleB
       serverProfile.value = RPCServerProfile.custom;
       serverAddress.value = _embeddedClientAddress();
       accessToken.value = embeddedToken.value;
-    }
-
-    if (GetPlatform.isWeb) {
-      enableRpcMode.value = true;
-      enableEmbeddedServer.value = false;
     }
   }
 

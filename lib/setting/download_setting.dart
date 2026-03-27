@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/consts/eh_consts.dart';
 import 'package:jhentai/enum/config_enum.dart';
@@ -98,6 +99,16 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
 
   @override
   Future<void> doInitBean() async {
+    if (kIsWeb) {
+      defaultDownloadPath = '/web-download';
+      downloadPath = defaultDownloadPath.obs;
+      defaultExtraGalleryScanPath = '/web-local-gallery';
+      extraGalleryScanPath = <String>[defaultExtraGalleryScanPath].obs;
+      singleImageSavePath = '/web-save'.obs;
+      tempDownloadPath = '/web-temp/${EHConsts.appName}'.obs;
+      return;
+    }
+
     defaultDownloadPath = join(pathService.getVisibleDir().path, 'download');
     downloadPath = defaultDownloadPath.obs;
     defaultExtraGalleryScanPath = join(pathService.getVisibleDir().path, 'local_gallery');
@@ -215,6 +226,10 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   }
 
   Future<void> _ensureDownloadDirExists() async {
+    if (kIsWeb) {
+      return;
+    }
+
     try {
       await Directory(downloadPath.value).create(recursive: true);
       await Directory(defaultExtraGalleryScanPath).create(recursive: true);
@@ -234,6 +249,10 @@ class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   }
 
   Future<void> _clearTempDownloadPath() async {
+    if (kIsWeb) {
+      return;
+    }
+
     try {
       Directory directory = Directory(tempDownloadPath.value);
       if (await directory.exists()) {

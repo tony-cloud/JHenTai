@@ -11,6 +11,7 @@ import 'package:jhentai/pages/search/quick_search/quick_search_page.dart';
 import 'package:jhentai/pages/setting/setting_page.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/utils/rpc_media_proxy_util.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/will_pop_interceptor.dart';
 import 'package:jhentai/setting/preference_setting.dart';
@@ -155,27 +156,41 @@ class EHUserAvatar extends StatelessWidget {
       height: 120,
       alignment: Alignment.center,
       child: Obx(
-        () => ListTile(
-          leading: GestureDetector(
-            child: CircleAvatar(
-              radius: 32,
-              backgroundColor: UIConfig.loginAvatarBackGroundColor(context),
-              foregroundImage: userSetting.avatarImgUrl.value != null
-                  ? ExtendedNetworkImageProvider(userSetting.avatarImgUrl.value!, cache: true)
-                  : null,
-              child: Icon(userSetting.hasLoggedIn() ? Icons.face_retouching_natural : Icons.face,
-                  color: UIConfig.loginAvatarForeGroundColor(context), size: 32),
+        () {
+          final String? avatarUrl = userSetting.avatarImgUrl.value;
+          final RPCMediaProxyResult avatarProxy = avatarUrl == null
+              ? const RPCMediaProxyResult(url: '')
+              : RPCMediaProxyUtil.build(avatarUrl);
+
+          return ListTile(
+            leading: GestureDetector(
+              child: CircleAvatar(
+                radius: 32,
+                backgroundColor: UIConfig.loginAvatarBackGroundColor(context),
+                foregroundImage: avatarUrl != null
+                    ? ExtendedNetworkImageProvider(
+                        avatarProxy.url,
+                        cache: true,
+                        headers: avatarProxy.headers,
+                      )
+                    : null,
+                child: Icon(
+                  userSetting.hasLoggedIn() ? Icons.face_retouching_natural : Icons.face,
+                  color: UIConfig.loginAvatarForeGroundColor(context),
+                  size: 32,
+                ),
+              ),
             ),
-          ),
-          title: Text(userSetting.nickName.value ?? userSetting.userName.value ?? 'tap2Login'.tr),
-          onTap: () {
-            if (!userSetting.hasLoggedIn()) {
-              toRoute(Routes.login);
-              return;
-            }
-            Get.dialog(const LogoutDialog());
-          },
-        ),
+            title: Text(userSetting.nickName.value ?? userSetting.userName.value ?? 'tap2Login'.tr),
+            onTap: () {
+              if (!userSetting.hasLoggedIn()) {
+                toRoute(Routes.login);
+                return;
+              }
+              Get.dialog(const LogoutDialog());
+            },
+          );
+        },
       ),
     );
   }

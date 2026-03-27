@@ -44,6 +44,15 @@ class GalleryGridDownloadPageLogic extends GetxController
   @override
   GridBasePageServiceMixin get galleryService => downloadService;
 
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+
+    if (downloadService.usesRemoteRpcData) {
+      await downloadService.refreshRemoteGallerys();
+    }
+  }
+
   void handleTapTitle(GalleryDownloadedData gallery) {
     if (multiSelectDownloadPageState.inMultiSelectMode) {
       toggleSelectItem(gallery.gid);

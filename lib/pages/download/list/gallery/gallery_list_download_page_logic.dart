@@ -40,6 +40,10 @@ class GalleryListDownloadPageLogic extends GetxController
   Future<void> onInit() async {
     super.onInit();
 
+    if (downloadService.usesRemoteRpcData) {
+      await downloadService.refreshRemoteGallerys();
+    }
+
     String? displayGroupsString =
         await localConfigService.read(configKey: ConfigEnum.displayGalleryGroups);
     if (displayGroupsString == null) {

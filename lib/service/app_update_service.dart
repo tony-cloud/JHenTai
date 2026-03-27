@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:jhentai/database/dao/gallery_history_dao.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/extension/list_extension.dart';
@@ -70,6 +71,12 @@ class AppUpdateService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBe
 
   @override
   Future<void> doInitBean() async {
+    if (kIsWeb) {
+      updateHandlers = <UpdateHandler>[];
+      fromVersion = toVersion;
+      return;
+    }
+
     file = File(join(pathService.getVisibleDir().path, 'jhentai.version'));
     if (file.existsSync()) {
       fromVersion = int.tryParse(await file.readAsString());

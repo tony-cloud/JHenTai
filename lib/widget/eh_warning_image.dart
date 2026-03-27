@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/utils/domain_fronting_util.dart';
+import 'package:jhentai/utils/rpc_media_proxy_util.dart';
 
 class EHWarningImage extends StatefulWidget {
   final bool warning;
@@ -28,7 +29,10 @@ class _EHWarningImageState extends State<EHWarningImage> {
 
   @override
   Widget build(BuildContext context) {
-    final DomainFrontingResult fronting = DomainFrontingUtil.build(widget.src);
+    final RPCMediaProxyResult proxy = RPCMediaProxyUtil.build(widget.src);
+    final DomainFrontingResult fronting =
+        proxy.proxied ? DomainFrontingResult(url: proxy.url) : DomainFrontingUtil.build(widget.src);
+    final Map<String, String>? headers = proxy.headers ?? fronting.headers;
 
     return GestureDetector(
       onTap: () {
@@ -51,12 +55,12 @@ class _EHWarningImageState extends State<EHWarningImage> {
               ),
               child: ExtendedImage.network(
                 fronting.url,
-                headers: fronting.headers,
+                headers: headers,
               ),
             )
           : ExtendedImage.network(
               fronting.url,
-              headers: fronting.headers,
+              headers: headers,
             ),
     );
   }

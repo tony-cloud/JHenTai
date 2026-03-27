@@ -15,6 +15,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/utils/domain_fronting_util.dart';
+import 'package:jhentai/utils/rpc_media_proxy_util.dart';
 
 typedef LoadingProgressWidgetBuilder = Widget Function(double);
 typedef FailedWidgetBuilder = Widget Function(ExtendedImageState state);
@@ -127,14 +128,17 @@ class EHImage extends StatelessWidget {
 
   Widget buildNetworkImage(BuildContext context) {
     final String rawUrl = _replaceEXUrl(galleryImage.url);
-    final DomainFrontingResult fronting = DomainFrontingUtil.build(rawUrl);
+    final RPCMediaProxyResult proxy = RPCMediaProxyUtil.build(rawUrl);
+    final DomainFrontingResult fronting =
+        proxy.proxied ? DomainFrontingResult(url: proxy.url) : DomainFrontingUtil.build(rawUrl);
+    final Map<String, String>? headers = proxy.headers ?? fronting.headers;
 
     return ExtendedImage.network(
       fronting.url,
       fit: fit,
       height: containerHeight,
       width: containerWidth,
-      headers: fronting.headers,
+      headers: headers,
       handleLoadingProgress: loadingProgressWidgetBuilder != null,
       printError: kDebugMode,
       enableSlideOutPage: enableSlideOutPage,
@@ -147,7 +151,9 @@ class EHImage extends StatelessWidget {
                     .call(_computeLoadingProgress(state.loadingProgress, state.extendedImageInfo))
                 : Center(child: UIConfig.loadingAnimation(context));
           case LoadState.failed:
-            DomainFrontingUtil.markUnavailableFromResult(fronting);
+            if (!proxy.proxied) {
+              DomainFrontingUtil.markUnavailableFromResult(fronting);
+            }
             return failedWidgetBuilder?.call(state) ??
                 Center(
                   child: GestureDetector(

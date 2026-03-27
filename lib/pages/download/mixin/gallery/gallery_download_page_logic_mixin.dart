@@ -9,6 +9,7 @@ import 'package:jhentai/setting/super_resolution_setting.dart';
 
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
@@ -150,13 +151,24 @@ mixin GalleryDownloadPageLogicMixin on GetxController
   }
 
   Future<void> goToReadPage(GalleryDownloadedData gallery) async {
-    if (readSetting.useThirdPartyViewer.isTrue && readSetting.thirdPartyViewerPath.value != null) {
+    final GalleryDownloadInfo? info = downloadService.galleryDownloadInfos[gallery.gid];
+    if (downloadService.usesRemoteRpcData &&
+        info?.downloadProgress.downloadStatus != DownloadStatus.downloaded) {
+      return;
+    }
+
+    if (!downloadService.usesRemoteRpcData &&
+        readSetting.useThirdPartyViewer.isTrue &&
+        readSetting.thirdPartyViewerPath.value != null) {
       openThirdPartyViewer(
           downloadService.computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
     } else {
       String? string = await localConfigService.read(
           configKey: ConfigEnum.readIndexRecord, subConfigKey: gallery.gid.toString());
       int readIndexRecord = (string == null ? 0 : (int.tryParse(string) ?? 0));
+      final List<GalleryImage>? images = downloadService.usesRemoteRpcData
+          ? await downloadService.fetchRemoteGalleryImages(gallery.gid)
+          : null;
 
       toRoute(
         Routes.read,
@@ -169,6 +181,7 @@ mixin GalleryDownloadPageLogicMixin on GetxController
           initialIndex: readIndexRecord,
           readProgressRecordStorageKey: gallery.gid.toString(),
           pageCount: gallery.pageCount,
+          images: images,
           useSuperResolution:
               superResolutionService.get(gallery.gid, SuperResolutionType.gallery) != null,
         ),

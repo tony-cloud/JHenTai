@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/list_extension.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
@@ -37,6 +38,10 @@ class LocalGalleryService extends GetxController
   @override
   Future<void> doInitBean() async {
     Get.put(this, permanent: true);
+
+    if (kIsWeb) {
+      return;
+    }
 
     await refreshLocalGallerys();
   }

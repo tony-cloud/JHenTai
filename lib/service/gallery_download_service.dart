@@ -54,13 +54,16 @@ import 'package:jhentai/model/detail_page_info.dart';
 import 'package:jhentai/model/gallery_detail.dart';
 import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/pages/download/grid/mixin/grid_download_page_service_mixin.dart';
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/service/rpc_service.dart';
 import 'package:jhentai/utils/eh_executor.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/service/wakelock_service.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 
 /// Responsible for local images meta-data and download all images of a gallery
 GalleryDownloadService galleryDownloadService = GalleryDownloadService();
@@ -103,6 +106,12 @@ class GalleryDownloadService extends GetxController
   bool _archiveDownloadsActive = false;
   static const String _downloadLockName = 'download';
 
+  @override
+  List<JHLifeCircleBean> get initDependencies =>
+      super.initDependencies..addAll([rpcSetting, rpcService, rpcRequest]);
+
+  bool get usesRemoteRpcData => GetPlatform.isWeb && rpcSetting.enableRpcMode.value;
+
   bool _hasActiveGalleryDownloads() {
     return galleryDownloadInfos.values.any((info) =>
         info.downloadProgress.downloadStatus == DownloadStatus.downloading ||
@@ -142,6 +151,7 @@ class GalleryDownloadService extends GetxController
     Get.put(this, permanent: true);
 
     if (GetPlatform.isWeb) {
+      await refreshRemoteGallerys();
       _completer.complete(true);
       return;
     }
@@ -171,7 +181,11 @@ class GalleryDownloadService extends GetxController
   }
 
   @override
-  Future<void> doAfterBeanReady() async {}
+  Future<void> doAfterBeanReady() async {
+    if (GetPlatform.isWeb) {
+      await refreshRemoteGallerys();
+    }
+  }
 
   @override
   void onClose() {
@@ -182,9 +196,232 @@ class GalleryDownloadService extends GetxController
     unawaited(wakelockService.release(_downloadLockName));
   }
 
+  Future<void> refreshRemoteGallerys() async {
+    if (!usesRemoteRpcData) {
+      _clearRemoteGalleryInfos();
+      return;
+    }
+
+    try {
+      final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryList();
+      _applyRemoteGallerySnapshot(result);
+    } catch (e, stack) {
+      log.error('Refresh remote gallery download list failed', e, stack);
+    }
+  }
+
+  Future<List<GalleryImage>> fetchRemoteGalleryImages(int gid) async {
+    final GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gid];
+    final GalleryDownloadedData? gallery = gallerys.firstWhereOrNull((g) => g.gid == gid);
+    if (galleryDownloadInfo == null || gallery == null) {
+      return <GalleryImage>[];
+    }
+
+    final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryImages(gid: gid);
+    final List<dynamic> rawImages = result['images'] is List ? result['images'] as List : const [];
+    final int pageCount = gallery.pageCount;
+
+    final List<GalleryImage?> images = List<GalleryImage?>.generate(pageCount, (index) {
+      final dynamic raw = index < rawImages.length ? rawImages[index] : null;
+      if (raw is Map<String, dynamic>) {
+        return _rewriteRemoteGalleryImage(gid, index, GalleryImage.fromJson(raw));
+      }
+      if (raw is Map) {
+        return _rewriteRemoteGalleryImage(
+          gid,
+          index,
+          GalleryImage.fromJson(raw.cast<String, dynamic>()),
+        );
+      }
+      return GalleryImage(
+        url: rpcRequest.buildDownloadedGalleryImageUrl(gid: gid, index: index),
+        downloadStatus: DownloadStatus.downloadFailed,
+      );
+    }, growable: false);
+
+    galleryDownloadInfo.images = images;
+
+    final dynamic rawProgress = result['downloadProgress'];
+    if (rawProgress is Map<String, dynamic>) {
+      galleryDownloadInfo.downloadProgress =
+          _normalizeRemoteProgress(GalleryDownloadProgress.fromJson(rawProgress), pageCount);
+    } else if (rawProgress is Map) {
+      galleryDownloadInfo.downloadProgress = _normalizeRemoteProgress(
+        GalleryDownloadProgress.fromJson(rawProgress.cast<String, dynamic>()),
+        pageCount,
+      );
+    }
+
+    update([
+      '$galleryDownloadProgressId::$gid',
+      '$galleryDownloadSuccessId::$gid',
+      '$downloadImageUrlId::$gid::0',
+    ]);
+
+    return images.map((image) => image!).toList(growable: false);
+  }
+
+  bool _skipRemoteMutation(String action) {
+    if (!usesRemoteRpcData) {
+      return false;
+    }
+
+    log.trace('Skip $action for RPC-backed gallery downloads on web');
+    return true;
+  }
+
+  void _clearRemoteGalleryInfos() {
+    for (final GalleryDownloadInfo info in galleryDownloadInfos.values) {
+      info.speedComputer.dispose();
+    }
+    allGroups = <String>[];
+    gallerys = <GalleryDownloadedData>[];
+    galleryDownloadInfos = <int, GalleryDownloadInfo>{};
+    update([galleryCountChangedId]);
+    _notifyDownloadActivityChanged();
+  }
+
+  void _applyRemoteGallerySnapshot(Map<String, dynamic> payload) {
+    final List<GalleryDownloadedData> remoteGallerys =
+        ((payload['galleries'] as List?) ?? const <dynamic>[])
+            .whereType<Map>()
+            .map((map) => GalleryDownloadedData.fromJson(map.cast<String, dynamic>()))
+            .toList(growable: false);
+
+    final Map<int, Map<String, dynamic>> infoByGid = <int, Map<String, dynamic>>{};
+    for (final dynamic rawInfo in (payload['infos'] as List?) ?? const <dynamic>[]) {
+      if (rawInfo is Map) {
+        final Map<String, dynamic> casted = rawInfo.cast<String, dynamic>();
+        infoByGid[casted['gid'] as int] = casted;
+      }
+    }
+
+    for (final GalleryDownloadInfo info in galleryDownloadInfos.values) {
+      info.speedComputer.dispose();
+    }
+
+    gallerys = remoteGallerys;
+    allGroups = ((payload['groups'] as List?) ?? const <dynamic>[])
+        .map((group) => group.toString())
+        .toList(growable: false);
+    if (allGroups.isEmpty) {
+      allGroups =
+          remoteGallerys.map((gallery) => gallery.groupName).toSet().toList(growable: false);
+    }
+
+    galleryDownloadInfos = <int, GalleryDownloadInfo>{
+      for (final GalleryDownloadedData gallery in remoteGallerys)
+        gallery.gid: _buildRemoteGalleryDownloadInfo(gallery, infoByGid[gallery.gid]),
+    };
+
+    update([galleryCountChangedId]);
+    _notifyDownloadActivityChanged();
+  }
+
+  GalleryDownloadInfo _buildRemoteGalleryDownloadInfo(
+    GalleryDownloadedData gallery,
+    Map<String, dynamic>? rawInfo,
+  ) {
+    final GalleryDownloadProgress downloadProgress = _normalizeRemoteProgress(
+      rawInfo?['downloadProgress'] is Map<String, dynamic>
+          ? GalleryDownloadProgress.fromJson(rawInfo!['downloadProgress'] as Map<String, dynamic>)
+          : rawInfo?['downloadProgress'] is Map
+              ? GalleryDownloadProgress.fromJson(
+                  (rawInfo!['downloadProgress'] as Map).cast<String, dynamic>(),
+                )
+              : GalleryDownloadProgress(
+                  curCount: gallery.downloadStatusIndex == DownloadStatus.downloaded.index
+                      ? gallery.pageCount
+                      : 0,
+                  totalCount: gallery.pageCount,
+                  downloadStatus: DownloadStatus.values[gallery.downloadStatusIndex],
+                  hasDownloaded: List<bool>.filled(
+                    gallery.pageCount,
+                    gallery.downloadStatusIndex == DownloadStatus.downloaded.index,
+                    growable: false,
+                  ),
+                ),
+      gallery.pageCount,
+    );
+
+    final List<GalleryImage?> images = List<GalleryImage?>.filled(
+      gallery.pageCount,
+      null,
+      growable: false,
+    );
+    final dynamic rawCover = rawInfo?['coverImage'];
+    if (gallery.pageCount > 0 && rawCover is Map<String, dynamic>) {
+      images[0] = _rewriteRemoteGalleryImage(gallery.gid, 0, GalleryImage.fromJson(rawCover));
+    } else if (gallery.pageCount > 0 && rawCover is Map) {
+      images[0] = _rewriteRemoteGalleryImage(
+        gallery.gid,
+        0,
+        GalleryImage.fromJson(rawCover.cast<String, dynamic>()),
+      );
+    }
+
+    final GalleryDownloadSpeedComputer speedComputer = GalleryDownloadSpeedComputer(
+      gallery.pageCount,
+      () => update(['$galleryDownloadSpeedComputerId::${gallery.gid}']),
+    );
+    speedComputer.speed = rawInfo?['speed']?.toString() ?? '0 B/s';
+
+    return GalleryDownloadInfo(
+      thumbnailsCountPerPage: SiteSetting.thumbnailsCountPerPage.value,
+      tasks: <AsyncTask>[],
+      cancelToken: CancelToken(),
+      downloadProgress: downloadProgress,
+      imageHrefs: List<GalleryThumbnail?>.filled(gallery.pageCount, null, growable: false),
+      images: images,
+      preferOriginalImages: List<bool>.filled(
+        gallery.pageCount,
+        gallery.downloadOriginalImage,
+        growable: false,
+      ),
+      legacyReloadKeyHistory: List.generate(gallery.pageCount, (_) => <String>{}, growable: false),
+      legacyReloadTriedWithoutKey: List<bool>.filled(gallery.pageCount, false, growable: false),
+      speedComputer: speedComputer,
+      priority: rawInfo?['priority'] as int? ?? gallery.priority,
+      sortOrder: rawInfo?['sortOrder'] as int? ?? gallery.sortOrder,
+      group: rawInfo?['group']?.toString() ?? gallery.groupName,
+      mpvImageKeys: List<String?>.filled(gallery.pageCount, null, growable: false),
+      mpvSkipServerIdentifiers: List<String?>.filled(gallery.pageCount, null, growable: false),
+    );
+  }
+
+  GalleryDownloadProgress _normalizeRemoteProgress(
+    GalleryDownloadProgress progress,
+    int pageCount,
+  ) {
+    final List<bool> hasDownloaded = List<bool>.generate(pageCount, (index) {
+      if (index < progress.hasDownloaded.length) {
+        return progress.hasDownloaded[index];
+      }
+      return progress.downloadStatus == DownloadStatus.downloaded;
+    }, growable: false);
+
+    return GalleryDownloadProgress(
+      curCount: progress.curCount.clamp(0, pageCount),
+      totalCount: pageCount,
+      downloadStatus: progress.downloadStatus,
+      hasDownloaded: hasDownloaded,
+    );
+  }
+
+  GalleryImage _rewriteRemoteGalleryImage(int gid, int index, GalleryImage image) {
+    return image.copyWith(
+      url: rpcRequest.buildDownloadedGalleryImageUrl(gid: gid, index: index),
+      path: null,
+    );
+  }
+
   bool containGallery(int gid) => galleryDownloadInfos.containsKey(gid);
 
   Future<void> downloadGallery(GalleryDownloadedData gallery, {bool resume = false}) async {
+    if (_skipRemoteMutation('downloadGallery')) {
+      return;
+    }
+
     GalleryDownloadedData targetGallery = gallery;
     if (!resume && gallery.downloadStatusIndex != DownloadStatus.downloading.index) {
       targetGallery = gallery.copyWith(downloadStatusIndex: DownloadStatus.downloading.index);
@@ -219,6 +456,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> pauseAllDownloadGallery() async {
+    if (_skipRemoteMutation('pauseAllDownloadGallery')) {
+      return;
+    }
+
     await Future.wait(gallerys.map(pauseDownloadGallery).toList());
   }
 
@@ -230,6 +471,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> pauseDownloadGallery(GalleryDownloadedData gallery) async {
+    if (_skipRemoteMutation('pauseDownloadGallery')) {
+      return;
+    }
+
     GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
     GalleryDownloadProgress downloadProgress = galleryDownloadInfo.downloadProgress;
 
@@ -271,6 +516,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> resumeAllDownloadGallery() async {
+    if (_skipRemoteMutation('resumeAllDownloadGallery')) {
+      return;
+    }
+
     await Future.wait(gallerys.map(resumeDownloadGallery).toList());
   }
 
@@ -282,6 +531,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> resumeDownloadGallery(GalleryDownloadedData gallery) async {
+    if (_skipRemoteMutation('resumeDownloadGallery')) {
+      return;
+    }
+
     GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
     GalleryDownloadProgress downloadProgress = galleryDownloadInfo.downloadProgress;
 
@@ -328,6 +581,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> deleteGallery(GalleryDownloadedData gallery, {bool deleteImages = true}) async {
+    if (_skipRemoteMutation('deleteGallery')) {
+      return;
+    }
+
     await pauseDownloadGallery(gallery);
 
     log.info('Delete download gallery: ${gallery.title}, deleteImages:$deleteImages');
@@ -438,6 +695,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> reDownloadGallery(GalleryDownloadedData gallery) async {
+    if (_skipRemoteMutation('reDownloadGallery')) {
+      return;
+    }
+
     log.info('Re-download gallery: ${gallery.gid}');
 
     await deleteGallery(gallery);
@@ -446,6 +707,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> reDownloadImage(int gid, int serialNo) async {
+    if (_skipRemoteMutation('reDownloadImage')) {
+      return;
+    }
+
     GalleryDownloadedData? gallery = gallerys.singleWhereOrNull((g) => g.gid == gid);
     GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gid];
     GalleryImage? image = galleryDownloadInfo?.images[serialNo];
@@ -475,6 +740,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> assignPriority(GalleryDownloadedData gallery, int priority) async {
+    if (_skipRemoteMutation('assignPriority')) {
+      return;
+    }
+
     if (priority == galleryDownloadInfos[gallery.gid]?.priority) {
       return;
     }
@@ -505,6 +774,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<bool> updateGroup(GalleryDownloadedData gallery, String group) async {
+    if (_skipRemoteMutation('updateGroup')) {
+      return false;
+    }
+
     galleryDownloadInfos[gallery.gid]?.group = group;
 
     if (!allGroups.contains(group) && !await _addGroup(group)) {
@@ -519,6 +792,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> renameGroup(String oldGroup, String newGroup) async {
+    if (_skipRemoteMutation('renameGroup')) {
+      return;
+    }
+
     List<GalleryDownloadedData> galleryDownloadedDatas =
         gallerys.where((g) => galleryDownloadInfos[g.gid]!.group == oldGroup).toList();
 
@@ -542,10 +819,18 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> deleteGroup(String group) {
+    if (_skipRemoteMutation('deleteGroup')) {
+      return Future.value();
+    }
+
     return _deleteGroup(group);
   }
 
   Future<void> updateGalleryOrder(List<GalleryDownloadedData> gallerys) async {
+    if (_skipRemoteMutation('updateGalleryOrder')) {
+      return;
+    }
+
     await appDb.transaction(() async {
       for (GalleryDownloadedData gallery in gallerys) {
         await _updateGalleryInDatabase(
@@ -560,6 +845,10 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> updateGroupOrder(int beforeIndex, int afterIndex) async {
+    if (_skipRemoteMutation('updateGroupOrder')) {
+      return;
+    }
+
     if (afterIndex == allGroups.length - 1) {
       allGroups.add(allGroups.removeAt(beforeIndex));
     } else {

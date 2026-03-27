@@ -1,18 +1,24 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:jhentai/database/dao/gallery_history_dao.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/extension/list_extension.dart';
 import 'package:jhentai/model/gallery_history_model.dart';
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/storage_service.dart';
 
 HistoryService historyService = HistoryService();
 
 class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   static const String historyUpdateId = 'historyUpdateId';
+  static const String _webHistoryStorageKey = 'web_gallery_history_v2';
 
   static const int pageSize = 100;
+
+  @override
+  List<JHLifeCircleBean> get initDependencies => [storageService];
 
   @override
   Future<void> doInitBean() async {}
@@ -21,11 +27,30 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
   Future<void> doAfterBeanReady() async {}
 
   Future<int> getPageCount() async {
+    if (kIsWeb) {
+      final int totalCount = (await _readWebHistories()).length;
+      return totalCount == 0 ? 0 : (totalCount - 1) ~/ pageSize + 1;
+    }
+
     int totalCount = await GalleryHistoryDao.selectTotalCount();
     return totalCount == 0 ? 0 : (totalCount - 1) ~/ pageSize + 1;
   }
 
   Future<List<GalleryHistoryModel>> getByPageIndex(int pageIndex) async {
+    if (kIsWeb) {
+      final List<GalleryHistoryV2Data> histories = await _readWebHistories();
+      final int start = pageIndex * pageSize;
+      if (start >= histories.length) {
+        return <GalleryHistoryModel>[];
+      }
+
+      final int end = (start + pageSize) > histories.length ? histories.length : start + pageSize;
+      return histories
+          .sublist(start, end)
+          .map<GalleryHistoryModel>((h) => GalleryHistoryModel.fromJson(jsonDecode(h.jsonBody)))
+          .toList();
+    }
+
     List<GalleryHistoryV2Data> historys =
         await GalleryHistoryDao.selectByPageIndex(pageIndex, pageSize);
     return historys
@@ -34,6 +59,11 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
   }
 
   Future<List<GalleryHistoryV2Data>> getLatest10000RawHistory() async {
+    if (kIsWeb) {
+      final List<GalleryHistoryV2Data> histories = await _readWebHistories();
+      return histories.length <= 10000 ? histories : histories.sublist(0, 10000);
+    }
+
     return appDb.managers.galleryHistoryV2
         .orderBy((o) => o.lastReadTime.desc() & o.gid.desc())
         .limit(10000)
@@ -44,6 +74,19 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
     log.trace('Record history: ${gallery.galleryUrl.gid}');
 
     try {
+      if (kIsWeb) {
+        final List<GalleryHistoryV2Data> histories = await _readWebHistories();
+        final GalleryHistoryV2Data newHistory = GalleryHistoryV2Data(
+          gid: gallery.galleryUrl.gid,
+          jsonBody: jsonEncode(gallery),
+          lastReadTime: DateTime.now().toString(),
+        );
+        histories.removeWhere((history) => history.gid == newHistory.gid);
+        histories.add(newHistory);
+        await _writeWebHistories(histories);
+        return;
+      }
+
       await GalleryHistoryDao.replaceHistory(
         GalleryHistoryV2Data(
           gid: gallery.galleryUrl.gid,
@@ -60,6 +103,18 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
     log.trace('Batch record history, size: ${gallerys.length}');
 
     try {
+      if (kIsWeb) {
+        final Map<int, GalleryHistoryV2Data> merged = {
+          for (final GalleryHistoryV2Data history in await _readWebHistories())
+            history.gid: history,
+        };
+        for (final GalleryHistoryV2Data history in gallerys) {
+          merged[history.gid] = history;
+        }
+        await _writeWebHistories(merged.values.toList());
+        return;
+      }
+
       for (List<GalleryHistoryV2Data> partition in gallerys.partition(2000)) {
         await GalleryHistoryDao.batchReplaceHistory(partition);
         await Future.delayed(const Duration(milliseconds: 200));
@@ -72,11 +127,69 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
   Future<bool> delete(int gid) async {
     log.info('Delete history: $gid');
 
+    if (kIsWeb) {
+      final List<GalleryHistoryV2Data> histories = await _readWebHistories();
+      final int before = histories.length;
+      histories.removeWhere((history) => history.gid == gid);
+      await _writeWebHistories(histories);
+      return histories.length != before;
+    }
+
     return await GalleryHistoryDao.deleteHistory(gid) > 0;
   }
 
   Future<bool> deleteAll() async {
     log.info('Delete all historys');
+
+    if (kIsWeb) {
+      await storageService.remove(_webHistoryStorageKey);
+      return true;
+    }
+
     return await GalleryHistoryDao.deleteAllHistory() > 0;
+  }
+
+  Future<List<GalleryHistoryV2Data>> _readWebHistories() async {
+    final List<dynamic>? rawHistories = storageService.read<List<dynamic>>(_webHistoryStorageKey);
+    if (rawHistories == null) {
+      return <GalleryHistoryV2Data>[];
+    }
+
+    final List<GalleryHistoryV2Data> histories = rawHistories
+        .whereType<Map>()
+        .map((rawHistory) => rawHistory.map((key, value) => MapEntry(key.toString(), value)))
+        .map(
+          (rawHistory) => GalleryHistoryV2Data(
+            gid: rawHistory['gid'] as int,
+            jsonBody: rawHistory['jsonBody'] as String,
+            lastReadTime: rawHistory['lastReadTime'] as String,
+          ),
+        )
+        .toList();
+
+    histories.sort((a, b) {
+      final int timeCompare = b.lastReadTime.compareTo(a.lastReadTime);
+      return timeCompare != 0 ? timeCompare : b.gid.compareTo(a.gid);
+    });
+
+    return histories;
+  }
+
+  Future<void> _writeWebHistories(List<GalleryHistoryV2Data> histories) async {
+    histories.sort((a, b) {
+      final int timeCompare = b.lastReadTime.compareTo(a.lastReadTime);
+      return timeCompare != 0 ? timeCompare : b.gid.compareTo(a.gid);
+    });
+
+    await storageService.write(
+      _webHistoryStorageKey,
+      histories
+          .map((history) => {
+                'gid': history.gid,
+                'jsonBody': history.jsonBody,
+                'lastReadTime': history.lastReadTime,
+              })
+          .toList(),
+    );
   }
 }

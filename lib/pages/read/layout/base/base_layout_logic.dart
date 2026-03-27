@@ -174,11 +174,14 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
   }
 
   void showBottomMenuInLocalMode(int index, BuildContext context) {
-    if (galleryDownloadService
-            .galleryDownloadInfos[readPageState.readPageInfo.gid]?.images[index]?.downloadStatus !=
-        DownloadStatus.downloaded) {
+    final GalleryImage? image =
+        galleryDownloadService.galleryDownloadInfos[readPageState.readPageInfo.gid]?.images[index];
+
+    if (image?.downloadStatus != DownloadStatus.downloaded) {
       return;
     }
+
+    final bool hasLocalPath = image?.path != null;
 
     showCupertinoModalPopup(
       context: context,
@@ -188,14 +191,14 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
             child: Text('share'.tr),
             onPressed: () {
               backRoute();
-              shareLocalImage(index);
+              hasLocalPath ? shareLocalImage(index) : shareOnlineImage(index);
             },
           ),
           CupertinoActionSheetAction(
             child: Text('saveToGallery'.tr),
             onPressed: () {
               backRoute();
-              saveLocalImage(index);
+              hasLocalPath ? saveLocalImage(index) : saveOnlineImage(index);
             },
           ),
           CupertinoActionSheetAction(
@@ -205,13 +208,14 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
               await blockImageByHash(index, isLocal: true);
             },
           ),
-          CupertinoActionSheetAction(
-            child: Text('reDownload'.tr),
-            onPressed: () {
-              backRoute();
-              galleryDownloadService.reDownloadImage(readPageState.readPageInfo.gid!, index);
-            },
-          ),
+          if (hasLocalPath)
+            CupertinoActionSheetAction(
+              child: Text('reDownload'.tr),
+              onPressed: () {
+                backRoute();
+                galleryDownloadService.reDownloadImage(readPageState.readPageInfo.gid!, index);
+              },
+            ),
         ],
         cancelButton: CupertinoActionSheetAction(onPressed: backRoute, child: Text('cancel'.tr)),
       ),
@@ -254,6 +258,11 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
   }
 
   void shareLocalImage(int index) {
+    if (readPageState.images[index]?.path == null) {
+      shareOnlineImage(index);
+      return;
+    }
+
     if (GetPlatform.isDesktop) {
       FlutterClipboard.copy(readPageState.images[index]!.url)
           .then((_) => toast('hasCopiedToClipboard'.tr));
@@ -403,6 +412,11 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
   }
 
   void saveLocalImage(int index) {
+    if (readPageState.images[index]?.path == null) {
+      saveOnlineImage(index);
+      return;
+    }
+
     String filePath = GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
       galleryDownloadService
           .galleryDownloadInfos[readPageState.readPageInfo.gid!]!.images[index]!.path!,

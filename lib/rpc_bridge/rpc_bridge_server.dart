@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:jhentai/consts/eh_consts.dart';
 import 'package:jhentai/consts/rpc_consts.dart';
+import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
 
 const String rpcBridgeServerName = 'JHenTai RPC Bridge';
 const String rpcBridgeServerVersion = '0.1.0';
@@ -50,6 +52,8 @@ class RpcBridgeServer {
         RPCCapabilities.gallerySearch,
         RPCCapabilities.galleryDetail,
         RPCCapabilities.galleryImage,
+        RPCCapabilities.downloadGalleryList,
+        RPCCapabilities.downloadGalleryRead,
         RPCCapabilities.newsEvent,
         'system.reloadCertificates',
         RPCMethods.authSetCookie,
@@ -124,7 +128,37 @@ class RpcBridgeServer {
   Future<void> _handleRequest(HttpRequest request) async {
     _applyCorsHeaders(request.response);
 
-    if (request.method == 'OPTIONS' && request.uri.path == RPCConsts.rpcEndpoint) {
+    if (request.method == 'GET' && request.uri.path == RPCConsts.rpcMediaEndpoint) {
+      if (!_isAuthorized(request)) {
+        request.response
+          ..statusCode = HttpStatus.unauthorized
+          ..write('Unauthorized');
+        await request.response.close();
+        return;
+      }
+
+      await _handleMediaProxy(request);
+      return;
+    }
+
+    if (request.method == 'GET' &&
+        request.uri.path == RPCConsts.rpcDownloadedGalleryImageEndpoint) {
+      if (!_isAuthorized(request)) {
+        request.response
+          ..statusCode = HttpStatus.unauthorized
+          ..write('Unauthorized');
+        await request.response.close();
+        return;
+      }
+
+      await _handleDownloadedGalleryImage(request);
+      return;
+    }
+
+    if (request.method == 'OPTIONS' &&
+        (request.uri.path == RPCConsts.rpcEndpoint ||
+            request.uri.path == RPCConsts.rpcMediaEndpoint ||
+            request.uri.path == RPCConsts.rpcDownloadedGalleryImageEndpoint)) {
       request.response.statusCode = HttpStatus.noContent;
       await request.response.close();
       return;
@@ -207,7 +241,7 @@ class RpcBridgeServer {
   void _applyCorsHeaders(HttpResponse response) {
     response.headers
       ..set(HttpHeaders.accessControlAllowOriginHeader, '*')
-      ..set(HttpHeaders.accessControlAllowMethodsHeader, 'POST, OPTIONS')
+      ..set(HttpHeaders.accessControlAllowMethodsHeader, 'GET, POST, OPTIONS')
       ..set(
         HttpHeaders.accessControlAllowHeadersHeader,
         'Content-Type, Authorization',
@@ -255,6 +289,10 @@ class RpcBridgeServer {
         return _handleGalleryMetadatas(params);
       case RPCMethods.galleryImagePage:
         return _handleGalleryImagePage(params);
+      case RPCMethods.downloadGalleryList:
+        return _handleDownloadGalleryList();
+      case RPCMethods.downloadGalleryImages:
+        return _handleDownloadGalleryImages(params);
       case 'system.reloadCertificates':
         return _handleReloadCertificates();
       case RPCMethods.authSetCookie:
@@ -359,6 +397,52 @@ class RpcBridgeServer {
     return _proxyGet(_normalizeUrl(href), queryParameters: query);
   }
 
+  Future<Map<String, dynamic>> _handleDownloadGalleryList() async {
+    final List<Map<String, dynamic>> infos = galleryDownloadService.gallerys.map((gallery) {
+      final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gallery.gid];
+      final GalleryImage? coverImage =
+          info != null && info.images.isNotEmpty ? info.images.first : null;
+
+      return <String, dynamic>{
+        'gid': gallery.gid,
+        'group': info?.group ?? gallery.groupName,
+        'priority': info?.priority ?? gallery.priority,
+        'sortOrder': info?.sortOrder ?? gallery.sortOrder,
+        'downloadProgress': info?.downloadProgress.toJson(),
+        'coverImage': coverImage?.toJson(),
+        'speed': info?.speedComputer.speed ?? '0 B/s',
+      };
+    }).toList(growable: false);
+
+    return <String, dynamic>{
+      'groups': List<String>.from(galleryDownloadService.allGroups),
+      'galleries': galleryDownloadService.gallerys
+          .map((gallery) => gallery.toJson())
+          .toList(growable: false),
+      'infos': infos,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryImages(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gid];
+
+    if (info == null) {
+      throw RPCBridgeException(
+        code: -32040,
+        message: 'Downloaded gallery not found: $gid',
+      );
+    }
+
+    return <String, dynamic>{
+      'gid': gid,
+      'downloadProgress': info.downloadProgress.toJson(),
+      'images': info.images.map((GalleryImage? image) => image?.toJson()).toList(growable: false),
+    };
+  }
+
   Future<Map<String, dynamic>> _handleReloadCertificates() async {
     if (!tlsEnabled) {
       throw RPCBridgeException(
@@ -452,6 +536,102 @@ class RpcBridgeServer {
         },
       );
     }
+  }
+
+  Future<void> _handleMediaProxy(HttpRequest request) async {
+    final String rawUrl = request.uri.queryParameters['url']?.trim() ?? '';
+    if (rawUrl.isEmpty) {
+      request.response
+        ..statusCode = HttpStatus.badRequest
+        ..write('Missing url');
+      await request.response.close();
+      return;
+    }
+
+    final String url = _normalizeUrl(rawUrl);
+
+    try {
+      final Response<ResponseBody> upstream = await _dio.get<ResponseBody>(
+        url,
+        options: Options(
+          responseType: ResponseType.stream,
+          followRedirects: true,
+          headers: <String, dynamic>{
+            if (cookieHeader.trim().isNotEmpty) HttpHeaders.cookieHeader: cookieHeader,
+          },
+        ),
+      );
+
+      final ResponseBody body = upstream.data!;
+      request.response.statusCode = upstream.statusCode ?? HttpStatus.ok;
+
+      final String? contentType = body.headers[HttpHeaders.contentTypeHeader]?.first;
+      if (contentType != null && contentType.isNotEmpty) {
+        request.response.headers.set(HttpHeaders.contentTypeHeader, contentType);
+      }
+
+      final String? cacheControl = body.headers[HttpHeaders.cacheControlHeader]?.first;
+      if (cacheControl != null && cacheControl.isNotEmpty) {
+        request.response.headers.set(HttpHeaders.cacheControlHeader, cacheControl);
+      }
+
+      final String? contentLength = body.headers[HttpHeaders.contentLengthHeader]?.first;
+      if (contentLength != null && contentLength.isNotEmpty) {
+        request.response.headers.set(HttpHeaders.contentLengthHeader, contentLength);
+      }
+
+      await request.response.addStream(body.stream);
+      await request.response.close();
+    } on DioException catch (e) {
+      request.response
+        ..statusCode = e.response?.statusCode ?? HttpStatus.badGateway
+        ..write('Upstream media request failed');
+      await request.response.close();
+    }
+  }
+
+  Future<void> _handleDownloadedGalleryImage(HttpRequest request) async {
+    final int gid = _asInt(request.uri.queryParameters['gid']);
+    final int index = _asInt(request.uri.queryParameters['index'], fallback: -1);
+    final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gid];
+
+    if (info == null || index < 0 || index >= info.images.length) {
+      request.response
+        ..statusCode = HttpStatus.notFound
+        ..write('Downloaded image not found');
+      await request.response.close();
+      return;
+    }
+
+    final GalleryImage? image = info.images[index];
+    if (image?.path == null) {
+      request.response
+        ..statusCode = HttpStatus.notFound
+        ..write('Downloaded image path missing');
+      await request.response.close();
+      return;
+    }
+
+    final File file = File(
+      GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(image!.path!),
+    );
+
+    if (!file.existsSync()) {
+      request.response
+        ..statusCode = HttpStatus.notFound
+        ..write('Downloaded image file missing');
+      await request.response.close();
+      return;
+    }
+
+    final ContentType contentType = _guessImageContentType(file.path);
+    request.response
+      ..statusCode = HttpStatus.ok
+      ..headers.contentType = contentType
+      ..headers.set(HttpHeaders.contentLengthHeader, file.lengthSync().toString());
+
+    await request.response.addStream(file.openRead());
+    await request.response.close();
   }
 
   Future<void> _writeRpcSuccess(
@@ -574,6 +754,24 @@ class RpcBridgeServer {
     }
 
     return Uri.parse(EHConsts.EHIndex).resolve(url).toString();
+  }
+
+  static ContentType _guessImageContentType(String path) {
+    final String normalized = path.toLowerCase();
+    if (normalized.endsWith('.png')) {
+      return ContentType('image', 'png');
+    }
+    if (normalized.endsWith('.webp')) {
+      return ContentType('image', 'webp');
+    }
+    if (normalized.endsWith('.gif')) {
+      return ContentType('image', 'gif');
+    }
+    if (normalized.endsWith('.bmp')) {
+      return ContentType('image', 'bmp');
+    }
+
+    return ContentType('image', 'jpeg');
   }
 }
 

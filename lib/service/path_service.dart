@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -35,6 +36,15 @@ class PathService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   @override
   Future<void> doInitBean() async {
+    if (kIsWeb) {
+      tempDir = Directory('/web-temp');
+      appDocDir = Directory('/web-documents');
+      appSupportDir = Directory('/web-support');
+      externalStorageDir = null;
+      systemDownloadDir = Directory('/web-downloads');
+      return;
+    }
+
     tempDir = await getTemporaryDirectory();
     appDocDir = await _tryGetDirectory(getApplicationDocumentsDirectory);
     appSupportDir = await _tryGetDirectory(getApplicationSupportDirectory);

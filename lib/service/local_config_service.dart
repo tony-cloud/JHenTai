@@ -164,8 +164,7 @@ class LocalConfigService with JHLifeCircleBeanErrorCatch implements JHLifeCircle
     if (kIsWeb) {
       final String prefix = '${configKey.key}::';
       return _prefs().then((prefs) async {
-        final List<String> keys =
-            prefs.getKeys().where((key) => key.startsWith(prefix)).toList();
+        final List<String> keys = prefs.getKeys().where((key) => key.startsWith(prefix)).toList();
         for (final String key in keys) {
           await prefs.remove(key);
         }

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get_utils/src/platform/platform.dart';
 import 'package:http_proxy/http_proxy.dart';
 import 'package:jhentai/service/log.dart';
@@ -9,6 +9,10 @@ import 'package:jhentai/setting/network_setting.dart';
 
 Future<String> getSystemProxyAddress() async {
   String systemProxyAddress = '';
+
+  if (kIsWeb) {
+    return systemProxyAddress;
+  }
 
   if (GetPlatform.isDesktop) {
     SystemNetworkProxy.init();

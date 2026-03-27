@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:path/path.dart';
@@ -16,8 +17,12 @@ class StorageService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
 
   @override
   Future<void> doInitBean() async {
-    _migrateOldConfigFile();
-    _storage = GetStorage(storageFileName, pathService.getVisibleDir().path);
+    if (!kIsWeb) {
+      _migrateOldConfigFile();
+      _storage = GetStorage(storageFileName, pathService.getVisibleDir().path);
+    } else {
+      _storage = GetStorage(storageFileName);
+    }
     await _storage.initStorage;
   }
 

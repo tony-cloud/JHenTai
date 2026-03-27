@@ -273,13 +273,24 @@ class DownloadSearchLogic extends GetxController with UpdateGlobalGalleryStatusL
       return;
     }
 
-    if (readSetting.useThirdPartyViewer.isTrue && readSetting.thirdPartyViewerPath.value != null) {
+    final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gallery.gid];
+    if (galleryDownloadService.usesRemoteRpcData &&
+        info?.downloadProgress.downloadStatus != DownloadStatus.downloaded) {
+      return;
+    }
+
+    if (!galleryDownloadService.usesRemoteRpcData &&
+        readSetting.useThirdPartyViewer.isTrue &&
+        readSetting.thirdPartyViewerPath.value != null) {
       openThirdPartyViewer(
           galleryDownloadService.computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
     } else {
       String? string = await localConfigService.read(
           configKey: ConfigEnum.readIndexRecord, subConfigKey: gallery.gid.toString());
       int readIndexRecord = (string == null ? 0 : (int.tryParse(string) ?? 0));
+      final List<GalleryImage>? images = galleryDownloadService.usesRemoteRpcData
+          ? await galleryDownloadService.fetchRemoteGalleryImages(gallery.gid)
+          : null;
 
       toRoute(
         Routes.read,
@@ -292,6 +303,7 @@ class DownloadSearchLogic extends GetxController with UpdateGlobalGalleryStatusL
           initialIndex: readIndexRecord,
           readProgressRecordStorageKey: gallery.gid.toString(),
           pageCount: gallery.pageCount,
+          images: images,
           useSuperResolution:
               superResolutionService.get(gallery.gid, SuperResolutionType.gallery) != null,
         ),

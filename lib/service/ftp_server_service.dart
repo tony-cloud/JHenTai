@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:jhentai/ftp_server/ftp_server.dart';
 import 'package:jhentai/ftp_server/file_operations/physical_file_operations.dart';
 import 'package:jhentai/ftp_server/server_type.dart';
@@ -44,6 +45,13 @@ class FtpServerService extends GetxService
   @override
   Future<void> doInitBean() async {
     Get.put(this, permanent: true);
+
+    if (kIsWeb) {
+      if (ftpServerSetting.enableServer.isTrue) {
+        await ftpServerSetting.saveEnableServer(false);
+      }
+      return;
+    }
 
     _enableWorker = ever(ftpServerSetting.enableServer, (_) => _syncServerState());
     _restartWorker = everAll(

@@ -51,6 +51,19 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     return request(method: RPCMethods.systemCapabilities);
   }
 
+  Future<Map<String, dynamic>> requestDownloadGalleryList() {
+    return request(method: RPCMethods.downloadGalleryList);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryImages({required int gid}) {
+    return request(
+      method: RPCMethods.downloadGalleryImages,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> requestSetCookie({required String cookie}) {
     return request(
       method: RPCMethods.authSetCookie,
@@ -128,6 +141,20 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     }
 
     return '$address${RPCConsts.rpcEndpoint}';
+  }
+
+  String buildDownloadedGalleryImageUrl({required int gid, required int index}) {
+    String address = rpcSetting.serverAddress.value;
+
+    while (address.endsWith('/')) {
+      address = address.substring(0, address.length - 1);
+    }
+
+    return Uri.parse('$address${RPCConsts.rpcDownloadedGalleryImageEndpoint}')
+        .replace(queryParameters: <String, String>{
+      'gid': gid.toString(),
+      'index': index.toString(),
+    }).toString();
   }
 
   int _nextRequestId() {

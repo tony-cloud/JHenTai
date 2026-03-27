@@ -1307,11 +1307,24 @@ class DetailsPageLogic extends GetxController
     GalleryDownloadedData gallery =
         galleryDownloadService.gallerys.firstWhere((g) => g.gid == state.galleryUrl.gid);
 
-    if (readSetting.useThirdPartyViewer.isTrue && readSetting.thirdPartyViewerPath.value != null) {
+    final GalleryDownloadInfo? galleryDownloadInfo =
+        galleryDownloadService.galleryDownloadInfos[gallery.gid];
+    if (galleryDownloadService.usesRemoteRpcData &&
+        galleryDownloadInfo?.downloadProgress.downloadStatus != DownloadStatus.downloaded) {
+      return;
+    }
+
+    if (!galleryDownloadService.usesRemoteRpcData &&
+        readSetting.useThirdPartyViewer.isTrue &&
+        readSetting.thirdPartyViewerPath.value != null) {
       openThirdPartyViewer(
           galleryDownloadService.computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
       return;
     }
+
+    final List<GalleryImage>? images = galleryDownloadService.usesRemoteRpcData
+        ? await galleryDownloadService.fetchRemoteGalleryImages(gallery.gid)
+        : null;
 
     toRoute(
       Routes.read,
@@ -1324,6 +1337,7 @@ class DetailsPageLogic extends GetxController
         initialIndex: forceIndex ?? await getReadIndexRecord(),
         readProgressRecordStorageKey: state.galleryUrl.gid.toString(),
         pageCount: gallery.pageCount,
+        images: images,
         useSuperResolution:
             superResolutionService.get(state.galleryUrl.gid, SuperResolutionType.gallery) != null,
       ),
