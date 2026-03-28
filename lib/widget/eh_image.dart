@@ -127,6 +127,7 @@ class EHImage extends StatelessWidget {
   }
 
   Widget buildNetworkImage(BuildContext context) {
+    final int? effectiveMaxBytes = kIsWeb ? null : maxBytes;
     final String rawUrl = _replaceEXUrl(galleryImage.url);
     final RPCMediaProxyResult proxy = RPCMediaProxyUtil.build(rawUrl);
     final DomainFrontingResult fronting =
@@ -184,11 +185,13 @@ class EHImage extends StatelessWidget {
             return forceFadeIn || !state.wasSynchronouslyLoaded ? child.fadeInWidget() : child;
         }
       },
-      maxBytes: maxBytes,
+      maxBytes: effectiveMaxBytes,
     );
   }
 
   Widget buildFileImage(BuildContext context) {
+    final int? effectiveMaxBytes = kIsWeb ? null : maxBytes;
+
     if (memoryBytes != null) {
       return ExtendedImage.memory(
         memoryBytes!,
@@ -237,7 +240,7 @@ class EHImage extends StatelessWidget {
               );
           }
         },
-        maxBytes: maxBytes,
+        maxBytes: effectiveMaxBytes,
         filterQuality: FilterQuality.medium,
       );
     }
@@ -251,6 +254,10 @@ class EHImage extends StatelessWidget {
     }
 
     if (kIsWeb) {
+      if (galleryImage.url.isNotEmpty) {
+        return buildNetworkImage(context);
+      }
+
       return const Center(
         child: Icon(Icons.desktop_access_disabled),
       );
@@ -309,7 +316,7 @@ class EHImage extends StatelessWidget {
             );
         }
       },
-      maxBytes: maxBytes,
+      maxBytes: effectiveMaxBytes,
       filterQuality: FilterQuality.medium,
     );
   }

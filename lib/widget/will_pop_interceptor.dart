@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -23,10 +21,16 @@ class _WillPopInterceptorState extends State<WillPopInterceptor> {
 
   @override
   Widget build(BuildContext context) {
+    final bool interceptSystemBack = GetPlatform.isAndroid;
+
     return PopScope(
-      canPop: Platform.isAndroid ? false : true,
+      canPop: !interceptSystemBack,
       onPopInvokedWithResult: (bool didPop, FormData? result) async {
         if (didPop) {
+          return;
+        }
+
+        if (!interceptSystemBack) {
           return;
         }
 

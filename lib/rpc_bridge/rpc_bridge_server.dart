@@ -9,6 +9,7 @@ import 'package:jhentai/database/dao/gallery_history_dao.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/setting/download_setting.dart';
 import 'package:path/path.dart' as path;
 
@@ -430,15 +431,19 @@ class RpcBridgeServer {
   Future<Map<String, dynamic>> _handleDownloadGalleryList() async {
     final List<Map<String, dynamic>> infos = galleryDownloadService.gallerys.map((gallery) {
       final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gallery.gid];
-      final GalleryImage? coverImage =
-          info != null && info.images.isNotEmpty ? info.images.first : null;
+      final GalleryImage? coverImage = _resolveCoverImage(gid: gallery.gid, info: info);
+      final GalleryDownloadProgress progress = _resolveDownloadProgress(
+        gid: gallery.gid,
+        info: info,
+        pageCount: gallery.pageCount,
+      );
 
       return <String, dynamic>{
         'gid': gallery.gid,
         'group': info?.group ?? gallery.groupName,
         'priority': info?.priority ?? gallery.priority,
         'sortOrder': info?.sortOrder ?? gallery.sortOrder,
-        'downloadProgress': info?.downloadProgress.toJson(),
+        'downloadProgress': progress.toJson(),
         'coverImage': coverImage?.toJson(),
         'speed': info?.speedComputer.speed ?? '0 B/s',
       };
@@ -458,19 +463,106 @@ class RpcBridgeServer {
   ) async {
     final int gid = _asInt(params['gid']);
     final GalleryDownloadInfo? info = galleryDownloadService.galleryDownloadInfos[gid];
+    GalleryDownloadedData? gallery;
+    for (final GalleryDownloadedData item in galleryDownloadService.gallerys) {
+      if (item.gid == gid) {
+        gallery = item;
+        break;
+      }
+    }
 
-    if (info == null) {
+    if (info == null && gallery == null) {
       throw RPCBridgeException(
         code: -32040,
         message: 'Downloaded gallery not found: $gid',
       );
     }
 
+    final int pageCount = gallery?.pageCount ?? info!.images.length;
+    final List<Map<String, dynamic>?> images =
+        List<Map<String, dynamic>?>.generate(pageCount, (index) {
+      final GalleryImage? memoryImage =
+          (info != null && index < info.images.length) ? info.images[index] : null;
+      final GalleryImage? image = memoryImage ?? _resolveImageFromDisk(gid: gid, index: index);
+      return image?.toJson();
+    }, growable: false);
+
+    final GalleryDownloadProgress progress = _resolveDownloadProgress(
+      gid: gid,
+      info: info,
+      pageCount: pageCount,
+      resolvedImages: images,
+    );
+
     return <String, dynamic>{
       'gid': gid,
-      'downloadProgress': info.downloadProgress.toJson(),
-      'images': info.images.map((GalleryImage? image) => image?.toJson()).toList(growable: false),
+      'downloadProgress': progress.toJson(),
+      'images': images,
     };
+  }
+
+  GalleryImage? _resolveCoverImage({
+    required int gid,
+    required GalleryDownloadInfo? info,
+  }) {
+    if (info != null) {
+      for (final GalleryImage? image in info.images) {
+        if (image != null) {
+          return image;
+        }
+      }
+    }
+
+    return _resolveImageFromDisk(gid: gid, index: 0);
+  }
+
+  GalleryDownloadProgress _resolveDownloadProgress({
+    required int gid,
+    required GalleryDownloadInfo? info,
+    required int pageCount,
+    List<Map<String, dynamic>?>? resolvedImages,
+  }) {
+    if (info != null) {
+      return info.downloadProgress;
+    }
+
+    final List<bool> hasDownloaded = List<bool>.generate(pageCount, (index) {
+      if (resolvedImages != null) {
+        return resolvedImages[index] != null;
+      }
+
+      return _resolveImageFromDisk(gid: gid, index: index) != null;
+    }, growable: false);
+
+    final int curCount = hasDownloaded.where((value) => value).length;
+    final DownloadStatus status = curCount == pageCount
+        ? DownloadStatus.downloaded
+        : (curCount == 0 ? DownloadStatus.paused : DownloadStatus.downloading);
+
+    return GalleryDownloadProgress(
+      curCount: curCount,
+      totalCount: pageCount,
+      downloadStatus: status,
+      hasDownloaded: hasDownloaded,
+    );
+  }
+
+  GalleryImage? _resolveImageFromDisk({required int gid, required int index}) {
+    final File? file = _resolveByGidAndIndex(gid: gid, index: index);
+    if (file == null || !file.existsSync()) {
+      return null;
+    }
+
+    final String relativePath = path.relative(
+      file.absolute.path,
+      from: pathService.getVisibleDir().path,
+    );
+
+    return GalleryImage(
+      url: '',
+      path: relativePath,
+      downloadStatus: DownloadStatus.downloaded,
+    );
   }
 
   Future<Map<String, dynamic>> _handleHistoryPage(Map<String, dynamic> params) async {
