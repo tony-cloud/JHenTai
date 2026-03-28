@@ -10,8 +10,10 @@ import 'package:jhentai/database/database.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/utils/archive_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
@@ -84,11 +86,28 @@ class TagSearchOrderOptimizationService
     String tag;
     try {
       tag = await retry(
-        () => ehRequest.get(
-          url: releaseUrl,
-          options: Options(followRedirects: false, validateStatus: (status) => status == 302),
-          parser: EHSpiderParser.latestReleaseResponse2Tag,
-        ),
+        () async {
+          if (rpcSetting.enableRpcMode.isTrue) {
+            final Map<String, dynamic> result = await rpcRequest.requestSystemFetchUrl(
+              url: releaseUrl,
+              method: 'GET',
+              headers: <String, String>{
+                HttpHeaders.acceptHeader: '*/*',
+              },
+            );
+
+            return EHSpiderParser.latestReleaseResponse2Tag(
+              _parseRpcHeaders(result['headers']),
+              result['data'],
+            );
+          }
+
+          return ehRequest.get(
+            url: releaseUrl,
+            options: Options(followRedirects: false, validateStatus: (status) => status == 302),
+            parser: EHSpiderParser.latestReleaseResponse2Tag,
+          );
+        },
         maxAttempts: 5,
         onRetry: (error) =>
             log.warning('Fetch tag order optimization data from github failed, retry.'),
@@ -114,19 +133,37 @@ class TagSearchOrderOptimizationService
     /// download tag count metadata
     try {
       await retry(
-        () => ehRequest.download(
-          url:
-              'https://github.com/mokurin000/e-hentai-tag-count/releases/download/$tag/tid_count_tag.csv.gz',
-          path: savePath,
-          receiveTimeout: 10 * 60 * 1000,
-          onReceiveProgress: (count, total) =>
-              downloadProgress.value = byte2String(count.toDouble()),
-        ),
+        () async {
+          final String downloadUrl =
+              'https://github.com/mokurin000/e-hentai-tag-count/releases/download/$tag/tid_count_tag.csv.gz';
+
+          if (rpcSetting.enableRpcMode.isTrue) {
+            final Map<String, dynamic> result = await rpcRequest.requestSystemFetchUrl(
+              url: downloadUrl,
+              expectBinary: true,
+            );
+            final List<int> bytes = _parseRpcBinary(result['data']);
+            if (bytes.isEmpty) {
+              throw Exception('RPC returned empty tag order payload');
+            }
+            await File(savePath).writeAsBytes(bytes, flush: true);
+            downloadProgress.value = byte2String(bytes.length.toDouble());
+            return;
+          }
+
+          await ehRequest.download(
+            url: downloadUrl,
+            path: savePath,
+            receiveTimeout: 10 * 60 * 1000,
+            onReceiveProgress: (count, total) =>
+                downloadProgress.value = byte2String(count.toDouble()),
+          );
+        },
         maxAttempts: 5,
         onRetry: (error) => log.warning('Download tag order optimization data failed, retry.'),
       );
-    } on DioException catch (e) {
-      log.error('Download tag translation data failed after 5 times', e.errorMsg);
+    } on Exception catch (e) {
+      log.error('Download tag translation data failed after 5 times', e.toString());
       loadingState.value = LoadingState.error;
       await localConfigService.write(
           configKey: ConfigEnum.tagSearchOrderOptimizationServiceLoadingState,
@@ -196,6 +233,42 @@ class TagSearchOrderOptimizationService
 
     File(savePath).delete().ignore();
     log.info('Refresh tag order optimization data success');
+  }
+
+  Headers _parseRpcHeaders(dynamic headers) {
+    if (headers is! Map) {
+      return Headers();
+    }
+
+    final Map<String, List<String>> parsed = <String, List<String>>{};
+    headers.forEach((key, value) {
+      final String normalizedKey = key.toString();
+
+      if (value is List) {
+        parsed[normalizedKey] = value.map((e) => e.toString()).toList();
+        return;
+      }
+
+      if (value == null) {
+        return;
+      }
+
+      parsed[normalizedKey] = <String>[value.toString()];
+    });
+
+    return Headers.fromMap(parsed);
+  }
+
+  List<int> _parseRpcBinary(dynamic data) {
+    if (data is List<int>) {
+      return data;
+    }
+
+    if (data is List) {
+      return data.map((e) => e is int ? e : int.parse(e.toString())).toList();
+    }
+
+    return <int>[];
   }
 
   Future<List<TagCountData>> batchSelectTagCount(List<String> namespaceWithKeys) {

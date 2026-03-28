@@ -10,6 +10,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:get/get_utils/get_utils.dart';
+import 'package:jhentai/consts/archive_bot_consts.dart';
 import 'package:jhentai/database/dao/archive_dao.dart';
 import 'package:jhentai/database/dao/gallery_dao.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
@@ -89,7 +90,18 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
 
     try {
       latestVersion = (await retry(
-        () => ehRequest.get(url: url, parser: EHSpiderParser.githubReleasePage2LatestVersion),
+        () async {
+          if (_shouldBypassLegacyNetwork) {
+            final Map<String, dynamic> result = await rpcRequest.requestSystemFetchUrl(url: url);
+
+            return EHSpiderParser.githubReleasePage2LatestVersion(
+              _parseRpcHeaders(result['headers']),
+              result['data'],
+            );
+          }
+
+          return ehRequest.get(url: url, parser: EHSpiderParser.githubReleasePage2LatestVersion);
+        },
         maxAttempts: 3,
       ))
           .trim()
@@ -311,21 +323,40 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
       return;
     }
 
-    if (_shouldBypassLegacyNetwork) {
-      log.trace('Skip checkInArchiveBot in RPC mode');
-      return;
-    }
-
     if (!archiveBotSetting.isReady) {
       return;
     }
 
     try {
-      ArchiveBotResponse response = await archiveBotRequest.requestCheckIn(
-        apiAddress: archiveBotSetting.apiAddress.value,
-        apiKey: archiveBotSetting.apiKey.value!,
-        parser: ArchiveBotResponseParser.commonParse,
-      );
+      final String? baseAddress = archiveBotSetting.useProxyServer.value
+          ? ArchiveBotConsts.proxyServerAddress
+          : archiveBotSetting.apiAddress.value;
+      final String url = '${baseAddress ?? ''}/checkin';
+
+      ArchiveBotResponse response;
+      if (_shouldBypassLegacyNetwork) {
+        final Map<String, dynamic> result = await rpcRequest.requestSystemFetchUrl(
+          url: url,
+          method: 'POST',
+          data: <String, dynamic>{
+            'apikey': archiveBotSetting.apiKey.value,
+          },
+          headers: <String, String>{
+            HttpHeaders.contentTypeHeader: Headers.jsonContentType,
+          },
+        );
+        response = ArchiveBotResponseParser.commonParse(
+          _parseRpcHeaders(result['headers']),
+          result['data'],
+        );
+      } else {
+        response = await archiveBotRequest.requestCheckIn(
+          apiAddress: archiveBotSetting.apiAddress.value,
+          apiKey: archiveBotSetting.apiKey.value!,
+          parser: ArchiveBotResponseParser.commonParse,
+        );
+      }
+
       log.debug('Auto Checkin response: $response');
       if (response.isSuccess) {
         CheckInVO checkInVO = CheckInVO.fromResponse(response.data);
@@ -375,5 +406,29 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
     } catch (e) {
       log.warning('Sync RPC cookie failed', e, true);
     }
+  }
+
+  Headers _parseRpcHeaders(dynamic headers) {
+    if (headers is! Map) {
+      return Headers();
+    }
+
+    final Map<String, List<String>> parsed = <String, List<String>>{};
+    headers.forEach((key, value) {
+      final String normalizedKey = key.toString();
+
+      if (value is List) {
+        parsed[normalizedKey] = value.map((e) => e.toString()).toList();
+        return;
+      }
+
+      if (value == null) {
+        return;
+      }
+
+      parsed[normalizedKey] = <String>[value.toString()];
+    });
+
+    return Headers.fromMap(parsed);
   }
 }

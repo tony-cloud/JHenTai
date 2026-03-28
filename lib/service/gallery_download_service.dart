@@ -451,7 +451,13 @@ class GalleryDownloadService extends GetxController
   bool containGallery(int gid) => galleryDownloadInfos.containsKey(gid);
 
   Future<void> downloadGallery(GalleryDownloadedData gallery, {bool resume = false}) async {
-    if (_skipRemoteMutation('downloadGallery')) {
+    if (usesRemoteRpcData) {
+      if (resume) {
+        await rpcRequest.requestDownloadGalleryResume(gid: gallery.gid);
+      } else {
+        await rpcRequest.requestDownloadGalleryStart(gallery: gallery.toJson());
+      }
+      await refreshRemoteGallerys();
       return;
     }
 
@@ -489,7 +495,9 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> pauseAllDownloadGallery() async {
-    if (_skipRemoteMutation('pauseAllDownloadGallery')) {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadGalleryPauseAll();
+      await refreshRemoteGallerys();
       return;
     }
 
@@ -504,7 +512,9 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> pauseDownloadGallery(GalleryDownloadedData gallery) async {
-    if (_skipRemoteMutation('pauseDownloadGallery')) {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadGalleryPause(gid: gallery.gid);
+      await refreshRemoteGallerys();
       return;
     }
 
@@ -549,7 +559,9 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> resumeAllDownloadGallery() async {
-    if (_skipRemoteMutation('resumeAllDownloadGallery')) {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadGalleryResumeAll();
+      await refreshRemoteGallerys();
       return;
     }
 
@@ -564,7 +576,9 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> resumeDownloadGallery(GalleryDownloadedData gallery) async {
-    if (_skipRemoteMutation('resumeDownloadGallery')) {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadGalleryResume(gid: gallery.gid);
+      await refreshRemoteGallerys();
       return;
     }
 
@@ -614,7 +628,12 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> deleteGallery(GalleryDownloadedData gallery, {bool deleteImages = true}) async {
-    if (_skipRemoteMutation('deleteGallery')) {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadGalleryDelete(
+        gid: gallery.gid,
+        deleteImages: deleteImages,
+      );
+      await refreshRemoteGallerys();
       return;
     }
 
@@ -773,7 +792,12 @@ class GalleryDownloadService extends GetxController
   }
 
   Future<void> assignPriority(GalleryDownloadedData gallery, int priority) async {
-    if (_skipRemoteMutation('assignPriority')) {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadGalleryAssignPriority(
+        gid: gallery.gid,
+        priority: priority,
+      );
+      await refreshRemoteGallerys();
       return;
     }
 

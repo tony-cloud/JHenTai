@@ -51,6 +51,294 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     return request(method: RPCMethods.systemCapabilities);
   }
 
+  Future<Map<String, dynamic>> requestSystemFetchUrl({
+    required String url,
+    String method = 'GET',
+    Map<String, dynamic>? queryParameters,
+    dynamic data,
+    Map<String, String>? headers,
+    bool expectBinary = false,
+  }) {
+    return request(
+      method: RPCMethods.systemFetchUrl,
+      params: <String, dynamic>{
+        'url': url,
+        'method': method,
+        if (queryParameters != null) 'queryParameters': queryParameters,
+        if (data != null) 'data': data,
+        if (headers != null) 'headers': headers,
+        'expectBinary': expectBinary,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestForumUser({required int ipbMemberId}) {
+    return request(
+      method: RPCMethods.forumUser,
+      params: <String, dynamic>{
+        'ipbMemberId': ipbMemberId,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestSettingPage() {
+    return request(method: RPCMethods.settingPage);
+  }
+
+  Future<Map<String, dynamic>> requestFavoritePopup({
+    required int gid,
+    required String token,
+    required String act,
+  }) {
+    return request(
+      method: RPCMethods.favoritePopup,
+      params: <String, dynamic>{
+        'gid': gid,
+        'token': token,
+        'act': act,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestFavoritePage() {
+    return request(method: RPCMethods.favoritePage);
+  }
+
+  Future<Map<String, dynamic>> requestFavoriteSort({required String inlineSet}) {
+    return request(
+      method: RPCMethods.favoriteSort,
+      params: <String, dynamic>{
+        'inlineSet': inlineSet,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestFavoriteAdd({
+    required int gid,
+    required String token,
+    required int favcat,
+    required String note,
+  }) {
+    return request(
+      method: RPCMethods.favoriteAdd,
+      params: <String, dynamic>{
+        'gid': gid,
+        'token': token,
+        'favcat': favcat,
+        'note': note,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestFavoriteRemove({
+    required int gid,
+    required String token,
+  }) {
+    return request(
+      method: RPCMethods.favoriteRemove,
+      params: <String, dynamic>{
+        'gid': gid,
+        'token': token,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestTorrentPage({
+    required int gid,
+    required String token,
+  }) {
+    return request(
+      method: RPCMethods.torrentPage,
+      params: <String, dynamic>{
+        'gid': gid,
+        'token': token,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestMyTagsPage({required int tagSetNo}) {
+    return request(
+      method: RPCMethods.myTagsPage,
+      params: <String, dynamic>{
+        'tagSetNo': tagSetNo,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestMyTagsAdd({
+    required String tag,
+    String? tagColor,
+    required int tagWeight,
+    required bool watch,
+    required bool hidden,
+    required int tagSetNo,
+  }) {
+    return request(
+      method: RPCMethods.myTagsAdd,
+      params: <String, dynamic>{
+        'tag': tag,
+        if (tagColor != null) 'tagColor': tagColor,
+        'tagWeight': tagWeight,
+        'watch': watch,
+        'hidden': hidden,
+        'tagSetNo': tagSetNo,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestMyTagsDelete({
+    required int watchedTagId,
+    required int tagSetNo,
+  }) {
+    return request(
+      method: RPCMethods.myTagsDelete,
+      params: <String, dynamic>{
+        'watchedTagId': watchedTagId,
+        'tagSetNo': tagSetNo,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestMyTagsUpdateSet({
+    required int tagSetNo,
+    required bool enable,
+    String? color,
+  }) {
+    return request(
+      method: RPCMethods.myTagsUpdateSet,
+      params: <String, dynamic>{
+        'tagSetNo': tagSetNo,
+        'enable': enable,
+        if (color != null) 'color': color,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestCommentVote({
+    required int gid,
+    required String token,
+    required int apiuid,
+    required String apikey,
+    required int commentId,
+    required bool isVotingUp,
+  }) {
+    return request(
+      method: RPCMethods.commentVote,
+      params: <String, dynamic>{
+        'gid': gid,
+        'token': token,
+        'apiuid': apiuid,
+        'apikey': apikey,
+        'commentId': commentId,
+        'isVotingUp': isVotingUp,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestCommentSend({
+    required String galleryUrl,
+    required String content,
+  }) {
+    return request(
+      method: RPCMethods.commentSend,
+      params: <String, dynamic>{
+        'galleryUrl': galleryUrl,
+        'content': content,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestCommentUpdate({
+    required String galleryUrl,
+    required String content,
+    required int commentId,
+  }) {
+    return request(
+      method: RPCMethods.commentUpdate,
+      params: <String, dynamic>{
+        'galleryUrl': galleryUrl,
+        'content': content,
+        'commentId': commentId,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestRatingSubmit({
+    required int gid,
+    required String token,
+    required int apiuid,
+    required String apikey,
+    required int rating,
+  }) {
+    return request(
+      method: RPCMethods.ratingSubmit,
+      params: <String, dynamic>{
+        'gid': gid,
+        'token': token,
+        'apiuid': apiuid,
+        'apikey': apikey,
+        'rating': rating,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestTagSuggestion({required String keyword}) {
+    return request(
+      method: RPCMethods.tagSuggestion,
+      params: <String, dynamic>{
+        'keyword': keyword,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestLookupImage({
+    required String imagePath,
+    required String imageName,
+  }) {
+    return request(
+      method: RPCMethods.lookupImage,
+      params: <String, dynamic>{
+        'imagePath': imagePath,
+        'imageName': imageName,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestArchiveUnlock({
+    required String url,
+    required bool isOriginal,
+  }) {
+    return request(
+      method: RPCMethods.archiveUnlock,
+      params: <String, dynamic>{
+        'url': url,
+        'isOriginal': isOriginal,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestArchiveCancel({required String url}) {
+    return request(
+      method: RPCMethods.archiveCancel,
+      params: <String, dynamic>{
+        'url': url,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestArchiveHathDownload({
+    required String url,
+    required String resolution,
+  }) {
+    return request(
+      method: RPCMethods.archiveHathDownload,
+      params: <String, dynamic>{
+        'url': url,
+        'resolution': resolution,
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> requestDownloadGalleryList() {
     return request(method: RPCMethods.downloadGalleryList);
   }
@@ -112,6 +400,82 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         'cookie': cookie,
       },
     );
+  }
+
+  Future<Map<String, dynamic>> requestAuthLogin({
+    required String userName,
+    required String passWord,
+  }) {
+    return request(
+      method: RPCMethods.authLogin,
+      params: <String, dynamic>{
+        'userName': userName,
+        'passWord': passWord,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryStart({
+    required Map<String, dynamic> gallery,
+  }) {
+    return request(
+      method: RPCMethods.downloadGalleryStart,
+      params: <String, dynamic>{
+        'gallery': gallery,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryPause({required int gid}) {
+    return request(
+      method: RPCMethods.downloadGalleryPause,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryResume({required int gid}) {
+    return request(
+      method: RPCMethods.downloadGalleryResume,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryDelete({
+    required int gid,
+    required bool deleteImages,
+  }) {
+    return request(
+      method: RPCMethods.downloadGalleryDelete,
+      params: <String, dynamic>{
+        'gid': gid,
+        'deleteImages': deleteImages,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryAssignPriority({
+    required int gid,
+    required int priority,
+  }) {
+    return request(
+      method: RPCMethods.downloadGalleryAssignPriority,
+      params: <String, dynamic>{
+        'gid': gid,
+        'priority': priority,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryPauseAll() {
+    return request(method: RPCMethods.downloadGalleryPauseAll);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryResumeAll() {
+    return request(method: RPCMethods.downloadGalleryResumeAll);
   }
 
   Future<Map<String, dynamic>> request({

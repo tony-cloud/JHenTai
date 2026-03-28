@@ -378,6 +378,15 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestLogin<T>(String userName, String passWord, HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.authLogin)) {
+      final Map<String, dynamic> result = await rpcRequest.requestAuthLogin(
+        userName: userName,
+        passWord: passWord,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       EHConsts.EForums,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -427,6 +436,13 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestForum<T>(int ipbMemberId, HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.forumRead)) {
+      final Map<String, dynamic> result =
+          await rpcRequest.requestForumUser(ipbMemberId: ipbMemberId);
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(
       EHConsts.EForums,
       queryParameters: {
@@ -601,6 +617,18 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
   Future<T> requestSubmitRating<T>(
       int gid, String token, int apiuid, String apikey, int rating, HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.ratingWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestRatingSubmit(
+        gid: gid,
+        token: token,
+        apiuid: apiuid,
+        apikey: apikey,
+        rating: rating,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       EHConsts.EApi,
       data: {
@@ -616,6 +644,16 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestPopupPage<T>(int gid, String token, String act, HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.favoriteRead)) {
+      final Map<String, dynamic> result = await rpcRequest.requestFavoritePopup(
+        gid: gid,
+        token: token,
+        act: act,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     /// eg: ?gid=2165080&t=725f6a7a58&act=addfav
     Response response = await _getWithErrorHandler(
       EHConsts.EPopup,
@@ -629,6 +667,12 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestFavoritePage<T>(HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.favoriteRead)) {
+      final Map<String, dynamic> result = await rpcRequest.requestFavoritePage();
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(EHConsts.EFavorite);
 
     return _parseResponse(response, parser);
@@ -636,6 +680,18 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
   Future<T> requestChangeFavoriteSortOrder<T>(FavoriteSortOrder sortOrder,
       {HtmlParser<T>? parser}) async {
+    if (_shouldUseRpc(RPCCapabilities.favoriteWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestFavoriteSort(
+        inlineSet: sortOrder == FavoriteSortOrder.publishedTime ? 'fs_p' : 'fs_f',
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(
       EHConsts.EFavorite,
       queryParameters: {
@@ -649,6 +705,21 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   /// favcat: the favorite tag index
   Future<T> requestAddFavorite<T>(int gid, String token, int favcat, String note,
       {HtmlParser<T>? parser}) async {
+    if (_shouldUseRpc(RPCCapabilities.favoriteWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestFavoriteAdd(
+        gid: gid,
+        token: token,
+        favcat: favcat,
+        note: note,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     /// eg: ?gid=2165080&t=725f6a7a58&act=addfav
     Response response = await _postWithErrorHandler(
       EHConsts.EPopup,
@@ -669,6 +740,19 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestRemoveFavorite<T>(int gid, String token, {HtmlParser<T>? parser}) async {
+    if (_shouldUseRpc(RPCCapabilities.favoriteWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestFavoriteRemove(
+        gid: gid,
+        token: token,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     /// eg: ?gid=2165080&t=725f6a7a58&act=addfav
     Response response = await _postWithErrorHandler(
       EHConsts.EPopup,
@@ -761,6 +845,15 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestTorrentPage<T>(int gid, String token, HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.torrentRead)) {
+      final Map<String, dynamic> result = await rpcRequest.requestTorrentPage(
+        gid: gid,
+        token: token,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(
       EHConsts.ETorrent,
       queryParameters: {
@@ -773,6 +866,12 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestSettingPage<T>(HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.settingRead)) {
+      final Map<String, dynamic> result = await rpcRequest.requestSettingPage();
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(EHConsts.EUconfig);
     return _parseResponse(response, parser);
   }
@@ -791,6 +890,14 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestMyTagsPage<T>({int tagSetNo = 1, required HtmlParser<T> parser}) async {
+    if (_shouldUseRpc(RPCCapabilities.tagRead)) {
+      final Map<String, dynamic> result = await rpcRequest.requestMyTagsPage(
+        tagSetNo: tagSetNo,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler(
       EHConsts.EMyTags,
       queryParameters: {'tagset': tagSetNo},
@@ -816,6 +923,23 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     int tagSetNo = 1,
     HtmlParser<T>? parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.tagWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestMyTagsAdd(
+        tag: tag,
+        tagColor: tagColor,
+        tagWeight: tagWeight,
+        watch: watch,
+        hidden: hidden,
+        tagSetNo: tagSetNo,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Map<String, dynamic> data = {
       'usertag_action': "add",
       'tagname_new': tag,
@@ -852,6 +976,19 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
   Future<T> requestDeleteWatchedTag<T>(
       {required int watchedTagId, int tagSetNo = 1, HtmlParser<T>? parser}) async {
+    if (_shouldUseRpc(RPCCapabilities.tagWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestMyTagsDelete(
+        watchedTagId: watchedTagId,
+        tagSetNo: tagSetNo,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response;
     try {
       response = await _postWithErrorHandler(
@@ -883,6 +1020,20 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     required String? color,
     HtmlParser<T>? parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.tagWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestMyTagsUpdateSet(
+        tagSetNo: tagSetNo,
+        enable: enable,
+        color: color,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response;
     try {
       response = await _postWithErrorHandler(
@@ -1059,6 +1210,23 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   Future<T> voteComment<T>(
       int gid, String token, int apiuid, String apikey, int commentId, bool isVotingUp,
       {HtmlParser<T>? parser}) async {
+    if (_shouldUseRpc(RPCCapabilities.commentWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestCommentVote(
+        gid: gid,
+        token: token,
+        apiuid: apiuid,
+        apikey: apikey,
+        commentId: commentId,
+        isVotingUp: isVotingUp,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       EHConsts.EApi,
       data: {
@@ -1075,6 +1243,12 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestTagSuggestion<T>(String keyword, HtmlParser<T> parser) async {
+    if (_shouldUseRpc(RPCCapabilities.tagRead)) {
+      final Map<String, dynamic> result = await rpcRequest.requestTagSuggestion(keyword: keyword);
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       EHConsts.EApi,
       data: {
@@ -1090,6 +1264,15 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     required String content,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.commentWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestCommentSend(
+        galleryUrl: galleryUrl,
+        content: content,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       galleryUrl,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -1106,6 +1289,16 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     required int commentId,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.commentWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestCommentUpdate(
+        galleryUrl: galleryUrl,
+        content: content,
+        commentId: commentId,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       galleryUrl,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -1122,6 +1315,15 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     required String imageName,
     required HtmlParser<T> parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.lookupWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestLookupImage(
+        imagePath: imagePath,
+        imageName: imageName,
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     try {
       await _postWithErrorHandler(
         EHConsts.ELookup,
@@ -1154,6 +1356,19 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     CancelToken? cancelToken,
     HtmlParser<T>? parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.archiveWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestArchiveUnlock(
+        url: url,
+        isOriginal: isOriginal,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       url,
       data: FormData.fromMap({
@@ -1168,6 +1383,16 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
   Future<T> requestCancelArchive<T>(
       {required String url, CancelToken? cancelToken, HtmlParser<T>? parser}) async {
+    if (_shouldUseRpc(RPCCapabilities.archiveWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestArchiveCancel(url: url);
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       url,
       cancelToken: cancelToken,
@@ -1182,6 +1407,19 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     required String resolution,
     HtmlParser<T>? parser,
   }) async {
+    if (_shouldUseRpc(RPCCapabilities.archiveWrite)) {
+      final Map<String, dynamic> result = await rpcRequest.requestArchiveHathDownload(
+        url: url,
+        resolution: resolution,
+      );
+
+      if (parser == null) {
+        return result as T;
+      }
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _postWithErrorHandler(
       url,
       data: FormData.fromMap({'hathdl_xres': resolution}),

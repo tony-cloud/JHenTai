@@ -57,13 +57,28 @@ class RpcBridgeServer {
         RPCCapabilities.gallerySearch,
         RPCCapabilities.galleryDetail,
         RPCCapabilities.galleryImage,
+        RPCCapabilities.forumRead,
+        RPCCapabilities.settingRead,
+        RPCCapabilities.favoriteRead,
+        RPCCapabilities.favoriteWrite,
+        RPCCapabilities.commentWrite,
+        RPCCapabilities.ratingWrite,
+        RPCCapabilities.tagRead,
+        RPCCapabilities.tagWrite,
+        RPCCapabilities.lookupWrite,
+        RPCCapabilities.torrentRead,
+        RPCCapabilities.archiveWrite,
         RPCCapabilities.downloadGalleryList,
         RPCCapabilities.downloadGalleryRead,
+        RPCCapabilities.downloadGalleryControl,
         RPCCapabilities.downloadGalleryThumbnail,
         RPCCapabilities.historyRead,
         RPCCapabilities.historyWrite,
         RPCCapabilities.newsEvent,
+        RPCCapabilities.externalForward,
+        RPCCapabilities.authLogin,
         'system.reloadCertificates',
+        RPCMethods.authLogin,
         RPCMethods.authSetCookie,
       ];
 
@@ -300,6 +315,8 @@ class RpcBridgeServer {
           'version': rpcBridgeServerVersion,
           'capabilities': capabilities,
         };
+      case RPCMethods.systemFetchUrl:
+        return _handleSystemFetchUrl(params);
       case RPCMethods.newsEvent:
         return _proxyGet(EHConsts.ENews);
       case RPCMethods.galleryPage:
@@ -312,6 +329,51 @@ class RpcBridgeServer {
         return _handleGalleryMetadatas(params);
       case RPCMethods.galleryImagePage:
         return _handleGalleryImagePage(params);
+      case RPCMethods.forumUser:
+        return _handleForumUser(params);
+      case RPCMethods.settingPage:
+        return _proxyGet(EHConsts.EUconfig);
+      case RPCMethods.favoritePopup:
+        return _handleFavoritePopup(params);
+      case RPCMethods.favoritePage:
+        return _proxyGet(EHConsts.EFavorite);
+      case RPCMethods.favoriteSort:
+        return _handleFavoriteSort(params);
+      case RPCMethods.favoriteAdd:
+        return _handleFavoriteAdd(params);
+      case RPCMethods.favoriteRemove:
+        return _handleFavoriteRemove(params);
+      case RPCMethods.torrentPage:
+        return _handleTorrentPage(params);
+      case RPCMethods.myTagsPage:
+        return _handleMyTagsPage(params);
+      case RPCMethods.myTagsAdd:
+        return _handleMyTagsAdd(params);
+      case RPCMethods.myTagsDelete:
+        return _handleMyTagsDelete(params);
+      case RPCMethods.myTagsUpdateSet:
+        return _handleMyTagsUpdateSet(params);
+      case RPCMethods.commentVote:
+        return _handleCommentVote(params);
+      case RPCMethods.commentSend:
+        return _handleCommentSend(params);
+      case RPCMethods.commentUpdate:
+        return _handleCommentUpdate(params);
+      case RPCMethods.ratingSubmit:
+        return _handleRatingSubmit(params);
+      case RPCMethods.tagSuggestion:
+        return _handleTagSuggestion(params);
+      case RPCMethods.lookupImage:
+        throw RPCBridgeException(
+          code: -32603,
+          message: 'lookup.image is not supported by this backend yet',
+        );
+      case RPCMethods.archiveUnlock:
+        return _handleArchiveUnlock(params);
+      case RPCMethods.archiveCancel:
+        return _handleArchiveCancel(params);
+      case RPCMethods.archiveHathDownload:
+        return _handleArchiveHathDownload(params);
       case RPCMethods.downloadGalleryList:
         return _handleDownloadGalleryList();
       case RPCMethods.downloadGalleryImages:
@@ -326,8 +388,24 @@ class RpcBridgeServer {
         return _handleHistoryDeleteAll();
       case 'system.reloadCertificates':
         return _handleReloadCertificates();
+      case RPCMethods.authLogin:
+        return _handleAuthLogin(params);
       case RPCMethods.authSetCookie:
         return handleSetCookie(params);
+      case RPCMethods.downloadGalleryStart:
+        return _handleDownloadGalleryStart(params);
+      case RPCMethods.downloadGalleryPause:
+        return _handleDownloadGalleryPause(params);
+      case RPCMethods.downloadGalleryResume:
+        return _handleDownloadGalleryResume(params);
+      case RPCMethods.downloadGalleryDelete:
+        return _handleDownloadGalleryDelete(params);
+      case RPCMethods.downloadGalleryAssignPriority:
+        return _handleDownloadGalleryAssignPriority(params);
+      case RPCMethods.downloadGalleryPauseAll:
+        return _handleDownloadGalleryPauseAll();
+      case RPCMethods.downloadGalleryResumeAll:
+        return _handleDownloadGalleryResumeAll();
       default:
         throw RPCBridgeException(
           code: -32601,
@@ -426,6 +504,347 @@ class RpcBridgeServer {
     }
 
     return _proxyGet(_normalizeUrl(href), queryParameters: query);
+  }
+
+  Future<Map<String, dynamic>> _handleSystemFetchUrl(
+    Map<String, dynamic> params,
+  ) {
+    final String url = _requireString(params, <String>['url']);
+    final String method = _requireString(
+      params,
+      <String>['method'],
+      fallback: 'GET',
+    ).toUpperCase();
+    final Map<String, dynamic> queryParameters = _asMap(params['queryParameters']);
+    final Map<String, dynamic> rawHeaders = _asMap(params['headers']);
+    final bool expectBinary = _asBool(params['expectBinary']);
+
+    return _proxyRequest(
+      method: method,
+      url: _normalizeUrl(url),
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
+      data: params['data'],
+      headers: rawHeaders.map((key, value) => MapEntry(key, value.toString())),
+      responseType: expectBinary ? ResponseType.bytes : ResponseType.plain,
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleForumUser(Map<String, dynamic> params) {
+    final int ipbMemberId = _asInt(params['ipbMemberId']);
+
+    return _proxyGet(
+      EHConsts.EForums,
+      queryParameters: <String, dynamic>{
+        'showuser': ipbMemberId,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleFavoritePopup(
+    Map<String, dynamic> params,
+  ) {
+    final int gid = _asInt(params['gid']);
+    final String token = _requireString(params, <String>['token']);
+    final String act = _requireString(params, <String>['act']);
+
+    return _proxyGet(
+      EHConsts.EPopup,
+      queryParameters: <String, dynamic>{
+        'gid': gid,
+        't': token,
+        'act': act,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleFavoriteSort(
+    Map<String, dynamic> params,
+  ) {
+    final String inlineSet = _requireString(params, <String>['inlineSet']);
+
+    return _proxyGet(
+      EHConsts.EFavorite,
+      queryParameters: <String, dynamic>{
+        'inline_set': inlineSet,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleFavoriteAdd(
+    Map<String, dynamic> params,
+  ) {
+    final int gid = _asInt(params['gid']);
+    final String token = _requireString(params, <String>['token']);
+    final int favcat = _asInt(params['favcat']);
+    final String note = _requireString(params, <String>['note'], fallback: '');
+
+    return _proxyPost(
+      EHConsts.EPopup,
+      queryParameters: <String, dynamic>{
+        'gid': gid,
+        't': token,
+        'act': 'addfav',
+      },
+      data: <String, dynamic>{
+        'favcat': favcat,
+        'favnote': note,
+        'apply': 'Add to Favorites',
+        'update': 1,
+      },
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleFavoriteRemove(
+    Map<String, dynamic> params,
+  ) {
+    final int gid = _asInt(params['gid']);
+    final String token = _requireString(params, <String>['token']);
+
+    return _proxyPost(
+      EHConsts.EPopup,
+      queryParameters: <String, dynamic>{
+        'gid': gid,
+        't': token,
+        'act': 'addfav',
+      },
+      data: <String, dynamic>{
+        'favcat': 'favdel',
+        'favnote': '',
+        'apply': 'Apply Changes',
+        'update': 1,
+      },
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleTorrentPage(Map<String, dynamic> params) {
+    final int gid = _asInt(params['gid']);
+    final String token = _requireString(params, <String>['token']);
+
+    return _proxyGet(
+      EHConsts.ETorrent,
+      queryParameters: <String, dynamic>{
+        'gid': gid,
+        't': token,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleMyTagsPage(Map<String, dynamic> params) {
+    final int tagSetNo = _asInt(params['tagSetNo'], fallback: 1);
+
+    return _proxyGet(
+      EHConsts.EMyTags,
+      queryParameters: <String, dynamic>{
+        'tagset': tagSetNo,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleMyTagsAdd(Map<String, dynamic> params) {
+    final String tag = _requireString(params, <String>['tag']);
+    final String tagColor = _requireString(params, <String>['tagColor'], fallback: '');
+    final int tagWeight = _asInt(params['tagWeight'], fallback: 10);
+    final bool watch = _asBool(params['watch']);
+    final bool hidden = _asBool(params['hidden']);
+    final int tagSetNo = _asInt(params['tagSetNo'], fallback: 1);
+
+    final Map<String, dynamic> data = <String, dynamic>{
+      'usertag_action': 'add',
+      'tagname_new': tag,
+      'tagcolor_new': tagColor,
+      'usertag_target': 0,
+      'tagweight_new': tagWeight,
+      if (hidden) 'taghide_new': 'on',
+      if (watch) 'tagwatch_new': 'on',
+    };
+
+    return _proxyPost(
+      EHConsts.EMyTags,
+      queryParameters: <String, dynamic>{
+        'tagset': tagSetNo,
+      },
+      data: data,
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleMyTagsDelete(Map<String, dynamic> params) {
+    final int watchedTagId = _asInt(params['watchedTagId']);
+    final int tagSetNo = _asInt(params['tagSetNo'], fallback: 1);
+
+    return _proxyPost(
+      EHConsts.EMyTags,
+      queryParameters: <String, dynamic>{
+        'tagset': tagSetNo,
+      },
+      data: <String, dynamic>{
+        'usertag_action': 'mass',
+        'tagname_new': '',
+        'tagcolor_new': '',
+        'usertag_target': 0,
+        'tagweight_new': 10,
+        'modify_usertags[]': watchedTagId,
+      },
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleMyTagsUpdateSet(
+    Map<String, dynamic> params,
+  ) {
+    final int tagSetNo = _asInt(params['tagSetNo'], fallback: 1);
+    final bool enable = _asBool(params['enable']);
+    final String color = _requireString(params, <String>['color'], fallback: '');
+
+    return _proxyPost(
+      EHConsts.EMyTags,
+      queryParameters: <String, dynamic>{
+        'tagset': tagSetNo,
+      },
+      data: <String, dynamic>{
+        'tagset_action': 'update',
+        'tagset_name': '',
+        if (enable) 'tagset_enable': 'on',
+        'tagset_color': color,
+      },
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleCommentVote(Map<String, dynamic> params) {
+    final int gid = _asInt(params['gid']);
+    final String token = _requireString(params, <String>['token']);
+    final int apiuid = _asInt(params['apiuid']);
+    final String apikey = _requireString(params, <String>['apikey']);
+    final int commentId = _asInt(params['commentId']);
+    final bool isVotingUp = _asBool(params['isVotingUp']);
+
+    return _proxyPost(
+      EHConsts.EApi,
+      data: <String, dynamic>{
+        'apikey': apikey,
+        'apiuid': apiuid,
+        'gid': gid,
+        'method': 'votecomment',
+        'token': token,
+        'comment_vote': isVotingUp ? 1 : -1,
+        'comment_id': commentId,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleCommentSend(Map<String, dynamic> params) {
+    final String galleryUrl = _requireString(params, <String>['galleryUrl']);
+    final String content = _requireString(params, <String>['content']);
+
+    return _proxyPost(
+      _normalizeUrl(galleryUrl),
+      data: <String, dynamic>{
+        'commenttext_new': content,
+      },
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleCommentUpdate(Map<String, dynamic> params) {
+    final String galleryUrl = _requireString(params, <String>['galleryUrl']);
+    final String content = _requireString(params, <String>['content']);
+    final int commentId = _asInt(params['commentId']);
+
+    return _proxyPost(
+      _normalizeUrl(galleryUrl),
+      data: <String, dynamic>{
+        'edit_comment': commentId,
+        'commenttext_edit': content,
+      },
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleRatingSubmit(Map<String, dynamic> params) {
+    final int gid = _asInt(params['gid']);
+    final String token = _requireString(params, <String>['token']);
+    final int apiuid = _asInt(params['apiuid']);
+    final String apikey = _requireString(params, <String>['apikey']);
+    final int rating = _asInt(params['rating']);
+
+    return _proxyPost(
+      EHConsts.EApi,
+      data: <String, dynamic>{
+        'apikey': apikey,
+        'apiuid': apiuid,
+        'gid': gid,
+        'method': 'rategallery',
+        'rating': rating,
+        'token': token,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleTagSuggestion(Map<String, dynamic> params) {
+    final String keyword = _requireString(params, <String>['keyword']);
+
+    return _proxyPost(
+      EHConsts.EApi,
+      data: <String, dynamic>{
+        'method': 'tagsuggest',
+        'text': keyword,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleArchiveUnlock(Map<String, dynamic> params) {
+    final String url = _requireString(params, <String>['url']);
+    final bool isOriginal = _asBool(params['isOriginal']);
+
+    return _proxyPost(
+      _normalizeUrl(url),
+      data: FormData.fromMap(<String, dynamic>{
+        'dltype': isOriginal ? 'org' : 'res',
+        'dlcheck': isOriginal ? 'Download Original Archive' : 'Download Resample Archive',
+      }),
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleArchiveCancel(Map<String, dynamic> params) {
+    final String url = _requireString(params, <String>['url']);
+
+    return _proxyPost(
+      _normalizeUrl(url),
+      data: FormData.fromMap(<String, dynamic>{
+        'invalidate_sessions': 1,
+      }),
+    );
+  }
+
+  Future<Map<String, dynamic>> _handleArchiveHathDownload(
+    Map<String, dynamic> params,
+  ) {
+    final String url = _requireString(params, <String>['url']);
+    final String resolution = _requireString(params, <String>['resolution']);
+
+    return _proxyPost(
+      _normalizeUrl(url),
+      data: FormData.fromMap(<String, dynamic>{
+        'hathdl_xres': resolution,
+      }),
+    );
   }
 
   Future<Map<String, dynamic>> _handleDownloadGalleryList() async {
@@ -631,6 +1050,148 @@ class RpcBridgeServer {
     };
   }
 
+  Future<Map<String, dynamic>> _handleAuthLogin(Map<String, dynamic> params) async {
+    final String userName = _requireString(params, <String>['userName']);
+    final String passWord = _requireString(params, <String>['passWord']);
+
+    final Map<String, dynamic> result = await _proxyPost(
+      EHConsts.EForums,
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+      queryParameters: <String, dynamic>{'act': 'Login', 'CODE': '01'},
+      data: <String, dynamic>{
+        'referer': 'https://forums.e-hentai.org/index.php?',
+        'b': '',
+        'bt': '',
+        'UserName': userName,
+        'PassWord': passWord,
+        'CookieDate': 365,
+      },
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: Headers.formUrlEncodedContentType,
+      },
+    );
+
+    _mergeCookieHeaderFromRpcResult(result);
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryStart(
+    Map<String, dynamic> params,
+  ) async {
+    final Map<String, dynamic> rawGallery = _asMap(params['gallery']);
+    if (rawGallery.isEmpty) {
+      throw RPCBridgeException(code: -32602, message: 'gallery must be an object');
+    }
+
+    final GalleryDownloadedData gallery = GalleryDownloadedData.fromJson(rawGallery);
+    await galleryDownloadService.downloadGallery(gallery);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gallery.gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryPause(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    await galleryDownloadService.pauseDownloadGalleryByGid(gid);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryResume(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    await galleryDownloadService.resumeDownloadGalleryByGid(gid);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryDelete(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    final bool deleteImages =
+        params.containsKey('deleteImages') ? _asBool(params['deleteImages']) : true;
+
+    GalleryDownloadedData? gallery;
+    for (final GalleryDownloadedData item in galleryDownloadService.gallerys) {
+      if (item.gid == gid) {
+        gallery = item;
+        break;
+      }
+    }
+    if (gallery == null) {
+      throw RPCBridgeException(
+        code: -32040,
+        message: 'Downloaded gallery not found: $gid',
+      );
+    }
+
+    await galleryDownloadService.deleteGallery(gallery, deleteImages: deleteImages);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+      'deleteImages': deleteImages,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryAssignPriority(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    final int priority = _asInt(params['priority']);
+
+    GalleryDownloadedData? gallery;
+    for (final GalleryDownloadedData item in galleryDownloadService.gallerys) {
+      if (item.gid == gid) {
+        gallery = item;
+        break;
+      }
+    }
+    if (gallery == null) {
+      throw RPCBridgeException(
+        code: -32040,
+        message: 'Downloaded gallery not found: $gid',
+      );
+    }
+
+    await galleryDownloadService.assignPriority(gallery, priority);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+      'priority': priority,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryPauseAll() async {
+    await galleryDownloadService.pauseAllDownloadGallery();
+
+    return <String, dynamic>{
+      'status': 'ok',
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryResumeAll() async {
+    await galleryDownloadService.resumeAllDownloadGallery();
+
+    return <String, dynamic>{
+      'status': 'ok',
+    };
+  }
+
   Future<Map<String, dynamic>> _handleReloadCertificates() async {
     if (!tlsEnabled) {
       throw RPCBridgeException(
@@ -673,6 +1234,7 @@ class RpcBridgeServer {
     String url, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
+    Options? options,
     Map<String, String>? headers,
   }) {
     return _proxyRequest(
@@ -680,6 +1242,7 @@ class RpcBridgeServer {
       url: url,
       data: data,
       queryParameters: queryParameters,
+      options: options,
       headers: headers,
     );
   }
@@ -689,20 +1252,24 @@ class RpcBridgeServer {
     required String url,
     Map<String, dynamic>? queryParameters,
     dynamic data,
+    Options? options,
     Map<String, String>? headers,
+    ResponseType responseType = ResponseType.plain,
   }) async {
     try {
       final Response response = await _dio.request(
         url,
         queryParameters: queryParameters,
         data: data,
-        options: Options(
+        options: (options ?? Options()).copyWith(
           method: method,
+          validateStatus: (_) => true,
           headers: <String, dynamic>{
             if (cookieHeader.trim().isNotEmpty) HttpHeaders.cookieHeader: cookieHeader,
+            ...?options?.headers,
             ...?headers,
           },
-          responseType: ResponseType.plain,
+          responseType: responseType,
         ),
       );
 
@@ -724,6 +1291,48 @@ class RpcBridgeServer {
         },
       );
     }
+  }
+
+  void _mergeCookieHeaderFromRpcResult(Map<String, dynamic> result) {
+    final dynamic rawHeaders = result['headers'];
+    if (rawHeaders is! Map) {
+      return;
+    }
+
+    final dynamic rawSetCookie = rawHeaders['set-cookie'] ?? rawHeaders['Set-Cookie'];
+    if (rawSetCookie == null) {
+      return;
+    }
+
+    final List<String> setCookieValues = rawSetCookie is List
+        ? rawSetCookie.map((item) => item.toString()).toList(growable: false)
+        : <String>[rawSetCookie.toString()];
+    if (setCookieValues.isEmpty) {
+      return;
+    }
+
+    final Map<String, String> merged = <String, String>{};
+    for (final String part in cookieHeader.split(';')) {
+      final String trimmed = part.trim();
+      if (trimmed.isEmpty || !trimmed.contains('=')) {
+        continue;
+      }
+      final int idx = trimmed.indexOf('=');
+      merged[trimmed.substring(0, idx)] = trimmed.substring(idx + 1);
+    }
+
+    for (final String value in setCookieValues) {
+      try {
+        final Cookie cookie = Cookie.fromSetCookieValue(value);
+        if (cookie.name.isNotEmpty) {
+          merged[cookie.name] = cookie.value;
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+
+    cookieHeader = merged.entries.map((entry) => '${entry.key}=${entry.value}').join('; ');
   }
 
   Future<void> _handleMediaProxy(HttpRequest request) async {

@@ -1,18 +1,18 @@
 import 'dart:io' as io;
 import 'dart:collection';
 import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/database/dao/tag_count_dao.dart';
 import 'package:jhentai/database/dao/tag_dao.dart';
 import 'package:jhentai/enum/eh_namespace.dart';
-import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/tag_search_order_service.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:path/path.dart';
 import 'package:retry/retry.dart';
@@ -89,18 +89,34 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
     /// download translation metadata
     try {
       await retry(
-        () => ehRequest.download(
-          url: downloadUrl,
-          path: savePath,
-          receiveTimeout: 10 * 60 * 1000,
-          onReceiveProgress: (count, total) =>
-              downloadProgress.value = '${(count / 1024 / 1024).toStringAsFixed(2)} MB',
-        ),
+        () async {
+          if (rpcSetting.enableRpcMode.isTrue) {
+            final Map<String, dynamic> result = await rpcRequest.requestSystemFetchUrl(
+              url: downloadUrl,
+              expectBinary: true,
+            );
+            final List<int> bytes = _parseRpcBinary(result['data']);
+            if (bytes.isEmpty) {
+              throw Exception('RPC returned empty translation payload');
+            }
+            await io.File(savePath).writeAsBytes(bytes, flush: true);
+            downloadProgress.value = '${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB';
+            return;
+          }
+
+          await ehRequest.download(
+            url: downloadUrl,
+            path: savePath,
+            receiveTimeout: 10 * 60 * 1000,
+            onReceiveProgress: (count, total) =>
+                downloadProgress.value = '${(count / 1024 / 1024).toStringAsFixed(2)} MB',
+          );
+        },
         maxAttempts: 5,
         onRetry: (error) => log.warning('Download tag translation data failed, retry.'),
       );
-    } on DioException catch (e) {
-      log.error('Download tag translation data failed after 5 times', e.errorMsg);
+    } on Exception catch (e) {
+      log.error('Download tag translation data failed after 5 times', e.toString());
       loadingState.value = LoadingState.error;
       await localConfigService.write(
           configKey: ConfigEnum.tagTranslationServiceLoadingState,
@@ -177,6 +193,18 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
 
     io.File(savePath).delete();
     log.info('Update tag translation database success, timestamp: $timeStamp');
+  }
+
+  List<int> _parseRpcBinary(dynamic data) {
+    if (data is List<int>) {
+      return data;
+    }
+
+    if (data is List) {
+      return data.map((e) => e is int ? e : int.parse(e.toString())).toList();
+    }
+
+    return <int>[];
   }
 
   /// won't translate keys
