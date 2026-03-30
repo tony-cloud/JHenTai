@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'package:get/get.dart';
+import 'package:jhentai/model/jh_layout.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/windows_service.dart';
 import 'package:jhentai/utils/route_util.dart';
@@ -23,7 +24,10 @@ class DesktopLayoutPageLogic extends GetxController with DoubleTapToRefreshLogic
     super.onInit();
 
     resizableController.addListener(() {
-      windowService.handleDoubleColumnResized(resizableController.ratios);
+      windowService.handleDoubleColumnResized(
+        resizableController.ratios,
+        LayoutMode.desktop,
+      );
     });
   }
 

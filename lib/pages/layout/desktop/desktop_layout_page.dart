@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'package:get/get.dart';
+import 'package:jhentai/model/jh_layout.dart';
 import 'package:jhentai/pages/home_page.dart';
 import 'package:jhentai/pages/layout/desktop/desktop_home_page.dart';
 import 'package:jhentai/pages/layout/desktop/desktop_layout_page_state.dart';
@@ -103,6 +104,9 @@ class DesktopLayoutPage extends StatelessWidget {
   }
 
   Widget _buildDoubleColumn(BuildContext context) {
+    final double leftColumnWidthRatio =
+        windowService.leftColumnWidthRatioForLayout(LayoutMode.desktop);
+
     return Scaffold(
       backgroundColor: UIConfig.backGroundColor(context),
       body: ResizableContainer(
@@ -112,7 +116,7 @@ class DesktopLayoutPage extends StatelessWidget {
           ResizableChild(
             child: _leftColumn(),
             size: ResizableSize.ratio(
-              windowService.leftColumnWidthRatio,
+              leftColumnWidthRatio,
               min: 100,
             ),
             divider: ResizableDivider(
@@ -124,7 +128,7 @@ class DesktopLayoutPage extends StatelessWidget {
           ResizableChild(
             child: _rightColumn(),
             size: ResizableSize.ratio(
-              1 - windowService.leftColumnWidthRatio,
+              1 - leftColumnWidthRatio,
               min: 100,
             ),
           ),

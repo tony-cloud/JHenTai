@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'package:get/get.dart';
+import 'package:jhentai/model/jh_layout.dart';
 import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2.dart';
 import 'package:jhentai/widget/will_pop_interceptor.dart';
 
@@ -26,7 +27,10 @@ class _TabletLayoutPageV2State extends State<TabletLayoutPageV2> {
     super.initState();
 
     resizableController.addListener(() {
-      windowService.handleDoubleColumnResized(resizableController.ratios);
+      windowService.handleDoubleColumnResized(
+        resizableController.ratios,
+        LayoutMode.tabletV2,
+      );
     });
   }
 
@@ -39,6 +43,9 @@ class _TabletLayoutPageV2State extends State<TabletLayoutPageV2> {
 
   @override
   Widget build(BuildContext context) {
+    final double leftColumnWidthRatio =
+        windowService.leftColumnWidthRatioForLayout(LayoutMode.tabletV2);
+
     return WillPopInterceptor(
       child: Scaffold(
         backgroundColor: UIConfig.backGroundColor(context),
@@ -49,7 +56,7 @@ class _TabletLayoutPageV2State extends State<TabletLayoutPageV2> {
             ResizableChild(
               child: _leftColumn(),
               size: ResizableSize.ratio(
-                windowService.leftColumnWidthRatio,
+                leftColumnWidthRatio,
                 min: 100,
               ),
               divider: ResizableDivider(
@@ -61,7 +68,7 @@ class _TabletLayoutPageV2State extends State<TabletLayoutPageV2> {
             ResizableChild(
               child: _rightColumn(),
               size: ResizableSize.ratio(
-                1 - windowService.leftColumnWidthRatio,
+                1 - leftColumnWidthRatio,
                 min: 100,
               ),
             ),

@@ -29,6 +29,8 @@ enum ConfigEnum {
   windowMaximize('windowMaximize'),
   windowWidth('windowWidth'),
   windowHeight('windowHeight'),
+  desktopLeftColumnWidthRatio('desktopLeftColumnWidthRatio'),
+  tabletLeftColumnWidthRatio('tabletLeftColumnWidthRatio'),
   leftColumnWidthRatio('leftColumnWidthRatio'),
 
   /// config
