@@ -56,6 +56,8 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
   LoadingState _refreshGalleryTagsState = LoadingState.idle;
   LoadingState _refreshArchiveTagsState = LoadingState.idle;
   LoadingState _repairMissingImagesState = LoadingState.idle;
+  LoadingState _cleanupDuplicatedGalleryState = LoadingState.idle;
+  LoadingState _clearParentGalleryCacheState = LoadingState.idle;
 
   late final TextEditingController _historySearchLimitController;
 
@@ -95,6 +97,8 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildClearNetworkCache(),
             _buildClearReadProgress(),
             _buildRepairMissingImages(context),
+            _buildCleanupDuplicatedGallery(context),
+            _buildClearParentGalleryCache(context),
             _buildRpcSettings(),
             _buildFtpServer(context),
             if (GetPlatform.isDesktop) _buildSuperResolution(),
@@ -276,6 +280,62 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
         ],
       ),
       onLongPress: _repairMissingImages,
+    );
+  }
+
+  Widget _buildCleanupDuplicatedGallery(BuildContext context) {
+    final BuildContext tileContext = context;
+
+    return ListTile(
+      title: Text('cleanupDuplicatedGallery'.tr),
+      subtitle: Text('cleanupDuplicatedGalleryHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LoadingStateIndicator(
+            loadingState: _cleanupDuplicatedGalleryState,
+            useCupertinoIndicator: true,
+            idleWidgetBuilder: () =>
+                Icon(Icons.cleaning_services, color: UIConfig.resumePauseButtonColor(tileContext)),
+            successWidgetBuilder: () =>
+                Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
+            errorWidgetBuilder: () => Icon(
+              Icons.error_outline,
+              color: Theme.of(tileContext).colorScheme.error,
+            ),
+            errorTapCallback: _cleanupDuplicatedGallery,
+          ).marginOnly(right: 8)
+        ],
+      ),
+      onLongPress: _cleanupDuplicatedGallery,
+    );
+  }
+
+  Widget _buildClearParentGalleryCache(BuildContext context) {
+    final BuildContext tileContext = context;
+
+    return ListTile(
+      title: Text('clearParentGalleryCache'.tr),
+      subtitle: Text('clearParentGalleryCacheHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LoadingStateIndicator(
+            loadingState: _clearParentGalleryCacheState,
+            useCupertinoIndicator: true,
+            idleWidgetBuilder: () =>
+                Icon(Icons.delete_sweep, color: UIConfig.resumePauseButtonColor(tileContext)),
+            successWidgetBuilder: () =>
+                Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
+            errorWidgetBuilder: () => Icon(
+              Icons.error_outline,
+              color: Theme.of(tileContext).colorScheme.error,
+            ),
+            errorTapCallback: _clearParentGalleryCache,
+          ).marginOnly(right: 8)
+        ],
+      ),
+      onLongPress: _clearParentGalleryCache,
     );
   }
 
@@ -562,6 +622,93 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       }
 
       setStateSafely(() => _repairMissingImagesState = LoadingState.idle);
+    });
+  }
+
+  Future<void> _cleanupDuplicatedGallery() async {
+    if (_cleanupDuplicatedGalleryState == LoadingState.loading) {
+      return;
+    }
+
+    if (galleryDownloadService.usesRemoteRpcData) {
+      toast('cleanupDuplicatedGalleryUnavailableInRpcMode'.tr, isCenter: false);
+      return;
+    }
+
+    setStateSafely(() => _cleanupDuplicatedGalleryState = LoadingState.loading);
+
+    try {
+      final result = await galleryDownloadService.cleanupDuplicatedGalleries();
+      if (!mounted) {
+        return;
+      }
+
+      setStateSafely(() => _cleanupDuplicatedGalleryState = LoadingState.success);
+      toast(
+        'cleanupDuplicatedGalleryResult'.trParams({
+          'checked': '${result.checked}',
+          'deleted': '${result.deleted}',
+          'skipped': '${result.skipped}',
+          'failed': '${result.failed}',
+        }),
+        isCenter: false,
+      );
+    } catch (e, s) {
+      log.error('Cleanup duplicated gallery failed', e, s);
+      if (mounted) {
+        setStateSafely(() => _cleanupDuplicatedGalleryState = LoadingState.error);
+        toast('internalError'.tr);
+      }
+    }
+
+    _resetStateAfterDelay(
+      loadingState: () => _cleanupDuplicatedGalleryState,
+      reset: () => _cleanupDuplicatedGalleryState = LoadingState.idle,
+    );
+  }
+
+  Future<void> _clearParentGalleryCache() async {
+    if (_clearParentGalleryCacheState == LoadingState.loading) {
+      return;
+    }
+
+    setStateSafely(() => _clearParentGalleryCacheState = LoadingState.loading);
+
+    try {
+      final int count = await galleryDownloadService.clearParentGalleryCache();
+      if (!mounted) {
+        return;
+      }
+
+      setStateSafely(() => _clearParentGalleryCacheState = LoadingState.success);
+      toast(
+        'clearParentGalleryCacheResult'.trParams({'count': '$count'}),
+        isCenter: false,
+      );
+    } catch (e, s) {
+      log.error('Clear parent gallery cache failed', e, s);
+      if (mounted) {
+        setStateSafely(() => _clearParentGalleryCacheState = LoadingState.error);
+        toast('internalError'.tr);
+      }
+    }
+
+    _resetStateAfterDelay(
+      loadingState: () => _clearParentGalleryCacheState,
+      reset: () => _clearParentGalleryCacheState = LoadingState.idle,
+    );
+  }
+
+  void _resetStateAfterDelay({
+    required LoadingState Function() loadingState,
+    required VoidCallback reset,
+  }) {
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted || loadingState() == LoadingState.loading) {
+        return;
+      }
+
+      setStateSafely(reset);
     });
   }
 

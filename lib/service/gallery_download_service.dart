@@ -30,6 +30,7 @@ import 'package:jhentai/model/jh_response/jh_response.dart';
 import 'package:jhentai/network/jh_request.dart';
 import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
+import 'package:jhentai/service/gallery_history_lineage_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/setting/download_setting.dart';
 import 'package:jhentai/setting/site_setting.dart';
@@ -3080,6 +3081,159 @@ class GalleryDownloadService extends GetxController
     }
 
     return (repaired: repaired, renamed: renamed);
+  }
+
+  Future<int> clearParentGalleryCache() {
+    return galleryHistoryLineageService.clearParentGalleryCache();
+  }
+
+  Future<({int checked, int deleted, int skipped, int failed})> cleanupDuplicatedGalleries() async {
+    await completed;
+
+    final List<GalleryDownloadedData> snapshot = List<GalleryDownloadedData>.from(gallerys);
+    if (snapshot.isEmpty) {
+      return (checked: 0, deleted: 0, skipped: 0, failed: 0);
+    }
+
+    if (usesRemoteRpcData) {
+      return (
+        checked: snapshot.length,
+        deleted: 0,
+        skipped: snapshot.length,
+        failed: 0,
+      );
+    }
+
+    final Map<int, GalleryDownloadedData> galleryByGid = <int, GalleryDownloadedData>{
+      for (final GalleryDownloadedData gallery in snapshot) gallery.gid: gallery,
+    };
+
+    final List<GalleryUrl> galleryUrls = snapshot
+        .map(
+          (gallery) => GalleryUrl(isEH: true, gid: gallery.gid, token: gallery.token),
+        )
+        .toList(growable: false);
+
+    final Map<int, GalleryUrl?> parentByChild =
+        await galleryHistoryLineageService.getParentGalleryMapByChildGids(
+      galleryUrls: galleryUrls,
+      oldVersionGalleryUrlsByGid: <int, String?>{
+        for (final GalleryDownloadedData gallery in snapshot)
+          gallery.gid: gallery.oldVersionGalleryUrl,
+      },
+      useCache: true,
+      allowOnline: true,
+      minRequestInterval: const Duration(milliseconds: 1250),
+      batchSize: 25,
+    );
+
+    final Set<int> deleteTargets = _resolveDuplicatedGalleryDeleteTargets(
+      galleryByGid: galleryByGid,
+      parentByChild: parentByChild,
+    );
+
+    int deleted = 0;
+    int failed = 0;
+
+    for (final int gid in deleteTargets) {
+      final GalleryDownloadedData? target =
+          gallerys.firstWhereOrNull((gallery) => gallery.gid == gid);
+      if (target == null) {
+        continue;
+      }
+
+      try {
+        await deleteGallery(target);
+        deleted++;
+      } catch (e, s) {
+        failed++;
+        log.error('Cleanup duplicated gallery failed, gid:$gid', e, s);
+      }
+    }
+
+    final int skippedRaw = snapshot.length - deleted - failed;
+    final int skipped = skippedRaw < 0 ? 0 : skippedRaw;
+
+    return (
+      checked: snapshot.length,
+      deleted: deleted,
+      skipped: skipped,
+      failed: failed,
+    );
+  }
+
+  Set<int> _resolveDuplicatedGalleryDeleteTargets({
+    required Map<int, GalleryDownloadedData> galleryByGid,
+    required Map<int, GalleryUrl?> parentByChild,
+  }) {
+    final Map<int, List<int>> childrenByParent = <int, List<int>>{};
+
+    for (final MapEntry<int, GalleryUrl?> entry in parentByChild.entries) {
+      final int childGid = entry.key;
+      final GalleryUrl? parent = entry.value;
+
+      if (parent == null) {
+        continue;
+      }
+      if (!galleryByGid.containsKey(childGid) || !galleryByGid.containsKey(parent.gid)) {
+        continue;
+      }
+
+      childrenByParent.putIfAbsent(parent.gid, () => <int>[]).add(childGid);
+    }
+
+    final Set<int> parentGids = childrenByParent.keys.toSet();
+    final List<int> latestGids =
+        galleryByGid.keys.where((gid) => !parentGids.contains(gid)).toList(growable: false);
+
+    final Set<int> deleteTargets = <int>{};
+
+    for (final int latestGid in latestGids) {
+      final List<int> chain = _buildDownloadedHistoryChain(
+        latestGid: latestGid,
+        galleryByGid: galleryByGid,
+        parentByChild: parentByChild,
+      );
+      if (chain.length < 2) {
+        continue;
+      }
+
+      final GalleryDownloadedData latest = galleryByGid[chain.first]!;
+      final GalleryDownloadedData immediateParent = galleryByGid[chain[1]]!;
+
+      if (latest.pageCount > immediateParent.pageCount) {
+        deleteTargets.addAll(chain.skip(1));
+      }
+    }
+
+    return deleteTargets;
+  }
+
+  List<int> _buildDownloadedHistoryChain({
+    required int latestGid,
+    required Map<int, GalleryDownloadedData> galleryByGid,
+    required Map<int, GalleryUrl?> parentByChild,
+  }) {
+    final List<int> chain = <int>[latestGid];
+    final Set<int> visited = <int>{latestGid};
+
+    int current = latestGid;
+
+    while (true) {
+      final GalleryUrl? parent = parentByChild[current];
+      if (parent == null || !galleryByGid.containsKey(parent.gid)) {
+        break;
+      }
+      if (visited.contains(parent.gid)) {
+        break;
+      }
+
+      chain.add(parent.gid);
+      visited.add(parent.gid);
+      current = parent.gid;
+    }
+
+    return chain;
   }
 
   Future<bool> _tryRenameLegacyReloadImage(

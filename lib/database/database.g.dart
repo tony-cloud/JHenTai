@@ -5506,6 +5506,319 @@ class GalleryHistoryV2Companion extends UpdateCompanion<GalleryHistoryV2Data> {
   }
 }
 
+class $GalleryParentCacheTable extends GalleryParentCache
+    with TableInfo<$GalleryParentCacheTable, GalleryParentCacheData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GalleryParentCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _childGidMeta =
+      const VerificationMeta('childGid');
+  @override
+  late final GeneratedColumn<int> childGid = GeneratedColumn<int>(
+      'child_gid', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _parentGidMeta =
+      const VerificationMeta('parentGid');
+  @override
+  late final GeneratedColumn<int> parentGid = GeneratedColumn<int>(
+      'parent_gid', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _parentTokenMeta =
+      const VerificationMeta('parentToken');
+  @override
+  late final GeneratedColumn<String> parentToken = GeneratedColumn<String>(
+      'parent_token', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _parentGalleryUrlMeta =
+      const VerificationMeta('parentGalleryUrl');
+  @override
+  late final GeneratedColumn<String> parentGalleryUrl = GeneratedColumn<String>(
+      'parent_gallery_url', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cacheTimeMeta =
+      const VerificationMeta('cacheTime');
+  @override
+  late final GeneratedColumn<String> cacheTime = GeneratedColumn<String>(
+      'cache_time', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [childGid, parentGid, parentToken, parentGalleryUrl, cacheTime];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'gallery_parent_cache';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<GalleryParentCacheData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('child_gid')) {
+      context.handle(_childGidMeta,
+          childGid.isAcceptableOrUnknown(data['child_gid']!, _childGidMeta));
+    }
+    if (data.containsKey('parent_gid')) {
+      context.handle(_parentGidMeta,
+          parentGid.isAcceptableOrUnknown(data['parent_gid']!, _parentGidMeta));
+    }
+    if (data.containsKey('parent_token')) {
+      context.handle(
+          _parentTokenMeta,
+          parentToken.isAcceptableOrUnknown(
+              data['parent_token']!, _parentTokenMeta));
+    }
+    if (data.containsKey('parent_gallery_url')) {
+      context.handle(
+          _parentGalleryUrlMeta,
+          parentGalleryUrl.isAcceptableOrUnknown(
+              data['parent_gallery_url']!, _parentGalleryUrlMeta));
+    }
+    if (data.containsKey('cache_time')) {
+      context.handle(_cacheTimeMeta,
+          cacheTime.isAcceptableOrUnknown(data['cache_time']!, _cacheTimeMeta));
+    } else if (isInserting) {
+      context.missing(_cacheTimeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {childGid};
+  @override
+  GalleryParentCacheData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GalleryParentCacheData(
+      childGid: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}child_gid'])!,
+      parentGid: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}parent_gid']),
+      parentToken: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}parent_token']),
+      parentGalleryUrl: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}parent_gallery_url']),
+      cacheTime: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}cache_time'])!,
+    );
+  }
+
+  @override
+  $GalleryParentCacheTable createAlias(String alias) {
+    return $GalleryParentCacheTable(attachedDatabase, alias);
+  }
+}
+
+class GalleryParentCacheData extends DataClass
+    implements Insertable<GalleryParentCacheData> {
+  final int childGid;
+  final int? parentGid;
+  final String? parentToken;
+  final String? parentGalleryUrl;
+  final String cacheTime;
+  const GalleryParentCacheData(
+      {required this.childGid,
+      this.parentGid,
+      this.parentToken,
+      this.parentGalleryUrl,
+      required this.cacheTime});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['child_gid'] = Variable<int>(childGid);
+    if (!nullToAbsent || parentGid != null) {
+      map['parent_gid'] = Variable<int>(parentGid);
+    }
+    if (!nullToAbsent || parentToken != null) {
+      map['parent_token'] = Variable<String>(parentToken);
+    }
+    if (!nullToAbsent || parentGalleryUrl != null) {
+      map['parent_gallery_url'] = Variable<String>(parentGalleryUrl);
+    }
+    map['cache_time'] = Variable<String>(cacheTime);
+    return map;
+  }
+
+  GalleryParentCacheCompanion toCompanion(bool nullToAbsent) {
+    return GalleryParentCacheCompanion(
+      childGid: Value(childGid),
+      parentGid: parentGid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentGid),
+      parentToken: parentToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentToken),
+      parentGalleryUrl: parentGalleryUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentGalleryUrl),
+      cacheTime: Value(cacheTime),
+    );
+  }
+
+  factory GalleryParentCacheData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GalleryParentCacheData(
+      childGid: serializer.fromJson<int>(json['childGid']),
+      parentGid: serializer.fromJson<int?>(json['parentGid']),
+      parentToken: serializer.fromJson<String?>(json['parentToken']),
+      parentGalleryUrl: serializer.fromJson<String?>(json['parentGalleryUrl']),
+      cacheTime: serializer.fromJson<String>(json['cacheTime']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'childGid': serializer.toJson<int>(childGid),
+      'parentGid': serializer.toJson<int?>(parentGid),
+      'parentToken': serializer.toJson<String?>(parentToken),
+      'parentGalleryUrl': serializer.toJson<String?>(parentGalleryUrl),
+      'cacheTime': serializer.toJson<String>(cacheTime),
+    };
+  }
+
+  GalleryParentCacheData copyWith(
+          {int? childGid,
+          Value<int?> parentGid = const Value.absent(),
+          Value<String?> parentToken = const Value.absent(),
+          Value<String?> parentGalleryUrl = const Value.absent(),
+          String? cacheTime}) =>
+      GalleryParentCacheData(
+        childGid: childGid ?? this.childGid,
+        parentGid: parentGid.present ? parentGid.value : this.parentGid,
+        parentToken: parentToken.present ? parentToken.value : this.parentToken,
+        parentGalleryUrl: parentGalleryUrl.present
+            ? parentGalleryUrl.value
+            : this.parentGalleryUrl,
+        cacheTime: cacheTime ?? this.cacheTime,
+      );
+  GalleryParentCacheData copyWithCompanion(GalleryParentCacheCompanion data) {
+    return GalleryParentCacheData(
+      childGid: data.childGid.present ? data.childGid.value : this.childGid,
+      parentGid: data.parentGid.present ? data.parentGid.value : this.parentGid,
+      parentToken:
+          data.parentToken.present ? data.parentToken.value : this.parentToken,
+      parentGalleryUrl: data.parentGalleryUrl.present
+          ? data.parentGalleryUrl.value
+          : this.parentGalleryUrl,
+      cacheTime: data.cacheTime.present ? data.cacheTime.value : this.cacheTime,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GalleryParentCacheData(')
+          ..write('childGid: $childGid, ')
+          ..write('parentGid: $parentGid, ')
+          ..write('parentToken: $parentToken, ')
+          ..write('parentGalleryUrl: $parentGalleryUrl, ')
+          ..write('cacheTime: $cacheTime')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      childGid, parentGid, parentToken, parentGalleryUrl, cacheTime);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GalleryParentCacheData &&
+          other.childGid == this.childGid &&
+          other.parentGid == this.parentGid &&
+          other.parentToken == this.parentToken &&
+          other.parentGalleryUrl == this.parentGalleryUrl &&
+          other.cacheTime == this.cacheTime);
+}
+
+class GalleryParentCacheCompanion
+    extends UpdateCompanion<GalleryParentCacheData> {
+  final Value<int> childGid;
+  final Value<int?> parentGid;
+  final Value<String?> parentToken;
+  final Value<String?> parentGalleryUrl;
+  final Value<String> cacheTime;
+  const GalleryParentCacheCompanion({
+    this.childGid = const Value.absent(),
+    this.parentGid = const Value.absent(),
+    this.parentToken = const Value.absent(),
+    this.parentGalleryUrl = const Value.absent(),
+    this.cacheTime = const Value.absent(),
+  });
+  GalleryParentCacheCompanion.insert({
+    this.childGid = const Value.absent(),
+    this.parentGid = const Value.absent(),
+    this.parentToken = const Value.absent(),
+    this.parentGalleryUrl = const Value.absent(),
+    required String cacheTime,
+  }) : cacheTime = Value(cacheTime);
+  static Insertable<GalleryParentCacheData> custom({
+    Expression<int>? childGid,
+    Expression<int>? parentGid,
+    Expression<String>? parentToken,
+    Expression<String>? parentGalleryUrl,
+    Expression<String>? cacheTime,
+  }) {
+    return RawValuesInsertable({
+      if (childGid != null) 'child_gid': childGid,
+      if (parentGid != null) 'parent_gid': parentGid,
+      if (parentToken != null) 'parent_token': parentToken,
+      if (parentGalleryUrl != null) 'parent_gallery_url': parentGalleryUrl,
+      if (cacheTime != null) 'cache_time': cacheTime,
+    });
+  }
+
+  GalleryParentCacheCompanion copyWith(
+      {Value<int>? childGid,
+      Value<int?>? parentGid,
+      Value<String?>? parentToken,
+      Value<String?>? parentGalleryUrl,
+      Value<String>? cacheTime}) {
+    return GalleryParentCacheCompanion(
+      childGid: childGid ?? this.childGid,
+      parentGid: parentGid ?? this.parentGid,
+      parentToken: parentToken ?? this.parentToken,
+      parentGalleryUrl: parentGalleryUrl ?? this.parentGalleryUrl,
+      cacheTime: cacheTime ?? this.cacheTime,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (childGid.present) {
+      map['child_gid'] = Variable<int>(childGid.value);
+    }
+    if (parentGid.present) {
+      map['parent_gid'] = Variable<int>(parentGid.value);
+    }
+    if (parentToken.present) {
+      map['parent_token'] = Variable<String>(parentToken.value);
+    }
+    if (parentGalleryUrl.present) {
+      map['parent_gallery_url'] = Variable<String>(parentGalleryUrl.value);
+    }
+    if (cacheTime.present) {
+      map['cache_time'] = Variable<String>(cacheTime.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GalleryParentCacheCompanion(')
+          ..write('childGid: $childGid, ')
+          ..write('parentGid: $parentGid, ')
+          ..write('parentToken: $parentToken, ')
+          ..write('parentGalleryUrl: $parentGalleryUrl, ')
+          ..write('cacheTime: $cacheTime')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TagCountTable extends TagCount
     with TableInfo<$TagCountTable, TagCountData> {
   @override
@@ -6651,6 +6964,8 @@ abstract class _$AppDb extends GeneratedDatabase {
   late final $GalleryHistoryTable galleryHistory = $GalleryHistoryTable(this);
   late final $GalleryHistoryV2Table galleryHistoryV2 =
       $GalleryHistoryV2Table(this);
+  late final $GalleryParentCacheTable galleryParentCache =
+      $GalleryParentCacheTable(this);
   late final $TagCountTable tagCount = $TagCountTable(this);
   late final $DioCacheTable dioCache = $DioCacheTable(this);
   late final $BlockRuleTable blockRule = $BlockRuleTable(this);
@@ -6679,6 +6994,8 @@ abstract class _$AppDb extends GeneratedDatabase {
       'CREATE INDEX idx_last_read_time ON gallery_history (lastReadTime)');
   late final Index idxGh2LastReadTime = Index('idx_gh2_last_read_time',
       'CREATE INDEX idx_gh2_last_read_time ON gallery_history_v2 (lastReadTime)');
+  late final Index gpcIdxCacheTime = Index('gpc_idx_cache_time',
+      'CREATE INDEX gpc_idx_cache_time ON gallery_parent_cache (cache_time)');
   late final Index idxExpireDate = Index('idx_expire_date',
       'CREATE INDEX idx_expire_date ON dio_cache (expireDate)');
   late final Index idxUrl =
@@ -6706,6 +7023,7 @@ abstract class _$AppDb extends GeneratedDatabase {
         image,
         galleryHistory,
         galleryHistoryV2,
+        galleryParentCache,
         tagCount,
         dioCache,
         blockRule,
@@ -6722,6 +7040,7 @@ abstract class _$AppDb extends GeneratedDatabase {
         gIdxTagRefreshTime,
         idxLastReadTime,
         idxGh2LastReadTime,
+        gpcIdxCacheTime,
         idxExpireDate,
         idxUrl,
         idxGroupId,
@@ -9631,6 +9950,177 @@ typedef $$GalleryHistoryV2TableProcessedTableManager = ProcessedTableManager<
     ),
     GalleryHistoryV2Data,
     PrefetchHooks Function()>;
+typedef $$GalleryParentCacheTableCreateCompanionBuilder
+    = GalleryParentCacheCompanion Function({
+  Value<int> childGid,
+  Value<int?> parentGid,
+  Value<String?> parentToken,
+  Value<String?> parentGalleryUrl,
+  required String cacheTime,
+});
+typedef $$GalleryParentCacheTableUpdateCompanionBuilder
+    = GalleryParentCacheCompanion Function({
+  Value<int> childGid,
+  Value<int?> parentGid,
+  Value<String?> parentToken,
+  Value<String?> parentGalleryUrl,
+  Value<String> cacheTime,
+});
+
+class $$GalleryParentCacheTableFilterComposer
+    extends Composer<_$AppDb, $GalleryParentCacheTable> {
+  $$GalleryParentCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get childGid => $composableBuilder(
+      column: $table.childGid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get parentGid => $composableBuilder(
+      column: $table.parentGid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get parentToken => $composableBuilder(
+      column: $table.parentToken, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get parentGalleryUrl => $composableBuilder(
+      column: $table.parentGalleryUrl,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cacheTime => $composableBuilder(
+      column: $table.cacheTime, builder: (column) => ColumnFilters(column));
+}
+
+class $$GalleryParentCacheTableOrderingComposer
+    extends Composer<_$AppDb, $GalleryParentCacheTable> {
+  $$GalleryParentCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get childGid => $composableBuilder(
+      column: $table.childGid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get parentGid => $composableBuilder(
+      column: $table.parentGid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get parentToken => $composableBuilder(
+      column: $table.parentToken, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get parentGalleryUrl => $composableBuilder(
+      column: $table.parentGalleryUrl,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cacheTime => $composableBuilder(
+      column: $table.cacheTime, builder: (column) => ColumnOrderings(column));
+}
+
+class $$GalleryParentCacheTableAnnotationComposer
+    extends Composer<_$AppDb, $GalleryParentCacheTable> {
+  $$GalleryParentCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get childGid =>
+      $composableBuilder(column: $table.childGid, builder: (column) => column);
+
+  GeneratedColumn<int> get parentGid =>
+      $composableBuilder(column: $table.parentGid, builder: (column) => column);
+
+  GeneratedColumn<String> get parentToken => $composableBuilder(
+      column: $table.parentToken, builder: (column) => column);
+
+  GeneratedColumn<String> get parentGalleryUrl => $composableBuilder(
+      column: $table.parentGalleryUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get cacheTime =>
+      $composableBuilder(column: $table.cacheTime, builder: (column) => column);
+}
+
+class $$GalleryParentCacheTableTableManager extends RootTableManager<
+    _$AppDb,
+    $GalleryParentCacheTable,
+    GalleryParentCacheData,
+    $$GalleryParentCacheTableFilterComposer,
+    $$GalleryParentCacheTableOrderingComposer,
+    $$GalleryParentCacheTableAnnotationComposer,
+    $$GalleryParentCacheTableCreateCompanionBuilder,
+    $$GalleryParentCacheTableUpdateCompanionBuilder,
+    (
+      GalleryParentCacheData,
+      BaseReferences<_$AppDb, $GalleryParentCacheTable, GalleryParentCacheData>
+    ),
+    GalleryParentCacheData,
+    PrefetchHooks Function()> {
+  $$GalleryParentCacheTableTableManager(
+      _$AppDb db, $GalleryParentCacheTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GalleryParentCacheTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GalleryParentCacheTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GalleryParentCacheTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> childGid = const Value.absent(),
+            Value<int?> parentGid = const Value.absent(),
+            Value<String?> parentToken = const Value.absent(),
+            Value<String?> parentGalleryUrl = const Value.absent(),
+            Value<String> cacheTime = const Value.absent(),
+          }) =>
+              GalleryParentCacheCompanion(
+            childGid: childGid,
+            parentGid: parentGid,
+            parentToken: parentToken,
+            parentGalleryUrl: parentGalleryUrl,
+            cacheTime: cacheTime,
+          ),
+          createCompanionCallback: ({
+            Value<int> childGid = const Value.absent(),
+            Value<int?> parentGid = const Value.absent(),
+            Value<String?> parentToken = const Value.absent(),
+            Value<String?> parentGalleryUrl = const Value.absent(),
+            required String cacheTime,
+          }) =>
+              GalleryParentCacheCompanion.insert(
+            childGid: childGid,
+            parentGid: parentGid,
+            parentToken: parentToken,
+            parentGalleryUrl: parentGalleryUrl,
+            cacheTime: cacheTime,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$GalleryParentCacheTableProcessedTableManager = ProcessedTableManager<
+    _$AppDb,
+    $GalleryParentCacheTable,
+    GalleryParentCacheData,
+    $$GalleryParentCacheTableFilterComposer,
+    $$GalleryParentCacheTableOrderingComposer,
+    $$GalleryParentCacheTableAnnotationComposer,
+    $$GalleryParentCacheTableCreateCompanionBuilder,
+    $$GalleryParentCacheTableUpdateCompanionBuilder,
+    (
+      GalleryParentCacheData,
+      BaseReferences<_$AppDb, $GalleryParentCacheTable, GalleryParentCacheData>
+    ),
+    GalleryParentCacheData,
+    PrefetchHooks Function()>;
 typedef $$TagCountTableCreateCompanionBuilder = TagCountCompanion Function({
   required String namespaceWithKey,
   required int count,
@@ -10277,6 +10767,8 @@ class $AppDbManager {
       $$GalleryHistoryTableTableManager(_db, _db.galleryHistory);
   $$GalleryHistoryV2TableTableManager get galleryHistoryV2 =>
       $$GalleryHistoryV2TableTableManager(_db, _db.galleryHistoryV2);
+  $$GalleryParentCacheTableTableManager get galleryParentCache =>
+      $$GalleryParentCacheTableTableManager(_db, _db.galleryParentCache);
   $$TagCountTableTableManager get tagCount =>
       $$TagCountTableTableManager(_db, _db.tagCount);
   $$DioCacheTableTableManager get dioCache =>

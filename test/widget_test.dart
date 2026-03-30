@@ -1,30 +1,52 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:jhentai/main.dart';
+import 'package:jhentai/service/jh_service.dart';
+
+class _FakeLifeCycleBean implements JHLifeCircleBean {
+  final List<JHLifeCircleBean> _initDependencies;
+
+  @override
+  List<JHLifeCircleBean> get initDependencies => _initDependencies;
+
+  _FakeLifeCycleBean({
+    List<JHLifeCircleBean> initDependencies = const <JHLifeCircleBean>[],
+  }) : _initDependencies = List<JHLifeCircleBean>.from(initDependencies);
+
+  void setDependencies(List<JHLifeCircleBean> dependencies) {
+    _initDependencies
+      ..clear()
+      ..addAll(dependencies);
+  }
+
+  @override
+  Future<void> initBean() async {}
+
+  @override
+  void afterBeanReady() {}
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('topologicalSort keeps dependency order', () {
+    final _FakeLifeCycleBean dependency = _FakeLifeCycleBean();
+    final _FakeLifeCycleBean target =
+        _FakeLifeCycleBean(initDependencies: <JHLifeCircleBean>[dependency]);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    final List<JHLifeCircleBean> sorted = topologicalSort(<JHLifeCircleBean>[target, dependency]);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    expect(sorted.indexOf(dependency), lessThan(sorted.indexOf(target)));
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('topologicalSort throws on circular dependency', () {
+    final _FakeLifeCycleBean beanA = _FakeLifeCycleBean();
+    final _FakeLifeCycleBean beanB = _FakeLifeCycleBean();
+
+    beanA.setDependencies(<JHLifeCircleBean>[beanB]);
+    beanB.setDependencies(<JHLifeCircleBean>[beanA]);
+
+    expect(
+      () => topologicalSort(<JHLifeCircleBean>[beanA, beanB]),
+      throwsException,
+    );
   });
 }

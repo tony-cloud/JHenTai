@@ -59,6 +59,7 @@ import 'package:jhentai/model/gallery_note.dart';
 import 'package:jhentai/model/tag_set.dart';
 import 'package:jhentai/service/history_service.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/gallery_history_lineage_service.dart';
 import 'package:jhentai/service/local_block_rule_service.dart';
 import 'package:jhentai/setting/eh_setting.dart';
 import 'package:jhentai/setting/read_setting.dart';
@@ -110,7 +111,6 @@ class DetailsPageLogic extends GetxController
   /// there may be more than one DetailsPages in route stack at same time, eg: tap a link in a comment.
   /// use this param as a 'tag' to get target [DetailsPageLogic] and [DetailsPageState].
   static final List<DetailsPageLogic> _stack = <DetailsPageLogic>[];
-  static final Map<int, GalleryDetail> _historyDetailCache = <int, GalleryDetail>{};
 
   static DetailsPageLogic? get current => _stack.isEmpty ? null : _stack.last;
 
@@ -1071,7 +1071,7 @@ class DetailsPageLogic extends GetxController
     GalleryUrl galleryUrl, {
     bool useCacheIfAvailable = true,
   }) async {
-    GalleryDetail? cachedDetail = _historyDetailCache[galleryUrl.gid];
+    GalleryDetail? cachedDetail = galleryHistoryLineageService.getCachedDetail(galleryUrl);
     if (cachedDetail != null && useCacheIfAvailable) {
       return cachedDetail;
     }
@@ -1100,7 +1100,7 @@ class DetailsPageLogic extends GetxController
   }
 
   void _cacheHistoryDetail(GalleryDetail detail) {
-    _historyDetailCache[detail.galleryUrl.gid] = detail;
+    galleryHistoryLineageService.cacheDetail(detail);
   }
 
   void onCommentVoted(GalleryComment comment, bool isVotingUp, String score) {

@@ -609,6 +609,15 @@ class en_US {
       'repairMissingImagesHint': 'Long press to scan and fix missing images',
       'noMissingImagesDetected': 'No missing images detected',
       'repairMissingImagesResult': 'Repaired @count images (renamed @renamed).',
+      'cleanupDuplicatedGallery': 'Cleanup Duplicated Galleries',
+      'cleanupDuplicatedGalleryHint':
+          'Long press to cleanup old galleries in a parent-child history chain',
+      'cleanupDuplicatedGalleryResult':
+          'Checked @checked galleries, deleted @deleted, skipped @skipped, failed @failed.',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'Unavailable in RPC thin-client mode',
+      'clearParentGalleryCache': 'Clear Parent Gallery Cache',
+      'clearParentGalleryCacheHint': 'Long press to clear cached parent-gallery relations',
+      'clearParentGalleryCacheResult': 'Cleared @count cached parent-gallery relations.',
       'clearSuccess': 'Clear Success',
       'superResolution': 'Image Super Resolution',
       'stopSuperResolution': 'Stop Super Resolution',

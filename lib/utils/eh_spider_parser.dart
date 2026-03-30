@@ -648,8 +648,12 @@ class EHSpiderParser {
         ?.tagData
         .key;
 
+    final GalleryUrl galleryUrl = GalleryUrl(isEH: true, gid: map['gid'], token: map['token']);
+    final GalleryUrl? parentGalleryUrl = _parseParentGalleryUrl(map, galleryUrl.isEH);
+
     return GalleryMetadata(
-      galleryUrl: GalleryUrl(isEH: true, gid: map['gid'], token: map['token']),
+      galleryUrl: galleryUrl,
+      parentGalleryUrl: parentGalleryUrl,
       title: map['title'],
       japaneseTitle: map['title_jpn'],
       category: map['category'],
@@ -692,8 +696,12 @@ class EHSpiderParser {
           ?.tagData
           .key;
 
+      final GalleryUrl galleryUrl = GalleryUrl(isEH: true, gid: item['gid'], token: item['token']);
+      final GalleryUrl? parentGalleryUrl = _parseParentGalleryUrl(item, galleryUrl.isEH);
+
       return GalleryMetadata(
-        galleryUrl: GalleryUrl(isEH: true, gid: item['gid'], token: item['token']),
+        galleryUrl: galleryUrl,
+        parentGalleryUrl: parentGalleryUrl,
         title: item['title'],
         japaneseTitle: item['title_jpn'],
         category: item['category'],
@@ -711,6 +719,47 @@ class EHSpiderParser {
         tags: tagsMap,
       );
     }).toList();
+  }
+
+  static GalleryUrl? _parseParentGalleryUrl(dynamic raw, bool isEH) {
+    if (raw is! Map) {
+      return null;
+    }
+
+    final int? parentGid = _toInt(raw['parent_gid']);
+    final String? parentToken = _toToken(raw['parent_key'] ?? raw['parent_token']);
+
+    if (parentGid != null && parentGid > 0 && parentToken != null) {
+      return GalleryUrl(isEH: isEH, gid: parentGid, token: parentToken);
+    }
+
+    final String? parentUrlText = raw['parent_gallery_url']?.toString();
+    if (parentUrlText == null || parentUrlText.isEmpty) {
+      return null;
+    }
+
+    return GalleryUrl.tryParse(parentUrlText);
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      return int.tryParse(value);
+    }
+    return null;
+  }
+
+  static String? _toToken(dynamic value) {
+    final String? token = value?.toString();
+    if (token == null || token.length != 10) {
+      return null;
+    }
+    return token;
   }
 
   static Map<String, String?>? forumPage2UserInfo(Headers headers, dynamic data) {

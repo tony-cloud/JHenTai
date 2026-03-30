@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/model/gallery_detail.dart';
+import 'package:jhentai/model/gallery_history_entry.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/routes/routes.dart';
@@ -9,8 +10,6 @@ import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
-
-typedef GalleryHistoryEntry = ({GalleryUrl galleryUrl, String title, String updateTime});
 
 class EHGalleryHistoryDialog extends StatefulWidget {
   final String currentGalleryTitle;

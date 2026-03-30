@@ -621,6 +621,16 @@ class pt_BR {
       'repairMissingImagesHint': 'Pressione e segure para procurar e corrigir imagens faltantes',
       'noMissingImagesDetected': 'Nenhuma imagem faltante encontrada',
       'repairMissingImagesResult': 'Reparadas @count imagens (renomeadas @renamed).',
+      'cleanupDuplicatedGallery': 'Limpar galerias duplicadas',
+      'cleanupDuplicatedGalleryHint':
+          'Pressione e segure para remover galerias antigas na cadeia de histórico',
+      'cleanupDuplicatedGalleryResult':
+          'Verificadas @checked galerias, removidas @deleted, ignoradas @skipped, falhas @failed.',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'Indisponível no modo RPC thin-client',
+      'clearParentGalleryCache': 'Limpar cache de galeria pai',
+      'clearParentGalleryCacheHint':
+          'Pressione e segure para limpar o cache das relações de galeria pai',
+      'clearParentGalleryCacheResult': '@count relações de galeria pai em cache foram removidas.',
       'clearSuccess': 'Limpado com Sucesso',
       'superResolution': 'Image Super Resolution',
       'stopSuperResolution': 'Stop Super Resolution',
