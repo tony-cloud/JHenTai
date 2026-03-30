@@ -559,7 +559,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Future<T> requestGalleryMetadatas<T>({
-    required List<({int gid, String token})> list,
+    required List<({int gid, String token})> list, //list length <= 25
     required HtmlParser<T> parser,
   }) async {
     if (_shouldUseRpc(RPCCapabilities.galleryDetail)) {
