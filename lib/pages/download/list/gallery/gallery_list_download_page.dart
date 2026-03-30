@@ -35,11 +35,26 @@ import 'package:jhentai/pages/download/list/gallery/gallery_list_download_page_s
 
 class GalleryListDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, GalleryDownloadPageMixin {
-  GalleryListDownloadPage({super.key});
+  final int? focusGalleryGid;
+  final int? focusRequestId;
+  final Duration focusHighlightDuration;
 
   final GalleryListDownloadPageLogic logic =
       Get.put<GalleryListDownloadPageLogic>(GalleryListDownloadPageLogic(), permanent: true);
   final GalleryListDownloadPageState state = Get.find<GalleryListDownloadPageLogic>().state;
+
+  GalleryListDownloadPage({
+    super.key,
+    this.focusGalleryGid,
+    this.focusRequestId,
+    this.focusHighlightDuration = const Duration(milliseconds: 1500),
+  }) {
+    logic.applyFocusRequest(
+      focusGalleryGid: focusGalleryGid,
+      focusRequestId: focusRequestId,
+      focusHighlightDuration: focusHighlightDuration,
+    );
+  }
 
   @override
   MultiSelectDownloadPageLogicMixin get multiSelectDownloadPageLogic => logic;
@@ -322,21 +337,31 @@ class GalleryListDownloadPage extends StatelessWidget
   Widget _buildCard(BuildContext context, GalleryDownloadedData gallery) {
     return GetBuilder<GalleryListDownloadPageLogic>(
       id: '${logic.itemCardId}::${gallery.gid}',
-      builder: (_) => Container(
-        height: UIConfig.downloadPageCardHeight,
-        decoration: state.selectedGids.contains(gallery.gid)
-            ? BoxDecoration(
-                color: UIConfig.downloadPageCardSelectedColor(context),
-                borderRadius: BorderRadius.circular(UIConfig.downloadPageCardBorderRadius),
-              )
-            : null,
-        child: Row(
-          children: [
-            _buildCover(context, gallery),
-            _buildInfo(context, gallery),
-          ],
-        ),
-      ),
+      builder: (_) {
+        final bool isSelected = state.selectedGids.contains(gallery.gid);
+        final bool isHighlighted = state.highlightedGid == gallery.gid;
+
+        return Container(
+          height: UIConfig.downloadPageCardHeight,
+          decoration: (isSelected || isHighlighted)
+              ? BoxDecoration(
+                  color: isSelected
+                      ? UIConfig.downloadPageCardSelectedColor(context)
+                      : UIConfig.alertColor(context).withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(UIConfig.downloadPageCardBorderRadius),
+                  border: isHighlighted
+                      ? Border.all(color: UIConfig.alertColor(context), width: 1.2)
+                      : null,
+                )
+              : null,
+          child: Row(
+            children: [
+              _buildCover(context, gallery),
+              _buildInfo(context, gallery),
+            ],
+          ),
+        );
+      },
     );
   }
 

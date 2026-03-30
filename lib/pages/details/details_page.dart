@@ -1042,7 +1042,12 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                 ),
               ),
               onPressed: disabled ? null : logic.handleTapDownload,
-              onLongPress: () => toRoute(Routes.download),
+              onLongPress: () => toRoute(
+                Routes.download,
+                arguments: galleryDownloadService.containGallery(state.galleryUrl.gid)
+                    ? DownloadPageArgument(targetGalleryGid: state.galleryUrl.gid)
+                    : null,
+              ),
             );
           },
         );

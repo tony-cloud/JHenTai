@@ -23,18 +23,45 @@ class DownloadPage extends StatefulWidget {
   State<DownloadPage> createState() => _DownloadPageState();
 }
 
+class DownloadPageArgument {
+  final int? targetGalleryGid;
+  final Duration focusHighlightDuration;
+
+  const DownloadPageArgument({
+    this.targetGalleryGid,
+    this.focusHighlightDuration = const Duration(milliseconds: 1500),
+  });
+}
+
 class _DownloadPageState extends State<DownloadPage> {
   DownloadPageGalleryType galleryType = DownloadPageGalleryType.download;
   DownloadPageBodyType bodyType =
       GetPlatform.isMobile ? DownloadPageBodyType.list : DownloadPageBodyType.grid;
   Completer<void> bodyTypeCompleter = Completer<void>();
 
+  int? focusGalleryGid;
+  int? focusRequestId;
+  Duration focusHighlightDuration = const Duration(milliseconds: 1500);
+
   @override
   void initState() {
     super.initState();
 
+    if (Get.arguments is DownloadPageArgument) {
+      DownloadPageArgument argument = Get.arguments;
+
+      focusGalleryGid = argument.targetGalleryGid;
+      focusHighlightDuration = argument.focusHighlightDuration;
+
+      if (focusGalleryGid != null) {
+        galleryType = DownloadPageGalleryType.download;
+        bodyType = DownloadPageBodyType.list;
+        focusRequestId = DateTime.now().microsecondsSinceEpoch;
+      }
+    }
+
     localConfigService.read(configKey: ConfigEnum.downloadPageBodyType).then((bodyTypeString) {
-      if (bodyTypeString != null) {
+      if (bodyTypeString != null && focusGalleryGid == null) {
         bodyType = DownloadPageBodyType.values[int.tryParse(bodyTypeString) ?? 0];
       }
     }).whenComplete(() {
@@ -63,7 +90,11 @@ class _DownloadPageState extends State<DownloadPage> {
               : galleryType == DownloadPageGalleryType.download
                   ? bodyType == DownloadPageBodyType.list
                       ? GalleryListDownloadPage(
-                          key: const PageStorageKey('GalleryListDownloadBody'))
+                          key: const PageStorageKey('GalleryListDownloadBody'),
+                          focusGalleryGid: focusGalleryGid,
+                          focusRequestId: focusRequestId,
+                          focusHighlightDuration: focusHighlightDuration,
+                        )
                       : GalleryGridDownloadPage(
                           key: const PageStorageKey('GalleryGridDownloadBody'))
                   : galleryType == DownloadPageGalleryType.archive

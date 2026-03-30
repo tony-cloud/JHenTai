@@ -16,4 +16,11 @@ class GalleryListDownloadPageState
       GroupedListController<String, GalleryDownloadedData>();
 
   List<GalleryDownloadedData> visibleGallerys = [];
+
+  int? pendingFocusGid;
+  int? highlightedGid;
+  int? lastFocusRequestId;
+  bool focusInProgress = false;
+  Duration focusHighlightDuration = const Duration(milliseconds: 1500);
+  Timer? focusHighlightTimer;
 }

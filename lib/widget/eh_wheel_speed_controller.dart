@@ -27,10 +27,11 @@ class EHWheelSpeedController extends StatelessWidget {
 
           GestureBinding.instance.pointerSignalResolver.resolve(event);
 
-          ScrollPosition position = controller!.position;
+          final ScrollPosition position = controller!.positions.last;
 
           /// at edge
-          if (position.pixels < position.minScrollExtent || position.pixels > position.maxScrollExtent) {
+          if (position.pixels < position.minScrollExtent ||
+              position.pixels > position.maxScrollExtent) {
             return;
           }
 
