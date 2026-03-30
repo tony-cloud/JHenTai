@@ -243,6 +243,7 @@ class GalleryListDownloadPage extends StatelessWidget
 
                     return GroupedList<String, GalleryDownloadedData>(
                       maxGalleryNum4Animation: performanceSetting.maxGalleryNum4Animation.value,
+                      openElementExtent: UIConfig.downloadPageCardHeight + 10,
                       scrollController: state.scrollController,
                       controller: state.groupedListController,
                       groups: groups,

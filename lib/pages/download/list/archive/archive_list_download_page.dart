@@ -171,6 +171,7 @@ class ArchiveListDownloadPage extends StatelessWidget
                 ? const Center()
                 : GroupedList<String, ArchiveDownloadedData>(
                     maxGalleryNum4Animation: performanceSetting.maxGalleryNum4Animation.value,
+                    openElementExtent: UIConfig.downloadPageCardHeight + 10,
                     scrollController: state.scrollController,
                     controller: state.groupedListController,
                     groups: Map.fromEntries(archiveDownloadService.allGroups

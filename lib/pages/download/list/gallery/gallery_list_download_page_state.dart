@@ -22,5 +22,6 @@ class GalleryListDownloadPageState
   int? lastFocusRequestId;
   bool focusInProgress = false;
   Duration focusHighlightDuration = const Duration(milliseconds: 1500);
+  Timer? focusRequestTimer;
   Timer? focusHighlightTimer;
 }

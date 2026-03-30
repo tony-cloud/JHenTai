@@ -1054,7 +1054,8 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                   DownloadPageFocusBridge.setPendingArgument(argument);
 
                   if (argument?.targetGalleryGid != null &&
-                      Get.isRegistered<GalleryListDownloadPageLogic>()) {
+                      Get.isRegistered<GalleryListDownloadPageLogic>() &&
+                      isRouteAtTop(Routes.download)) {
                     Get.find<GalleryListDownloadPageLogic>().applyFocusRequest(
                       focusGalleryGid: argument!.targetGalleryGid,
                       focusRequestId: DateTime.now().microsecondsSinceEpoch,

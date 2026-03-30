@@ -10,6 +10,7 @@ import 'package:jhentai/pages/download/filter/download_filter.dart';
 import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_logic_mixin.dart';
 import 'package:jhentai/service/download_filter_service.dart';
 import 'package:jhentai/setting/performance_setting.dart';
+import 'package:jhentai/setting/style_setting.dart';
 
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
@@ -64,6 +65,7 @@ class GalleryListDownloadPageLogic extends GetxController
     super.onClose();
 
     maxGalleryNum4AnimationListener.dispose();
+    state.focusRequestTimer?.cancel();
     state.focusHighlightTimer?.cancel();
   }
 
@@ -88,8 +90,23 @@ class GalleryListDownloadPageLogic extends GetxController
   }
 
   void _schedulePendingFocusRequest() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _consumePendingFocusRequest();
+    state.focusRequestTimer?.cancel();
+
+    final Duration delay =
+        styleSetting.isInMobileLayout ? Duration.zero : const Duration(milliseconds: 220);
+
+    state.focusRequestTimer = Timer(delay, () {
+      if (isClosed) {
+        return;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (isClosed) {
+          return;
+        }
+
+        _consumePendingFocusRequest();
+      });
     });
   }
 
@@ -201,7 +218,11 @@ class GalleryListDownloadPageLogic extends GetxController
     final double targetOffset =
         offset.clamp(position.minScrollExtent, position.maxScrollExtent).toDouble();
 
-    state.scrollController.jumpTo(targetOffset);
+    if ((position.pixels - targetOffset).abs() < 0.5) {
+      return;
+    }
+
+    position.jumpTo(targetOffset);
   }
 
   void _applyHighlight(int gid) {

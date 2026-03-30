@@ -22,6 +22,9 @@ class GroupedList<G, E> extends StatefulWidget {
 
   final int maxGalleryNum4Animation;
 
+  /// If provided, open groups use a fixed-extent sliver for better jump performance.
+  final double? openElementExtent;
+
   final ScrollController? scrollController;
 
   final GroupedListController? controller;
@@ -36,6 +39,7 @@ class GroupedList<G, E> extends StatefulWidget {
     required this.groupBuilder,
     required this.elementBuilder,
     required this.maxGalleryNum4Animation,
+    this.openElementExtent,
     this.scrollController,
     this.controller,
   });
@@ -132,7 +136,8 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
       slivers.add(_buildGroupSliver(context, group));
 
       if (group2Elements.containsKey(group)) {
-        slivers.add(_buildElementsSliver(context, group2Elements[group]!, group));
+        final bool isOpen = _groups[group] ?? false;
+        slivers.add(_buildElementsSliver(context, group2Elements[group]!, group, isOpen));
       }
     }
 
@@ -145,23 +150,30 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
     );
   }
 
-  Widget _buildElementsSliver(BuildContext context, List<E> elements, G group) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          return GetBuilder<GroupedListLogic>(
-            id: 'group::${widget.groupUniqueKey(group)}',
-            global: false,
-            init: logic,
-            builder: (_) {
-              return _buildElement(
-                  context, elements[index], group, elements.length <= maxGalleryNum4Animation);
-            },
-          );
-        },
-        childCount: elements.length,
-      ),
+  Widget _buildElementsSliver(BuildContext context, List<E> elements, G group, bool isOpen) {
+    final SliverChildBuilderDelegate delegate = SliverChildBuilderDelegate(
+      (context, index) {
+        return GetBuilder<GroupedListLogic>(
+          id: 'group::${widget.groupUniqueKey(group)}',
+          global: false,
+          init: logic,
+          builder: (_) {
+            return _buildElement(
+                context, elements[index], group, elements.length <= maxGalleryNum4Animation);
+          },
+        );
+      },
+      childCount: elements.length,
     );
+
+    if (isOpen && widget.openElementExtent != null) {
+      return SliverFixedExtentList(
+        itemExtent: widget.openElementExtent!,
+        delegate: delegate,
+      );
+    }
+
+    return SliverList(delegate: delegate);
   }
 
   GetBuilder<GroupedListLogic> _buildGroup(G group, BuildContext context) {
@@ -224,7 +236,9 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
     if (!_groups.containsKey(group)) {
       return;
     }
-    _groups[group] = !_groups[group]!;
+    setState(() {
+      _groups[group] = !_groups[group]!;
+    });
     logic.updateSafely(['group::${widget.groupUniqueKey(group)}']);
   }
 
