@@ -61,6 +61,8 @@ class _SettingRPCServerPageState extends State<SettingRPCServerPage> {
             _buildRpcAccessToken(context),
             _buildAllowSelfSignedCertificate(),
             _buildRpcBackendStatus(context),
+            _buildRemoteDownloadAutoRefresh(),
+            _buildRemoteDownloadRefreshInterval(),
             _buildRpcCapabilities(),
             if (!kIsWeb) _buildEmbeddedServerDivider(),
             if (!kIsWeb) _buildEnableEmbeddedServer(),
@@ -279,6 +281,49 @@ class _SettingRPCServerPageState extends State<SettingRPCServerPage> {
       ),
       isThreeLine: true,
       dense: true,
+    );
+  }
+
+  Widget _buildRemoteDownloadAutoRefresh() {
+    return SwitchListTile(
+      title: const Text('Auto refresh download status (RPC)'),
+      subtitle: const Text('Keep remote download progress updated automatically.'),
+      value: rpcSetting.autoRefreshRemoteDownloads.value,
+      onChanged: rpcSetting.enableRpcMode.isFalse
+          ? null
+          : (bool value) async {
+              await rpcSetting.saveAutoRefreshRemoteDownloads(value);
+              toast('saveSuccess'.tr);
+            },
+    );
+  }
+
+  Widget _buildRemoteDownloadRefreshInterval() {
+    return ListTile(
+      title: const Text('RPC download refresh interval'),
+      subtitle: Text('${rpcSetting.remoteDownloadRefreshIntervalSeconds.value}s'),
+      trailing: DropdownButton<int>(
+        value: rpcSetting.remoteDownloadRefreshIntervalSeconds.value,
+        alignment: AlignmentDirectional.centerEnd,
+        onChanged: rpcSetting.enableRpcMode.isFalse || rpcSetting.autoRefreshRemoteDownloads.isFalse
+            ? null
+            : (int? newValue) async {
+                if (newValue == null) {
+                  return;
+                }
+
+                await rpcSetting.saveRemoteDownloadRefreshIntervalSeconds(newValue);
+                toast('saveSuccess'.tr);
+              },
+        items: const <int>[3, 5, 8, 10, 15, 20, 30, 60]
+            .map(
+              (int seconds) => DropdownMenuItem<int>(
+                value: seconds,
+                child: Text('${seconds}s'),
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 

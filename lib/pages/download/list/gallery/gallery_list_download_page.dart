@@ -9,6 +9,7 @@ import 'package:jhentai/service/download_filter_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart' as srs;
 import 'package:jhentai/setting/performance_setting.dart';
 import 'package:jhentai/setting/preference_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/utils/date_util.dart';
 import 'package:jhentai/utils/route_util.dart';
@@ -82,6 +83,12 @@ class GalleryListDownloadPage extends StatelessWidget
       titleSpacing: 0,
       title: const DownloadPageSegmentControl(galleryType: DownloadPageGalleryType.download),
       actions: [
+        if (rpcSetting.enableRpcMode.isTrue)
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'refresh'.tr,
+            onPressed: logic.downloadService.manualRefreshRemoteStatus,
+          ),
         GetBuilder<DownloadFilterService>(
           init: downloadFilterService,
           builder: (_) => IconButton(

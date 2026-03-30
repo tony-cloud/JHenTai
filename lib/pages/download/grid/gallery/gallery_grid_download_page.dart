@@ -14,6 +14,7 @@ import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_mixin
 import 'package:jhentai/pages/download/mixin/gallery/gallery_download_page_state_mixin.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/utils/route_util.dart';
 
 import 'package:jhentai/config/ui_config.dart';
@@ -50,6 +51,12 @@ class GalleryGridDownloadPage extends StatelessWidget
   @override
   List<Widget> buildAppBarActions(BuildContext context) {
     return [
+      if (rpcSetting.enableRpcMode.isTrue)
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          tooltip: 'refresh'.tr,
+          onPressed: logic.downloadService.manualRefreshRemoteStatus,
+        ),
       GetBuilder<GalleryGridDownloadPageLogic>(
         global: false,
         init: logic,

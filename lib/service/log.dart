@@ -76,7 +76,11 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         return;
       }
 
-      log.error('Global Error', details.exception, details.stack);
+      log.error(
+        'Global Error',
+        details.exception,
+        details.stack ?? StackTrace.current,
+      );
     };
   }
 
@@ -112,9 +116,10 @@ class LogService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   void error(Object msg, [Object? error, StackTrace? stackTrace]) async {
     await _initLogger();
-    _consoleLogger?.e(msg, error: error, stackTrace: stackTrace);
-    _verboseFileLogger?.e(msg, error: error, stackTrace: stackTrace);
-    _errorFileLogger?.e(msg, error: error, stackTrace: stackTrace);
+    final StackTrace? effectiveStackTrace = stackTrace ?? (kIsWeb ? StackTrace.current : null);
+    _consoleLogger?.e(msg, error: error, stackTrace: effectiveStackTrace);
+    _verboseFileLogger?.e(msg, error: error, stackTrace: effectiveStackTrace);
+    _errorFileLogger?.e(msg, error: error, stackTrace: effectiveStackTrace);
   }
 
   void download(Object msg,

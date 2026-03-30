@@ -102,6 +102,10 @@ class GalleryDownloadService extends GetxController
 
   Worker? _downloadSettingListener;
   Worker? _downloadKeepScreenListener;
+  Worker? _rpcAutoRefreshEnabledListener;
+  Worker? _rpcAutoRefreshIntervalListener;
+  Timer? _remoteRefreshTimer;
+  bool _remoteRefreshInFlight = false;
 
   bool _galleryDownloadsActive = false;
   bool _archiveDownloadsActive = false;
@@ -165,9 +169,17 @@ class GalleryDownloadService extends GetxController
   Future<void> doInitBean() async {
     Get.put(this, permanent: true);
 
+    _rpcAutoRefreshEnabledListener = ever(rpcSetting.autoRefreshRemoteDownloads, (_) {
+      _startRemoteRefreshTimerIfNeeded();
+    });
+    _rpcAutoRefreshIntervalListener = ever(rpcSetting.remoteDownloadRefreshIntervalSeconds, (_) {
+      _startRemoteRefreshTimerIfNeeded();
+    });
+
     if (_shouldUseRemoteRpcData) {
       bool initializedRemote = await refreshRemoteGallerys();
       if (initializedRemote) {
+        _startRemoteRefreshTimerIfNeeded();
         _completer.complete(true);
         return;
       }
@@ -205,6 +217,7 @@ class GalleryDownloadService extends GetxController
   Future<void> doAfterBeanReady() async {
     if (usesRemoteRpcData) {
       await refreshRemoteGallerys();
+      _startRemoteRefreshTimerIfNeeded();
     }
   }
 
@@ -214,7 +227,52 @@ class GalleryDownloadService extends GetxController
 
     _downloadSettingListener?.dispose();
     _downloadKeepScreenListener?.dispose();
+    _rpcAutoRefreshEnabledListener?.dispose();
+    _rpcAutoRefreshIntervalListener?.dispose();
+    _remoteRefreshTimer?.cancel();
     unawaited(wakelockService.release(_downloadLockName));
+  }
+
+  Future<void> manualRefreshRemoteStatus() async {
+    if (!_shouldUseRemoteRpcData) {
+      return;
+    }
+
+    await _refreshRemoteGallerySnapshotSafely();
+  }
+
+  void _startRemoteRefreshTimerIfNeeded() {
+    _remoteRefreshTimer?.cancel();
+    _remoteRefreshTimer = null;
+
+    if (!usesRemoteRpcData) {
+      return;
+    }
+
+    if (rpcSetting.autoRefreshRemoteDownloads.isFalse) {
+      return;
+    }
+
+    final Duration interval = Duration(
+      seconds: rpcSetting.remoteDownloadRefreshIntervalSeconds.value,
+    );
+
+    _remoteRefreshTimer = Timer.periodic(interval, (_) {
+      unawaited(_refreshRemoteGallerySnapshotSafely());
+    });
+  }
+
+  Future<void> _refreshRemoteGallerySnapshotSafely() async {
+    if (_remoteRefreshInFlight) {
+      return;
+    }
+
+    _remoteRefreshInFlight = true;
+    try {
+      await refreshRemoteGallerys();
+    } finally {
+      _remoteRefreshInFlight = false;
+    }
   }
 
   Future<bool> refreshRemoteGallerys() async {
@@ -228,9 +286,12 @@ class GalleryDownloadService extends GetxController
       final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryList();
       _applyRemoteGallerySnapshot(result);
       _remoteRpcDataActive = true;
+      _startRemoteRefreshTimerIfNeeded();
       return true;
     } catch (e, stack) {
       _remoteRpcDataActive = false;
+      _remoteRefreshTimer?.cancel();
+      _remoteRefreshTimer = null;
       log.warning('Refresh remote gallery download list failed, fallback to local', e, true);
       log.debug(stack);
       return false;
