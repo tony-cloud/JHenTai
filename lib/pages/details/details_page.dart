@@ -31,6 +31,8 @@ import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
 import 'package:jhentai/mixin/scroll_to_top_state_mixin.dart';
+import 'package:jhentai/model/jh_layout.dart';
+import 'package:jhentai/pages/download/list/gallery/gallery_list_download_page_logic.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
@@ -1042,12 +1044,27 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                 ),
               ),
               onPressed: disabled ? null : logic.handleTapDownload,
-              onLongPress: () => toRoute(
-                Routes.download,
-                arguments: galleryDownloadService.containGallery(state.galleryUrl.gid)
-                    ? DownloadPageArgument(targetGalleryGid: state.galleryUrl.gid)
-                    : null,
-              ),
+              onLongPress: () {
+                final DownloadPageArgument? argument =
+                    galleryDownloadService.containGallery(state.galleryUrl.gid)
+                        ? DownloadPageArgument(targetGalleryGid: state.galleryUrl.gid)
+                        : null;
+
+                if (styleSetting.actualLayout == LayoutMode.desktop) {
+                  DownloadPageFocusBridge.setPendingArgument(argument);
+
+                  if (argument?.targetGalleryGid != null &&
+                      Get.isRegistered<GalleryListDownloadPageLogic>()) {
+                    Get.find<GalleryListDownloadPageLogic>().applyFocusRequest(
+                      focusGalleryGid: argument!.targetGalleryGid,
+                      focusRequestId: DateTime.now().microsecondsSinceEpoch,
+                      focusHighlightDuration: argument.focusHighlightDuration,
+                    );
+                  }
+                }
+
+                toRoute(Routes.download, arguments: argument);
+              },
             );
           },
         );

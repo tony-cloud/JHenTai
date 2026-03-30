@@ -33,6 +33,20 @@ class DownloadPageArgument {
   });
 }
 
+class DownloadPageFocusBridge {
+  static DownloadPageArgument? _pendingArgument;
+
+  static void setPendingArgument(DownloadPageArgument? argument) {
+    _pendingArgument = argument;
+  }
+
+  static DownloadPageArgument? takePendingArgument() {
+    final DownloadPageArgument? argument = _pendingArgument;
+    _pendingArgument = null;
+    return argument;
+  }
+}
+
 class _DownloadPageState extends State<DownloadPage> {
   DownloadPageGalleryType galleryType = DownloadPageGalleryType.download;
   DownloadPageBodyType bodyType =
@@ -47,18 +61,7 @@ class _DownloadPageState extends State<DownloadPage> {
   void initState() {
     super.initState();
 
-    if (Get.arguments is DownloadPageArgument) {
-      DownloadPageArgument argument = Get.arguments;
-
-      focusGalleryGid = argument.targetGalleryGid;
-      focusHighlightDuration = argument.focusHighlightDuration;
-
-      if (focusGalleryGid != null) {
-        galleryType = DownloadPageGalleryType.download;
-        bodyType = DownloadPageBodyType.list;
-        focusRequestId = DateTime.now().microsecondsSinceEpoch;
-      }
-    }
+    _consumeFocusRequest();
 
     localConfigService.read(configKey: ConfigEnum.downloadPageBodyType).then((bodyTypeString) {
       if (bodyTypeString != null && focusGalleryGid == null) {
@@ -67,6 +70,46 @@ class _DownloadPageState extends State<DownloadPage> {
     }).whenComplete(() {
       bodyTypeCompleter.complete();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant DownloadPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    _consumeFocusRequest(setStateIfNeeded: true);
+  }
+
+  void _consumeFocusRequest({bool setStateIfNeeded = false}) {
+    DownloadPageArgument? argument;
+
+    if (Get.arguments is DownloadPageArgument) {
+      argument = Get.arguments;
+      DownloadPageFocusBridge.setPendingArgument(null);
+    } else {
+      argument = DownloadPageFocusBridge.takePendingArgument();
+    }
+
+    if (argument?.targetGalleryGid == null) {
+      return;
+    }
+
+    if (setStateIfNeeded) {
+      setState(() {
+        _applyFocusRequest(argument!);
+      });
+      return;
+    }
+
+    _applyFocusRequest(argument!);
+  }
+
+  void _applyFocusRequest(DownloadPageArgument argument) {
+    focusGalleryGid = argument.targetGalleryGid;
+    focusHighlightDuration = argument.focusHighlightDuration;
+
+    galleryType = DownloadPageGalleryType.download;
+    bodyType = DownloadPageBodyType.list;
+    focusRequestId = DateTime.now().microsecondsSinceEpoch;
   }
 
   @override

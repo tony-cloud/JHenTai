@@ -201,11 +201,7 @@ class GalleryListDownloadPageLogic extends GetxController
     final double targetOffset =
         offset.clamp(position.minScrollExtent, position.maxScrollExtent).toDouble();
 
-    await state.scrollController.animateTo(
-      targetOffset,
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
-    );
+    state.scrollController.jumpTo(targetOffset);
   }
 
   void _applyHighlight(int gid) {
