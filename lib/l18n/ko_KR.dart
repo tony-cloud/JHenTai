@@ -603,6 +603,12 @@ class ko_KR {
       'checkUpdateAfterLaunchingApp': '앱 실행 후 업데이트 확인',
       'refreshGalleryTagsAutomatically': '갤러리 태그 자동 새로고침',
       'refreshArchiveTagsAutomatically': '아카이브 태그 자동 새로고침',
+      'autoMitigateArchiveToDownloadAfterComplete': '아카이브 완료 후 다운로드로 자동 마이그레이션',
+      'autoMitigateArchiveToDownloadAfterCompleteHint': '완료된 원본 화질 아카이브만 자동 마이그레이션합니다',
+      'mitigateArchiveToDownload': '아카이브를 다운로드로 즉시 마이그레이션',
+      'mitigateArchiveToDownloadHint': '완료된 원본 화질 아카이브를 수동으로 마이그레이션합니다',
+      'mitigateArchiveToDownloadResult':
+          '@checked개 확인, @migrated개 마이그레이션, @replaced개 교체, 원본 유지 @kept개, @skipped개 건너뜀, @failed개 실패',
       'historySearchLimit': '히스토리 탐색 개수 제한',
       'historySearchLimitHint': '0이면 무제한, 부모/자식 갤러리 탐색 시 적용',
       'checkClipboard': '클립보드에서 갤러리 주소 검사',

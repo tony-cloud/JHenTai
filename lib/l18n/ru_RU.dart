@@ -62,6 +62,15 @@ class ru_RU {
       'ftpServerAccessReadOnly': 'Только чтение',
       'ftpServerChangesApplied': 'Изменения применяются сразу',
 
+      'autoMitigateArchiveToDownloadAfterComplete':
+          'Автоматически переносить архив в загрузки после завершения',
+      'autoMitigateArchiveToDownloadAfterCompleteHint':
+          'Автоматически обрабатываются только завершенные архивы в оригинальном качестве',
+      'mitigateArchiveToDownload': 'Перенести архивы в загрузки сейчас',
+      'mitigateArchiveToDownloadHint':
+          'Запустить перенос для завершенных архивов в оригинальном качестве',
+      'mitigateArchiveToDownloadResult':
+          'Проверено @checked архивов, перенесено @migrated, заменено @replaced, оставлено оригинальных @kept, пропущено @skipped, ошибок @failed.',
       'home': "Главная",
       'gallery': "Галерея",
       'setting': 'Настройки',

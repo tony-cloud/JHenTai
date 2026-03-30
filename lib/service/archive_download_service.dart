@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:collection/collection.dart';
@@ -38,15 +39,28 @@ import 'package:jhentai/exception/cancel_exception.dart';
 import 'package:jhentai/model/comic_info.dart';
 import 'package:jhentai/model/gallery_detail.dart';
 import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/gallery_metadata.dart';
 import 'package:jhentai/pages/download/grid/mixin/grid_download_page_service_mixin.dart';
+import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/utils/archive_util.dart';
+import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/utils/file_util.dart';
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/service/wakelock_service.dart';
 import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 
 ArchiveDownloadService archiveDownloadService = ArchiveDownloadService();
+
+typedef ArchiveMitigationReport = ({
+  int checked,
+  int migrated,
+  int replaced,
+  int keptOriginal,
+  int skipped,
+  int failed,
+});
 
 class ArchiveDownloadService extends GetxController
     with GridBasePageServiceMixin, JHLifeCircleBeanErrorCatch
@@ -58,6 +72,7 @@ class ArchiveDownloadService extends GetxController
   static const String metadataFileName = 'ametadata';
   static const int _maxTitleLength = 80;
   static const int _maxIsolateCountsTotal = 10;
+  static const String _mitigationLockName = 'archive_mitigation';
 
   final Completer<bool> _completer = Completer();
 
@@ -66,6 +81,12 @@ class ArchiveDownloadService extends GetxController
   List<String> allGroups = [];
   List<ArchiveDownloadedData> archives = <ArchiveDownloadedData>[];
   Map<int, ArchiveDownloadInfo> archiveDownloadInfos = {};
+
+  final Queue<int> _mitigationQueue = Queue<int>();
+  final Set<int> _queuedMitigationGids = <int>{};
+  final Map<int, Completer<ArchiveMitigationReport>> _mitigationCompleters =
+      <int, Completer<ArchiveMitigationReport>>{};
+  bool _mitigationWorkerRunning = false;
 
   List<ArchiveDownloadedData> archivesWithGroup(String group) =>
       archives.where((g) => archiveDownloadInfos[g.gid]!.group == group).toList();
@@ -86,6 +107,9 @@ class ArchiveDownloadService extends GetxController
   void _notifyDownloadActivityChanged() {
     galleryDownloadService.updateArchiveDownloadActivity(_hasActiveArchiveDownloads());
   }
+
+  @override
+  List<JHLifeCircleBean> get initDependencies => super.initDependencies..add(wakelockService);
 
   @override
   Future<void> doInitBean() async {
@@ -132,10 +156,24 @@ class ArchiveDownloadService extends GetxController
     isolateCountListener.dispose();
     proxyConfigListener.dispose();
     timeoutListener.dispose();
+
+    for (final Completer<ArchiveMitigationReport> completer in _mitigationCompleters.values) {
+      if (!completer.isCompleted) {
+        completer.complete(_failedMitigationReport(0));
+      }
+    }
+    _mitigationQueue.clear();
+    _queuedMitigationGids.clear();
+    _mitigationCompleters.clear();
+    unawaited(wakelockService.release(_mitigationLockName));
   }
 
   bool containArchive(int gid) {
     return archiveDownloadInfos.containsKey(gid);
+  }
+
+  bool isMitigationInProgress(int gid) {
+    return _mitigationCompleters.containsKey(gid);
   }
 
   Future<void> downloadArchive(ArchiveDownloadedData archive,
@@ -294,45 +332,360 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> migrate2Gallery(int gid) async {
-    ArchiveDownloadedData? archive = archives.firstWhereOrNull((archive) => archive.gid == gid);
+    await mitigateCompletedOriginalArchives(gid: gid);
+  }
+
+  Future<ArchiveMitigationReport> mitigateCompletedOriginalArchives({int? gid}) async {
+    if (gid != null) {
+      return _enqueueMitigation(gid);
+    }
+
+    final List<int> gids = archives.map((archive) => archive.gid).toList(growable: false);
+    if (gids.isEmpty) {
+      return _emptyMitigationReport;
+    }
+
+    final List<ArchiveMitigationReport> reports =
+        await Future.wait(gids.map(_enqueueMitigation).toList(growable: false));
+
+    return _mergeMitigationReports(reports);
+  }
+
+  Future<ArchiveMitigationReport> _enqueueMitigation(int gid) {
+    final Completer<ArchiveMitigationReport>? existingCompleter = _mitigationCompleters[gid];
+    if (existingCompleter != null) {
+      return existingCompleter.future;
+    }
+
+    final Completer<ArchiveMitigationReport> completer = Completer<ArchiveMitigationReport>();
+    _mitigationCompleters[gid] = completer;
+
+    if (_queuedMitigationGids.add(gid)) {
+      _mitigationQueue.add(gid);
+      _startMitigationWorker();
+    }
+
+    return completer.future;
+  }
+
+  void _startMitigationWorker() {
+    if (_mitigationWorkerRunning) {
+      return;
+    }
+
+    _mitigationWorkerRunning = true;
+    unawaited(_processMitigationQueue());
+  }
+
+  Future<void> _processMitigationQueue() async {
+    await wakelockService.acquire(_mitigationLockName);
+
+    try {
+      while (_mitigationQueue.isNotEmpty) {
+        final int gid = _mitigationQueue.removeFirst();
+        _queuedMitigationGids.remove(gid);
+
+        final Completer<ArchiveMitigationReport>? completer = _mitigationCompleters[gid];
+        if (completer == null || completer.isCompleted) {
+          _mitigationCompleters.remove(gid);
+          continue;
+        }
+
+        try {
+          final ArchiveMitigationReport report = await _mitigateSingleGallery(gid);
+          if (!completer.isCompleted) {
+            completer.complete(report);
+          }
+        } on Exception catch (e, s) {
+          log.error('Mitigation queue task failed: gid=$gid', e, s);
+          if (!completer.isCompleted) {
+            completer.complete(_failedMitigationReport(1));
+          }
+        } finally {
+          _mitigationCompleters.remove(gid);
+        }
+
+        await Future<void>.delayed(const Duration(milliseconds: 16));
+      }
+    } finally {
+      await wakelockService.release(_mitigationLockName);
+
+      _mitigationWorkerRunning = false;
+      if (_mitigationQueue.isNotEmpty) {
+        _startMitigationWorker();
+      }
+    }
+  }
+
+  Future<ArchiveMitigationReport> _mitigateSingleGallery(int gid) async {
+    final ArchiveDownloadedData? archive =
+        archives.firstWhereOrNull((archive) => archive.gid == gid);
     if (archive == null) {
-      log.error('Archive not found: $gid');
-      return;
+      return _emptyMitigationReport;
     }
 
-    ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[archive.gid]!;
-    if (archiveDownloadInfo.archiveStatus != ArchiveStatus.completed) {
-      log.error('Archive not completed: $gid');
-      return;
+    if (galleryDownloadService.usesRemoteRpcData) {
+      log.warning('Skip archive mitigation in RPC thin-client mode. gid=$gid');
+      return (
+        checked: 1,
+        migrated: 0,
+        replaced: 0,
+        keptOriginal: 0,
+        skipped: 1,
+        failed: 0,
+      );
     }
 
-    GalleryDownloadedData galleryDownloadedData = GalleryDownloadedData(
-      gid: archive.gid,
-      token: archive.token,
-      title: archive.title,
-      category: archive.category,
-      pageCount: archive.pageCount,
-      galleryUrl: archive.galleryUrl,
-      uploader: archive.uploader,
-      publishTime: archive.publishTime,
-      downloadStatusIndex: DownloadStatus.downloaded.index,
-      downloadOriginalImage: archive.isOriginal,
-      sortOrder: 0,
-      groupName: archiveDownloadInfo.group,
-      insertTime: DateTime.now().toString(),
-      priority: GalleryDownloadService.defaultDownloadGalleryPriority,
-      tags: archive.tags,
-      tagRefreshTime: archive.tagRefreshTime,
+    final ArchiveDownloadInfo? archiveDownloadInfo = archiveDownloadInfos[archive.gid];
+    if (archiveDownloadInfo == null ||
+        archiveDownloadInfo.archiveStatus != ArchiveStatus.completed) {
+      return (
+        checked: 1,
+        migrated: 0,
+        replaced: 0,
+        keptOriginal: 0,
+        skipped: 1,
+        failed: 0,
+      );
+    }
+
+    if (!archive.isOriginal) {
+      log.info('Skip low quality archive mitigation: gid=${archive.gid}');
+      return (
+        checked: 1,
+        migrated: 0,
+        replaced: 0,
+        keptOriginal: 0,
+        skipped: 1,
+        failed: 0,
+      );
+    }
+
+    final _ArchiveMitigationOutcome outcome =
+        await _mitigateSingleArchiveToDownload(archive, archiveDownloadInfo);
+
+    switch (outcome) {
+      case _ArchiveMitigationOutcome.migrated:
+        return (
+          checked: 1,
+          migrated: 1,
+          replaced: 0,
+          keptOriginal: 0,
+          skipped: 0,
+          failed: 0,
+        );
+      case _ArchiveMitigationOutcome.replaced:
+        return (
+          checked: 1,
+          migrated: 0,
+          replaced: 1,
+          keptOriginal: 0,
+          skipped: 0,
+          failed: 0,
+        );
+      case _ArchiveMitigationOutcome.keptOriginal:
+        return (
+          checked: 1,
+          migrated: 0,
+          replaced: 0,
+          keptOriginal: 1,
+          skipped: 0,
+          failed: 0,
+        );
+      case _ArchiveMitigationOutcome.skipped:
+        return (
+          checked: 1,
+          migrated: 0,
+          replaced: 0,
+          keptOriginal: 0,
+          skipped: 1,
+          failed: 0,
+        );
+      case _ArchiveMitigationOutcome.failed:
+        return _failedMitigationReport(1);
+    }
+  }
+
+  ArchiveMitigationReport _mergeMitigationReports(List<ArchiveMitigationReport> reports) {
+    int checked = 0;
+    int migrated = 0;
+    int replaced = 0;
+    int keptOriginal = 0;
+    int skipped = 0;
+    int failed = 0;
+
+    for (final ArchiveMitigationReport report in reports) {
+      checked += report.checked;
+      migrated += report.migrated;
+      replaced += report.replaced;
+      keptOriginal += report.keptOriginal;
+      skipped += report.skipped;
+      failed += report.failed;
+    }
+
+    return (
+      checked: checked,
+      migrated: migrated,
+      replaced: replaced,
+      keptOriginal: keptOriginal,
+      skipped: skipped,
+      failed: failed,
     );
-    List<GalleryImage> images = await getUnpackedImages(gid);
+  }
 
-    if (images.length != archive.pageCount) {
-      log.error(
-          'Unpacked images count not equal to page count: ${images.length} != ${archive.pageCount}');
+  ArchiveMitigationReport _failedMitigationReport(int checked) {
+    return (
+      checked: checked,
+      migrated: 0,
+      replaced: 0,
+      keptOriginal: 0,
+      skipped: 0,
+      failed: checked,
+    );
+  }
+
+  static const ArchiveMitigationReport _emptyMitigationReport = (
+    checked: 0,
+    migrated: 0,
+    replaced: 0,
+    keptOriginal: 0,
+    skipped: 0,
+    failed: 0,
+  );
+
+  Future<_ArchiveMitigationOutcome> _mitigateSingleArchiveToDownload(
+    ArchiveDownloadedData archive,
+    ArchiveDownloadInfo archiveDownloadInfo,
+  ) async {
+    final GalleryDownloadedData? existingGallery =
+        galleryDownloadService.gallerys.firstWhereOrNull((g) => g.gid == archive.gid);
+    final String? existingGalleryDir = existingGallery == null
+        ? null
+        : galleryDownloadService.computeGalleryDownloadAbsolutePath(
+            existingGallery.title,
+            existingGallery.gid,
+          );
+
+    if (existingGallery != null && existingGallery.downloadOriginalImage) {
+      log.info('Keep existing original download for gid=${archive.gid}, remove archive copy.');
+      await deleteArchive(archive.gid);
+      return _ArchiveMitigationOutcome.keptOriginal;
+    }
+
+    final GalleryMetadata? metadata = await _requestGalleryMetadata(archive);
+    if (metadata == null) {
+      log.warning('Skip archive mitigation due to metadata fetch failure. gid=${archive.gid}');
+      return _ArchiveMitigationOutcome.skipped;
+    }
+
+    final List<GalleryImage> images = await getUnpackedImages(archive.gid, computeHash: true);
+    if (images.length != metadata.pageCount) {
+      log.warning(
+        'Skip archive mitigation due to image count mismatch. gid=${archive.gid}, images=${images.length}, expected=${metadata.pageCount}',
+      );
+      return _ArchiveMitigationOutcome.skipped;
+    }
+
+    try {
+      if (existingGallery != null) {
+        log.info('Replace low quality gallery with original archive for gid=${archive.gid}.');
+        // Keep old files until new import is persisted to reduce risk on crash.
+        await galleryDownloadService.deleteGallery(existingGallery, deleteImages: false);
+      }
+
+      final GalleryDownloadedData galleryDownloadedData =
+          _buildGalleryFromArchiveAndMetadata(archive, archiveDownloadInfo.group, metadata);
+
+      await galleryDownloadService.importGallery(galleryDownloadedData, images);
+      if (!galleryDownloadService.containGallery(archive.gid)) {
+        log.error('Archive mitigation import failed: gid=${archive.gid}');
+        return _ArchiveMitigationOutcome.failed;
+      }
+
+      if (existingGalleryDir != null) {
+        final String newGalleryDir = galleryDownloadService.computeGalleryDownloadAbsolutePath(
+          galleryDownloadedData.title,
+          galleryDownloadedData.gid,
+        );
+        if (existingGalleryDir != newGalleryDir) {
+          final Directory oldDirectory = Directory(existingGalleryDir);
+          if (await oldDirectory.exists()) {
+            await oldDirectory.delete(recursive: true);
+          }
+        }
+      }
+
+      await deleteArchive(archive.gid);
+      return existingGallery == null
+          ? _ArchiveMitigationOutcome.migrated
+          : _ArchiveMitigationOutcome.replaced;
+    } on Exception catch (e, s) {
+      log.error('Archive mitigation failed: gid=${archive.gid}', e, s);
+      return _ArchiveMitigationOutcome.failed;
+    }
+  }
+
+  Future<GalleryMetadata?> _requestGalleryMetadata(ArchiveDownloadedData archive) async {
+    try {
+      return await retry(
+        () => ehRequest.requestGalleryMetadata<GalleryMetadata>(
+          gid: archive.gid,
+          token: archive.token,
+          parser: EHSpiderParser.galleryMetadataJson2GalleryMetadata,
+        ),
+        retryIf: (e) => e is DioException,
+        maxAttempts: _maxRetryTimes,
+      );
+    } on DioException catch (e) {
+      log.error('Fetch gallery metadata failed. gid=${archive.gid}', e);
+      return null;
+    } on EHSiteException catch (e) {
+      log.error('Fetch gallery metadata failed. gid=${archive.gid}', e);
+      return null;
+    } on Exception catch (e, s) {
+      log.error('Fetch gallery metadata failed. gid=${archive.gid}', e, s);
+      return null;
+    }
+  }
+
+  GalleryDownloadedData _buildGalleryFromArchiveAndMetadata(
+    ArchiveDownloadedData archive,
+    String group,
+    GalleryMetadata metadata,
+  ) {
+    final String normalizedTitle =
+        metadata.japaneseTitle.isNotEmpty ? metadata.japaneseTitle : metadata.title;
+    final String now = DateTime.now().toString();
+
+    return GalleryDownloadedData(
+      gid: metadata.galleryUrl.gid,
+      token: metadata.galleryUrl.token,
+      title: normalizedTitle,
+      category: metadata.category,
+      pageCount: metadata.pageCount,
+      galleryUrl: metadata.galleryUrl.url,
+      uploader: metadata.uploader,
+      publishTime: metadata.publishTime,
+      downloadStatusIndex: DownloadStatus.downloaded.index,
+      downloadOriginalImage: true,
+      sortOrder: 0,
+      groupName: group,
+      insertTime: now,
+      priority: GalleryDownloadService.defaultDownloadGalleryPriority,
+      tags: tagMap2TagString(metadata.tags),
+      tagRefreshTime: now,
+    );
+  }
+
+  Future<void> _tryAutoMitigateArchiveToDownload(int gid) async {
+    if (advancedSetting.enableAutoMitigateArchiveToDownload.isFalse) {
       return;
     }
 
-    return galleryDownloadService.importGallery(galleryDownloadedData, images);
+    final ArchiveMitigationReport report = await mitigateCompletedOriginalArchives(gid: gid);
+    log.info(
+      'Auto archive mitigation finished. gid=$gid, migrated=${report.migrated}, replaced=${report.replaced}, keptOriginal=${report.keptOriginal}, skipped=${report.skipped}, failed=${report.failed}',
+    );
   }
 
   Future<bool> updateArchiveGroup(int gid, String group) async {
@@ -523,13 +876,19 @@ class ArchiveDownloadService extends GetxController
         return images;
       }
 
-      List<Future> futures = [];
-      for (GalleryImage image in images) {
-        futures.add(
-            FileUtil.computeSha1Hash(File(join(pathService.getVisibleDir().path, image.path)))
-                .then((value) => image.imageHash = value));
-      }
-      return Future.wait(futures).then((_) => images);
+      return () async {
+        for (int i = 0; i < images.length; i++) {
+          final GalleryImage image = images[i];
+          image.imageHash = await FileUtil.computeSha1Hash(
+            File(join(pathService.getVisibleDir().path, image.path)),
+          );
+
+          if (i % 8 == 7) {
+            await Future<void>.delayed(Duration.zero);
+          }
+        }
+        return images;
+      }();
     });
   }
 
@@ -1199,6 +1558,8 @@ class ArchiveDownloadService extends GetxController
 
     await _updateArchiveStatus(archive.gid, ArchiveStatus.completed);
 
+    unawaited(_tryAutoMitigateArchiveToDownload(archive.gid));
+
     _tryWakeWaitingTasks();
   }
 
@@ -1479,4 +1840,12 @@ enum ArchiveParseSource {
   factory ArchiveParseSource.fromCode(int code) {
     return ArchiveParseSource.values.firstWhere((s) => s.code == code);
   }
+}
+
+enum _ArchiveMitigationOutcome {
+  migrated,
+  replaced,
+  keptOriginal,
+  skipped,
+  failed,
 }

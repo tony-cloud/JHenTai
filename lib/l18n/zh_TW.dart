@@ -37,6 +37,12 @@ class zh_TW {
       'timeoutRetryTimesHint': '連線/接收逾時的重試次數，0 表示不重試',
       'serverErrorRetryTimes': '伺服器錯誤重試次數',
       'serverErrorRetryTimesHint': '5xx 或網路錯誤的重試次數，403 不會重試',
+      'autoMitigateArchiveToDownloadAfterComplete': '存檔完成後自動遷移至下載',
+      'autoMitigateArchiveToDownloadAfterCompleteHint': '僅自動遷移已完成且為原圖品質的存檔',
+      'mitigateArchiveToDownload': '立即遷移存檔至下載',
+      'mitigateArchiveToDownloadHint': '手動執行已完成原圖存檔的遷移',
+      'mitigateArchiveToDownloadResult':
+          '已檢查@checked個存檔，遷移@migrated個，替換@replaced個，保留原圖@kept個，跳過@skipped個，失敗@failed個。',
       'edit': '編輯',
 
       'ftpServer': 'FTP伺服器',

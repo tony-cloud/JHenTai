@@ -600,6 +600,14 @@ class en_US {
       'checkUpdateAfterLaunchingApp': 'Check update after launching app',
       'refreshGalleryTagsAutomatically': 'Refresh gallery tags automatically',
       'refreshArchiveTagsAutomatically': 'Refresh archive tags automatically',
+      'autoMitigateArchiveToDownloadAfterComplete':
+          'Auto-mitigate archive to download after completion',
+      'autoMitigateArchiveToDownloadAfterCompleteHint':
+          'Only completed original-quality archives are auto-mitigated',
+      'mitigateArchiveToDownload': 'Mitigate Archive Galleries To Download',
+      'mitigateArchiveToDownloadHint': 'Run mitigation now for completed original-quality archives',
+      'mitigateArchiveToDownloadResult':
+          'Checked @checked archives, migrated @migrated, replaced @replaced, kept-original @kept, skipped @skipped, failed @failed.',
       'historySearchLimit': 'History search limit',
       'historySearchLimitHint': '0 for unlimited; applies when finding parent/child history',
       'checkClipboard': 'Check Gallery URL in Clipboard',

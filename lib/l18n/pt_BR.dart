@@ -612,6 +612,15 @@ class pt_BR {
       'checkUpdateAfterLaunchingApp': 'Buscar atualizações após abrir o app',
       'refreshGalleryTagsAutomatically': 'Atualizar tags de galerias automaticamente',
       'refreshArchiveTagsAutomatically': 'Atualizar tags de arquivos automaticamente',
+      'autoMitigateArchiveToDownloadAfterComplete':
+          'Mitigar arquivo para download automaticamente após concluir',
+      'autoMitigateArchiveToDownloadAfterCompleteHint':
+          'Somente arquivos concluídos em qualidade original serão mitigados automaticamente',
+      'mitigateArchiveToDownload': 'Mitigar galerias de arquivo para download agora',
+      'mitigateArchiveToDownloadHint':
+          'Executar mitigação para arquivos concluídos em qualidade original',
+      'mitigateArchiveToDownloadResult':
+          'Verificados @checked arquivos, migrados @migrated, substituídos @replaced, mantidos originais @kept, ignorados @skipped, falhas @failed.',
       'historySearchLimit': 'Limite de busca de histórico',
       'historySearchLimitHint': '0 para ilimitado; usado ao buscar galerias pai/filha',
       'checkClipboard': 'Verificar se há URL de Galeria na área de transferência',

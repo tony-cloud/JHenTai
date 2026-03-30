@@ -248,6 +248,15 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
                 changeParseSource(archive.gid, ArchiveParseSource.bot);
               },
             ),
+          if (archiveDownloadInfo != null &&
+              archiveDownloadInfo.archiveStatus == ArchiveStatus.completed)
+            CupertinoActionSheetAction(
+              child: Text('migrateToDownload'.tr),
+              onPressed: () async {
+                backRoute();
+                await handleMitigateArchiveToDownload(archive.gid);
+              },
+            ),
           CupertinoActionSheetAction(
             child: Text('changeGroup'.tr),
             onPressed: () {
@@ -335,6 +344,68 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
       await Future.wait(futures);
       updateGlobalGalleryStatus();
     }
+  }
+
+  Future<void> handleMitigateArchiveToDownload(int gid) async {
+    if (archiveDownloadService.isMitigationInProgress(gid)) {
+      toast('operationInProgress'.tr, isCenter: false);
+      return;
+    }
+
+    ArchiveMitigationReport report =
+        await archiveDownloadService.mitigateCompletedOriginalArchives(gid: gid);
+    _toastMitigationResult(report);
+    updateGlobalGalleryStatus();
+  }
+
+  Future<void> handleMultiMitigateToDownload() async {
+    int checked = 0;
+    int migrated = 0;
+    int replaced = 0;
+    int keptOriginal = 0;
+    int skipped = 0;
+    int failed = 0;
+
+    for (int gid in multiSelectDownloadPageState.selectedGids) {
+      ArchiveMitigationReport report =
+          await archiveDownloadService.mitigateCompletedOriginalArchives(gid: gid);
+      checked += report.checked;
+      migrated += report.migrated;
+      replaced += report.replaced;
+      keptOriginal += report.keptOriginal;
+      skipped += report.skipped;
+      failed += report.failed;
+    }
+
+    _toastMitigationResult(
+      (
+        checked: checked,
+        migrated: migrated,
+        replaced: replaced,
+        keptOriginal: keptOriginal,
+        skipped: skipped,
+        failed: failed,
+      ),
+    );
+
+    exitSelectMode();
+    updateGlobalGalleryStatus();
+  }
+
+  void _toastMitigationResult(ArchiveMitigationReport report) {
+    toast(
+      'mitigateArchiveToDownloadResult'.trParams(
+        {
+          'checked': '${report.checked}',
+          'migrated': '${report.migrated}',
+          'replaced': '${report.replaced}',
+          'kept': '${report.keptOriginal}',
+          'skipped': '${report.skipped}',
+          'failed': '${report.failed}',
+        },
+      ),
+      isCenter: false,
+    );
   }
 
   Future<void> handleChangeParseSource() async {

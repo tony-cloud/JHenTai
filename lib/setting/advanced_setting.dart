@@ -19,6 +19,7 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   RxBool inNoImageMode = false.obs;
   RxBool enableRefreshGalleryTags = true.obs;
   RxBool enableRefreshArchiveTags = true.obs;
+  RxBool enableAutoMitigateArchiveToDownload = false.obs;
   RxInt historySearchLimit = 0.obs;
 
   @override
@@ -41,6 +42,8 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
         map['enableRefreshGalleryTags'] ?? enableRefreshGalleryTags.value;
     enableRefreshArchiveTags.value =
         map['enableRefreshArchiveTags'] ?? enableRefreshArchiveTags.value;
+    enableAutoMitigateArchiveToDownload.value =
+        map['enableAutoMitigateArchiveToDownload'] ?? enableAutoMitigateArchiveToDownload.value;
     historySearchLimit.value = map['historySearchLimit'] ?? historySearchLimit.value;
   }
 
@@ -55,6 +58,7 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
       'inNoImageMode': inNoImageMode.value,
       'enableRefreshGalleryTags': enableRefreshGalleryTags.value,
       'enableRefreshArchiveTags': enableRefreshArchiveTags.value,
+      'enableAutoMitigateArchiveToDownload': enableAutoMitigateArchiveToDownload.value,
       'historySearchLimit': historySearchLimit.value,
     });
   }
@@ -110,6 +114,13 @@ class AdvancedSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   Future<void> saveEnableRefreshArchiveTags(bool enableRefreshArchiveTags) async {
     log.debug('saveEnableRefreshArchiveTags:$enableRefreshArchiveTags');
     this.enableRefreshArchiveTags.value = enableRefreshArchiveTags;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEnableAutoMitigateArchiveToDownload(
+      bool enableAutoMitigateArchiveToDownload) async {
+    log.debug('saveEnableAutoMitigateArchiveToDownload:$enableAutoMitigateArchiveToDownload');
+    this.enableAutoMitigateArchiveToDownload.value = enableAutoMitigateArchiveToDownload;
     await saveBeanConfig();
   }
 

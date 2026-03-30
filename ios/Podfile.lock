@@ -72,6 +72,9 @@ PODS:
   - SDWebImage/Core (5.18.11)
   - share_plus (0.0.1):
     - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
@@ -136,6 +139,7 @@ DEPENDENCIES:
   - saver_gallery (from `.symlinks/plugins/saver_gallery/ios`)
   - screen_brightness_ios (from `.symlinks/plugins/screen_brightness_ios/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - sqlite3_flutter_libs (from `.symlinks/plugins/sqlite3_flutter_libs/darwin`)
   - sqlite3_simple (from `.symlinks/plugins/sqlite3_simple/darwin`)
@@ -190,6 +194,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/screen_brightness_ios/ios"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqflite_darwin:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   sqlite3_flutter_libs:
@@ -229,6 +235,7 @@ SPEC CHECKSUMS:
   screen_brightness_ios: 9953fd7da5bd480f1a93990daeec2eb42d4f3b52
   SDWebImage: a3ba0b8faac7228c3c8eadd1a55c9c9fe5e16457
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
+  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   sqlite3: 73513155ec6979715d3904ef53a8d68892d4032b
   sqlite3_flutter_libs: 83f8e9f5b6554077f1d93119fe20ebaa5f3a9ef1

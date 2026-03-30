@@ -583,6 +583,12 @@ class zh_CN {
       'checkUpdateAfterLaunchingApp': '启动应用时检查更新',
       'refreshGalleryTagsAutomatically': '自动刷新画廊标签',
       'refreshArchiveTagsAutomatically': '自动刷新归档标签',
+      'autoMitigateArchiveToDownloadAfterComplete': '归档完成后自动迁移至下载',
+      'autoMitigateArchiveToDownloadAfterCompleteHint': '仅自动迁移已完成且为原图质量的归档',
+      'mitigateArchiveToDownload': '立即迁移归档至下载',
+      'mitigateArchiveToDownloadHint': '手动执行已完成原图归档的迁移',
+      'mitigateArchiveToDownloadResult':
+          '已检查@checked个归档，迁移@migrated个，替换@replaced个，保留原图@kept个，跳过@skipped个，失败@failed个。',
       'historySearchLimit': '历史查找数量限制',
       'historySearchLimitHint': '0 为不限，应用于递归查找父子画廊时',
       'checkClipboard': '检测剪切板中的画廊链接',

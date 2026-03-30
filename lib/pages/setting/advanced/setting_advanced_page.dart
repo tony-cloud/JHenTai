@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/model/config.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/archive_download_service.dart';
 import 'package:jhentai/service/cloud_service.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
@@ -55,6 +56,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
   LoadingState _importDataLoadingState = LoadingState.idle;
   LoadingState _refreshGalleryTagsState = LoadingState.idle;
   LoadingState _refreshArchiveTagsState = LoadingState.idle;
+  LoadingState _mitigateArchiveToDownloadState = LoadingState.idle;
   LoadingState _repairMissingImagesState = LoadingState.idle;
   LoadingState _cleanupDuplicatedGalleryState = LoadingState.idle;
   LoadingState _clearParentGalleryCacheState = LoadingState.idle;
@@ -105,6 +107,8 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildCheckUpdate(),
             _buildRefreshGalleryTags(),
             _buildRefreshArchiveTags(),
+            _buildAutoMitigateArchiveToDownload(),
+            _buildMitigateArchiveToDownload(context),
             _buildHistorySearchLimit(),
             _buildCheckClipboard(),
             if (GetPlatform.isAndroid) _buildVerifyAppLinks(),
@@ -446,6 +450,43 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       title: Text('checkClipboard'.tr),
       value: advancedSetting.enableCheckClipboard.value,
       onChanged: advancedSetting.saveEnableCheckClipboard,
+    );
+  }
+
+  Widget _buildAutoMitigateArchiveToDownload() {
+    return SwitchListTile(
+      title: Text('autoMitigateArchiveToDownloadAfterComplete'.tr),
+      subtitle: Text('autoMitigateArchiveToDownloadAfterCompleteHint'.tr),
+      value: advancedSetting.enableAutoMitigateArchiveToDownload.value,
+      onChanged: advancedSetting.saveEnableAutoMitigateArchiveToDownload,
+    );
+  }
+
+  Widget _buildMitigateArchiveToDownload(BuildContext context) {
+    final BuildContext tileContext = context;
+
+    return ListTile(
+      title: Text('mitigateArchiveToDownload'.tr),
+      subtitle: Text('mitigateArchiveToDownloadHint'.tr),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LoadingStateIndicator(
+            loadingState: _mitigateArchiveToDownloadState,
+            useCupertinoIndicator: true,
+            idleWidgetBuilder: () =>
+                Icon(Icons.sync, color: UIConfig.resumePauseButtonColor(tileContext)),
+            successWidgetBuilder: () =>
+                Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
+            errorWidgetBuilder: () => Icon(
+              Icons.error_outline,
+              color: Theme.of(tileContext).colorScheme.error,
+            ),
+            errorTapCallback: _mitigateArchiveToDownloadManually,
+          ).marginOnly(right: 8),
+        ],
+      ),
+      onTap: _mitigateArchiveToDownloadManually,
     );
   }
 
@@ -945,6 +986,46 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
     }
 
     _resetManualRefreshStateAfterDelay(isGallery: false);
+  }
+
+  Future<void> _mitigateArchiveToDownloadManually() async {
+    if (_mitigateArchiveToDownloadState == LoadingState.loading) {
+      return;
+    }
+
+    setStateSafely(() => _mitigateArchiveToDownloadState = LoadingState.loading);
+
+    try {
+      final ArchiveMitigationReport report =
+          await archiveDownloadService.mitigateCompletedOriginalArchives();
+      if (!mounted) {
+        return;
+      }
+
+      setStateSafely(() => _mitigateArchiveToDownloadState = LoadingState.success);
+      toast(
+        'mitigateArchiveToDownloadResult'.trParams({
+          'checked': '${report.checked}',
+          'migrated': '${report.migrated}',
+          'replaced': '${report.replaced}',
+          'kept': '${report.keptOriginal}',
+          'skipped': '${report.skipped}',
+          'failed': '${report.failed}',
+        }),
+        isCenter: false,
+      );
+    } catch (e, s) {
+      log.error('Manual archive mitigation failed', e, s);
+      if (mounted) {
+        setStateSafely(() => _mitigateArchiveToDownloadState = LoadingState.error);
+        toast('internalError'.tr);
+      }
+    }
+
+    _resetStateAfterDelay(
+      loadingState: () => _mitigateArchiveToDownloadState,
+      reset: () => _mitigateArchiveToDownloadState = LoadingState.idle,
+    );
   }
 
   void _resetManualRefreshStateAfterDelay({required bool isGallery}) {

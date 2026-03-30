@@ -41,6 +41,9 @@ mixin ArchiveDownloadPageMixin on StatelessWidget
           icon: const Icon(Icons.bookmark),
           onPressed: archiveDownloadPageLogic.handleMultiChangeGroup),
       IconButton(
+          icon: const Icon(Icons.sync_alt),
+          onPressed: archiveDownloadPageLogic.handleMultiMitigateToDownload),
+      IconButton(
           icon: const Icon(Icons.delete), onPressed: archiveDownloadPageLogic.handleMultiDelete),
       IconButton(
           icon: const Icon(Icons.smart_toy_outlined),
