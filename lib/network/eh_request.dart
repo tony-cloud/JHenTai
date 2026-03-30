@@ -611,6 +611,21 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
         break;
     }
 
+    if (_shouldUseRpc(RPCCapabilities.gallerySearch)) {
+      final Map<String, dynamic> result = await rpcRequest.request(
+        method: RPCMethods.galleryPage,
+        params: {
+          'url': EHConsts.ERanklist,
+          'searchQuery': {
+            'tl': tl,
+            'p': pageNo,
+          },
+        },
+      );
+
+      return _parseRpcResponse(result: result, parser: parser);
+    }
+
     Response response = await _getWithErrorHandler('${EHConsts.ERanklist}?tl=$tl&p=$pageNo');
     return _parseResponse(response, parser);
   }
