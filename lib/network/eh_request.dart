@@ -530,11 +530,13 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   Future<T> requestGalleryMetadata<T>({
     required int gid,
     required String token,
+    CancelToken? cancelToken,
     required HtmlParser<T> parser,
   }) async {
     if (_shouldUseRpc(RPCCapabilities.galleryDetail)) {
       final Map<String, dynamic> result = await rpcRequest.request(
         method: RPCMethods.galleryMetadata,
+        cancelToken: cancelToken,
         params: {
           'gid': gid,
           'token': token,
@@ -546,6 +548,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
     Response response = await _postWithErrorHandler(
       EHConsts.EHApi,
+      cancelToken: cancelToken,
       options: Options(contentType: Headers.jsonContentType),
       data: {
         'method': 'gdata',

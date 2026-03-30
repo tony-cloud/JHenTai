@@ -84,8 +84,11 @@ class ArchiveDownloadService extends GetxController
 
   final Queue<int> _mitigationQueue = Queue<int>();
   final Set<int> _queuedMitigationGids = <int>{};
+  final Set<int> _runningMitigationGids = <int>{};
   final Map<int, Completer<ArchiveMitigationReport>> _mitigationCompleters =
       <int, Completer<ArchiveMitigationReport>>{};
+  CancelToken _mitigationCancelToken = CancelToken();
+  int _mitigationSessionId = 0;
   bool _mitigationWorkerRunning = false;
 
   List<ArchiveDownloadedData> archivesWithGroup(String group) =>
@@ -162,8 +165,11 @@ class ArchiveDownloadService extends GetxController
         completer.complete(_failedMitigationReport(0));
       }
     }
+
+    _mitigationCancelToken.cancel('Archive mitigation service disposed');
     _mitigationQueue.clear();
     _queuedMitigationGids.clear();
+    _runningMitigationGids.clear();
     _mitigationCompleters.clear();
     unawaited(wakelockService.release(_mitigationLockName));
   }
@@ -174,6 +180,41 @@ class ArchiveDownloadService extends GetxController
 
   bool isMitigationInProgress(int gid) {
     return _mitigationCompleters.containsKey(gid);
+  }
+
+  bool hasMitigationInProgress() {
+    return _mitigationWorkerRunning ||
+        _mitigationQueue.isNotEmpty ||
+        _mitigationCompleters.isNotEmpty ||
+        _runningMitigationGids.isNotEmpty;
+  }
+
+  bool interruptMitigation() {
+    if (!hasMitigationInProgress()) {
+      return false;
+    }
+
+    _mitigationSessionId++;
+    _mitigationCancelToken.cancel('Archive mitigation interrupted');
+    _mitigationCancelToken = CancelToken();
+
+    _mitigationQueue.clear();
+    _queuedMitigationGids.clear();
+
+    for (final MapEntry<int, Completer<ArchiveMitigationReport>> entry
+        in _mitigationCompleters.entries.toList(growable: false)) {
+      if (_runningMitigationGids.contains(entry.key)) {
+        continue;
+      }
+
+      if (!entry.value.isCompleted) {
+        entry.value.complete(_interruptedMitigationReport(1));
+      }
+
+      _mitigationCompleters.remove(entry.key);
+    }
+
+    return true;
   }
 
   Future<void> downloadArchive(ArchiveDownloadedData archive,
@@ -378,10 +419,16 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> _processMitigationQueue() async {
+    final int sessionId = _mitigationSessionId;
+
     await wakelockService.acquire(_mitigationLockName);
 
     try {
       while (_mitigationQueue.isNotEmpty) {
+        if (_isMitigationInterrupted(sessionId)) {
+          break;
+        }
+
         final int gid = _mitigationQueue.removeFirst();
         _queuedMitigationGids.remove(gid);
 
@@ -391,10 +438,20 @@ class ArchiveDownloadService extends GetxController
           continue;
         }
 
+        _runningMitigationGids.add(gid);
+
         try {
-          final ArchiveMitigationReport report = await _mitigateSingleGallery(gid);
+          final ArchiveMitigationReport report = await _mitigateSingleGallery(gid, sessionId);
           if (!completer.isCompleted) {
             completer.complete(report);
+          }
+        } on _MitigationInterruptedException {
+          if (!completer.isCompleted) {
+            completer.complete(_interruptedMitigationReport(1));
+          }
+
+          if (_isMitigationInterrupted(sessionId)) {
+            break;
           }
         } on Exception catch (e, s) {
           log.error('Mitigation queue task failed: gid=$gid', e, s);
@@ -402,7 +459,12 @@ class ArchiveDownloadService extends GetxController
             completer.complete(_failedMitigationReport(1));
           }
         } finally {
+          _runningMitigationGids.remove(gid);
           _mitigationCompleters.remove(gid);
+        }
+
+        if (_isMitigationInterrupted(sessionId)) {
+          break;
         }
 
         await Future<void>.delayed(const Duration(milliseconds: 16));
@@ -417,7 +479,9 @@ class ArchiveDownloadService extends GetxController
     }
   }
 
-  Future<ArchiveMitigationReport> _mitigateSingleGallery(int gid) async {
+  Future<ArchiveMitigationReport> _mitigateSingleGallery(int gid, int sessionId) async {
+    _throwIfMitigationInterrupted(sessionId);
+
     final ArchiveDownloadedData? archive =
         archives.firstWhereOrNull((archive) => archive.gid == gid);
     if (archive == null) {
@@ -462,7 +526,7 @@ class ArchiveDownloadService extends GetxController
     }
 
     final _ArchiveMitigationOutcome outcome =
-        await _mitigateSingleArchiveToDownload(archive, archiveDownloadInfo);
+        await _mitigateSingleArchiveToDownload(archive, archiveDownloadInfo, sessionId);
 
     switch (outcome) {
       case _ArchiveMitigationOutcome.migrated:
@@ -544,6 +608,27 @@ class ArchiveDownloadService extends GetxController
     );
   }
 
+  ArchiveMitigationReport _interruptedMitigationReport(int checked) {
+    return (
+      checked: checked,
+      migrated: 0,
+      replaced: 0,
+      keptOriginal: 0,
+      skipped: checked,
+      failed: 0,
+    );
+  }
+
+  bool _isMitigationInterrupted(int sessionId) {
+    return sessionId != _mitigationSessionId;
+  }
+
+  void _throwIfMitigationInterrupted(int sessionId) {
+    if (_isMitigationInterrupted(sessionId)) {
+      throw const _MitigationInterruptedException();
+    }
+  }
+
   static const ArchiveMitigationReport _emptyMitigationReport = (
     checked: 0,
     migrated: 0,
@@ -556,7 +641,10 @@ class ArchiveDownloadService extends GetxController
   Future<_ArchiveMitigationOutcome> _mitigateSingleArchiveToDownload(
     ArchiveDownloadedData archive,
     ArchiveDownloadInfo archiveDownloadInfo,
+    int sessionId,
   ) async {
+    _throwIfMitigationInterrupted(sessionId);
+
     final GalleryDownloadedData? existingGallery =
         galleryDownloadService.gallerys.firstWhereOrNull((g) => g.gid == archive.gid);
     final String? existingGalleryDir = existingGallery == null
@@ -572,19 +660,30 @@ class ArchiveDownloadService extends GetxController
       return _ArchiveMitigationOutcome.keptOriginal;
     }
 
-    final GalleryMetadata? metadata = await _requestGalleryMetadata(archive);
+    final GalleryMetadata? metadata = await _requestGalleryMetadata(
+      archive,
+      sessionId: sessionId,
+    );
     if (metadata == null) {
       log.warning('Skip archive mitigation due to metadata fetch failure. gid=${archive.gid}');
       return _ArchiveMitigationOutcome.skipped;
     }
 
-    final List<GalleryImage> images = await getUnpackedImages(archive.gid, computeHash: true);
+    _throwIfMitigationInterrupted(sessionId);
+
+    final List<GalleryImage> images = await getUnpackedImages(
+      archive.gid,
+      computeHash: true,
+      shouldInterrupt: () => _isMitigationInterrupted(sessionId),
+    );
     if (images.length != metadata.pageCount) {
       log.warning(
         'Skip archive mitigation due to image count mismatch. gid=${archive.gid}, images=${images.length}, expected=${metadata.pageCount}',
       );
       return _ArchiveMitigationOutcome.skipped;
     }
+
+    _throwIfMitigationInterrupted(sessionId);
 
     try {
       if (existingGallery != null) {
@@ -625,18 +724,26 @@ class ArchiveDownloadService extends GetxController
     }
   }
 
-  Future<GalleryMetadata?> _requestGalleryMetadata(ArchiveDownloadedData archive) async {
+  Future<GalleryMetadata?> _requestGalleryMetadata(
+    ArchiveDownloadedData archive, {
+    required int sessionId,
+  }) async {
     try {
       return await retry(
         () => ehRequest.requestGalleryMetadata<GalleryMetadata>(
           gid: archive.gid,
           token: archive.token,
+          cancelToken: _mitigationCancelToken,
           parser: EHSpiderParser.galleryMetadataJson2GalleryMetadata,
         ),
-        retryIf: (e) => e is DioException,
+        retryIf: (e) => e is DioException && e.type != DioExceptionType.cancel,
         maxAttempts: _maxRetryTimes,
       );
     } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel && _isMitigationInterrupted(sessionId)) {
+        throw const _MitigationInterruptedException();
+      }
+
       log.error('Fetch gallery metadata failed. gid=${archive.gid}', e);
       return null;
     } on EHSiteException catch (e) {
@@ -852,7 +959,11 @@ class ArchiveDownloadService extends GetxController
     return restoredCount;
   }
 
-  Future<List<GalleryImage>> getUnpackedImages(int gid, {bool computeHash = false}) async {
+  Future<List<GalleryImage>> getUnpackedImages(
+    int gid, {
+    bool computeHash = false,
+    bool Function()? shouldInterrupt,
+  }) async {
     ArchiveDownloadedData archive = archives.firstWhere((a) => a.gid == gid);
     Directory directory = Directory(computeArchiveUnpackingPath(archive.title, archive.gid));
 
@@ -878,12 +989,20 @@ class ArchiveDownloadService extends GetxController
 
       return () async {
         for (int i = 0; i < images.length; i++) {
+          if (shouldInterrupt?.call() ?? false) {
+            throw const _MitigationInterruptedException();
+          }
+
           final GalleryImage image = images[i];
           image.imageHash = await FileUtil.computeSha1Hash(
             File(join(pathService.getVisibleDir().path, image.path)),
           );
 
           if (i % 8 == 7) {
+            if (shouldInterrupt?.call() ?? false) {
+              throw const _MitigationInterruptedException();
+            }
+
             await Future<void>.delayed(Duration.zero);
           }
         }
@@ -1848,4 +1967,8 @@ enum _ArchiveMitigationOutcome {
   keptOriginal,
   skipped,
   failed,
+}
+
+class _MitigationInterruptedException implements Exception {
+  const _MitigationInterruptedException();
 }

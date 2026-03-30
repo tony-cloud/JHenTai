@@ -464,6 +464,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
 
   Widget _buildMitigateArchiveToDownload(BuildContext context) {
     final BuildContext tileContext = context;
+    final bool showInterruptButton = _mitigateArchiveToDownloadState == LoadingState.loading;
 
     return ListTile(
       title: Text('mitigateArchiveToDownload'.tr),
@@ -484,6 +485,15 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             ),
             errorTapCallback: _mitigateArchiveToDownloadManually,
           ).marginOnly(right: 8),
+          if (showInterruptButton)
+            IconButton(
+              onPressed: _interruptArchiveMitigation,
+              tooltip: 'stop'.tr,
+              icon: Icon(
+                Icons.stop_circle_outlined,
+                color: UIConfig.alertColor(tileContext),
+              ),
+            ),
         ],
       ),
       onTap: _mitigateArchiveToDownloadManually,
@@ -1026,6 +1036,12 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       loadingState: () => _mitigateArchiveToDownloadState,
       reset: () => _mitigateArchiveToDownloadState = LoadingState.idle,
     );
+  }
+
+  void _interruptArchiveMitigation() {
+    if (archiveDownloadService.interruptMitigation()) {
+      toast('stop'.tr, isCenter: false);
+    }
   }
 
   void _resetManualRefreshStateAfterDelay({required bool isGallery}) {
