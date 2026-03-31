@@ -610,7 +610,7 @@ class zh_CN {
       'cleanupDuplicatedGallery': '清理重复版本画廊',
       'cleanupDuplicatedGalleryHint': '长按按历史链路清理旧版本画廊',
       'cleanupDuplicatedGalleryResult': '已检查@checked个画廊，删除@deleted个，跳过@skipped个，失败@failed个。',
-      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'RPC 精简模式下不可用',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode': '当前 RPC 后端不支持该维护任务',
       'clearParentGalleryCache': '清理父画廊缓存',
       'clearParentGalleryCacheHint': '长按清理父画廊关系缓存',
       'clearParentGalleryCacheResult': '已清理@count条父画廊缓存。',

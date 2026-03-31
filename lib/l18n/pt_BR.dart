@@ -645,7 +645,8 @@ class pt_BR {
           'Pressione e segure para remover galerias antigas na cadeia de histórico',
       'cleanupDuplicatedGalleryResult':
           'Verificadas @checked galerias, removidas @deleted, ignoradas @skipped, falhas @failed.',
-      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'Indisponível no modo RPC thin-client',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode':
+          'O backend RPC atual não oferece suporte a esta tarefa de manutenção',
       'clearParentGalleryCache': 'Limpar cache de galeria pai',
       'clearParentGalleryCacheHint':
           'Pressione e segure para limpar o cache das relações de galeria pai',

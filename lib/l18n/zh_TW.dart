@@ -618,7 +618,7 @@ class zh_TW {
       'cleanupDuplicatedGallery': '清理重複版本畫廊',
       'cleanupDuplicatedGalleryHint': '長按依歷史鏈路清理舊版本畫廊',
       'cleanupDuplicatedGalleryResult': '已檢查@checked個畫廊，刪除@deleted個，跳過@skipped個，失敗@failed個。',
-      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'RPC 精簡模式下不可用',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode': '目前的 RPC 後端不支援此維護任務',
       'clearParentGalleryCache': '清理父畫廊快取',
       'clearParentGalleryCacheHint': '長按清理父畫廊關係快取',
       'clearParentGalleryCacheResult': '已清理@count條父畫廊快取。',

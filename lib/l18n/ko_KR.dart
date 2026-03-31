@@ -630,7 +630,7 @@ class ko_KR {
       'cleanupDuplicatedGallery': '중복 갤러리 정리',
       'cleanupDuplicatedGalleryHint': '길게 눌러 히스토리 체인의 구버전 갤러리를 정리합니다',
       'cleanupDuplicatedGalleryResult': '@checked개를 검사하여 @deleted개 삭제, @skipped개 건너뜀, @failed개 실패',
-      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'RPC 씬 클라이언트 모드에서는 사용할 수 없습니다',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode': '현재 RPC 백엔드는 이 유지 관리 작업을 지원하지 않습니다',
       'clearParentGalleryCache': '부모 갤러리 캐시 삭제',
       'clearParentGalleryCacheHint': '길게 눌러 부모 갤러리 관계 캐시를 삭제합니다',
       'clearParentGalleryCacheResult': '부모 갤러리 캐시 @count개를 삭제했습니다.',

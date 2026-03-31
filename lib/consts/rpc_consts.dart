@@ -53,6 +53,8 @@ class RPCMethods {
   static const String downloadGalleryAssignPriority = 'download.gallery.assignPriority';
   static const String downloadGalleryPauseAll = 'download.gallery.pauseAll';
   static const String downloadGalleryResumeAll = 'download.gallery.resumeAll';
+  static const String downloadGalleryCleanupDuplicates = 'download.gallery.cleanupDuplicates';
+  static const String downloadGalleryClearParentCache = 'download.gallery.clearParentCache';
 
   const RPCMethods._();
 }
@@ -82,6 +84,7 @@ class RPCCapabilities {
   static const String archiveResolve = 'archive.resolve';
   static const String authLogin = 'auth.login';
   static const String downloadGalleryControl = 'download.gallery.control';
+  static const String downloadGalleryMaintenance = 'download.gallery.maintenance';
 
   const RPCCapabilities._();
 }

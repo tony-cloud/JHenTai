@@ -134,6 +134,9 @@ class GalleryDownloadService extends GetxController
 
   bool get usesRemoteRpcData => _remoteRpcDataActive;
 
+  bool get supportsRemoteGalleryMaintenance =>
+      rpcService.supportsCapability(RPCCapabilities.downloadGalleryMaintenance);
+
   bool _hasActiveGalleryDownloads() {
     return galleryDownloadInfos.values.any((info) =>
         info.downloadProgress.downloadStatus == DownloadStatus.downloading ||
@@ -3102,25 +3105,47 @@ class GalleryDownloadService extends GetxController
     return (repaired: repaired, renamed: renamed);
   }
 
-  Future<int> clearParentGalleryCache() {
-    return galleryHistoryLineageService.clearParentGalleryCache();
+  Future<int> clearParentGalleryCache() async {
+    if (usesRemoteRpcData) {
+      _requireRemoteGalleryMaintenance();
+
+      final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryClearParentCache();
+      return _readRpcInt(result, 'count');
+    }
+
+    return clearParentGalleryCacheLocally();
   }
 
   Future<({int checked, int deleted, int skipped, int failed})> cleanupDuplicatedGalleries() async {
+    if (usesRemoteRpcData) {
+      _requireRemoteGalleryMaintenance();
+
+      final Map<String, dynamic> result =
+          await rpcRequest.requestDownloadGalleryCleanupDuplicates();
+      await refreshRemoteGallerys();
+
+      return (
+        checked: _readRpcInt(result, 'checked'),
+        deleted: _readRpcInt(result, 'deleted'),
+        skipped: _readRpcInt(result, 'skipped'),
+        failed: _readRpcInt(result, 'failed'),
+      );
+    }
+
+    return cleanupDuplicatedGalleriesLocally();
+  }
+
+  Future<int> clearParentGalleryCacheLocally() {
+    return galleryHistoryLineageService.clearParentGalleryCache();
+  }
+
+  Future<({int checked, int deleted, int skipped, int failed})>
+      cleanupDuplicatedGalleriesLocally() async {
     await completed;
 
     final List<GalleryDownloadedData> snapshot = List<GalleryDownloadedData>.from(gallerys);
     if (snapshot.isEmpty) {
       return (checked: 0, deleted: 0, skipped: 0, failed: 0);
-    }
-
-    if (usesRemoteRpcData) {
-      return (
-        checked: snapshot.length,
-        deleted: 0,
-        skipped: snapshot.length,
-        failed: 0,
-      );
     }
 
     final Map<int, GalleryDownloadedData> galleryByGid = <int, GalleryDownloadedData>{
@@ -3179,6 +3204,23 @@ class GalleryDownloadService extends GetxController
       skipped: skipped,
       failed: failed,
     );
+  }
+
+  void _requireRemoteGalleryMaintenance() {
+    if (supportsRemoteGalleryMaintenance) {
+      return;
+    }
+
+    throw UnsupportedError('Current RPC backend does not support gallery maintenance');
+  }
+
+  int _readRpcInt(Map<String, dynamic> result, String key) {
+    final dynamic value = result[key];
+    if (value is int) {
+      return value;
+    }
+
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   Set<int> _resolveDuplicatedGalleryDeleteTargets({

@@ -644,7 +644,8 @@ class ru_RU {
       'cleanupDuplicatedGalleryHint': 'Долгий тап для удаления старых галерей в цепочке истории',
       'cleanupDuplicatedGalleryResult':
           'Проверено @checked галерей, удалено @deleted, пропущено @skipped, ошибок @failed.',
-      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'Недоступно в RPC thin-client режиме',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode':
+          'Текущий RPC-бэкенд не поддерживает эту задачу обслуживания',
       'clearParentGalleryCache': 'Очистить кэш родительских галерей',
       'clearParentGalleryCacheHint': 'Долгий тап для очистки кэша связей родительских галерей',
       'clearParentGalleryCacheResult': 'Очищено @count кэшированных связей родительских галерей.',

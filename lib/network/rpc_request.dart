@@ -478,6 +478,14 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     return request(method: RPCMethods.downloadGalleryResumeAll);
   }
 
+  Future<Map<String, dynamic>> requestDownloadGalleryCleanupDuplicates() {
+    return request(method: RPCMethods.downloadGalleryCleanupDuplicates);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryClearParentCache() {
+    return request(method: RPCMethods.downloadGalleryClearParentCache);
+  }
+
   Future<Map<String, dynamic>> request({
     required String method,
     Map<String, dynamic>? params,

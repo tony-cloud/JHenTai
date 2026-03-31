@@ -71,6 +71,7 @@ class RpcBridgeServer {
         RPCCapabilities.downloadGalleryList,
         RPCCapabilities.downloadGalleryRead,
         RPCCapabilities.downloadGalleryControl,
+        RPCCapabilities.downloadGalleryMaintenance,
         RPCCapabilities.downloadGalleryThumbnail,
         RPCCapabilities.historyRead,
         RPCCapabilities.historyWrite,
@@ -406,6 +407,10 @@ class RpcBridgeServer {
         return _handleDownloadGalleryPauseAll();
       case RPCMethods.downloadGalleryResumeAll:
         return _handleDownloadGalleryResumeAll();
+      case RPCMethods.downloadGalleryCleanupDuplicates:
+        return _handleDownloadGalleryCleanupDuplicates();
+      case RPCMethods.downloadGalleryClearParentCache:
+        return _handleDownloadGalleryClearParentCache();
       default:
         throw RPCBridgeException(
           code: -32601,
@@ -1189,6 +1194,28 @@ class RpcBridgeServer {
 
     return <String, dynamic>{
       'status': 'ok',
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryCleanupDuplicates() async {
+    final ({int checked, int deleted, int skipped, int failed}) result =
+        await galleryDownloadService.cleanupDuplicatedGalleriesLocally();
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'checked': result.checked,
+      'deleted': result.deleted,
+      'skipped': result.skipped,
+      'failed': result.failed,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryClearParentCache() async {
+    final int count = await galleryDownloadService.clearParentGalleryCacheLocally();
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'count': count,
     };
   }
 

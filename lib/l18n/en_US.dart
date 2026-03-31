@@ -632,7 +632,8 @@ class en_US {
           'Long press to cleanup old galleries in a parent-child history chain',
       'cleanupDuplicatedGalleryResult':
           'Checked @checked galleries, deleted @deleted, skipped @skipped, failed @failed.',
-      'cleanupDuplicatedGalleryUnavailableInRpcMode': 'Unavailable in RPC thin-client mode',
+      'cleanupDuplicatedGalleryUnavailableInRpcMode':
+          'Current RPC backend does not support this maintenance task',
       'clearParentGalleryCache': 'Clear Parent Gallery Cache',
       'clearParentGalleryCacheHint': 'Long press to clear cached parent-gallery relations',
       'clearParentGalleryCacheResult': 'Cleared @count cached parent-gallery relations.',

@@ -681,7 +681,8 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       return;
     }
 
-    if (galleryDownloadService.usesRemoteRpcData) {
+    if (galleryDownloadService.usesRemoteRpcData &&
+        !galleryDownloadService.supportsRemoteGalleryMaintenance) {
       toast('cleanupDuplicatedGalleryUnavailableInRpcMode'.tr, isCenter: false);
       return;
     }
@@ -720,6 +721,12 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
 
   Future<void> _clearParentGalleryCache() async {
     if (_clearParentGalleryCacheState == LoadingState.loading) {
+      return;
+    }
+
+    if (galleryDownloadService.usesRemoteRpcData &&
+        !galleryDownloadService.supportsRemoteGalleryMaintenance) {
+      toast('cleanupDuplicatedGalleryUnavailableInRpcMode'.tr, isCenter: false);
       return;
     }
 
