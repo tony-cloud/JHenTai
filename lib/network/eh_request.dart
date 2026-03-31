@@ -463,11 +463,13 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     String? nextGid,
     DateTime? seek,
     SearchConfig? searchConfig,
+    CancelToken? cancelToken,
     required HtmlParser<T> parser,
   }) async {
     if (_shouldUseRpc(RPCCapabilities.gallerySearch)) {
       final Map<String, dynamic> result = await rpcRequest.request(
         method: RPCMethods.galleryPage,
+        cancelToken: cancelToken,
         params: {
           if (url != null) 'url': url,
           if (prevGid != null) 'prevGid': prevGid,
@@ -483,6 +485,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
     Response response = await _getWithErrorHandler(
       url ?? searchConfig!.toPath(),
+      cancelToken: cancelToken,
       queryParameters: {
         if (prevGid != null) 'prev': prevGid,
         if (nextGid != null) 'next': nextGid,

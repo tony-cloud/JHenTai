@@ -571,8 +571,7 @@ class GalleryUpdateQueueService extends GetxController
       downloadedGids: downloadedGids,
     );
 
-    final GalleryUrl? startUrl = metadata?.galleryUrl ??
-        GalleryUrl.tryParse(oldGallery.galleryUrl);
+    final GalleryUrl? startUrl = metadata?.galleryUrl ?? GalleryUrl.tryParse(oldGallery.galleryUrl);
     if (startUrl == null) {
       return null;
     }

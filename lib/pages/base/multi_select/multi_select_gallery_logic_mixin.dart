@@ -2,12 +2,20 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/database/database.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
+import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
 import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/gallery_archive.dart';
 import 'package:jhentai/model/gallery_detail.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/pages/base/base_page_logic.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_batch_download_util.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
+import 'package:jhentai/service/archive_download_service.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/gallery_update_queue_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/download_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
@@ -15,18 +23,17 @@ import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/eh_batch_download_dialog.dart';
 import 'package:jhentai/widget/eh_download_dialog.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
-
-import 'package:jhentai/exception/eh_site_exception.dart';
-import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
-import 'package:jhentai/pages/base/base_page_logic.dart';
-import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
 
 mixin MultiSelectGalleryLogicMixin on BasePageLogic {
   MultiSelectGalleryStateMixin get multiSelectGalleryState;
 
   final String multiSelectBottomBarId = 'multiSelectBottomBarId';
+  bool _isHandlingBatchDownloadAndUpdate = false;
+
+  bool get isHandlingBatchDownloadAndUpdate => _isHandlingBatchDownloadAndUpdate;
 
   @override
   Future<void> handleClearAndRefresh() {
@@ -182,6 +189,173 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
     exitSelectMode();
   }
 
+  Future<void> handleBatchDownloadAndUpdateSelected() async {
+    if (multiSelectGalleryState.selectedGids.isEmpty) {
+      return;
+    }
+
+    if (_isHandlingBatchDownloadAndUpdate) {
+      toast('downloadAndUpdateBusy'.tr, isCenter: false);
+      return;
+    }
+
+    final List<Gallery> selectedGallerys = state.gallerys
+        .where((gallery) => multiSelectGalleryState.selectedGids.contains(gallery.gid))
+        .toList();
+
+    if (selectedGallerys.isEmpty) {
+      exitSelectMode();
+      return;
+    }
+
+    final EHBatchDownloadConfig? result = await showBatchDownloadAndUpdateDialog();
+
+    if (result == null) {
+      return;
+    }
+
+    await runBatchDownloadAndUpdate(
+      selectedGallerys,
+      config: result,
+      exitSelectModeAfter: true,
+    );
+  }
+
+  Future<EHBatchDownloadConfig?> showBatchDownloadAndUpdateDialog() {
+    return Get.dialog(
+      EHBatchDownloadDialog(
+        title: 'chooseGroup'.tr,
+        currentGroup: downloadSetting.defaultGalleryGroup.value,
+        candidates: galleryDownloadService.allGroups,
+        showDownloadOriginalImageCheckBox: userSetting.hasLoggedIn(),
+        downloadOriginalImage: downloadSetting.downloadOriginalImageByDefault.value,
+      ),
+    );
+  }
+
+  Future<void> runBatchDownloadAndUpdate(
+    List<Gallery> targetGallerys, {
+    required EHBatchDownloadConfig config,
+    bool exitSelectModeAfter = false,
+  }) async {
+    if (_isHandlingBatchDownloadAndUpdate) {
+      toast('downloadAndUpdateBusy'.tr, isCenter: false);
+      return;
+    }
+
+    if (targetGallerys.isEmpty) {
+      if (exitSelectModeAfter) {
+        exitSelectMode();
+      }
+      return;
+    }
+
+    _isHandlingBatchDownloadAndUpdate = true;
+
+    try {
+      await galleryDownloadService.completed;
+      await archiveDownloadService.completed;
+
+      final Map<int, GalleryDownloadedData> downloadedGallerysByGid = <int, GalleryDownloadedData>{
+        for (final GalleryDownloadedData gallery in galleryDownloadService.gallerys)
+          gallery.gid: gallery,
+      };
+      final Set<int> archiveGids =
+          archiveDownloadService.archives.map((archive) => archive.gid).toSet();
+      final Set<int> handledGids = <int>{};
+      final List<GalleryDownloadedData> updateCandidates = <GalleryDownloadedData>[];
+
+      int queuedDownloadCount = 0;
+      int failedCount = 0;
+
+      for (int index = 0; index < targetGallerys.length; index++) {
+        final Gallery gallery = targetGallerys[index];
+
+        if (!handledGids.add(gallery.gid)) {
+          continue;
+        }
+
+        final GalleryDownloadedData? downloadedGallery = downloadedGallerysByGid[gallery.gid];
+        final DownloadStatus? downloadStatus = downloadedGallery == null
+            ? null
+            : galleryDownloadService
+                .galleryDownloadInfos[gallery.gid]?.downloadProgress.downloadStatus;
+
+        switch (decideBatchGalleryDownloadAction(
+          hasGalleryRecord: downloadedGallery != null,
+          galleryStatus: downloadStatus,
+          hasArchiveRecord: archiveGids.contains(gallery.gid),
+        )) {
+          case BatchGalleryDownloadAction.update:
+            updateCandidates.add(downloadedGallery!);
+            break;
+          case BatchGalleryDownloadAction.download:
+            final bool queued = await _queueNewGalleryDownload(
+              gallery,
+              config: config,
+            );
+
+            if (queued) {
+              queuedDownloadCount++;
+            } else {
+              failedCount++;
+            }
+            break;
+          case BatchGalleryDownloadAction.skip:
+            break;
+        }
+
+        if ((index + 1) % 5 == 0) {
+          await Future<void>.delayed(Duration.zero);
+        }
+      }
+
+      int updateQueuedCount = 0;
+
+      if (updateCandidates.isNotEmpty) {
+        final bool started = galleryUpdateQueueService.startOneKeyUpdateQueue(
+          updateCandidates,
+        );
+
+        if (started) {
+          updateQueuedCount = updateCandidates.length;
+        } else {
+          failedCount += updateCandidates.length;
+        }
+      }
+
+      if ((queuedDownloadCount > 0 || updateQueuedCount > 0) &&
+          this is UpdateGlobalGalleryStatusLogicMixin) {
+        (this as UpdateGlobalGalleryStatusLogicMixin).updateGlobalGalleryStatus();
+      }
+
+      if (queuedDownloadCount > 0 || updateQueuedCount > 0) {
+        toast(
+          '${'downloadAndUpdateQueued'.tr}: '
+          '${'download'.tr} $queuedDownloadCount, '
+          '${'updateGallery'.tr} $updateQueuedCount',
+          isCenter: false,
+        );
+      } else if (failedCount == 0) {
+        toast('downloadAndUpdateNoTask'.tr, isCenter: false);
+      }
+
+      if (failedCount > 0) {
+        snack(
+          'failed'.tr,
+          '${'downloadAndUpdate'.tr}: $failedCount',
+          isShort: true,
+        );
+      }
+    } finally {
+      _isHandlingBatchDownloadAndUpdate = false;
+
+      if (exitSelectModeAfter) {
+        exitSelectMode();
+      }
+    }
+  }
+
   Widget buildMultiSelectBottomBar(BuildContext context) {
     return GetBuilder<BasePageLogic>(
       id: multiSelectBottomBarId,
@@ -220,6 +394,14 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
                     icon: const Icon(Icons.download),
                     label: Text('download'.tr),
                   ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: multiSelectGalleryState.selectedGids.isEmpty
+                        ? null
+                        : handleBatchDownloadAndUpdateSelected,
+                    tooltip: 'downloadAndUpdateSelected'.tr,
+                    icon: const Icon(Icons.system_update_alt),
+                  ),
                 ],
               ),
             ),
@@ -233,6 +415,7 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
     Gallery gallery, {
     required String group,
     required bool downloadOriginalImage,
+    bool showError = true,
   }) async {
     GalleryDetail? detail;
 
@@ -249,11 +432,15 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
         detail = detailResult.galleryDetails;
       } on DioException catch (e) {
         log.error('getGalleryDetailFailed'.tr, e.errorMsg);
-        snack('failed'.tr, e.errorMsg ?? '', isShort: true);
+        if (showError) {
+          snack('failed'.tr, e.errorMsg ?? '', isShort: true);
+        }
         return null;
       } on EHSiteException catch (e) {
         log.error('getGalleryDetailFailed'.tr, e.message);
-        snack('failed'.tr, e.message, isShort: true);
+        if (showError) {
+          snack('failed'.tr, e.message, isShort: true);
+        }
         return null;
       }
     }
@@ -267,7 +454,6 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
     }
 
     final String title = galleryDetail?.japaneseTitle ?? galleryDetail?.rawTitle ?? gallery.title;
-
     final DateTime now = DateTime.now();
 
     return GalleryDownloadedData(
@@ -288,5 +474,133 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
       tags: tagMap2TagString(galleryDetail?.tags ?? gallery.tags),
       tagRefreshTime: now.toString(),
     );
+  }
+
+  Future<bool> _queueNewGalleryDownload(
+    Gallery gallery, {
+    required EHBatchDownloadConfig config,
+  }) async {
+    if (config.useArchiveForNewGalleryOnly) {
+      final ArchiveDownloadedData? archiveData = await _prepareArchiveDownloadData(
+        gallery,
+        group: config.group,
+      );
+
+      if (archiveData != null) {
+        if (!archiveDownloadService.containArchive(archiveData.gid)) {
+          archiveDownloadService.downloadArchive(archiveData);
+          return true;
+        }
+
+        return false;
+      }
+    }
+
+    final GalleryDownloadedData? downloadData = await _prepareDownloadData(
+      gallery,
+      group: config.group,
+      downloadOriginalImage: config.downloadOriginalImage,
+      showError: false,
+    );
+
+    if (downloadData == null) {
+      return false;
+    }
+
+    if (galleryDownloadService.containGallery(downloadData.gid)) {
+      return false;
+    }
+
+    await galleryDownloadService.downloadGallery(downloadData);
+    return true;
+  }
+
+  Future<ArchiveDownloadedData?> _prepareArchiveDownloadData(
+    Gallery gallery, {
+    required String group,
+  }) async {
+    if (!userSetting.hasLoggedIn()) {
+      return null;
+    }
+
+    try {
+      final ({GalleryDetail galleryDetails, String apikey}) detailResult =
+          await ehRequest.requestDetailPage(
+        galleryUrl: gallery.galleryUrl.url,
+        parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey,
+      );
+      final GalleryDetail detail = detailResult.galleryDetails;
+      final GalleryArchive archive = await ehRequest.get(
+        url: detail.archivePageUrl,
+        parser: EHSpiderParser.archivePage2Archive,
+      );
+
+      if (!_canUseBatchArchiveDownload(archive)) {
+        return null;
+      }
+
+      final DateTime now = DateTime.now();
+
+      return ArchiveDownloadedData(
+        gid: detail.galleryUrl.gid,
+        token: detail.galleryUrl.token,
+        title: detail.japaneseTitle ?? detail.rawTitle,
+        category: detail.category,
+        pageCount: detail.pageCount,
+        galleryUrl: detail.galleryUrl.url,
+        uploader: detail.uploader,
+        size: _computeArchiveSizeInBytes(archive.resampleSize!),
+        coverUrl: detail.cover.url,
+        publishTime: detail.publishTime,
+        archiveStatusCode: ArchiveStatus.unlocking.code,
+        archivePageUrl: detail.archivePageUrl,
+        isOriginal: false,
+        insertTime: now.toString(),
+        sortOrder: 0,
+        groupName: group,
+        tags: tagMap2TagString(detail.tags),
+        tagRefreshTime: now.toString(),
+        parseSource: ArchiveParseSource.official.code,
+      );
+    } on DioException catch (e) {
+      log.error('getGalleryArchiveFailed'.tr, e.errorMsg);
+      return null;
+    } on EHSiteException catch (e) {
+      log.error('getGalleryArchiveFailed'.tr, e.message);
+      return null;
+    } catch (e, s) {
+      log.error('getGalleryArchiveFailed'.tr, e, s);
+      return null;
+    }
+  }
+
+  bool _canUseBatchArchiveDownload(GalleryArchive archive) {
+    final String? resampleCost = archive.resampleCost;
+
+    if (resampleCost == null || resampleCost == 'N/A') {
+      return false;
+    }
+
+    if (archive.resampleSize == null) {
+      return false;
+    }
+
+    return resampleCost.contains('Free') &&
+        !archive.downloadResampleHint.contains('Insufficient Funds');
+  }
+
+  int _computeArchiveSizeInBytes(String sizeString) {
+    final List<String> parts = sizeString.split(' ');
+    final double number = double.parse(parts[0]);
+    final String unit = parts[1];
+
+    if (unit.startsWith('K')) {
+      return (number * 1024).toInt();
+    }
+    if (unit.startsWith('M')) {
+      return (number * 1024 * 1024).toInt();
+    }
+
+    return (number * 1024 * 1024 * 1024).toInt();
   }
 }
