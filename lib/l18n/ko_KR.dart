@@ -298,6 +298,8 @@ class ko_KR {
       'updateGalleryHistoryDownloadNotFound': '히스토리에 다운로드된 갤러리가 없습니다',
       'updateGalleryAlreadyLatest': '다운로드한 갤러리가 이미 최신 버전입니다',
       'updateGalleryStarted': '히스토리에서 갤러리 %s 업데이트를 시작합니다',
+      'updateGallerySummarySkipped': '건너뜀',
+      'updateGallerySummaryFailed': '실패',
       'thisGalleryHasANewVersion': '이 갤러리는 새 버전이 있습니다.',
       'hasUpdated': '업데이트됨',
       'unpackingArchiveError': 'Unpacking archive error',

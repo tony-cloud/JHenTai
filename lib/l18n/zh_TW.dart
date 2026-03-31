@@ -306,6 +306,8 @@ class zh_TW {
       'updateGalleryHistoryDownloadNotFound': '在歷史紀錄中找不到已下載的畫廊',
       'updateGalleryAlreadyLatest': '本地畫廊已是最新版本',
       'updateGalleryStarted': '開始更新畫廊 %s',
+      'updateGallerySummarySkipped': '已略過',
+      'updateGallerySummaryFailed': '失敗',
       'thisGalleryHasANewVersion': '該畫廊有新版本',
       'hasUpdated': '已更新',
       'unpackingArchiveError': '解壓歸檔失敗',

@@ -68,83 +68,106 @@ class GalleryGridDownloadPage extends StatelessWidget
           isSelected: state.inEditMode,
         ),
       ),
-      PopupMenuButton(
-        itemBuilder: (context) {
-          return [
-            PopupMenuItem(
-              value: 0,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.view_list),
-                  const SizedBox(width: 12),
-                  Text('switch2ListMode'.tr)
-                ],
+      GetBuilder<GalleryGridDownloadPageLogic>(
+        global: false,
+        init: logic,
+        id: logic.oneKeyUpdateMenuActionId,
+        builder: (_) => PopupMenuButton(
+          itemBuilder: (context) {
+            return [
+              PopupMenuItem(
+                value: 0,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.view_list),
+                    const SizedBox(width: 12),
+                    Text('switch2ListMode'.tr)
+                  ],
+                ),
               ),
-            ),
-            PopupMenuItem(
-              value: 1,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.done_all),
-                  const SizedBox(width: 12),
-                  Text('multiSelect'.tr)
-                ],
+              PopupMenuItem(
+                value: 1,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.done_all),
+                    const SizedBox(width: 12),
+                    Text('multiSelect'.tr)
+                  ],
+                ),
               ),
-            ),
-            PopupMenuItem(
-              value: 2,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.play_arrow),
-                  const SizedBox(width: 12),
-                  Text('resumeAllTasks'.tr)
-                ],
+              PopupMenuItem(
+                value: 2,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.play_arrow),
+                    const SizedBox(width: 12),
+                    Text('resumeAllTasks'.tr)
+                  ],
+                ),
               ),
-            ),
-            PopupMenuItem(
-              value: 3,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.pause),
-                  const SizedBox(width: 12),
-                  Text('pauseAllTasks'.tr)
-                ],
+              PopupMenuItem(
+                value: 3,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.pause),
+                    const SizedBox(width: 12),
+                    Text('pauseAllTasks'.tr)
+                  ],
+                ),
               ),
-            ),
-            PopupMenuItem(
-              value: 4,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [const Icon(Icons.search), const SizedBox(width: 12), Text('search'.tr)],
+              PopupMenuItem(
+                value: 4,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.search),
+                    const SizedBox(width: 12),
+                    Text('search'.tr)
+                  ],
+                ),
               ),
-            ),
-          ];
-        },
-        onSelected: (value) {
-          if (value == 0) {
-            DownloadPageBodyTypeChangeNotification(bodyType: DownloadPageBodyType.list)
-                .dispatch(context);
-          }
-          if (value == 1) {
-            if (state.inEditMode) {
-              return;
+              PopupMenuItem(
+                value: 5,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(logic.isHandlingOneKeyUpdateGallery ? Icons.stop : Icons.update),
+                    const SizedBox(width: 12),
+                    Text(logic.oneKeyUpdateMenuTitle)
+                  ],
+                ),
+              ),
+            ];
+          },
+          onSelected: (value) {
+            if (value == 0) {
+              DownloadPageBodyTypeChangeNotification(bodyType: DownloadPageBodyType.list)
+                  .dispatch(context);
             }
-            logic.enterSelectMode();
-          }
-          if (value == 2) {
-            logic.handleResumeAllTasks();
-          }
-          if (value == 3) {
-            logic.handlePauseAllTasks();
-          }
-          if (value == 4) {
-            toRoute(Routes.downloadSearch);
-          }
-        },
+            if (value == 1) {
+              if (state.inEditMode) {
+                return;
+              }
+              logic.enterSelectMode();
+            }
+            if (value == 2) {
+              logic.handleResumeAllTasks();
+            }
+            if (value == 3) {
+              logic.handlePauseAllTasks();
+            }
+            if (value == 4) {
+              toRoute(Routes.downloadSearch);
+            }
+            if (value == 5) {
+              logic.handleTapOneKeyUpdateGalleryAction();
+            }
+          },
+        ),
       ),
     ];
   }

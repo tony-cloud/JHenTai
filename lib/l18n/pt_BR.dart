@@ -301,6 +301,8 @@ class pt_BR {
       'updateGalleryHistoryDownloadNotFound': 'Nenhuma galeria baixada encontrada no histórico',
       'updateGalleryAlreadyLatest': 'A galeria baixada já está na versão mais recente',
       'updateGalleryStarted': 'Atualizando a galeria %s a partir do histórico',
+      'updateGallerySummarySkipped': 'Ignorados',
+      'updateGallerySummaryFailed': 'Falhas',
       'thisGalleryHasANewVersion': 'Nova versão desta galeria disponível',
       'hasUpdated': 'Atualizado',
       'unpackingArchiveError': 'Unpacking archive error',

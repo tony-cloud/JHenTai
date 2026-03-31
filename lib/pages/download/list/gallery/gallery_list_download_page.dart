@@ -120,84 +120,103 @@ class GalleryListDownloadPage extends StatelessWidget
             onPressed: () => logic.handleTapFilterButton(context),
           ),
         ),
-        PopupMenuButton(
-          itemBuilder: (context) {
-            return [
-              PopupMenuItem(
-                value: 0,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.grid_view),
-                    const SizedBox(width: 12),
-                    Text('switch2GridMode'.tr),
-                  ],
+        GetBuilder<GalleryListDownloadPageLogic>(
+          global: false,
+          init: logic,
+          id: logic.oneKeyUpdateMenuActionId,
+          builder: (_) => PopupMenuButton(
+            itemBuilder: (context) {
+              return [
+                PopupMenuItem(
+                  value: 0,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.grid_view),
+                      const SizedBox(width: 12),
+                      Text('switch2GridMode'.tr),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 1,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.done_all),
-                    const SizedBox(width: 12),
-                    Text('multiSelect'.tr),
-                  ],
+                PopupMenuItem(
+                  value: 1,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.done_all),
+                      const SizedBox(width: 12),
+                      Text('multiSelect'.tr),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 2,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.play_arrow),
-                    const SizedBox(width: 12),
-                    Text('resumeAllTasks'.tr),
-                  ],
+                PopupMenuItem(
+                  value: 2,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.play_arrow),
+                      const SizedBox(width: 12),
+                      Text('resumeAllTasks'.tr),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 3,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.pause),
-                    const SizedBox(width: 12),
-                    Text('pauseAllTasks'.tr),
-                  ],
+                PopupMenuItem(
+                  value: 3,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.pause),
+                      const SizedBox(width: 12),
+                      Text('pauseAllTasks'.tr),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 4,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.search),
-                    const SizedBox(width: 12),
-                    Text('search'.tr),
-                  ],
+                PopupMenuItem(
+                  value: 4,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(logic.isHandlingOneKeyUpdateGallery ? Icons.stop : Icons.update),
+                      const SizedBox(width: 12),
+                      Text(logic.oneKeyUpdateMenuTitle),
+                    ],
+                  ),
                 ),
-              ),
-            ];
-          },
-          onSelected: (value) {
-            if (value == 0) {
-              DownloadPageBodyTypeChangeNotification(bodyType: DownloadPageBodyType.grid)
-                  .dispatch(context);
-            }
-            if (value == 1) {
-              logic.enterSelectMode();
-            }
-            if (value == 2) {
-              logic.downloadService.resumeAllDownloadGallery();
-            }
-            if (value == 3) {
-              logic.downloadService.pauseAllDownloadGallery();
-            }
-            if (value == 4) {
-              toRoute(Routes.downloadSearch);
-            }
-          },
+                PopupMenuItem(
+                  value: 5,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.search),
+                      const SizedBox(width: 12),
+                      Text('search'.tr),
+                    ],
+                  ),
+                ),
+              ];
+            },
+            onSelected: (value) {
+              if (value == 0) {
+                DownloadPageBodyTypeChangeNotification(bodyType: DownloadPageBodyType.grid)
+                    .dispatch(context);
+              }
+              if (value == 1) {
+                logic.enterSelectMode();
+              }
+              if (value == 2) {
+                logic.downloadService.resumeAllDownloadGallery();
+              }
+              if (value == 3) {
+                logic.downloadService.pauseAllDownloadGallery();
+              }
+              if (value == 4) {
+                logic.handleTapOneKeyUpdateGalleryAction();
+              }
+              if (value == 5) {
+                toRoute(Routes.downloadSearch);
+              }
+            },
+          ),
         ),
       ],
     );

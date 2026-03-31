@@ -269,6 +269,8 @@ class zh_CN {
       'updateGalleryHistoryDownloadNotFound': '历史记录中没有找到已下载的画廊',
       'updateGalleryAlreadyLatest': '本地画廊已是最新版本',
       'updateGalleryStarted': '开始更新画廊 %s',
+      'updateGallerySummarySkipped': '已跳过',
+      'updateGallerySummaryFailed': '失败',
       'thisGalleryHasANewVersion': '该画廊有新版本',
       'hasUpdated': '已更新',
       'unpackingArchiveError': '解压归档失败',

@@ -1668,7 +1668,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     final int requestId = _nextRequestSeq();
     final Stopwatch stopwatch = Stopwatch()..start();
     log.info(
-        '[REQ#$requestId] POST start url:$url query:${queryParameters?.keys.join(',') ?? 'none'}');
+        '[REQ#$requestId] POST start url:$url query:${queryParameters?.keys.join(',') ?? 'none'} data:${data is FormData ? 'FormData(${(data).fields.map((e) => e.key).join(',')})' : (data != null ? data.runtimeType : 'null')}');
     Response response;
     try {
       response = await runWithNetworkRetry(

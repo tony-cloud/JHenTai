@@ -13,6 +13,7 @@ import 'package:jhentai/model/gallery_image.dart';
 import 'package:jhentai/model/read_page_info.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/gallery_update_queue_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/setting/read_setting.dart';
 import 'package:jhentai/utils/process_util.dart';
@@ -28,8 +29,67 @@ mixin GalleryDownloadPageLogicMixin on GetxController
         MultiSelectDownloadPageLogicMixin<GalleryDownloadedData>,
         UpdateGlobalGalleryStatusLogicMixin {
   final String bodyId = 'bodyId';
+  final String oneKeyUpdateMenuActionId = 'oneKeyUpdateMenuActionId';
 
   final GalleryDownloadService downloadService = galleryDownloadService;
+  final GalleryUpdateQueueService updateQueueService = galleryUpdateQueueService;
+
+  bool get isHandlingOneKeyUpdateGallery => updateQueueService.isHandlingUpdateGallery;
+
+  String get oneKeyUpdateMenuTitle {
+    if (!isHandlingOneKeyUpdateGallery) {
+      return 'updateGallery'.tr;
+    }
+
+    if (updateQueueService.totalCount <= 0) {
+      return 'stop'.tr;
+    }
+
+    return '${'stop'.tr} '
+        '(${updateQueueService.processedCount}/${updateQueueService.totalCount})';
+  }
+
+  void handleTapOneKeyUpdateGalleryAction() {
+    if (isHandlingOneKeyUpdateGallery) {
+      updateQueueService.requestAbort();
+      updateSafely([oneKeyUpdateMenuActionId]);
+      return;
+    }
+
+    handleOneKeyUpdateGallery();
+  }
+
+  void handleOneKeyUpdateGallery() {
+    if (isHandlingOneKeyUpdateGallery) {
+      return;
+    }
+
+    final List<GalleryDownloadedData> gallerys = downloadService.gallerys.where((gallery) {
+      final GalleryDownloadInfo? info = downloadService.galleryDownloadInfos[gallery.gid];
+      return info?.downloadProgress.downloadStatus == DownloadStatus.downloaded;
+    }).toList(growable: false);
+
+    if (gallerys.isEmpty) {
+      toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
+      return;
+    }
+
+    final bool started = updateQueueService.startOneKeyUpdateQueue(
+      gallerys,
+      onStateChanged: _onUpdateQueueStateChanged,
+    );
+
+    if (!started) {
+      return;
+    }
+
+    _onUpdateQueueStateChanged();
+  }
+
+  void _onUpdateQueueStateChanged() {
+    updateSafely([oneKeyUpdateMenuActionId]);
+    updateSafely([bodyId]);
+  }
 
   Future<void> handleChangeGroup(GalleryDownloadedData gallery) async {
     String oldGroup = downloadService.galleryDownloadInfos[gallery.gid]!.group;

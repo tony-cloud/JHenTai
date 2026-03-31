@@ -272,6 +272,8 @@ class en_US {
       'updateGalleryHistoryDownloadNotFound': 'No downloaded gallery found in history',
       'updateGalleryAlreadyLatest': 'Downloaded gallery is already the latest version',
       'updateGalleryStarted': 'Updating gallery %s from history',
+      'updateGallerySummarySkipped': 'Skipped',
+      'updateGallerySummaryFailed': 'Failed',
       'thisGalleryHasANewVersion': 'This gallery has a new version',
       'hasUpdated': 'Has updated',
       'unpackingArchiveError': 'Unpacking archive error',

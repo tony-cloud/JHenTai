@@ -309,6 +309,8 @@ class ru_RU {
       'updateGalleryHistoryDownloadNotFound': 'Загруженная галерея не найдена в истории',
       'updateGalleryAlreadyLatest': 'Загруженная галерея уже обновлена до последней версии',
       'updateGalleryStarted': 'Обновляем галерею %s через историю',
+      'updateGallerySummarySkipped': 'Пропущено',
+      'updateGallerySummaryFailed': 'Ошибок',
       'thisGalleryHasANewVersion': 'У этой галереи есть новая версия',
       'hasUpdated': 'Обновлено',
       'unpackingArchiveError': 'Ошибка распаковки архива',

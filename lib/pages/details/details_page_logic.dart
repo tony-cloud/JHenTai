@@ -59,6 +59,7 @@ import 'package:jhentai/model/gallery_note.dart';
 import 'package:jhentai/model/tag_set.dart';
 import 'package:jhentai/service/history_service.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/gallery_update_queue_service.dart';
 import 'package:jhentai/service/gallery_history_lineage_service.dart';
 import 'package:jhentai/service/local_block_rule_service.dart';
 import 'package:jhentai/setting/eh_setting.dart';
@@ -115,7 +116,6 @@ class DetailsPageLogic extends GetxController
   static DetailsPageLogic? get current => _stack.isEmpty ? null : _stack.last;
 
   final DetailsPageState state;
-  bool _isUpdatingFromHistory = false;
   bool _isFindingHistoryDownload = false;
 
   @override
@@ -884,7 +884,7 @@ class DetailsPageLogic extends GetxController
   }
 
   Future<void> handleTapUpdateGalleryFromHistory() async {
-    if (_isUpdatingFromHistory) {
+    if (galleryUpdateQueueService.isHandlingUpdateGallery) {
       return;
     }
 
@@ -903,37 +903,12 @@ class DetailsPageLogic extends GetxController
       return;
     }
 
-    _isUpdatingFromHistory = true;
+    final bool started = galleryUpdateQueueService.startUpdateFromHistory(
+      state.galleryDetails!,
+    );
 
-    try {
-      await galleryDownloadService.completed;
-
-      toast('updateGallerySearchingHistory'.tr, isCenter: false);
-
-      final historyResult = await _collectDownloadedGalleriesFromHistory();
-      if (historyResult == null) {
-        return;
-      }
-
-      GalleryDetail latestDetail = historyResult.latestDetail;
-      GalleryDownloadedData? downloadedGallery = historyResult.downloadedGalleries.isEmpty
-          ? null
-          : historyResult.downloadedGalleries.first;
-
-      if (downloadedGallery == null) {
-        toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
-        return;
-      }
-
-      if (downloadedGallery.gid == latestDetail.galleryUrl.gid) {
-        toast('updateGalleryAlreadyLatest'.tr, isCenter: false);
-        return;
-      }
-
-      galleryDownloadService.updateGallery(downloadedGallery, latestDetail.galleryUrl);
-      toast('updateGalleryStarted'.trArgs([downloadedGallery.gid.toString()]), isCenter: false);
-    } finally {
-      _isUpdatingFromHistory = false;
+    if (!started) {
+      return;
     }
   }
 
