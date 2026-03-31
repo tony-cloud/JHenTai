@@ -230,13 +230,17 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
           return;
         }
 
+        final bool isGalleryDeleted404 = _isGalleryDeleted404(e);
+
         if (e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.badResponse ||
             e.type == DioExceptionType.connectionError) {
-          String host = e.requestOptions.extra[domainFrontingExtraKey]['host'];
-          String ip = e.requestOptions.extra[domainFrontingExtraKey]['ip'];
-          _ehIpProvider.addUnavailableIp(host, ip);
-          log.info('Add unavailable host-ip: $host-$ip');
+          if (!isGalleryDeleted404) {
+            String host = e.requestOptions.extra[domainFrontingExtraKey]['host'];
+            String ip = e.requestOptions.extra[domainFrontingExtraKey]['ip'];
+            _ehIpProvider.addUnavailableIp(host, ip);
+            log.info('Add unavailable host-ip: $host-$ip');
+          }
         }
 
         handler.next(e);
@@ -1699,20 +1703,32 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   Exception _convertExceptionIfGalleryDeleted(DioException e) {
-    if (e.response?.statusCode == 404 &&
-        networkSetting.allHostAndIPs.contains(e.requestOptions.uri.host)) {
-      String? errMessage =
-          EHSpiderParser.a404Page2GalleryDeletedHint(e.response!.headers, e.response!.data);
-      if (!isEmptyOrNull(errMessage)) {
-        return EHSiteException(
-          type: EHSiteExceptionType.galleryDeleted,
-          message: errMessage!,
-          shouldPauseAllDownloadTasks: false,
-        );
-      }
+    final String? errMessage = _galleryDeletedMessageFrom404(e);
+    if (!isEmptyOrNull(errMessage)) {
+      return EHSiteException(
+        type: EHSiteExceptionType.galleryDeleted,
+        message: errMessage!,
+        shouldPauseAllDownloadTasks: false,
+      );
     }
 
     return e;
+  }
+
+  bool _isGalleryDeleted404(DioException e) {
+    return !isEmptyOrNull(_galleryDeletedMessageFrom404(e));
+  }
+
+  String? _galleryDeletedMessageFrom404(DioException e) {
+    if (e.response?.statusCode != 404 ||
+        !networkSetting.allHostAndIPs.contains(e.requestOptions.uri.host)) {
+      return null;
+    }
+
+    return EHSpiderParser.a404Page2GalleryDeletedHint(
+      e.response!.headers,
+      e.response!.data,
+    );
   }
 
   void _emitEHExceptionIfFailed(Response response) {
