@@ -194,7 +194,9 @@ class ArchiveGridDownloadPage extends StatelessWidget
           return GetBuilder<ArchiveDownloadService>(
             id: '${ArchiveDownloadService.archiveStatusId}::${archive.gid}',
             builder: (_) {
-              Widget cover = buildGalleryImage(GalleryImage(url: archive.coverUrl));
+              final Widget cover = buildGalleryImage(GalleryImage(url: archive.coverUrl));
+              final String speedUpdateId =
+                  '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}';
 
               if (archiveDownloadService.archiveDownloadInfos[archive.gid]?.archiveStatus ==
                   ArchiveStatus.completed) {
@@ -207,22 +209,27 @@ class ArchiveGridDownloadPage extends StatelessWidget
                 }
               }
 
-              return Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Blur(
-                      blur: 1,
-                      blurColor: UIConfig.downloadPageGridCoverBlurColor,
-                      colorOpacity: 0.6,
-                      child: cover,
-                    ),
-                  ),
-                  _buildCircularProgressIndicator(archive, archiveDownloadInfo),
-                  _buildDownloadProgress(archive, archiveDownloadInfo),
-                  _buildActionButton(archiveDownloadInfo, archive),
-                  if (state.selectedGids.contains(archive.gid)) _buildSelectedIcon(),
-                ],
+              return GetBuilder<ArchiveDownloadService>(
+                id: speedUpdateId,
+                builder: (_) {
+                  return Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Blur(
+                          blur: 1,
+                          blurColor: UIConfig.downloadPageGridCoverBlurColor,
+                          colorOpacity: 0.6,
+                          child: cover,
+                        ),
+                      ),
+                      _buildCircularProgressIndicator(archiveDownloadInfo),
+                      _buildDownloadProgress(archiveDownloadInfo),
+                      _buildActionButton(archiveDownloadInfo, archive),
+                      if (state.selectedGids.contains(archive.gid)) _buildSelectedIcon(),
+                    ],
+                  );
+                },
               );
             },
           );
@@ -256,37 +263,29 @@ class ArchiveGridDownloadPage extends StatelessWidget
     );
   }
 
-  Center _buildCircularProgressIndicator(
-      ArchiveDownloadedData archive, ArchiveDownloadInfo archiveDownloadInfo) {
+  Center _buildCircularProgressIndicator(ArchiveDownloadInfo archiveDownloadInfo) {
     return Center(
-      child: GetBuilder<ArchiveDownloadService>(
-        id: '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}',
-        builder: (_) => ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: UIConfig.downloadPageGridViewCircularProgressSize,
-            minHeight: UIConfig.downloadPageGridViewCircularProgressSize,
-          ),
-          child: CircularProgressIndicator(
-            value: archiveDownloadInfo.speedComputer.downloadedBytes / archiveDownloadInfo.size,
-            color: UIConfig.downloadPageGridProgressColor,
-            backgroundColor: UIConfig.downloadPageGridProgressBackGroundColor,
-          ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minWidth: UIConfig.downloadPageGridViewCircularProgressSize,
+          minHeight: UIConfig.downloadPageGridViewCircularProgressSize,
+        ),
+        child: CircularProgressIndicator(
+          value: archiveDownloadInfo.speedComputer.downloadedBytes / archiveDownloadInfo.size,
+          color: UIConfig.downloadPageGridProgressColor,
+          backgroundColor: UIConfig.downloadPageGridProgressBackGroundColor,
         ),
       ),
     );
   }
 
-  Center _buildDownloadProgress(
-      ArchiveDownloadedData archive, ArchiveDownloadInfo archiveDownloadInfo) {
+  Center _buildDownloadProgress(ArchiveDownloadInfo archiveDownloadInfo) {
     return Center(
-      child: GetBuilder<ArchiveDownloadService>(
-        id: '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}',
-        builder: (_) => Text(
-          '${byte2String(archiveDownloadInfo.speedComputer.downloadedBytes.toDouble())} / ${byte2String(archiveDownloadInfo.size.toDouble())}',
-          style: const TextStyle(
-              fontSize: UIConfig.downloadPageGridViewInfoTextSize,
-              color: UIConfig.downloadPageGridTextColor),
-        ),
+      child: Text(
+        '${byte2String(archiveDownloadInfo.speedComputer.downloadedBytes.toDouble())} / ${byte2String(archiveDownloadInfo.size.toDouble())}',
+        style: const TextStyle(
+            fontSize: UIConfig.downloadPageGridViewInfoTextSize,
+            color: UIConfig.downloadPageGridTextColor),
       ).marginOnly(top: 60),
     );
   }
@@ -300,30 +299,24 @@ class ArchiveGridDownloadPage extends StatelessWidget
               ? archiveDownloadService.resumeDownloadArchive(archive.gid)
               : archiveDownloadService.pauseDownloadArchive(archive.gid),
       child: Center(
-        child: GetBuilder<ArchiveDownloadService>(
-          id: '${ArchiveDownloadService.archiveStatusId}::${archive.gid}',
-          builder: (_) => archiveDownloadInfo.archiveStatus.code >= ArchiveStatus.unlocking.code &&
-                  archiveDownloadInfo.archiveStatus.code <= ArchiveStatus.downloading.code
-              ? GetBuilder<ArchiveDownloadService>(
-                  id: '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}',
-                  builder: (_) => Text(
-                    archiveDownloadInfo.speedComputer.speed,
-                    style: const TextStyle(
-                        fontSize: UIConfig.downloadPageGridViewSpeedTextSize,
-                        color: UIConfig.downloadPageGridTextColor),
-                  ),
-                )
-              : Icon(
-                  archiveDownloadInfo.archiveStatus == ArchiveStatus.needReUnlock
-                      ? Icons.lock_open
-                      : archiveDownloadInfo.archiveStatus == ArchiveStatus.paused
-                          ? Icons.play_arrow
-                          : archiveDownloadInfo.archiveStatus == ArchiveStatus.completed
-                              ? Icons.done
-                              : Icons.file_open,
-                  color: UIConfig.downloadPageGridTextColor,
-                ),
-        ),
+        child: archiveDownloadInfo.archiveStatus.code >= ArchiveStatus.unlocking.code &&
+                archiveDownloadInfo.archiveStatus.code <= ArchiveStatus.downloading.code
+            ? Text(
+                archiveDownloadInfo.speedComputer.speed,
+                style: const TextStyle(
+                    fontSize: UIConfig.downloadPageGridViewSpeedTextSize,
+                    color: UIConfig.downloadPageGridTextColor),
+              )
+            : Icon(
+                archiveDownloadInfo.archiveStatus == ArchiveStatus.needReUnlock
+                    ? Icons.lock_open
+                    : archiveDownloadInfo.archiveStatus == ArchiveStatus.paused
+                        ? Icons.play_arrow
+                        : archiveDownloadInfo.archiveStatus == ArchiveStatus.completed
+                            ? Icons.done
+                            : Icons.file_open,
+                color: UIConfig.downloadPageGridTextColor,
+              ),
       ),
     );
   }

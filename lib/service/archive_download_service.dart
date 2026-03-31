@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
@@ -73,6 +74,8 @@ class ArchiveDownloadService extends GetxController
   static const int _maxTitleLength = 80;
   static const int _maxIsolateCountsTotal = 10;
   static const String _mitigationLockName = 'archive_mitigation';
+  static const int _mitigationHashBatchSize = 16;
+  static const int _mitigationHashConcurrency = 4;
 
   final Completer<bool> _completer = Completer();
 
@@ -964,51 +967,58 @@ class ArchiveDownloadService extends GetxController
     bool computeHash = false,
     bool Function()? shouldInterrupt,
   }) async {
-    ArchiveDownloadedData archive = archives.firstWhere((a) => a.gid == gid);
-    Directory directory = Directory(computeArchiveUnpackingPath(archive.title, archive.gid));
+    final ArchiveDownloadedData archive = archives.firstWhere((a) => a.gid == gid);
+    final Directory directory = Directory(computeArchiveUnpackingPath(archive.title, archive.gid));
+    final String visibleDir = pathService.getVisibleDir().path;
 
-    return directory.list().toList().then((files) {
-      List<File> imageFiles =
-          files.whereType<File>().where((file) => FileUtil.isImageExtension(file.path)).toList();
-      imageFiles.sort(FileUtil.naturalCompareFile);
-      return imageFiles;
-    }).then((imageFiles) {
-      return imageFiles
-          .map(
-            (file) => GalleryImage(
-              url: '',
-              path: relative(file.path, from: pathService.getVisibleDir().path),
-              downloadStatus: DownloadStatus.downloaded,
-            ),
-          )
-          .toList();
-    }).then((images) {
-      if (!computeHash) {
-        return images;
+    final List<FileSystemEntity> files = await directory.list().toList();
+    final List<File> imageFiles =
+        files.whereType<File>().where((file) => FileUtil.isImageExtension(file.path)).toList();
+    imageFiles.sort(FileUtil.naturalCompareFile);
+
+    final List<GalleryImage> images = imageFiles
+        .map(
+          (file) => GalleryImage(
+            url: '',
+            path: relative(file.path, from: visibleDir),
+            downloadStatus: DownloadStatus.downloaded,
+          ),
+        )
+        .toList(growable: false);
+
+    if (!computeHash || images.isEmpty) {
+      return images;
+    }
+
+    for (int batchStart = 0; batchStart < images.length; batchStart += _mitigationHashBatchSize) {
+      if (shouldInterrupt?.call() ?? false) {
+        throw const _MitigationInterruptedException();
       }
 
-      return () async {
-        for (int i = 0; i < images.length; i++) {
-          if (shouldInterrupt?.call() ?? false) {
-            throw const _MitigationInterruptedException();
-          }
+      final int batchEnd = min(batchStart + _mitigationHashBatchSize, images.length);
+      for (int cursor = batchStart; cursor < batchEnd; cursor += _mitigationHashConcurrency) {
+        final int chunkEnd = min(cursor + _mitigationHashConcurrency, batchEnd);
 
-          final GalleryImage image = images[i];
-          image.imageHash = await FileUtil.computeSha1Hash(
-            File(join(pathService.getVisibleDir().path, image.path)),
-          );
-
-          if (i % 8 == 7) {
-            if (shouldInterrupt?.call() ?? false) {
-              throw const _MitigationInterruptedException();
-            }
-
-            await Future<void>.delayed(Duration.zero);
-          }
+        final List<Future<String>> hashFutures = <Future<String>>[];
+        for (int index = cursor; index < chunkEnd; index++) {
+          final GalleryImage image = images[index];
+          hashFutures.add(FileUtil.computeSha1Hash(File(join(visibleDir, image.path))));
         }
-        return images;
-      }();
-    });
+
+        final List<String> hashes = await Future.wait(hashFutures);
+        for (int offset = 0; offset < hashes.length; offset++) {
+          images[cursor + offset].imageHash = hashes[offset];
+        }
+
+        if (shouldInterrupt?.call() ?? false) {
+          throw const _MitigationInterruptedException();
+        }
+      }
+
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    return images;
   }
 
   Future<void> _generateComicInfoInDisk(ArchiveDownloadedData archive) async {
@@ -1850,9 +1860,9 @@ class ArchiveDownloadService extends GetxController
   Future<void> _deleteArchiveInDisk(ArchiveDownloadedData archive) async {
     await _deletePackingFileInDisk(archive);
 
-    Directory directory = Directory(computeArchiveUnpackingPath(archive.title, archive.gid));
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
+    final Directory directory = Directory(computeArchiveUnpackingPath(archive.title, archive.gid));
+    if (await directory.exists()) {
+      await directory.delete(recursive: true);
     }
   }
 

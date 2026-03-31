@@ -153,15 +153,8 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
   Widget _buildElementsSliver(BuildContext context, List<E> elements, G group, bool isOpen) {
     final SliverChildBuilderDelegate delegate = SliverChildBuilderDelegate(
       (context, index) {
-        return GetBuilder<GroupedListLogic>(
-          id: 'group::${widget.groupUniqueKey(group)}',
-          global: false,
-          init: logic,
-          builder: (_) {
-            return _buildElement(
-                context, elements[index], group, elements.length <= maxGalleryNum4Animation);
-          },
-        );
+        return _buildElement(
+            context, elements[index], group, elements.length <= maxGalleryNum4Animation);
       },
       childCount: elements.length,
     );

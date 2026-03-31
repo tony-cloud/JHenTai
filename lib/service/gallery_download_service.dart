@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io' as io;
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
@@ -93,6 +94,7 @@ class GalleryDownloadService extends GetxController
   static const int _maxReparseImageUrlAttempts = 3;
   static const String metadataFileName = 'metadata';
   static const int _maxTitleLength = 85;
+  static const int _importGalleryCopyBatchSize = 16;
 
   static const int defaultDownloadGalleryPriority = 4;
   static const int _priorityBase = 100000000;
@@ -770,25 +772,42 @@ class GalleryDownloadService extends GetxController
 
     _ensureDownloadDirExists();
 
-    io.Directory galleryDir =
+    final io.Directory galleryDir =
         io.Directory(computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
-    if (!galleryDir.existsSync()) {
-      galleryDir.createSync(recursive: true);
+    if (!await galleryDir.exists()) {
+      await galleryDir.create(recursive: true);
     }
 
-    List<Future> futures = [];
-    List<GalleryImage> copiedImages = [];
+    final List<String> sourcePaths = <String>[];
+    final List<String> targetPaths = <String>[];
+    final List<GalleryImage> copiedImages = <GalleryImage>[];
+
     for (int i = 0; i < images.length; i++) {
-      GalleryImage image = images[i];
-      String oldPath = computeImageDownloadAbsolutePathFromRelativePath(image.path!);
-      String newPath = _computeImageDownloadAbsolutePath(gallery.title, gallery.gid, image.url, i);
-      futures.add(io.File(oldPath).copy(newPath));
+      final GalleryImage image = images[i];
+      final String sourcePath = computeImageDownloadAbsolutePathFromRelativePath(image.path!);
+      final String targetPath =
+          _computeImageDownloadAbsolutePath(gallery.title, gallery.gid, image.url, i);
+      sourcePaths.add(sourcePath);
+      targetPaths.add(targetPath);
 
       copiedImages.add(image.copyWith(
           path: _computeImageDownloadRelativePath(gallery.title, gallery.gid, image.url, i)));
     }
 
-    await Future.wait(futures);
+    for (int batchStart = 0;
+        batchStart < sourcePaths.length;
+        batchStart += _importGalleryCopyBatchSize) {
+      final int batchEnd = min(batchStart + _importGalleryCopyBatchSize, sourcePaths.length);
+
+      await Future.wait(
+        List<Future<io.File>>.generate(
+          batchEnd - batchStart,
+          (index) => io.File(sourcePaths[batchStart + index]).copy(targetPaths[batchStart + index]),
+        ),
+      );
+
+      await Future<void>.delayed(Duration.zero);
+    }
 
     if (!await _restoreInfoInDatabase(gallery, copiedImages)) {
       log.error('Import gallery failed: ${gallery.title}');
@@ -798,7 +817,7 @@ class GalleryDownloadService extends GetxController
 
     _initGalleryInfoInMemory(gallery, images: copiedImages);
 
-    _saveGalleryMetadataInDisk(gallery);
+    unawaited(_saveGalleryMetadataInDisk(gallery));
   }
 
   Future<void> reDownloadGalleryByGid(int gid) async {
@@ -3567,8 +3586,6 @@ class GalleryDownloadService extends GetxController
     update([galleryCountChangedId, '$galleryDownloadProgressId::${gallery.gid}']);
 
     _notifyDownloadActivityChanged();
-
-    _notifyDownloadActivityChanged();
   }
 
   void _clearGalleryInfoInMemory(GalleryDownloadedData gallery) {
@@ -3681,10 +3698,13 @@ class GalleryDownloadService extends GetxController
 
   // Disk
 
-  void _saveGalleryMetadataInDisk(GalleryDownloadedData gallery) {
-    GalleryDownloadInfo galleryDownloadInfo = galleryDownloadInfos[gallery.gid]!;
+  Future<void> _saveGalleryMetadataInDisk(GalleryDownloadedData gallery) async {
+    final GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gallery.gid];
+    if (galleryDownloadInfo == null) {
+      return;
+    }
 
-    Map<String, Object?> metadata = {
+    final Map<String, Object?> metadata = {
       'gallery': gallery
           .copyWith(
             downloadStatusIndex: galleryDownloadInfo.downloadProgress.downloadStatus.index,
@@ -3699,12 +3719,12 @@ class GalleryDownloadService extends GetxController
     metadata['mpvImageKeys'] = jsonEncode(galleryDownloadInfo.mpvImageKeys);
     metadata['mpvSkipServerIdentifiers'] = jsonEncode(galleryDownloadInfo.mpvSkipServerIdentifiers);
 
-    io.File file = io.File(path.join(
+    final io.File file = io.File(path.join(
         computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid), metadataFileName));
-    if (!file.existsSync()) {
-      file.createSync(recursive: true);
+    if (!await file.exists()) {
+      await file.create(recursive: true);
     }
-    file.writeAsStringSync(jsonEncode(metadata));
+    await file.writeAsString(jsonEncode(metadata));
   }
 
   void _clearDownloadedImageInDisk(GalleryDownloadedData gallery) {

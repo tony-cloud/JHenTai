@@ -512,62 +512,73 @@ class ArchiveListDownloadPage extends StatelessWidget
   }
 
   Widget _buildInfoFooter(BuildContext context, ArchiveDownloadedData archive) {
-    ArchiveDownloadInfo archiveDownloadInfo =
+    final ArchiveDownloadInfo archiveDownloadInfo =
         archiveDownloadService.archiveDownloadInfos[archive.gid]!;
+    final String speedUpdateId =
+        '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}';
 
     return GetBuilder<ArchiveDownloadService>(
       id: '${ArchiveDownloadService.archiveStatusId}::${archive.gid}',
       builder: (_) {
+        if (archiveDownloadInfo.archiveStatus.code > ArchiveStatus.downloading.code) {
+          return Text(
+            archiveDownloadInfo.archiveStatus.name.tr,
+            style: TextStyle(
+                fontSize: UIConfig.downloadPageCardTextSize,
+                color: UIConfig.downloadPageCardTextColor(context),
+                height: 1),
+          ).marginOnly(left: 8);
+        }
+
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                if (archiveDownloadInfo.archiveStatus == ArchiveStatus.downloading)
-                  GetBuilder<ArchiveDownloadService>(
-                    id: '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}',
-                    builder: (_) => Text(
-                      archiveDownloadInfo.speedComputer.speed,
-                      style: TextStyle(
-                          fontSize: UIConfig.downloadPageCardTextSize,
-                          color: UIConfig.downloadPageCardTextColor(context)),
+            GetBuilder<ArchiveDownloadService>(
+              id: speedUpdateId,
+              builder: (_) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        if (archiveDownloadInfo.archiveStatus == ArchiveStatus.downloading)
+                          Text(
+                            archiveDownloadInfo.speedComputer.speed,
+                            style: TextStyle(
+                                fontSize: UIConfig.downloadPageCardTextSize,
+                                color: UIConfig.downloadPageCardTextColor(context)),
+                          ),
+                        const Expanded(child: SizedBox()),
+                        Text(
+                          '${byte2String(archiveDownloadInfo.speedComputer.downloadedBytes.toDouble())}/${byte2String(archiveDownloadInfo.size.toDouble())}',
+                          style: TextStyle(
+                              fontSize: UIConfig.downloadPageCardTextSize,
+                              color: UIConfig.downloadPageCardTextColor(context)),
+                        ),
+                        if (archiveDownloadInfo.archiveStatus != ArchiveStatus.downloading)
+                          Text(
+                            archiveDownloadInfo.archiveStatus.name.tr,
+                            style: TextStyle(
+                                fontSize: UIConfig.downloadPageCardTextSize,
+                                color: UIConfig.downloadPageCardTextColor(context),
+                                height: 1),
+                          ).marginOnly(left: 8),
+                      ],
                     ),
-                  ),
-                const Expanded(child: SizedBox()),
-                if (archiveDownloadInfo.archiveStatus.code <= ArchiveStatus.downloading.code)
-                  GetBuilder<ArchiveDownloadService>(
-                    id: '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}',
-                    builder: (_) => Text(
-                      '${byte2String(archiveDownloadInfo.speedComputer.downloadedBytes.toDouble())}/${byte2String(archiveDownloadInfo.size.toDouble())}',
-                      style: TextStyle(
-                          fontSize: UIConfig.downloadPageCardTextSize,
-                          color: UIConfig.downloadPageCardTextColor(context)),
-                    ),
-                  ),
-                if (archiveDownloadInfo.archiveStatus != ArchiveStatus.downloading)
-                  Text(
-                    archiveDownloadInfo.archiveStatus.name.tr,
-                    style: TextStyle(
-                        fontSize: UIConfig.downloadPageCardTextSize,
-                        color: UIConfig.downloadPageCardTextColor(context),
-                        height: 1),
-                  ).marginOnly(left: 8),
-              ],
+                    SizedBox(
+                      height: UIConfig.downloadPageProgressIndicatorHeight,
+                      child: LinearProgressIndicator(
+                        value: archiveDownloadInfo.speedComputer.downloadedBytes /
+                            archiveDownloadInfo.size,
+                        color: archiveDownloadInfo.archiveStatus.code <= ArchiveStatus.paused.code
+                            ? UIConfig.downloadPageProgressPausedIndicatorColor(context)
+                            : UIConfig.downloadPageProgressIndicatorColor(context),
+                      ),
+                    ).marginOnly(top: 6),
+                  ],
+                );
+              },
             ),
-            if (archiveDownloadInfo.archiveStatus.code <= ArchiveStatus.downloading.code)
-              SizedBox(
-                height: UIConfig.downloadPageProgressIndicatorHeight,
-                child: GetBuilder<ArchiveDownloadService>(
-                  id: '${ArchiveDownloadService.archiveSpeedComputerId}::${archive.gid}::${archive.isOriginal}',
-                  builder: (_) => LinearProgressIndicator(
-                    value: archiveDownloadInfo.speedComputer.downloadedBytes /
-                        archiveDownloadInfo.size,
-                    color: archiveDownloadInfo.archiveStatus.code <= ArchiveStatus.paused.code
-                        ? UIConfig.downloadPageProgressPausedIndicatorColor(context)
-                        : UIConfig.downloadPageProgressIndicatorColor(context),
-                  ),
-                ),
-              ).marginOnly(top: 6),
           ],
         );
       },
