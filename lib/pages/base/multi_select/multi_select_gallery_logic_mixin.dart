@@ -535,7 +535,7 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
         parser: EHSpiderParser.archivePage2Archive,
       );
 
-      if (!_canUseBatchArchiveDownload(archive)) {
+      if (archive.originalSize.isEmpty) {
         return null;
       }
 
@@ -549,12 +549,12 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
         pageCount: detail.pageCount,
         galleryUrl: detail.galleryUrl.url,
         uploader: detail.uploader,
-        size: _computeArchiveSizeInBytes(archive.resampleSize!),
+        size: _computeArchiveSizeInBytes(archive.originalSize),
         coverUrl: detail.cover.url,
         publishTime: detail.publishTime,
         archiveStatusCode: ArchiveStatus.unlocking.code,
         archivePageUrl: detail.archivePageUrl,
-        isOriginal: false,
+        isOriginal: true,
         insertTime: now.toString(),
         sortOrder: 0,
         groupName: group,
@@ -572,21 +572,6 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
       log.error('getGalleryArchiveFailed'.tr, e, s);
       return null;
     }
-  }
-
-  bool _canUseBatchArchiveDownload(GalleryArchive archive) {
-    final String? resampleCost = archive.resampleCost;
-
-    if (resampleCost == null || resampleCost == 'N/A') {
-      return false;
-    }
-
-    if (archive.resampleSize == null) {
-      return false;
-    }
-
-    return resampleCost.contains('Free') &&
-        !archive.downloadResampleHint.contains('Insufficient Funds');
   }
 
   int _computeArchiveSizeInBytes(String sizeString) {
