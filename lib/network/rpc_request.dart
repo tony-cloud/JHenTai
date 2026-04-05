@@ -486,6 +486,157 @@ class RPCRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     return request(method: RPCMethods.downloadGalleryClearParentCache);
   }
 
+  Future<Map<String, dynamic>> requestDownloadGalleryBatchSelected({
+    required List<Map<String, dynamic>> galleries,
+    required Map<String, dynamic> config,
+    CancelToken? cancelToken,
+  }) {
+    return request(
+      method: RPCMethods.downloadGalleryBatchSelected,
+      cancelToken: cancelToken,
+      params: <String, dynamic>{
+        'galleries': galleries,
+        'config': config,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryBatchFavorite({
+    required Map<String, dynamic> searchConfig,
+    required Map<String, dynamic> config,
+    CancelToken? cancelToken,
+  }) {
+    return request(
+      method: RPCMethods.downloadGalleryBatchFavorite,
+      cancelToken: cancelToken,
+      params: <String, dynamic>{
+        'searchConfig': searchConfig,
+        'config': config,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryBatchStatus() {
+    return request(method: RPCMethods.downloadGalleryBatchStatus);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadGalleryBatchAbort() {
+    return request(method: RPCMethods.downloadGalleryBatchAbort);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveList() {
+    return request(method: RPCMethods.downloadArchiveList);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveStart({
+    required Map<String, dynamic> archive,
+    bool resume = false,
+    bool reParse = false,
+  }) {
+    return request(
+      method: RPCMethods.downloadArchiveStart,
+      params: <String, dynamic>{
+        'archive': archive,
+        'resume': resume,
+        'reParse': reParse,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchivePause({required int gid}) {
+    return request(
+      method: RPCMethods.downloadArchivePause,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveResume({required int gid}) {
+    return request(
+      method: RPCMethods.downloadArchiveResume,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveDelete({required int gid}) {
+    return request(
+      method: RPCMethods.downloadArchiveDelete,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchivePauseAll() {
+    return request(method: RPCMethods.downloadArchivePauseAll);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveResumeAll() {
+    return request(method: RPCMethods.downloadArchiveResumeAll);
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveCancelTask({required int gid}) {
+    return request(
+      method: RPCMethods.downloadArchiveCancelTask,
+      params: <String, dynamic>{
+        'gid': gid,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveUpdateGroup({
+    required int gid,
+    required String group,
+  }) {
+    return request(
+      method: RPCMethods.downloadArchiveUpdateGroup,
+      params: <String, dynamic>{
+        'gid': gid,
+        'group': group,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveRenameGroup({
+    required String oldGroup,
+    required String newGroup,
+  }) {
+    return request(
+      method: RPCMethods.downloadArchiveRenameGroup,
+      params: <String, dynamic>{
+        'oldGroup': oldGroup,
+        'newGroup': newGroup,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveDeleteGroup({
+    required String group,
+  }) {
+    return request(
+      method: RPCMethods.downloadArchiveDeleteGroup,
+      params: <String, dynamic>{
+        'group': group,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> requestDownloadArchiveChangeParseSource({
+    required int gid,
+    required int parseSource,
+  }) {
+    return request(
+      method: RPCMethods.downloadArchiveChangeParseSource,
+      params: <String, dynamic>{
+        'gid': gid,
+        'parseSource': parseSource,
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> request({
     required String method,
     Map<String, dynamic>? params,

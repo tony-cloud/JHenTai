@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jhentai/consts/rpc_consts.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
@@ -10,6 +11,7 @@ import 'package:jhentai/model/gallery.dart';
 import 'package:jhentai/model/gallery_archive.dart';
 import 'package:jhentai/model/gallery_detail.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/pages/base/base_page_logic.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_batch_download_util.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
@@ -18,7 +20,9 @@ import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/gallery_update_queue_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/download_setting.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/service/rpc_service.dart';
 import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/snack_util.dart';
@@ -34,6 +38,26 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
   bool _isHandlingBatchDownloadAndUpdate = false;
 
   bool get isHandlingBatchDownloadAndUpdate => _isHandlingBatchDownloadAndUpdate;
+
+  bool get useRpcBatchDownloadAndUpdate {
+    if (GetPlatform.isWeb) {
+      return true;
+    }
+
+    if (rpcSetting.enableRpcMode.isFalse) {
+      return false;
+    }
+
+    if (rpcService.capabilities.isNotEmpty &&
+        !rpcService.supportsCapability(RPCCapabilities.downloadGalleryBatch)) {
+      log.warning(
+        'RPC capability ${RPCCapabilities.downloadGalleryBatch} '
+        'is not reported by backend, still trying RPC call',
+      );
+    }
+
+    return true;
+  }
 
   @override
   Future<void> handleClearAndRefresh() {
@@ -238,6 +262,14 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
     required EHBatchDownloadConfig config,
     bool exitSelectModeAfter = false,
   }) async {
+    if (useRpcBatchDownloadAndUpdate) {
+      return _runRpcBatchDownloadAndUpdate(
+        targetGallerys,
+        config: config,
+        exitSelectModeAfter: exitSelectModeAfter,
+      );
+    }
+
     if (_isHandlingBatchDownloadAndUpdate) {
       toast('downloadAndUpdateBusy'.tr, isCenter: false);
       return;
@@ -329,24 +361,106 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
         (this as UpdateGlobalGalleryStatusLogicMixin).updateGlobalGalleryStatus();
       }
 
-      if (queuedDownloadCount > 0 || updateQueuedCount > 0) {
-        toast(
-          '${'downloadAndUpdateQueued'.tr}: '
-          '${'download'.tr} $queuedDownloadCount, '
-          '${'updateGallery'.tr} $updateQueuedCount',
-          isCenter: false,
-        );
-      } else if (failedCount == 0) {
-        toast('downloadAndUpdateNoTask'.tr, isCenter: false);
+      showBatchDownloadAndUpdateResult(
+        queuedDownloadCount: queuedDownloadCount,
+        updateQueuedCount: updateQueuedCount,
+        failedCount: failedCount,
+      );
+    } finally {
+      _isHandlingBatchDownloadAndUpdate = false;
+
+      if (exitSelectModeAfter) {
+        exitSelectMode();
+      }
+    }
+  }
+
+  Map<String, dynamic> buildBatchDownloadConfigPayload(EHBatchDownloadConfig config) {
+    return <String, dynamic>{
+      'group': config.group,
+      'downloadOriginalImage': config.downloadOriginalImage,
+      'useArchiveForNewGalleryOnly': config.useArchiveForNewGalleryOnly,
+    };
+  }
+
+  void showBatchDownloadAndUpdateResult({
+    required int queuedDownloadCount,
+    required int updateQueuedCount,
+    required int failedCount,
+    bool aborted = false,
+  }) {
+    if (aborted && queuedDownloadCount == 0 && updateQueuedCount == 0) {
+      toast('${'downloadAndUpdate'.tr}: ${'stop'.tr}', isCenter: false);
+      return;
+    }
+
+    if (queuedDownloadCount > 0 || updateQueuedCount > 0) {
+      toast(
+        '${'downloadAndUpdateQueued'.tr}: '
+        '${'download'.tr} $queuedDownloadCount, '
+        '${'updateGallery'.tr} $updateQueuedCount',
+        isCenter: false,
+      );
+    } else if (failedCount == 0) {
+      toast('downloadAndUpdateNoTask'.tr, isCenter: false);
+    }
+
+    if (failedCount > 0) {
+      snack(
+        'failed'.tr,
+        '${'downloadAndUpdate'.tr}: $failedCount',
+        isShort: true,
+      );
+    }
+  }
+
+  Future<void> _runRpcBatchDownloadAndUpdate(
+    List<Gallery> targetGallerys, {
+    required EHBatchDownloadConfig config,
+    required bool exitSelectModeAfter,
+  }) async {
+    if (_isHandlingBatchDownloadAndUpdate) {
+      toast('downloadAndUpdateBusy'.tr, isCenter: false);
+      return;
+    }
+
+    if (targetGallerys.isEmpty) {
+      if (exitSelectModeAfter) {
+        exitSelectMode();
+      }
+      return;
+    }
+
+    _isHandlingBatchDownloadAndUpdate = true;
+
+    try {
+      final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryBatchSelected(
+        galleries: targetGallerys.map((gallery) => gallery.toJson()).toList(),
+        config: buildBatchDownloadConfigPayload(config),
+      );
+
+      await galleryDownloadService.refreshRemoteGallerys();
+
+      if ((result['queuedDownloadCount'] as num? ?? 0) > 0 ||
+          (result['updateQueuedCount'] as num? ?? 0) > 0) {
+        if (this is UpdateGlobalGalleryStatusLogicMixin) {
+          (this as UpdateGlobalGalleryStatusLogicMixin).updateGlobalGalleryStatus();
+        }
       }
 
-      if (failedCount > 0) {
-        snack(
-          'failed'.tr,
-          '${'downloadAndUpdate'.tr}: $failedCount',
-          isShort: true,
-        );
+      showBatchDownloadAndUpdateResult(
+        queuedDownloadCount: (result['queuedDownloadCount'] as num? ?? 0).toInt(),
+        updateQueuedCount: (result['updateQueuedCount'] as num? ?? 0).toInt(),
+        failedCount: (result['failedCount'] as num? ?? 0).toInt(),
+        aborted: result['aborted'] == true,
+      );
+    } on RPCRequestException catch (e) {
+      if (e.code == -32041) {
+        toast('downloadAndUpdateBusy'.tr, isCenter: false);
+        return;
       }
+
+      snack('failed'.tr, e.message, isShort: true);
     } finally {
       _isHandlingBatchDownloadAndUpdate = false;
 

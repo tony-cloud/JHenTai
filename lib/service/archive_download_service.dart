@@ -51,6 +51,10 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/wakelock_service.dart';
 import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/consts/rpc_consts.dart';
+import 'package:jhentai/network/rpc_request.dart';
+import 'package:jhentai/service/rpc_service.dart';
+import 'package:jhentai/setting/rpc_setting.dart';
 
 ArchiveDownloadService archiveDownloadService = ArchiveDownloadService();
 
@@ -101,6 +105,22 @@ class ArchiveDownloadService extends GetxController
   late Worker proxyConfigListener;
   late Worker timeoutListener;
 
+  Timer? _remoteRefreshTimer;
+  bool _remoteRefreshInFlight = false;
+  bool _remoteRpcDataActive = false;
+
+  bool get _shouldUseRemoteArchiveRpcData {
+    if (rpcSetting.enableRpcMode.isFalse) {
+      return false;
+    }
+    if (rpcService.capabilities.isEmpty) {
+      return true;
+    }
+    return rpcService.supportsCapability(RPCCapabilities.downloadArchiveList);
+  }
+
+  bool get usesRemoteRpcData => _remoteRpcDataActive;
+
   bool _isArchiveStatusActive(ArchiveStatus status) {
     return status.code >= ArchiveStatus.unlocking.code &&
         status.code < ArchiveStatus.completed.code;
@@ -115,7 +135,8 @@ class ArchiveDownloadService extends GetxController
   }
 
   @override
-  List<JHLifeCircleBean> get initDependencies => super.initDependencies..add(wakelockService);
+  List<JHLifeCircleBean> get initDependencies =>
+      super.initDependencies..addAll([wakelockService, rpcSetting, rpcService, rpcRequest]);
 
   @override
   Future<void> doInitBean() async {
@@ -125,6 +146,18 @@ class ArchiveDownloadService extends GetxController
       _completer.complete(true);
       return;
     }
+
+    if (_shouldUseRemoteArchiveRpcData) {
+      bool initializedRemote = await refreshRemoteArchives();
+      if (initializedRemote) {
+        _startRemoteRefreshTimerIfNeeded();
+        _completer.complete(true);
+        return;
+      }
+      log.warning('RPC archive source is unavailable, fallback to local data.');
+    }
+
+    _remoteRpcDataActive = false;
 
     await _instantiateFromDB();
 
@@ -153,12 +186,18 @@ class ArchiveDownloadService extends GetxController
   }
 
   @override
-  Future<void> doAfterBeanReady() async {}
+  Future<void> doAfterBeanReady() async {
+    if (usesRemoteRpcData) {
+      await refreshRemoteArchives();
+      _startRemoteRefreshTimerIfNeeded();
+    }
+  }
 
   @override
   void onClose() {
     super.dispose();
 
+    _remoteRefreshTimer?.cancel();
     isolateCountListener.dispose();
     proxyConfigListener.dispose();
     timeoutListener.dispose();
@@ -176,6 +215,149 @@ class ArchiveDownloadService extends GetxController
     _mitigationCompleters.clear();
     unawaited(wakelockService.release(_mitigationLockName));
   }
+
+  // --------------- Remote RPC thin-client helpers ---------------
+
+  Future<void> manualRefreshRemoteStatus() async {
+    if (!_shouldUseRemoteArchiveRpcData) {
+      return;
+    }
+    await _refreshRemoteArchiveSnapshotSafely();
+  }
+
+  void _startRemoteRefreshTimerIfNeeded() {
+    _remoteRefreshTimer?.cancel();
+    _remoteRefreshTimer = null;
+
+    if (!usesRemoteRpcData) {
+      return;
+    }
+    if (rpcSetting.autoRefreshRemoteDownloads.isFalse) {
+      return;
+    }
+
+    final Duration interval = Duration(
+      seconds: rpcSetting.remoteDownloadRefreshIntervalSeconds.value,
+    );
+    _remoteRefreshTimer = Timer.periodic(interval, (_) {
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+    });
+  }
+
+  Future<void> _refreshRemoteArchiveSnapshotSafely() async {
+    if (_remoteRefreshInFlight) {
+      return;
+    }
+    _remoteRefreshInFlight = true;
+    try {
+      await refreshRemoteArchives();
+    } finally {
+      _remoteRefreshInFlight = false;
+    }
+  }
+
+  Future<bool> refreshRemoteArchives() async {
+    if (!_shouldUseRemoteArchiveRpcData) {
+      _remoteRpcDataActive = false;
+      _clearRemoteArchiveInfos();
+      return false;
+    }
+
+    try {
+      final Map<String, dynamic> result = await rpcRequest.requestDownloadArchiveList();
+      _applyRemoteArchiveSnapshot(result);
+      _remoteRpcDataActive = true;
+      _startRemoteRefreshTimerIfNeeded();
+      return true;
+    } catch (e, stack) {
+      _remoteRpcDataActive = false;
+      _remoteRefreshTimer?.cancel();
+      _remoteRefreshTimer = null;
+      log.error('Failed to refresh remote archive list', e, stack);
+      return false;
+    }
+  }
+
+  void _clearRemoteArchiveInfos() {
+    for (final ArchiveDownloadInfo info in archiveDownloadInfos.values) {
+      info.speedComputer.dispose();
+    }
+    allGroups = <String>[];
+    archives = <ArchiveDownloadedData>[];
+    archiveDownloadInfos = <int, ArchiveDownloadInfo>{};
+    update([archiveStatusId]);
+  }
+
+  void _applyRemoteArchiveSnapshot(Map<String, dynamic> payload) {
+    final List<ArchiveDownloadedData> remoteArchives =
+        ((payload['archives'] as List?) ?? const <dynamic>[])
+            .whereType<Map>()
+            .map((map) => ArchiveDownloadedData.fromJson(map.cast<String, dynamic>()))
+            .toList(growable: false);
+
+    final Map<int, Map<String, dynamic>> infoByGid = <int, Map<String, dynamic>>{};
+    for (final dynamic rawInfo in (payload['infos'] as List?) ?? const <dynamic>[]) {
+      if (rawInfo is Map) {
+        final Map<String, dynamic> casted = rawInfo.cast<String, dynamic>();
+        infoByGid[casted['gid'] as int] = casted;
+      }
+    }
+
+    for (final ArchiveDownloadInfo info in archiveDownloadInfos.values) {
+      info.speedComputer.dispose();
+    }
+
+    archives = remoteArchives;
+    allGroups = ((payload['groups'] as List?) ?? const <dynamic>[])
+        .map((group) => group.toString())
+        .toList(growable: false);
+    if (allGroups.isEmpty) {
+      allGroups = remoteArchives
+          .map((a) => infoByGid[a.gid]?['group']?.toString() ?? 'default')
+          .toSet()
+          .toList(growable: false);
+    }
+
+    archiveDownloadInfos = <int, ArchiveDownloadInfo>{
+      for (final ArchiveDownloadedData archive in remoteArchives)
+        archive.gid: _buildRemoteArchiveDownloadInfo(archive, infoByGid[archive.gid]),
+    };
+
+    update([archiveStatusId]);
+  }
+
+  ArchiveDownloadInfo _buildRemoteArchiveDownloadInfo(
+    ArchiveDownloadedData archive,
+    Map<String, dynamic>? rawInfo,
+  ) {
+    return ArchiveDownloadInfo(
+      size: rawInfo?['size'] is int ? rawInfo!['size'] as int : 0,
+      parseSource:
+          rawInfo?['parseSource'] is int ? rawInfo!['parseSource'] as int : archive.parseSource,
+      archiveStatus: ArchiveStatus.fromCode(
+        rawInfo?['archiveStatusCode'] is int
+            ? rawInfo!['archiveStatusCode'] as int
+            : archive.archiveStatusCode,
+      ),
+      cancelToken: CancelToken(),
+      speedComputer: SpeedComputer(
+        updateCallback: () => update(['$archiveSpeedComputerId::${archive.gid}']),
+      ),
+      sortOrder: rawInfo?['sortOrder'] is int ? rawInfo!['sortOrder'] as int : 0,
+      group: rawInfo?['group']?.toString() ?? 'default',
+    );
+  }
+
+  bool _skipRemoteMutation(String action) {
+    if (!usesRemoteRpcData) {
+      return false;
+    }
+    log.trace('Skip $action for RPC-backed archive downloads '
+        'in thin-client mode');
+    return true;
+  }
+
+  // --------------- End remote RPC helpers ---------------
 
   bool containArchive(int gid) {
     return archiveDownloadInfos.containsKey(gid);
@@ -222,6 +404,16 @@ class ArchiveDownloadService extends GetxController
 
   Future<void> downloadArchive(ArchiveDownloadedData archive,
       {bool resume = false, bool reParse = false}) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveStart(
+        archive: archive.toJson(),
+        resume: resume,
+        reParse: reParse,
+      );
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
+
     await _ensureDownloadDirExists();
 
     if (!resume) {
@@ -256,6 +448,12 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> deleteArchive(int gid) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveDelete(gid: gid);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
+
     ArchiveDownloadedData? archive = archives.firstWhereOrNull((archive) => archive.gid == gid);
     if (archive != null) {
       log.info('Delete archive: ${archive.title}, original: ${archive.isOriginal}');
@@ -275,10 +473,21 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> pauseAllDownloadArchive() async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchivePauseAll();
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
     await Future.wait(archives.map((a) => a.gid).map(pauseDownloadArchive).toList());
   }
 
   Future<void> pauseDownloadArchive(int gid, {bool needReUnlock = false}) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchivePause(gid: gid);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
+
     ArchiveDownloadedData? archive = archives.firstWhereOrNull((archive) => archive.gid == gid);
     if (archive != null) {
       ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[gid]!;
@@ -303,10 +512,21 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> resumeAllDownloadArchive() async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveResumeAll();
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
     await Future.wait(archives.map((a) => a.gid).map(resumeDownloadArchive).toList());
   }
 
   Future<void> resumeDownloadArchive(int gid) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveResume(gid: gid);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
+
     ArchiveDownloadedData? archive = archives.firstWhereOrNull((archive) => archive.gid == gid);
     if (archive != null) {
       ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[archive.gid]!;
@@ -324,6 +544,12 @@ class ArchiveDownloadService extends GetxController
 
   /// cancel archive to deal with 410
   Future<void> cancelArchive(int gid) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveCancelTask(gid: gid);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
+
     ArchiveDownloadedData? archive = archives.firstWhereOrNull((a) => a.gid == gid);
     if (archive != null) {
       ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[archive.gid]!;
@@ -799,6 +1025,12 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<bool> updateArchiveGroup(int gid, String group) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveUpdateGroup(gid: gid, group: group);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return true;
+    }
+
     ArchiveDownloadInfo? archiveDownloadInfo = archiveDownloadInfos[gid];
     if (archiveDownloadInfo == null) {
       return false;
@@ -818,6 +1050,12 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> renameGroup(String oldGroup, String newGroup) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveRenameGroup(oldGroup: oldGroup, newGroup: newGroup);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
+
     List<ArchiveDownloadedData> archiveDownloadedDatas =
         archives.where((a) => archiveDownloadInfos[a.gid]!.group == oldGroup).toList();
 
@@ -841,6 +1079,12 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<bool> deleteGroup(String group) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveDeleteGroup(group: group);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return true;
+    }
+
     allGroups.remove(group);
 
     try {
@@ -868,6 +1112,13 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> changeParseSource(int gid, ArchiveParseSource parseSource) async {
+    if (usesRemoteRpcData) {
+      await rpcRequest.requestDownloadArchiveChangeParseSource(
+          gid: gid, parseSource: parseSource.code);
+      unawaited(_refreshRemoteArchiveSnapshotSafely());
+      return;
+    }
+
     log.info('Update parse source: $gid $parseSource');
 
     ArchiveDownloadInfo? archiveDownloadInfo = archiveDownloadInfos[gid];
@@ -900,6 +1151,10 @@ class ArchiveDownloadService extends GetxController
   /// Use meta in each archive folder to restore download tasks, then sync to database.
   /// this is used after re-install app, or share download folder to another user.
   Future<int> restoreTasks() async {
+    if (_skipRemoteMutation('restoreTasks')) {
+      return 0;
+    }
+
     await completed;
 
     Directory downloadDir = Directory(downloadSetting.downloadPath.value);

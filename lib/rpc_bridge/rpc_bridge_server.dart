@@ -7,7 +7,11 @@ import 'package:jhentai/consts/eh_consts.dart';
 import 'package:jhentai/consts/rpc_consts.dart';
 import 'package:jhentai/database/dao/gallery_history_dao.dart';
 import 'package:jhentai/database/database.dart';
+import 'package:jhentai/model/gallery.dart';
 import 'package:jhentai/model/gallery_image.dart';
+import 'package:jhentai/model/search_config.dart';
+import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/service/gallery_batch_download_service.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/setting/download_setting.dart';
@@ -72,7 +76,10 @@ class RpcBridgeServer {
         RPCCapabilities.downloadGalleryRead,
         RPCCapabilities.downloadGalleryControl,
         RPCCapabilities.downloadGalleryMaintenance,
+        RPCCapabilities.downloadGalleryBatch,
         RPCCapabilities.downloadGalleryThumbnail,
+        RPCCapabilities.downloadArchiveList,
+        RPCCapabilities.downloadArchiveControl,
         RPCCapabilities.historyRead,
         RPCCapabilities.historyWrite,
         RPCCapabilities.newsEvent,
@@ -411,6 +418,38 @@ class RpcBridgeServer {
         return _handleDownloadGalleryCleanupDuplicates();
       case RPCMethods.downloadGalleryClearParentCache:
         return _handleDownloadGalleryClearParentCache();
+      case RPCMethods.downloadGalleryBatchSelected:
+        return _handleDownloadGalleryBatchSelected(params);
+      case RPCMethods.downloadGalleryBatchFavorite:
+        return _handleDownloadGalleryBatchFavorite(params);
+      case RPCMethods.downloadGalleryBatchStatus:
+        return _handleDownloadGalleryBatchStatus();
+      case RPCMethods.downloadGalleryBatchAbort:
+        return _handleDownloadGalleryBatchAbort();
+      case RPCMethods.downloadArchiveList:
+        return _handleDownloadArchiveList();
+      case RPCMethods.downloadArchiveStart:
+        return _handleDownloadArchiveStart(params);
+      case RPCMethods.downloadArchivePause:
+        return _handleDownloadArchivePause(params);
+      case RPCMethods.downloadArchiveResume:
+        return _handleDownloadArchiveResume(params);
+      case RPCMethods.downloadArchiveDelete:
+        return _handleDownloadArchiveDelete(params);
+      case RPCMethods.downloadArchivePauseAll:
+        return _handleDownloadArchivePauseAll();
+      case RPCMethods.downloadArchiveResumeAll:
+        return _handleDownloadArchiveResumeAll();
+      case RPCMethods.downloadArchiveCancelTask:
+        return _handleDownloadArchiveCancelTask(params);
+      case RPCMethods.downloadArchiveUpdateGroup:
+        return _handleDownloadArchiveUpdateGroup(params);
+      case RPCMethods.downloadArchiveRenameGroup:
+        return _handleDownloadArchiveRenameGroup(params);
+      case RPCMethods.downloadArchiveDeleteGroup:
+        return _handleDownloadArchiveDeleteGroup(params);
+      case RPCMethods.downloadArchiveChangeParseSource:
+        return _handleDownloadArchiveChangeParseSource(params);
       default:
         throw RPCBridgeException(
           code: -32601,
@@ -1216,6 +1255,245 @@ class RpcBridgeServer {
     return <String, dynamic>{
       'status': 'ok',
       'count': count,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryBatchSelected(
+    Map<String, dynamic> params,
+  ) async {
+    final Map<String, dynamic> config = _asMap(params['config']);
+    final List<dynamic> rawGallerys =
+        params['galleries'] is List ? params['galleries'] as List : const <dynamic>[];
+    final List<Gallery> gallerys = rawGallerys.whereType<Map>().map((dynamic item) {
+      return Gallery.fromJson(_asMap(item));
+    }).toList(growable: false);
+
+    try {
+      final GalleryBatchDownloadSummary summary =
+          await galleryBatchDownloadService.startForSelectedGalleries(
+        targetGallerys: gallerys,
+        group: _requireString(config, <String>['group']),
+        downloadOriginalImage: _asBool(config['downloadOriginalImage']),
+        useArchiveForNewGalleryOnly: _asBool(
+          config['useArchiveForNewGalleryOnly'],
+        ),
+      );
+
+      return <String, dynamic>{
+        'status': 'ok',
+        ...summary.toJson(),
+      };
+    } on StateError catch (e) {
+      throw RPCBridgeException(
+        code: -32041,
+        message: e.message,
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryBatchFavorite(
+    Map<String, dynamic> params,
+  ) async {
+    final Map<String, dynamic> rawSearchConfig = _asMap(params['searchConfig']);
+    final Map<String, dynamic> config = _asMap(params['config']);
+
+    try {
+      final GalleryBatchDownloadSummary summary =
+          await galleryBatchDownloadService.startForFavoriteSearchConfig(
+        searchConfig: SearchConfig.fromJson(rawSearchConfig),
+        group: _requireString(config, <String>['group']),
+        downloadOriginalImage: _asBool(config['downloadOriginalImage']),
+        useArchiveForNewGalleryOnly: _asBool(
+          config['useArchiveForNewGalleryOnly'],
+        ),
+      );
+
+      return <String, dynamic>{
+        'status': 'ok',
+        ...summary.toJson(),
+      };
+    } on StateError catch (e) {
+      throw RPCBridgeException(
+        code: -32041,
+        message: e.message,
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryBatchStatus() async {
+    return <String, dynamic>{
+      'status': 'ok',
+      ...galleryBatchDownloadService.getStatusPayload(),
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryBatchAbort() async {
+    galleryBatchDownloadService.requestAbort();
+
+    return <String, dynamic>{
+      'status': 'ok',
+      ...galleryBatchDownloadService.getStatusPayload(),
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveList() async {
+    final List<Map<String, dynamic>> infos = archiveDownloadService.archives.map((archive) {
+      final ArchiveDownloadInfo? info = archiveDownloadService.archiveDownloadInfos[archive.gid];
+      return <String, dynamic>{
+        'gid': archive.gid,
+        'group': info?.group ?? 'default',
+        'sortOrder': info?.sortOrder ?? 0,
+        'archiveStatusCode': info?.archiveStatus.code ?? archive.archiveStatusCode,
+        'parseSource': info?.parseSource ?? archive.parseSource,
+        'size': info?.size ?? 0,
+        'speed': info?.speedComputer.speed ?? '0 B/s',
+      };
+    }).toList(growable: false);
+
+    return <String, dynamic>{
+      'groups': List<String>.from(archiveDownloadService.allGroups),
+      'archives': archiveDownloadService.archives
+          .map((archive) => archive.toJson())
+          .toList(growable: false),
+      'infos': infos,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveStart(
+    Map<String, dynamic> params,
+  ) async {
+    final Map<String, dynamic> rawArchive = _asMap(params['archive']);
+    if (rawArchive.isEmpty) {
+      throw RPCBridgeException(code: -32602, message: 'archive must be an object');
+    }
+    final ArchiveDownloadedData archive = ArchiveDownloadedData.fromJson(rawArchive);
+    final bool resume = params.containsKey('resume') ? _asBool(params['resume']) : false;
+    final bool reParse = params.containsKey('reParse') ? _asBool(params['reParse']) : false;
+
+    await archiveDownloadService.downloadArchive(archive, resume: resume, reParse: reParse);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': archive.gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchivePause(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    await archiveDownloadService.pauseDownloadArchive(gid);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveResume(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    await archiveDownloadService.resumeDownloadArchive(gid);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveDelete(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    await archiveDownloadService.deleteArchive(gid);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchivePauseAll() async {
+    await archiveDownloadService.pauseAllDownloadArchive();
+
+    return <String, dynamic>{
+      'status': 'ok',
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveResumeAll() async {
+    await archiveDownloadService.resumeAllDownloadArchive();
+
+    return <String, dynamic>{
+      'status': 'ok',
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveCancelTask(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    await archiveDownloadService.cancelArchive(gid);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveUpdateGroup(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    final String group = _requireString(params, <String>['group']);
+    final bool ok = await archiveDownloadService.updateArchiveGroup(gid, group);
+
+    return <String, dynamic>{
+      'status': ok ? 'ok' : 'failed',
+      'gid': gid,
+      'group': group,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveRenameGroup(
+    Map<String, dynamic> params,
+  ) async {
+    final String oldGroup = _requireString(params, <String>['oldGroup']);
+    final String newGroup = _requireString(params, <String>['newGroup']);
+    await archiveDownloadService.renameGroup(oldGroup, newGroup);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'oldGroup': oldGroup,
+      'newGroup': newGroup,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveDeleteGroup(
+    Map<String, dynamic> params,
+  ) async {
+    final String group = _requireString(params, <String>['group']);
+    final bool ok = await archiveDownloadService.deleteGroup(group);
+
+    return <String, dynamic>{
+      'status': ok ? 'ok' : 'failed',
+      'group': group,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadArchiveChangeParseSource(
+    Map<String, dynamic> params,
+  ) async {
+    final int gid = _asInt(params['gid']);
+    final int parseSourceCode = _asInt(params['parseSource']);
+    final ArchiveParseSource parseSource = ArchiveParseSource.fromCode(parseSourceCode);
+    await archiveDownloadService.changeParseSource(gid, parseSource);
+
+    return <String, dynamic>{
+      'status': 'ok',
+      'gid': gid,
+      'parseSource': parseSourceCode,
     };
   }
 

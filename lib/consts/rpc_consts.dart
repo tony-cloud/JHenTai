@@ -55,6 +55,22 @@ class RPCMethods {
   static const String downloadGalleryResumeAll = 'download.gallery.resumeAll';
   static const String downloadGalleryCleanupDuplicates = 'download.gallery.cleanupDuplicates';
   static const String downloadGalleryClearParentCache = 'download.gallery.clearParentCache';
+  static const String downloadGalleryBatchSelected = 'download.gallery.batchSelected';
+  static const String downloadGalleryBatchFavorite = 'download.gallery.batchFavorite';
+  static const String downloadGalleryBatchStatus = 'download.gallery.batchStatus';
+  static const String downloadGalleryBatchAbort = 'download.gallery.batchAbort';
+  static const String downloadArchiveList = 'download.archiveList';
+  static const String downloadArchiveStart = 'download.archive.start';
+  static const String downloadArchivePause = 'download.archive.pause';
+  static const String downloadArchiveResume = 'download.archive.resume';
+  static const String downloadArchiveDelete = 'download.archive.delete';
+  static const String downloadArchivePauseAll = 'download.archive.pauseAll';
+  static const String downloadArchiveResumeAll = 'download.archive.resumeAll';
+  static const String downloadArchiveCancelTask = 'download.archive.cancelTask';
+  static const String downloadArchiveUpdateGroup = 'download.archive.updateGroup';
+  static const String downloadArchiveRenameGroup = 'download.archive.renameGroup';
+  static const String downloadArchiveDeleteGroup = 'download.archive.deleteGroup';
+  static const String downloadArchiveChangeParseSource = 'download.archive.changeParseSource';
 
   const RPCMethods._();
 }
@@ -85,6 +101,9 @@ class RPCCapabilities {
   static const String authLogin = 'auth.login';
   static const String downloadGalleryControl = 'download.gallery.control';
   static const String downloadGalleryMaintenance = 'download.gallery.maintenance';
+  static const String downloadGalleryBatch = 'download.gallery.batch';
+  static const String downloadArchiveList = 'download.archive.list';
+  static const String downloadArchiveControl = 'download.archive.control';
 
   const RPCCapabilities._();
 }

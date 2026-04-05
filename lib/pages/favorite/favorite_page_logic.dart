@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -10,10 +11,12 @@ import 'package:jhentai/model/gallery.dart';
 import 'package:jhentai/model/gallery_page.dart';
 import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/pages/base/base_page_logic.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_gallery_logic_mixin.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
 import 'package:jhentai/pages/favorite/favorite_page_state.dart';
+import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
@@ -108,6 +111,24 @@ class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin 
     _downloadAndUpdateAllCancelToken = CancelToken();
 
     try {
+      if (useRpcBatchDownloadAndUpdate) {
+        final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryBatchFavorite(
+          searchConfig: state.searchConfig.toJson(),
+          config: buildBatchDownloadConfigPayload(config),
+          cancelToken: _downloadAndUpdateAllCancelToken,
+        );
+
+        await galleryDownloadService.refreshRemoteGallerys();
+
+        showBatchDownloadAndUpdateResult(
+          queuedDownloadCount: (result['queuedDownloadCount'] as num? ?? 0).toInt(),
+          updateQueuedCount: (result['updateQueuedCount'] as num? ?? 0).toInt(),
+          failedCount: (result['failedCount'] as num? ?? 0).toInt(),
+          aborted: result['aborted'] == true,
+        );
+        return;
+      }
+
       final List<Gallery> gallerys = await _collectCurrentFavcatGallerys(
         _downloadAndUpdateAllCancelToken!,
       );
@@ -125,6 +146,14 @@ class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin 
 
       log.error('refreshGalleryFailed'.tr, e.errorMsg);
       snack('failed'.tr, e.errorMsg ?? '', isShort: true);
+    } on RPCRequestException catch (e) {
+      if (e.code == -32041) {
+        snack('failed'.tr, 'downloadAndUpdateBusy'.tr, isShort: true);
+        return;
+      }
+
+      log.error('refreshGalleryFailed'.tr, e.message);
+      snack('failed'.tr, e.message, isShort: true);
     } on EHSiteException catch (e) {
       log.error('refreshGalleryFailed'.tr, e.message);
       snack('failed'.tr, e.message, isShort: true);
@@ -176,6 +205,10 @@ class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin 
 
   @override
   void onClose() {
+    if (useRpcBatchDownloadAndUpdate && _isCollectingDownloadAndUpdateAll) {
+      unawaited(rpcRequest.requestDownloadGalleryBatchAbort());
+    }
+
     _downloadAndUpdateAllCancelToken?.cancel();
     super.onClose();
   }
