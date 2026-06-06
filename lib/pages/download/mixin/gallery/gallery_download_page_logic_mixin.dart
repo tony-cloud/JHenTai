@@ -24,6 +24,7 @@ import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/eh_download_dialog.dart';
+import 'package:jhentai/widget/eh_gallery_update_status_dialog.dart';
 import 'package:jhentai/pages/download/mixin/basic/multi_select/multi_select_download_page_logic_mixin.dart';
 
 mixin GalleryDownloadPageLogicMixin on GetxController
@@ -45,16 +46,16 @@ mixin GalleryDownloadPageLogicMixin on GetxController
     }
 
     if (updateQueueService.totalCount <= 0) {
-      return 'stop'.tr;
+      return 'updateGallery'.tr;
     }
 
-    return '${'stop'.tr} '
+    return '${'updateGallery'.tr} '
         '(${updateQueueService.processedCount}/${updateQueueService.totalCount})';
   }
 
   void handleTapOneKeyUpdateGalleryAction() {
     if (isHandlingOneKeyUpdateGallery) {
-      updateQueueService.requestAbort();
+      showGalleryUpdateStatusDialog();
       updateSafely([oneKeyUpdateMenuActionId]);
       return;
     }
@@ -64,6 +65,7 @@ mixin GalleryDownloadPageLogicMixin on GetxController
 
   void handleOneKeyUpdateGallery() {
     if (isHandlingOneKeyUpdateGallery) {
+      showGalleryUpdateStatusDialog();
       return;
     }
 

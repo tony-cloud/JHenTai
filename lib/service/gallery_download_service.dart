@@ -722,6 +722,11 @@ class GalleryDownloadService extends GetxController
       GalleryDownloadedData oldGallery, GalleryUrl newVersionGalleryUrl) async {
     log.info('update gallery: ${oldGallery.title}');
 
+    if (containGallery(newVersionGalleryUrl.gid)) {
+      log.info('Skip update gallery, target already exists: ${newVersionGalleryUrl.gid}');
+      return;
+    }
+
     GalleryDetail newGalleryDetail;
     try {
       ({GalleryDetail galleryDetails, String apikey}) detailPageInfo = await retry(
@@ -740,6 +745,11 @@ class GalleryDownloadService extends GetxController
       log.info('${'updateGalleryError'.tr}, reason: ${e.message}');
       snack('updateGalleryError'.tr, e.message, isShort: true);
       pauseAllDownloadGallery();
+      return;
+    }
+
+    if (containGallery(newGalleryDetail.galleryUrl.gid)) {
+      log.info('Skip update gallery, target already exists: ${newGalleryDetail.galleryUrl.gid}');
       return;
     }
 

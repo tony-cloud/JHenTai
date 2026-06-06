@@ -24,6 +24,17 @@ import 'package:jhentai/utils/toast_util.dart';
 
 GalleryUpdateQueueService galleryUpdateQueueService = GalleryUpdateQueueService();
 
+typedef _GalleryHistoryNode = ({
+  GalleryUrl galleryUrl,
+  String title,
+  String updateTime,
+});
+
+typedef _QueueUpdateTarget = ({
+  GalleryDownloadedData downloadedGallery,
+  GalleryUrl latestGalleryUrl,
+});
+
 class GalleryUpdateQueueService extends GetxController
     with JHLifeCircleBeanErrorCatch
     implements JHLifeCircleBean {
@@ -39,9 +50,11 @@ class GalleryUpdateQueueService extends GetxController
 
   int _processedCount = 0;
   int _totalCount = 0;
+  int _summaryTotalCount = 0;
   int _startedCount = 0;
   int _skippedCount = 0;
   int _failedCount = 0;
+  String _operationLabel = '';
 
   VoidCallback? _stateChangedCallback;
 
@@ -50,6 +63,16 @@ class GalleryUpdateQueueService extends GetxController
   int get processedCount => _processedCount;
 
   int get totalCount => _totalCount;
+
+  String get operationLabel => _operationLabel.isEmpty ? 'updateGallery'.tr : _operationLabel;
+
+  int get startedCount => _startedCount;
+
+  int get skippedCount => _skippedCount;
+
+  int get failedCount => _failedCount;
+
+  bool get abortRequested => _abortRequested;
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
@@ -76,8 +99,12 @@ class GalleryUpdateQueueService extends GetxController
     _queue
       ..clear()
       ..addAll(gallerys);
-    _totalCount = gallerys.length;
-    _notifyStateChanged();
+    _summaryTotalCount = gallerys.length;
+    _setOperationProgress(
+      operationLabel: 'updateGallerySearchingHistory'.tr,
+      processedCount: 0,
+      totalCount: gallerys.length,
+    );
 
     unawaited(_runInBackground(_runOneKeyUpdateQueue));
     return true;
@@ -92,8 +119,12 @@ class GalleryUpdateQueueService extends GetxController
     }
 
     _prepareRun(onStateChanged: onStateChanged);
-    _totalCount = 1;
-    _notifyStateChanged();
+    _summaryTotalCount = 1;
+    _setOperationProgress(
+      operationLabel: 'updateGallerySearchingHistory'.tr,
+      processedCount: 0,
+      totalCount: 1,
+    );
 
     unawaited(_runInBackground(() => _runHistoryUpdate(baseDetail)));
     return true;
@@ -114,9 +145,11 @@ class GalleryUpdateQueueService extends GetxController
     _abortRequested = false;
     _processedCount = 0;
     _totalCount = 0;
+    _summaryTotalCount = 0;
     _startedCount = 0;
     _skippedCount = 0;
     _failedCount = 0;
+    _operationLabel = 'updateGallery'.tr;
     _stateChangedCallback = onStateChanged;
     _notifyStateChanged();
   }
@@ -136,15 +169,15 @@ class GalleryUpdateQueueService extends GetxController
     } finally {
       await wakelockService.release(_updateQueueLockName);
 
-      if (_totalCount > 0) {
+      if (_summaryTotalCount > 0) {
         final String skippedLabel = 'updateGallerySummarySkipped'.tr;
         final String failedLabel = 'updateGallerySummaryFailed'.tr;
         final String summary = _abortRequested
             ? '${'updateGallery'.tr}: ${'stop'.tr} '
-                '($_startedCount/$_totalCount, '
+                '($_startedCount/$_summaryTotalCount, '
                 '$skippedLabel:$_skippedCount, $failedLabel:$_failedCount)'
             : '${'updateGallery'.tr}: '
-                '$_startedCount/$_totalCount, '
+                '$_startedCount/$_summaryTotalCount, '
                 '$skippedLabel:$_skippedCount, $failedLabel:$_failedCount';
         toast(summary, isCenter: false);
       }
@@ -154,9 +187,11 @@ class GalleryUpdateQueueService extends GetxController
       _abortRequested = false;
       _processedCount = 0;
       _totalCount = 0;
+      _summaryTotalCount = 0;
       _startedCount = 0;
       _skippedCount = 0;
       _failedCount = 0;
+      _operationLabel = 'updateGallery'.tr;
       _notifyStateChanged();
       _stateChangedCallback = null;
     }
@@ -206,6 +241,7 @@ class GalleryUpdateQueueService extends GetxController
     final Set<int> downloadedGids = downloadedByGid.keys.toSet();
     final Set<int> recentDownloadedGids = _collectRecentDownloadedGids(
       childrenByParentGid: childrenByParentGid,
+      downloadedByGid: downloadedByGid,
       downloadedGids: downloadedGids,
     );
 
@@ -215,8 +251,12 @@ class GalleryUpdateQueueService extends GetxController
         recentDownloadedGids.map((gid) => downloadedByGid[gid]).whereType<GalleryDownloadedData>(),
       );
 
-    _totalCount = _queue.length;
-    _notifyStateChanged();
+    _summaryTotalCount = _queue.length;
+    _setOperationProgress(
+      operationLabel: 'updateGallery'.tr,
+      processedCount: 0,
+      totalCount: _queue.length,
+    );
 
     if (_queue.isEmpty) {
       return;
@@ -225,35 +265,47 @@ class GalleryUpdateQueueService extends GetxController
     while (_queue.isNotEmpty && !_abortRequested) {
       final GalleryDownloadedData oldGallery = _queue.removeFirst();
 
-      _processedCount++;
-      _notifyStateChanged();
+      _setOperationProgress(
+        operationLabel: 'updateGallery'.tr,
+        processedCount: _processedCount + 1,
+        totalCount: _totalCount,
+      );
 
       if (_downloadService.isUpdatingDependent(oldGallery.gid)) {
         _skippedCount++;
         continue;
       }
 
-      final GalleryUrl? latestNewVersionGalleryUrl =
-          await _resolveLatestNewVersionGalleryUrlForQueue(
+      final _QueueUpdateTarget? updateTarget = await _resolveUpdateTargetForQueue(
         oldGallery: oldGallery,
         childrenByParentGid: childrenByParentGid,
+        downloadedByGid: downloadedByGid,
         downloadedGids: downloadedGids,
       );
 
-      if (latestNewVersionGalleryUrl == null) {
+      if (updateTarget == null) {
+        _skippedCount++;
+        continue;
+      }
+
+      if (_downloadService.isUpdatingDependent(updateTarget.downloadedGallery.gid)) {
         _skippedCount++;
         continue;
       }
 
       try {
         await _downloadService.updateGallery(
-          oldGallery,
-          latestNewVersionGalleryUrl,
+          updateTarget.downloadedGallery,
+          updateTarget.latestGalleryUrl,
         );
         _startedCount++;
       } catch (e, s) {
         _failedCount++;
-        log.error('Update gallery in queue failed, gid:${oldGallery.gid}', e, s);
+        log.error(
+          'Update gallery in queue failed, gid:${updateTarget.downloadedGallery.gid}',
+          e,
+          s,
+        );
       }
     }
   }
@@ -333,18 +385,34 @@ class GalleryUpdateQueueService extends GetxController
     Map<int, GalleryDownloadedData> downloadedByGid,
   ) async {
     final Map<int, GalleryUrl> candidateByGid = <int, GalleryUrl>{};
+    final String operationLabel = 'updateGallerySearchingHistory'.tr;
+    final histories = await historyService.getLatest10000RawHistory();
+    final int totalCount = downloadedByGid.length + histories.length;
+    int processedCount = 0;
+
+    _setOperationProgress(
+      operationLabel: operationLabel,
+      processedCount: processedCount,
+      totalCount: totalCount,
+    );
 
     for (final GalleryDownloadedData gallery in downloadedByGid.values) {
       final GalleryUrl? galleryUrl = GalleryUrl.tryParse(gallery.galleryUrl);
       if (galleryUrl != null) {
         candidateByGid[galleryUrl.gid] = galleryUrl;
       }
-    }
 
-    final histories = await historyService.getLatest10000RawHistory();
+      processedCount++;
+      _notifyOperationProgressPeriodically(
+        operationLabel: operationLabel,
+        processedCount: processedCount,
+        totalCount: totalCount,
+        force: processedCount == downloadedByGid.length,
+      );
+    }
     int count = 0;
 
-    for (final history in histories) {
+    for (int index = 0; index < histories.length; index++) {
       if (_abortRequested) {
         break;
       }
@@ -353,32 +421,78 @@ class GalleryUpdateQueueService extends GetxController
         break;
       }
 
+      final history = histories[index];
+      processedCount++;
+
       try {
         final dynamic jsonBody = jsonDecode(history.jsonBody);
         if (jsonBody is! Map) {
+          _notifyOperationProgressPeriodically(
+            operationLabel: operationLabel,
+            processedCount: processedCount,
+            totalCount: totalCount,
+            force: index + 1 == histories.length,
+          );
           continue;
         }
 
         final String? galleryUrlText = jsonBody['galleryUrl']?.toString();
         if (galleryUrlText == null || galleryUrlText.isEmpty) {
+          _notifyOperationProgressPeriodically(
+            operationLabel: operationLabel,
+            processedCount: processedCount,
+            totalCount: totalCount,
+            force: index + 1 == histories.length,
+          );
           continue;
         }
 
         final GalleryUrl? galleryUrl = GalleryUrl.tryParse(galleryUrlText);
         if (galleryUrl == null) {
+          _notifyOperationProgressPeriodically(
+            operationLabel: operationLabel,
+            processedCount: processedCount,
+            totalCount: totalCount,
+            force: index + 1 == histories.length,
+          );
           continue;
         }
 
         if (candidateByGid.containsKey(galleryUrl.gid)) {
+          _notifyOperationProgressPeriodically(
+            operationLabel: operationLabel,
+            processedCount: processedCount,
+            totalCount: totalCount,
+            force: index + 1 == histories.length,
+          );
           continue;
         }
 
         candidateByGid[galleryUrl.gid] = galleryUrl;
         count++;
       } catch (_) {
+        _notifyOperationProgressPeriodically(
+          operationLabel: operationLabel,
+          processedCount: processedCount,
+          totalCount: totalCount,
+          force: index + 1 == histories.length,
+        );
         continue;
       }
+
+      _notifyOperationProgressPeriodically(
+        operationLabel: operationLabel,
+        processedCount: processedCount,
+        totalCount: totalCount,
+        force: index + 1 == histories.length,
+      );
     }
+
+    _setOperationProgress(
+      operationLabel: operationLabel,
+      processedCount: totalCount,
+      totalCount: totalCount,
+    );
 
     return candidateByGid.values.toList(growable: false);
   }
@@ -390,6 +504,13 @@ class GalleryUpdateQueueService extends GetxController
 
     final List<({int gid, String token})> gidTokenList =
         galleryUrls.map((url) => (gid: url.gid, token: url.token)).toList();
+    final String operationLabel = '${'updateGallerySearchingHistory'.tr} (API)';
+
+    _setOperationProgress(
+      operationLabel: operationLabel,
+      processedCount: 0,
+      totalCount: gidTokenList.length,
+    );
 
     for (int index = 0; index < gidTokenList.length; index += _galleryMetadataBatchSize) {
       if (_abortRequested) {
@@ -402,6 +523,11 @@ class GalleryUpdateQueueService extends GetxController
               );
 
       metadatas.addAll(await _requestMetadataBatchWithFallback(batch));
+      _setOperationProgress(
+        operationLabel: operationLabel,
+        processedCount: index + batch.length,
+        totalCount: gidTokenList.length,
+      );
     }
 
     return metadatas;
@@ -468,6 +594,7 @@ class GalleryUpdateQueueService extends GetxController
 
   Set<int> _collectRecentDownloadedGids({
     required Map<int, List<GalleryMetadata>> childrenByParentGid,
+    required Map<int, GalleryDownloadedData> downloadedByGid,
     required Set<int> downloadedGids,
   }) {
     final Map<int, Set<int>> parentByChildGid = <int, Set<int>>{};
@@ -476,6 +603,20 @@ class GalleryUpdateQueueService extends GetxController
       for (final GalleryMetadata child in entry.value) {
         parentByChildGid.putIfAbsent(child.galleryUrl.gid, () => <int>{}).add(parentGid);
       }
+    }
+
+    for (final GalleryDownloadedData gallery in downloadedByGid.values) {
+      final String? oldVersionGalleryUrlText = gallery.oldVersionGalleryUrl;
+      if (oldVersionGalleryUrlText == null || oldVersionGalleryUrlText.isEmpty) {
+        continue;
+      }
+
+      final GalleryUrl? oldVersionGalleryUrl = GalleryUrl.tryParse(oldVersionGalleryUrlText);
+      if (oldVersionGalleryUrl == null || !downloadedGids.contains(oldVersionGalleryUrl.gid)) {
+        continue;
+      }
+
+      parentByChildGid.putIfAbsent(gallery.gid, () => <int>{}).add(oldVersionGalleryUrl.gid);
     }
 
     final Set<int> hasDownloadedDescendant = <int>{};
@@ -556,9 +697,10 @@ class GalleryUpdateQueueService extends GetxController
     return metadatas.first;
   }
 
-  Future<GalleryUrl?> _resolveLatestNewVersionGalleryUrlForQueue({
+  Future<_QueueUpdateTarget?> _resolveUpdateTargetForQueue({
     required GalleryDownloadedData oldGallery,
     required Map<int, List<GalleryMetadata>> childrenByParentGid,
+    required Map<int, GalleryDownloadedData> downloadedByGid,
     required Set<int> downloadedGids,
   }) async {
     if (_abortRequested) {
@@ -606,7 +748,61 @@ class GalleryUpdateQueueService extends GetxController
       return null;
     }
 
-    return latestDetail.galleryUrl;
+    if (_downloadService.containGallery(latestDetail.galleryUrl.gid)) {
+      return null;
+    }
+
+    final GalleryDownloadedData? downloadedGallery = await _resolveLatestDownloadedGalleryInLineage(
+      latestDetail: latestDetail,
+      downloadedByGid: downloadedByGid,
+    );
+
+    if (downloadedGallery == null || downloadedGallery.gid == latestDetail.galleryUrl.gid) {
+      return null;
+    }
+
+    return (
+      downloadedGallery: downloadedGallery,
+      latestGalleryUrl: latestDetail.galleryUrl,
+    );
+  }
+
+  Future<GalleryDownloadedData?> _resolveLatestDownloadedGalleryInLineage({
+    required GalleryDetail latestDetail,
+    required Map<int, GalleryDownloadedData> downloadedByGid,
+  }) async {
+    GalleryDetail currentDetail = latestDetail;
+    final Set<int> visitedGids = <int>{currentDetail.galleryUrl.gid};
+
+    while (!_abortRequested) {
+      final GalleryDownloadedData? downloadedGallery =
+          downloadedByGid[currentDetail.galleryUrl.gid];
+      if (downloadedGallery != null && _isGalleryDownloaded(downloadedGallery.gid)) {
+        return downloadedGallery;
+      }
+
+      final GalleryUrl? parentUrl = currentDetail.parentGalleryUrl;
+      if (parentUrl == null || !visitedGids.add(parentUrl.gid)) {
+        break;
+      }
+
+      final GalleryDownloadedData? parentDownloadedGallery = downloadedByGid[parentUrl.gid];
+      if (parentDownloadedGallery != null && _isGalleryDownloaded(parentDownloadedGallery.gid)) {
+        return parentDownloadedGallery;
+      }
+
+      final GalleryDetail? parentDetail = await _fetchGalleryDetailForHistory(
+        parentUrl,
+        useCacheIfAvailable: false,
+      );
+      if (parentDetail == null) {
+        return null;
+      }
+
+      currentDetail = parentDetail;
+    }
+
+    return null;
   }
 
   Future<({GalleryDetail latestDetail, GalleryDownloadedData? downloadedGallery})?>
@@ -664,7 +860,11 @@ class GalleryUpdateQueueService extends GetxController
     GalleryDetail currentDetail = baseDetail;
 
     while ((currentDetail.childrenGallerys?.isNotEmpty ?? false) && !_abortRequested) {
-      final GalleryUrl nextUrl = currentDetail.childrenGallerys!.last.galleryUrl;
+      final GalleryUrl? nextUrl = _pickLatestChildGalleryUrl(currentDetail.childrenGallerys);
+      if (nextUrl == null) {
+        break;
+      }
+
       if (visitedGids.contains(nextUrl.gid)) {
         break;
       }
@@ -682,6 +882,52 @@ class GalleryUpdateQueueService extends GetxController
     }
 
     return currentDetail;
+  }
+
+  GalleryUrl? _pickLatestChildGalleryUrl(List<_GalleryHistoryNode>? childrenGallerys) {
+    if (childrenGallerys == null || childrenGallerys.isEmpty) {
+      return null;
+    }
+
+    _GalleryHistoryNode latest = childrenGallerys.first;
+    for (final _GalleryHistoryNode child in childrenGallerys.skip(1)) {
+      if (_isHistoryNodeNewer(child, latest)) {
+        latest = child;
+      }
+    }
+
+    return latest.galleryUrl;
+  }
+
+  bool _isHistoryNodeNewer(_GalleryHistoryNode candidate, _GalleryHistoryNode current) {
+    final DateTime? candidateTime = _parseHistoryNodeTime(candidate.updateTime);
+    final DateTime? currentTime = _parseHistoryNodeTime(current.updateTime);
+
+    if (candidateTime != null && currentTime != null) {
+      final int timeResult = candidateTime.compareTo(currentTime);
+      if (timeResult != 0) {
+        return timeResult > 0;
+      }
+    } else if (candidateTime != null) {
+      return true;
+    } else if (currentTime != null) {
+      return false;
+    }
+
+    return candidate.galleryUrl.gid > current.galleryUrl.gid;
+  }
+
+  DateTime? _parseHistoryNodeTime(String updateTime) {
+    if (updateTime.isEmpty) {
+      return null;
+    }
+
+    return DateTime.tryParse(updateTime.replaceFirst(' ', 'T'));
+  }
+
+  bool _isGalleryDownloaded(int gid) {
+    return _downloadService.galleryDownloadInfos[gid]?.downloadProgress.downloadStatus ==
+        DownloadStatus.downloaded;
   }
 
   Future<GalleryDetail?> _fetchGalleryDetailForHistory(
@@ -718,5 +964,34 @@ class GalleryUpdateQueueService extends GetxController
 
   void _notifyStateChanged() {
     _stateChangedCallback?.call();
+    update();
+  }
+
+  void _setOperationProgress({
+    required String operationLabel,
+    required int processedCount,
+    required int totalCount,
+  }) {
+    _operationLabel = operationLabel;
+    _totalCount = totalCount < 0 ? 0 : totalCount;
+    _processedCount = processedCount.clamp(0, _totalCount);
+    _notifyStateChanged();
+  }
+
+  void _notifyOperationProgressPeriodically({
+    required String operationLabel,
+    required int processedCount,
+    required int totalCount,
+    bool force = false,
+  }) {
+    if (!force && processedCount % _galleryMetadataBatchSize != 0) {
+      return;
+    }
+
+    _setOperationProgress(
+      operationLabel: operationLabel,
+      processedCount: processedCount,
+      totalCount: totalCount,
+    );
   }
 }

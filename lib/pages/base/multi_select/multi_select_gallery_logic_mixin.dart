@@ -32,6 +32,7 @@ import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_favorite_dialog.dart';
 import 'package:jhentai/widget/eh_batch_download_dialog.dart';
 import 'package:jhentai/widget/eh_download_dialog.dart';
+import 'package:jhentai/widget/eh_gallery_update_status_dialog.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
 
 enum _MultiSelectGalleryAction {
@@ -393,6 +394,11 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
       return;
     }
 
+    if (galleryUpdateQueueService.isHandlingUpdateGallery) {
+      showGalleryUpdateStatusDialog();
+      return;
+    }
+
     final List<Gallery> selectedGallerys = getSelectedGalleries();
 
     if (selectedGallerys.isEmpty) {
@@ -440,6 +446,11 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
 
     if (_isHandlingBatchDownloadAndUpdate) {
       toast('downloadAndUpdateBusy'.tr, isCenter: false);
+      return;
+    }
+
+    if (galleryUpdateQueueService.isHandlingUpdateGallery) {
+      showGalleryUpdateStatusDialog();
       return;
     }
 
@@ -519,6 +530,8 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
 
         if (started) {
           updateQueuedCount = updateCandidates.length;
+        } else if (galleryUpdateQueueService.isHandlingUpdateGallery) {
+          showGalleryUpdateStatusDialog();
         } else {
           failedCount += updateCandidates.length;
         }
