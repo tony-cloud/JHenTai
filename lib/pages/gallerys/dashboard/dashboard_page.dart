@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/pages/base/base_page.dart';
@@ -104,13 +105,13 @@ class DashboardPage extends BasePage {
             loadingState: state.ranklistLoadingState,
             errorTapCallback: logic.loadRanklist,
             successWidgetBuilder: () => ListView.separated(
+              scrollCacheExtent: ScrollCacheExtent.pixels(2000),
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 10),
               itemCount: state.ranklistGallerys.length,
               itemBuilder: (_, index) => EHDashboardCard(
                   gallery: state.ranklistGallerys[index], badge: _getRanklistBadge(index)),
               separatorBuilder: (_, __) => const VerticalDivider(),
-              cacheExtent: 2000,
             ).enableMouseDrag(withScrollBar: false).fadeInWidget(),
           ),
         ),
@@ -137,12 +138,12 @@ class DashboardPage extends BasePage {
             loadingState: state.popularLoadingState,
             errorTapCallback: logic.loadPopular,
             successWidgetBuilder: () => ListView.separated(
+              scrollCacheExtent: ScrollCacheExtent.pixels(2000),
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 10),
               itemCount: state.popularGallerys.length,
               itemBuilder: (_, index) => EHDashboardCard(gallery: state.popularGallerys[index]),
               separatorBuilder: (_, __) => const VerticalDivider(),
-              cacheExtent: 2000,
             ).enableMouseDrag(withScrollBar: false).fadeInWidget(),
           ),
         ),

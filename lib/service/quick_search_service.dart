@@ -78,14 +78,9 @@ class QuickSearchService extends GetxController
     log.info('reOrder quick search, oldIndex:$oldIndex, newIndex:$newIndex');
 
     List<MapEntry<String, SearchConfig>> entries = quickSearchConfigs.entries.toList();
+    MapEntry<String, SearchConfig> entry = entries.removeAt(oldIndex);
 
-    if (newIndex != entries.length) {
-      entries.insert(newIndex, entries[oldIndex]);
-      entries.removeAt(newIndex > oldIndex ? oldIndex : oldIndex + 1);
-    } else {
-      entries.add(entries[oldIndex]);
-      entries.removeAt(newIndex > oldIndex ? oldIndex : oldIndex + 1);
-    }
+    entries.insert(newIndex, entry);
 
     quickSearchConfigs = LinkedHashMap.fromEntries(entries);
     await saveBeanConfig();

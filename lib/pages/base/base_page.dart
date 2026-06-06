@@ -75,7 +75,7 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
 
   Widget buildAppBarMenuButton(BuildContext context) {
     return IconButton(
-      icon: const Icon(FontAwesomeIcons.bars, size: 20),
+      icon: const FaIcon(FontAwesomeIcons.bars, size: 20),
       onPressed: () => TapMenuButtonNotification().dispatch(context),
     );
   }
@@ -84,7 +84,7 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
     return [
       if (showJumpButton && state.gallerys.isNotEmpty)
         IconButton(
-            icon: const Icon(FontAwesomeIcons.paperPlane, size: 20),
+            icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 20),
             onPressed: logic.handleTapJumpButton),
       if (showFilterButton)
         IconButton(

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -121,7 +122,7 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('jump'.tr),
-                            const Icon(FontAwesomeIcons.paperPlane, size: 20)
+                            const FaIcon(FontAwesomeIcons.paperPlane, size: 20)
                           ],
                         ),
                       ),
@@ -228,10 +229,10 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
       child: EHWheelSpeedController(
         controller: state.scrollController,
         child: CustomScrollView(
+          scrollCacheExtent: ScrollCacheExtent.pixels(5000),
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           scrollBehavior: UIConfig.scrollBehaviourWithScrollBarWithMouse,
           controller: state.scrollController,
-          cacheExtent: 5000,
           slivers: [
             CupertinoSliverRefreshControl(onRefresh: logic.handleRefresh),
             if (preferenceSetting.showAllGalleryTitles.isTrue) _buildSubTitle(context),

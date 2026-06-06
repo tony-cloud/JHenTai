@@ -85,7 +85,7 @@ class GalleryListDownloadPage extends StatelessWidget
           ? IconButton(
               icon: isRouteAtTop(Routes.download)
                   ? const Icon(Icons.arrow_back)
-                  : const Icon(FontAwesomeIcons.bars, size: 20),
+                  : const FaIcon(FontAwesomeIcons.bars, size: 20),
               onPressed: () {
                 if (isRouteAtTop(Routes.download)) {
                   backRoute(currentRoute: Routes.download);
@@ -340,7 +340,7 @@ class GalleryListDownloadPage extends StatelessWidget
           onPressed: (_) => logic.handleChangeGroup(gallery),
         ),
         SlidableAction(
-          icon: FontAwesomeIcons.sort,
+          icon: FontAwesomeIcons.sort.data,
           backgroundColor: UIConfig.downloadPageActionBackGroundColor(context),
           onPressed: (BuildContext context) => logic.showPrioritySheet(gallery, context),
         ),

@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/pages/download/download_base_page.dart';
@@ -57,10 +58,10 @@ class MobileLayoutPageV2 extends StatelessWidget {
                 child: ScrollConfiguration(
                   behavior: UIConfig.leftDrawerPhysicsBehaviour,
                   child: ListView.builder(
+                    scrollCacheExtent: ScrollCacheExtent.pixels(1000),
                     key: const PageStorageKey('leftDrawer'),
                     controller: state.scrollController,
                     itemCount: state.icons.length,
-                    cacheExtent: 1000,
                     itemBuilder: (context, index) => ListTile(
                       dense: true,
                       title: Text(state.icons[index].name.name.tr,

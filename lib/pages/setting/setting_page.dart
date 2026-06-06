@@ -19,7 +19,7 @@ class SettingPage extends StatelessWidget {
         title: Text('setting'.tr),
         leading: showMenuButton
             ? IconButton(
-                icon: const Icon(FontAwesomeIcons.bars, size: 20),
+                icon: const FaIcon(FontAwesomeIcons.bars, size: 20),
                 onPressed: () => TapMenuButtonNotification().dispatch(context))
             : null,
       ),

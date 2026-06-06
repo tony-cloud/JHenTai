@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
@@ -120,8 +121,8 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
     return EHWheelSpeedController(
       controller: scrollController,
       child: CustomScrollView(
+        scrollCacheExtent: ScrollCacheExtent.pixels(200),
         controller: scrollController,
-        cacheExtent: 200,
         slivers: _buildSlivers(context),
       ),
     );

@@ -23,7 +23,7 @@ dependencies:
   flutter_rating_bar: 4.0.1
   waterfall_flow: ^3.1.1
   extended_image: ^10.0.1
-  font_awesome_flutter: ^10.12.0
+  font_awesome_flutter: ^11.0.0
   intl: 0.20.2
   collection: 1.19.0
   clipboard: ^2.0.2
@@ -33,7 +33,7 @@ dependencies:
   executor: ^2.2.5
   retry: 3.1.2
   path: 1.9.1
-  drift: ^2.29.0
+  drift: ^2.33.0
   sqlite3_flutter_libs: ^0.5.40
   path_provider: ^2.1.5
   flutter_slidable: ^3.1.2
@@ -90,12 +90,12 @@ dependencies:
   xml: 6.5.0
   telegram: ^1.0.0
   json_annotation: ^4.9.0
-  sqlite3: ^2.6.0
+  sqlite3: ^3.0.0
   local_auth_android: ^2.0.0
   local_auth_darwin: ^2.0.0
   local_auth_windows: ^2.0.0
   socks5_proxy: ^2.1.1
-  sqlite3_simple: ^1.0.6
+  sqlite3_simple: ^2.2.0
   clipboard_detect: ^0.0.3
   flutter_fd_utils:
     git: 
@@ -115,7 +115,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   test: ^1.26.3
-  drift_dev: ^2.29.0
+  drift_dev: ^2.33.0
   build_runner: ^2.10.1
   frontend_server_client: 4.0.0
   flutter_launcher_icons: ^0.14.4

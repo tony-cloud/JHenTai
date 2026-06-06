@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/model/gallery_comment.dart';
@@ -42,7 +43,7 @@ class DetailPreviewPage extends DetailsPage {
       child: EHWheelSpeedController(
         controller: state.scrollController,
         child: CustomScrollView(
-          cacheExtent: 5000,
+          scrollCacheExtent: ScrollCacheExtent.pixels(5000),
           controller: state.scrollController,
           scrollBehavior: UIConfig.scrollBehaviourWithScrollBarWithMouse,
           slivers: [

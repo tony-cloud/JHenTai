@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
@@ -116,8 +117,8 @@ class TagSetsPage extends StatelessWidget {
             controller: state.scrollController,
             child: SafeArea(
               child: ListView.builder(
+                scrollCacheExtent: ScrollCacheExtent.pixels(3000),
                 itemExtent: 64,
-                cacheExtent: 3000,
                 itemCount: state.tags.length,
                 controller: state.scrollController,
                 itemBuilder: (_, int index) => GetBuilder<TagSetsLogic>(

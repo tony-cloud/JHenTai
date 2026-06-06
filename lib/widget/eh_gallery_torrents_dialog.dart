@@ -164,7 +164,7 @@ class _TorrentList extends StatelessWidget {
         ],
       ),
       trailing: IconButton(
-        icon: Icon(FontAwesomeIcons.magnet,
+        icon: FaIcon(FontAwesomeIcons.magnet,
             size: 16, color: UIConfig.resumePauseButtonColor(context)),
         padding: EdgeInsets.zero,
         onPressed: () =>

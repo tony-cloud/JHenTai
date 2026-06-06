@@ -162,7 +162,7 @@ class _PassthroughHttpOverrides extends HttpOverrides {
   }
 }
 
-class _LookupOverrides extends IOOverrides {
+final class _LookupOverrides extends IOOverrides {
   _LookupOverrides(this.lookupCallback);
 
   final LookupCallback lookupCallback;

@@ -178,7 +178,7 @@ class LoginPage extends StatelessWidget {
               color: UIConfig.loginPageTextHintColor(context),
               fontSize: UIConfig.loginPageTextHintSize,
               height: 1),
-          prefixIcon: Icon(FontAwesomeIcons.cookieBite,
+          prefixIcon: FaIcon(FontAwesomeIcons.cookieBite,
               size: 18, color: UIConfig.loginPagePrefixIconColor(context)),
           suffixIcon: const SizedBox(
             height: 8,
@@ -205,7 +205,7 @@ class LoginPage extends StatelessWidget {
               color: UIConfig.loginPageTextHintColor(context),
               fontSize: UIConfig.loginPageTextHintSize,
               height: 1),
-          prefixIcon: Icon(FontAwesomeIcons.cookieBite,
+          prefixIcon: FaIcon(FontAwesomeIcons.cookieBite,
               size: 18, color: UIConfig.loginPagePrefixIconColor(context)),
           suffixIcon: const SizedBox(
             height: 8,
@@ -234,7 +234,7 @@ class LoginPage extends StatelessWidget {
               color: UIConfig.loginPageTextHintColor(context),
               fontSize: UIConfig.loginPageTextHintSize,
               height: 1),
-          prefixIcon: Icon(FontAwesomeIcons.cookieBite,
+          prefixIcon: FaIcon(FontAwesomeIcons.cookieBite,
               size: 18, color: UIConfig.loginPagePrefixIconColor(context)),
         ),
         onChanged: (igneous) => state.igneous = igneous,

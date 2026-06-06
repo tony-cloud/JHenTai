@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -55,7 +56,7 @@ class ThumbnailsPage extends StatelessWidget with Scroll2TopPageMixin {
           Text(_mainTitleText, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       actions: [
         IconButton(
-          icon: const Icon(FontAwesomeIcons.paperPlane, size: 21),
+          icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 21),
           visualDensity: const VisualDensity(vertical: -2),
           onPressed: logic.handleTapJumpButton,
         ),
@@ -70,7 +71,7 @@ class ThumbnailsPage extends StatelessWidget with Scroll2TopPageMixin {
       child: EHWheelSpeedController(
         controller: state.scrollController,
         child: CustomScrollView(
-          cacheExtent: 5000,
+          scrollCacheExtent: ScrollCacheExtent.pixels(5000),
           controller: state.scrollController,
           scrollBehavior: UIConfig.scrollBehaviourWithScrollBarWithMouse,
           slivers: [

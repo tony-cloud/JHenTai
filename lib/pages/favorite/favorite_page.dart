@@ -38,7 +38,7 @@ class FavoritePage extends BasePage {
     return [
       if (state.gallerys.isNotEmpty)
         IconButton(
-            icon: const Icon(FontAwesomeIcons.paperPlane, size: 20),
+            icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 20),
             onPressed: logic.handleTapJumpButton),
       if (state.gallerys.isNotEmpty)
         IconButton(icon: const Icon(Icons.sort), onPressed: logic.handleChangeSortOrder),

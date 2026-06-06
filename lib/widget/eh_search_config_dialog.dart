@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/widget_extension.dart';
@@ -128,8 +129,8 @@ class _EHSearchConfigDialogState extends State<EHSearchConfigDialog> {
     return EHWheelSpeedController(
       controller: _bodyScrollController,
       child: ListView(
+        scrollCacheExtent: ScrollCacheExtent.pixels(3000),
         controller: _bodyScrollController,
-        cacheExtent: 3000,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         children: [
           if (widget.type != EHSearchConfigDialogType.filter) _buildSearchConfigName(),
