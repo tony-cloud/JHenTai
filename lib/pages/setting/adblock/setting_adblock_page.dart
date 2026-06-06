@@ -25,6 +25,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/path_service.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/service/wakelock_service.dart';
+import 'package:jhentai/pages/setting/adblock/advanced_qr_downloaded_filter.dart';
 import 'package:jhentai/pages/search/mixin/search_page_mixin.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/toast_util.dart';
@@ -1512,7 +1513,7 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
 
     try {
       if (_source == _QrBlockSource.downloaded) {
-        await _scanDownloadedGalleries(keyword);
+        await _scanDownloadedGalleries(_tagFilters);
       } else {
         await _scanOnlineGalleries(keyword, limit);
       }
@@ -1576,8 +1577,8 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     }
   }
 
-  Future<void> _scanDownloadedGalleries(String keyword) async {
-    List<GalleryDownloadedData> galleries = await _fetchDownloadedGalleries(keyword);
+  Future<void> _scanDownloadedGalleries(List<String> filters) async {
+    List<GalleryDownloadedData> galleries = await _fetchDownloadedGalleries(filters);
     if (!mounted) {
       return;
     }
@@ -1613,45 +1614,11 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     return parsed.clamp(1, 1000);
   }
 
-  Future<List<GalleryDownloadedData>> _fetchDownloadedGalleries(String keyword) async {
+  Future<List<GalleryDownloadedData>> _fetchDownloadedGalleries(List<String> filters) async {
     await galleryDownloadService.completed;
 
-    String normalized = keyword.toLowerCase();
-    String cleaned = normalized.replaceAll('"', '');
-    Set<String> terms = {
-      normalized,
-      cleaned,
-    };
-
-    int colonIndex = cleaned.indexOf(':');
-    if (colonIndex != -1 && colonIndex < cleaned.length - 1) {
-      String tail = cleaned.substring(colonIndex + 1).trim();
-      if (tail.isNotEmpty) {
-        terms.add(tail);
-      }
-    }
-
-    List<GalleryDownloadedData> downloaded = galleryDownloadService.gallerys
-        .where(
-          (GalleryDownloadedData g) => g.downloadStatusIndex == DownloadStatus.downloaded.index,
-        )
-        .toList();
-
-    List<GalleryDownloadedData> matches = downloaded.where((GalleryDownloadedData g) {
-      String tags = g.tags.toLowerCase();
-      String title = g.title.toLowerCase();
-      String uploader = g.uploader?.toLowerCase() ?? '';
-
-      for (String term in terms) {
-        if (term.isEmpty) {
-          continue;
-        }
-        if (tags.contains(term) || title.contains(term) || uploader.contains(term)) {
-          return true;
-        }
-      }
-      return false;
-    }).toList();
+    List<GalleryDownloadedData> matches =
+        filterDownloadedGalleriesForAdvancedQrBlock(galleryDownloadService.gallerys, filters);
 
     matches.sort(_compareDownloadedGalleries);
     return matches;
