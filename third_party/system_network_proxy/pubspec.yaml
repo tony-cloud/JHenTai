@@ -1,0 +1,7 @@
+name: system_network_proxy
+description: Local JHenTai system proxy helper.
+version: 2.0.0-jhentai.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'

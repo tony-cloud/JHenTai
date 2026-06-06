@@ -65,11 +65,8 @@ dependencies:
   simple_animations: ^5.2.0
   animated_flip_counter: ^0.3.4
   saver_gallery: ^3.0.6
-  # fix build and namespace on android
-  system_network_proxy: 
-    git: 
-      url: https://github.com/jiangtian616/system_network_proxy
-      path: system_network_proxy
+  system_network_proxy:
+    path: third_party/system_network_proxy
   http_proxy: ^1.2.3
   flutter_draggable_gridview: ^0.0.13
   flutter_displaymode: ^0.7.0

@@ -27,10 +27,17 @@ def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
+def releaseStoreFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+def hasReleaseSigning = keystoreProperties['keyAlias'] &&
+        keystoreProperties['keyPassword'] &&
+        releaseStoreFile != null &&
+        releaseStoreFile.exists() &&
+        keystoreProperties['storePassword']
 
 android {
     namespace 'top.jtmonster.jhentai'
     compileSdkVersion 36
+    ndkVersion "28.2.13676358"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -57,7 +64,7 @@ android {
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storeFile releaseStoreFile
             storePassword keystoreProperties['storePassword']
         }
     }
@@ -65,7 +72,7 @@ android {
     /// If you want to use debug signing config, use default [signingConfigs.debug]
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
         }
     }
 }
@@ -75,5 +82,5 @@ flutter {
 }
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.3.21"))
 }
