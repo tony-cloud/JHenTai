@@ -512,6 +512,23 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
     }
   }
 
+  bool isQrBlockRangeResolvedForIndex({
+    required int index,
+    required QrBlockMode mode,
+  }) {
+    switch (mode) {
+      case QrBlockMode.normal:
+        return false;
+      case QrBlockMode.advanced:
+        if (qrFirstDetectedIndex == null || qrLastDetectedIndex == null) {
+          return false;
+        }
+        return index >= qrFirstDetectedIndex! && index <= qrLastDetectedIndex!;
+      case QrBlockMode.superRange:
+        return qrSuperModeStartIndex != null && index >= qrSuperModeStartIndex!;
+    }
+  }
+
   List<String> collectRangeKeysForIndex({
     required int index,
     required String? key,

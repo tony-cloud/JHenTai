@@ -646,14 +646,22 @@ abstract class BaseLayout extends StatelessWidget {
       return;
     }
 
+    final String? cacheKey = imageBlockService.buildCacheKey(image);
+    final QrBlockMode mode = imageBlockService.qrBlockMode.value;
+
+    if (logic.isQrBlockRangeResolvedForIndex(index: index, mode: mode)) {
+      if (cacheKey != null) {
+        imageBlockService.addQrBlockedKeys(<String>[cacheKey]);
+        logic.readPageLogic.updateSafely(['${readPageLogic.onlineImageId}::$index']);
+      }
+      return;
+    }
+
     if (imageBlockService.shouldScanQrForIndex(index,
             totalImages: readPageState.readPageInfo.pageCount) ==
         false) {
       return;
     }
-
-    final String? cacheKey = imageBlockService.buildCacheKey(image);
-    final QrBlockMode mode = imageBlockService.qrBlockMode.value;
 
     imageBlockService
         .scanQrIfNeeded(
@@ -711,14 +719,24 @@ abstract class BaseLayout extends StatelessWidget {
       return;
     }
 
+    final String? cacheKey = imageBlockService.buildCacheKey(image);
+    final QrBlockMode mode = imageBlockService.qrBlockMode.value;
+
+    if (logic.isQrBlockRangeResolvedForIndex(index: index, mode: mode)) {
+      if (cacheKey != null) {
+        imageBlockService.addQrBlockedKeys(<String>[cacheKey]);
+        galleryDownloadService.updateSafely([
+          '${galleryDownloadService.downloadImageId}::${readPageState.readPageInfo.gid}::$index'
+        ]);
+      }
+      return;
+    }
+
     if (imageBlockService.shouldScanQrForIndex(index,
             totalImages: readPageState.readPageInfo.pageCount) ==
         false) {
       return;
     }
-
-    final String? cacheKey = imageBlockService.buildCacheKey(image);
-    final QrBlockMode mode = imageBlockService.qrBlockMode.value;
 
     imageBlockService
         .scanQrIfNeeded(

@@ -23,6 +23,7 @@ import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/image_block_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/path_service.dart';
+import 'package:jhentai/service/qr_block_scan_plan.dart';
 import 'package:jhentai/service/tag_translation_service.dart';
 import 'package:jhentai/service/wakelock_service.dart';
 import 'package:jhentai/pages/setting/adblock/advanced_qr_downloaded_filter.dart';
@@ -1714,36 +1715,11 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
       _currentImage = 0;
     });
 
-    Map<int, String> keys = <int, String>{};
-    Set<int> qrIndexes = <int>{};
-
-    for (int i = 0; i < entries.length; i++) {
-      if (!_running) {
-        break;
-      }
-      setState(() => _currentImage = i + 1);
-
-      _ScanImageResult? result = await _loadAndScanImage(gallery, entries[i], token);
-      if (result == null) {
-        continue;
-      }
-
-      if (result.key != null) {
-        keys[entries[i].index] = result.key!;
-      }
-      if (result.hasQr) {
-        qrIndexes.add(entries[i].index);
-      }
-    }
-
-    if (qrIndexes.isEmpty) {
-      return;
-    }
-
-    List<String> toBlock = _resolveBlockKeys(
-      entries.map((e) => e.index).toList(growable: false),
-      keys,
-      qrIndexes,
+    List<String> toBlock = await _collectBlockKeysFromScanEntries<_QrScanEntry>(
+      entries: entries,
+      indexOf: (_QrScanEntry entry) => entry.index,
+      keyOf: (_QrScanEntry entry) => entry.thumbnail.originImageHash,
+      scanEntry: (_QrScanEntry entry) => _loadAndScanImage(gallery, entry, token),
     );
     if (toBlock.isEmpty) {
       return;
@@ -1773,36 +1749,11 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
       _currentImage = 0;
     });
 
-    Map<int, String> keys = <int, String>{};
-    Set<int> qrIndexes = <int>{};
-
-    for (int i = 0; i < entries.length; i++) {
-      if (!_running) {
-        break;
-      }
-      setState(() => _currentImage = i + 1);
-
-      _ScanImageResult? result = await _scanDownloadedImage(entries[i]);
-      if (result == null) {
-        continue;
-      }
-
-      if (result.key != null) {
-        keys[entries[i].index] = result.key!;
-      }
-      if (result.hasQr) {
-        qrIndexes.add(entries[i].index);
-      }
-    }
-
-    if (qrIndexes.isEmpty) {
-      return;
-    }
-
-    List<String> toBlock = _resolveBlockKeys(
-      entries.map((e) => e.index).toList(growable: false),
-      keys,
-      qrIndexes,
+    List<String> toBlock = await _collectBlockKeysFromScanEntries<_DownloadedScanEntry>(
+      entries: entries,
+      indexOf: (_DownloadedScanEntry entry) => entry.index,
+      keyOf: (_DownloadedScanEntry entry) => imageBlockService.buildCacheKey(entry.image),
+      scanEntry: _scanDownloadedImage,
     );
     if (toBlock.isEmpty) {
       return;
@@ -1867,38 +1818,60 @@ class _AdvancedQrBlockDialogState extends State<_AdvancedQrBlockDialog> {
     }
   }
 
-  List<String> _resolveBlockKeys(
-    List<int> indexes,
-    Map<int, String> keys,
-    Set<int> qrIndexes,
-  ) {
-    if (qrIndexes.isEmpty) {
-      return const <String>[];
+  Future<List<String>> _collectBlockKeysFromScanEntries<T>({
+    required List<T> entries,
+    required int Function(T entry) indexOf,
+    required String? Function(T entry) keyOf,
+    required Future<_ScanImageResult?> Function(T entry) scanEntry,
+  }) async {
+    final List<T> orderedEntries = List<T>.from(entries)
+      ..sort((T a, T b) => indexOf(a).compareTo(indexOf(b)));
+    final Map<int, T> entriesByIndex = <int, T>{};
+    final Map<int, String> keys = <int, String>{};
+
+    for (final T entry in orderedEntries) {
+      final int index = indexOf(entry);
+      entriesByIndex[index] = entry;
+
+      final String? key = keyOf(entry);
+      if (key != null && key.trim().isNotEmpty) {
+        keys[index] = key;
+      }
     }
 
-    int start = qrIndexes.reduce((int a, int b) => a < b ? a : b);
-    int end = qrIndexes.reduce((int a, int b) => a > b ? a : b);
-    List<int> sortedIndexes = List<int>.from(indexes)..sort();
-    int lastScannedIndex = sortedIndexes.isEmpty ? 0 : sortedIndexes.last;
+    final QrBlockScanPlan plan = QrBlockScanPlan(
+      mode: _mode,
+      indexes: entriesByIndex.keys,
+    );
+    int scannedCount = 0;
 
-    Set<int> targets;
-    switch (_mode) {
-      case QrBlockMode.normal:
-        targets = qrIndexes;
+    while (_running) {
+      final int? index = plan.nextIndex();
+      if (index == null) {
         break;
-      case QrBlockMode.advanced:
-        targets = {
-          for (int i = start; i <= end; i++) i,
-        };
-        break;
-      case QrBlockMode.superRange:
-        targets = {
-          for (int i = start; i <= lastScannedIndex; i++) i,
-        };
-        break;
+      }
+
+      final T? entry = entriesByIndex[index];
+      if (entry == null) {
+        plan.recordResult(index, hasQr: false);
+        continue;
+      }
+
+      scannedCount++;
+      if (mounted) {
+        setState(() => _currentImage = scannedCount);
+      }
+
+      final _ScanImageResult? result = await scanEntry(entry);
+      final String? resultKey = result?.key;
+      if (resultKey != null && resultKey.trim().isNotEmpty) {
+        keys[index] = resultKey;
+      }
+      plan.recordResult(index, hasQr: result?.hasQr ?? false);
     }
 
-    return targets
+    return plan
+        .targetIndexes()
         .map((int index) => keys[index])
         .whereType<String>()
         .toSet()
