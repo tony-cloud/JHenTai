@@ -8,6 +8,7 @@ import 'package:jhentai/pages/details/details_page_logic.dart';
 import 'package:jhentai/routes/routes.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
+import 'package:jhentai/service/gallery_history_lineage_service.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
@@ -84,11 +85,25 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
       return;
     }
 
-    if (widget.parentUrl == null && _descendants.isEmpty) {
+    setState(() => _isSearching = true);
+
+    if (await _searchHistoryChain()) {
+      if (!_running || !mounted) {
+        return;
+      }
+
+      setState(() => _isSearching = false);
       return;
     }
 
-    setState(() => _isSearching = true);
+    if (widget.parentUrl == null && _descendants.isEmpty) {
+      if (!_running || !mounted) {
+        return;
+      }
+
+      setState(() => _isSearching = false);
+      return;
+    }
 
     await Future.wait(<Future<void>>[
       _searchAncestors(),
@@ -100,6 +115,71 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
     }
 
     setState(() => _isSearching = false);
+  }
+
+  Future<bool> _searchHistoryChain() async {
+    final GalleryHistoryChain? historyChain =
+        await galleryHistoryLineageService.getHistoryChainFromFirstGallery(
+      baseDetail: widget.baseDetail,
+      fetchDetail: widget.logic.fetchGalleryDetailForHistory,
+      useCache: true,
+    );
+
+    if (!_running || historyChain == null) {
+      return false;
+    }
+
+    final int currentGid = widget.baseDetail.galleryUrl.gid;
+    if (!historyChain.containsGid(currentGid)) {
+      return false;
+    }
+
+    final List<GalleryHistoryEntry> descendants = <GalleryHistoryEntry>[];
+    final List<GalleryHistoryEntry> ancestors = <GalleryHistoryEntry>[];
+    GalleryHistoryEntry? parentEntry;
+    int addedCount = 0;
+
+    bool canAdd() => _unlimited || addedCount < _searchLimit;
+
+    for (final GalleryHistoryEntry entry in historyChain.entriesAfterGid(currentGid).reversed) {
+      if (!canAdd()) {
+        break;
+      }
+
+      descendants.add(entry);
+      addedCount++;
+    }
+
+    final List<GalleryHistoryEntry> beforeCurrent = historyChain.entriesBeforeGid(currentGid);
+    if (beforeCurrent.isNotEmpty && canAdd()) {
+      parentEntry = beforeCurrent.last;
+      addedCount++;
+    }
+
+    for (int index = beforeCurrent.length - 2; index >= 0 && canAdd(); index--) {
+      ancestors.add(beforeCurrent[index]);
+      addedCount++;
+    }
+
+    if (!_running || !mounted) {
+      return true;
+    }
+
+    setState(() {
+      _descendants
+        ..clear()
+        ..addAll(descendants);
+      _parentEntry = parentEntry;
+      _ancestors
+        ..clear()
+        ..addAll(ancestors);
+      _addedCount = addedCount;
+      for (final GalleryHistoryEntry entry in historyChain.entries) {
+        _visitedGids.add(entry.galleryUrl.gid);
+      }
+    });
+
+    return true;
   }
 
   Future<void> _searchAncestors() async {
@@ -146,7 +226,10 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
     GalleryDetail currentDetail = widget.baseDetail;
 
     while (_running && (currentDetail.childrenGallerys?.isNotEmpty ?? false) && !_hitLimit()) {
-      GalleryUrl nextUrl = currentDetail.childrenGallerys!.last.galleryUrl;
+      GalleryUrl? nextUrl = currentDetail.newVersionGalleryUrl;
+      if (nextUrl == null) {
+        break;
+      }
 
       if (_visitedGids.contains(nextUrl.gid)) {
         break;

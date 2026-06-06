@@ -650,10 +650,24 @@ class EHSpiderParser {
 
     final GalleryUrl galleryUrl = GalleryUrl(isEH: true, gid: map['gid'], token: map['token']);
     final GalleryUrl? parentGalleryUrl = _parseParentGalleryUrl(map, galleryUrl.isEH);
+    final GalleryUrl? currentGalleryUrl = _parseGalleryUrlPair(
+      map,
+      galleryUrl.isEH,
+      gidKey: 'current_gid',
+      tokenKey: 'current_key',
+    );
+    final GalleryUrl? firstGalleryUrl = _parseGalleryUrlPair(
+      map,
+      galleryUrl.isEH,
+      gidKey: 'first_gid',
+      tokenKey: 'first_key',
+    );
 
     return GalleryMetadata(
       galleryUrl: galleryUrl,
       parentGalleryUrl: parentGalleryUrl,
+      currentGalleryUrl: currentGalleryUrl,
+      firstGalleryUrl: firstGalleryUrl,
       title: map['title'],
       japaneseTitle: map['title_jpn'],
       category: map['category'],
@@ -698,10 +712,24 @@ class EHSpiderParser {
 
       final GalleryUrl galleryUrl = GalleryUrl(isEH: true, gid: item['gid'], token: item['token']);
       final GalleryUrl? parentGalleryUrl = _parseParentGalleryUrl(item, galleryUrl.isEH);
+      final GalleryUrl? currentGalleryUrl = _parseGalleryUrlPair(
+        item,
+        galleryUrl.isEH,
+        gidKey: 'current_gid',
+        tokenKey: 'current_key',
+      );
+      final GalleryUrl? firstGalleryUrl = _parseGalleryUrlPair(
+        item,
+        galleryUrl.isEH,
+        gidKey: 'first_gid',
+        tokenKey: 'first_key',
+      );
 
       return GalleryMetadata(
         galleryUrl: galleryUrl,
         parentGalleryUrl: parentGalleryUrl,
+        currentGalleryUrl: currentGalleryUrl,
+        firstGalleryUrl: firstGalleryUrl,
         title: item['title'],
         japaneseTitle: item['title_jpn'],
         category: item['category'],
@@ -726,11 +754,15 @@ class EHSpiderParser {
       return null;
     }
 
-    final int? parentGid = _toInt(raw['parent_gid']);
-    final String? parentToken = _toToken(raw['parent_key'] ?? raw['parent_token']);
-
-    if (parentGid != null && parentGid > 0 && parentToken != null) {
-      return GalleryUrl(isEH: isEH, gid: parentGid, token: parentToken);
+    final GalleryUrl? parentGalleryUrl = _parseGalleryUrlPair(
+      raw,
+      isEH,
+      gidKey: 'parent_gid',
+      tokenKey: 'parent_key',
+      fallbackTokenKey: 'parent_token',
+    );
+    if (parentGalleryUrl != null) {
+      return parentGalleryUrl;
     }
 
     final String? parentUrlText = raw['parent_gallery_url']?.toString();
@@ -739,6 +771,23 @@ class EHSpiderParser {
     }
 
     return GalleryUrl.tryParse(parentUrlText);
+  }
+
+  static GalleryUrl? _parseGalleryUrlPair(
+    Map raw,
+    bool isEH, {
+    required String gidKey,
+    required String tokenKey,
+    String? fallbackTokenKey,
+  }) {
+    final int? gid = _toInt(raw[gidKey]);
+    final String? token = _toToken(raw[tokenKey] ?? raw[fallbackTokenKey]);
+
+    if (gid == null || gid <= 0 || token == null) {
+      return null;
+    }
+
+    return GalleryUrl(isEH: isEH, gid: gid, token: token);
   }
 
   static int? _toInt(dynamic value) {

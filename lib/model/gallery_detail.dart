@@ -47,7 +47,51 @@ class GalleryDetail {
 
   bool get isFavorite => favoriteTagIndex != null || favoriteTagName != null;
 
-  GalleryUrl? get newVersionGalleryUrl => childrenGallerys?.lastOrNull?.galleryUrl;
+  GalleryUrl? get newVersionGalleryUrl {
+    final List<({GalleryUrl galleryUrl, String title, String updateTime})>? children =
+        childrenGallerys;
+    if (children == null || children.isEmpty) {
+      return null;
+    }
+
+    ({GalleryUrl galleryUrl, String title, String updateTime}) latest = children.first;
+    for (final child in children.skip(1)) {
+      if (_isChildNewer(child, latest)) {
+        latest = child;
+      }
+    }
+
+    return latest.galleryUrl;
+  }
+
+  bool _isChildNewer(
+    ({GalleryUrl galleryUrl, String title, String updateTime}) candidate,
+    ({GalleryUrl galleryUrl, String title, String updateTime}) current,
+  ) {
+    final DateTime? candidateTime = _parseChildUpdateTime(candidate.updateTime);
+    final DateTime? currentTime = _parseChildUpdateTime(current.updateTime);
+
+    if (candidateTime != null && currentTime != null) {
+      final int timeResult = candidateTime.compareTo(currentTime);
+      if (timeResult != 0) {
+        return timeResult > 0;
+      }
+    } else if (candidateTime != null) {
+      return true;
+    } else if (currentTime != null) {
+      return false;
+    }
+
+    return candidate.galleryUrl.gid > current.galleryUrl.gid;
+  }
+
+  DateTime? _parseChildUpdateTime(String updateTime) {
+    if (updateTime.isEmpty) {
+      return null;
+    }
+
+    return DateTime.tryParse(updateTime.replaceFirst(' ', 'T'));
+  }
 
   GalleryDetail({
     required this.galleryUrl,

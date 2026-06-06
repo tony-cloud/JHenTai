@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
@@ -9,12 +8,12 @@ import 'package:jhentai/database/database.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
 import 'package:jhentai/model/gallery_detail.dart';
+import 'package:jhentai/model/gallery_history_entry.dart';
 import 'package:jhentai/model/gallery_metadata.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/gallery_history_lineage_service.dart';
-import 'package:jhentai/service/history_service.dart';
 import 'package:jhentai/service/jh_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/service/wakelock_service.dart';
@@ -35,11 +34,16 @@ typedef _QueueUpdateTarget = ({
   GalleryUrl latestGalleryUrl,
 });
 
+typedef _MetadataUpdateTarget = ({
+  GalleryDownloadedData downloadedGallery,
+  GalleryMetadata metadata,
+  GalleryUrl latestGalleryUrl,
+});
+
 class GalleryUpdateQueueService extends GetxController
     with JHLifeCircleBeanErrorCatch
     implements JHLifeCircleBean {
   static const int _galleryMetadataBatchSize = 25;
-  static const int _historyMetadataCandidateLimit = 2000;
   static const String _updateQueueLockName = 'gallery_update_queue';
 
   final GalleryDownloadService _downloadService = galleryDownloadService;
@@ -76,7 +80,7 @@ class GalleryUpdateQueueService extends GetxController
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
-      super.initDependencies..addAll([historyService, _downloadService, wakelockService]);
+      super.initDependencies..addAll([_downloadService, wakelockService]);
 
   @override
   Future<void> doInitBean() async {
@@ -215,7 +219,7 @@ class GalleryUpdateQueueService extends GetxController
     toast('updateGallerySearchingHistory'.tr, isCenter: false);
 
     final List<GalleryUrl> metadataCandidates =
-        await _collectMetadataCandidateGalleryUrls(downloadedByGid);
+        _collectDownloadedMetadataCandidateGalleryUrls(downloadedByGid);
 
     if (_abortRequested) {
       return;
@@ -236,34 +240,27 @@ class GalleryUpdateQueueService extends GetxController
       return;
     }
 
-    final Map<int, List<GalleryMetadata>> childrenByParentGid =
-        _buildChildrenByParentMap(metadatas);
-    final Set<int> downloadedGids = downloadedByGid.keys.toSet();
-    final Set<int> recentDownloadedGids = _collectRecentDownloadedGids(
-      childrenByParentGid: childrenByParentGid,
+    final List<_QueueUpdateTarget> updateTargets = _resolveApiUpdateTargets(
+      metadatas: metadatas,
       downloadedByGid: downloadedByGid,
-      downloadedGids: downloadedGids,
     );
 
-    _queue
-      ..clear()
-      ..addAll(
-        recentDownloadedGids.map((gid) => downloadedByGid[gid]).whereType<GalleryDownloadedData>(),
-      );
-
-    _summaryTotalCount = _queue.length;
+    _queue.clear();
+    _summaryTotalCount = updateTargets.length;
     _setOperationProgress(
       operationLabel: 'updateGallery'.tr,
       processedCount: 0,
-      totalCount: _queue.length,
+      totalCount: updateTargets.length,
     );
 
-    if (_queue.isEmpty) {
+    if (updateTargets.isEmpty) {
       return;
     }
 
-    while (_queue.isNotEmpty && !_abortRequested) {
-      final GalleryDownloadedData oldGallery = _queue.removeFirst();
+    for (final _QueueUpdateTarget updateTarget in updateTargets) {
+      if (_abortRequested) {
+        break;
+      }
 
       _setOperationProgress(
         operationLabel: 'updateGallery'.tr,
@@ -271,24 +268,12 @@ class GalleryUpdateQueueService extends GetxController
         totalCount: _totalCount,
       );
 
-      if (_downloadService.isUpdatingDependent(oldGallery.gid)) {
-        _skippedCount++;
-        continue;
-      }
-
-      final _QueueUpdateTarget? updateTarget = await _resolveUpdateTargetForQueue(
-        oldGallery: oldGallery,
-        childrenByParentGid: childrenByParentGid,
-        downloadedByGid: downloadedByGid,
-        downloadedGids: downloadedGids,
-      );
-
-      if (updateTarget == null) {
-        _skippedCount++;
-        continue;
-      }
-
       if (_downloadService.isUpdatingDependent(updateTarget.downloadedGallery.gid)) {
+        _skippedCount++;
+        continue;
+      }
+
+      if (_downloadService.containGallery(updateTarget.latestGalleryUrl.gid)) {
         _skippedCount++;
         continue;
       }
@@ -386,120 +371,35 @@ class GalleryUpdateQueueService extends GetxController
     return result;
   }
 
-  Future<List<GalleryUrl>> _collectMetadataCandidateGalleryUrls(
+  List<GalleryUrl> _collectDownloadedMetadataCandidateGalleryUrls(
     Map<int, GalleryDownloadedData> downloadedByGid,
-  ) async {
-    final Map<int, GalleryUrl> candidateByGid = <int, GalleryUrl>{};
+  ) {
+    final List<GalleryUrl> result = <GalleryUrl>[];
     final String operationLabel = 'updateGallerySearchingHistory'.tr;
-    final histories = await historyService.getLatest10000RawHistory();
-    final int totalCount = downloadedByGid.length + histories.length;
     int processedCount = 0;
 
     _setOperationProgress(
       operationLabel: operationLabel,
       processedCount: processedCount,
-      totalCount: totalCount,
+      totalCount: downloadedByGid.length,
     );
 
     for (final GalleryDownloadedData gallery in downloadedByGid.values) {
       final GalleryUrl? galleryUrl = GalleryUrl.tryParse(gallery.galleryUrl);
       if (galleryUrl != null) {
-        candidateByGid[galleryUrl.gid] = galleryUrl;
+        result.add(galleryUrl);
       }
 
       processedCount++;
       _notifyOperationProgressPeriodically(
         operationLabel: operationLabel,
         processedCount: processedCount,
-        totalCount: totalCount,
+        totalCount: downloadedByGid.length,
         force: processedCount == downloadedByGid.length,
       );
     }
-    int count = 0;
 
-    for (int index = 0; index < histories.length; index++) {
-      if (_abortRequested) {
-        break;
-      }
-
-      if (count >= _historyMetadataCandidateLimit) {
-        break;
-      }
-
-      final history = histories[index];
-      processedCount++;
-
-      try {
-        final dynamic jsonBody = jsonDecode(history.jsonBody);
-        if (jsonBody is! Map) {
-          _notifyOperationProgressPeriodically(
-            operationLabel: operationLabel,
-            processedCount: processedCount,
-            totalCount: totalCount,
-            force: index + 1 == histories.length,
-          );
-          continue;
-        }
-
-        final String? galleryUrlText = jsonBody['galleryUrl']?.toString();
-        if (galleryUrlText == null || galleryUrlText.isEmpty) {
-          _notifyOperationProgressPeriodically(
-            operationLabel: operationLabel,
-            processedCount: processedCount,
-            totalCount: totalCount,
-            force: index + 1 == histories.length,
-          );
-          continue;
-        }
-
-        final GalleryUrl? galleryUrl = GalleryUrl.tryParse(galleryUrlText);
-        if (galleryUrl == null) {
-          _notifyOperationProgressPeriodically(
-            operationLabel: operationLabel,
-            processedCount: processedCount,
-            totalCount: totalCount,
-            force: index + 1 == histories.length,
-          );
-          continue;
-        }
-
-        if (candidateByGid.containsKey(galleryUrl.gid)) {
-          _notifyOperationProgressPeriodically(
-            operationLabel: operationLabel,
-            processedCount: processedCount,
-            totalCount: totalCount,
-            force: index + 1 == histories.length,
-          );
-          continue;
-        }
-
-        candidateByGid[galleryUrl.gid] = galleryUrl;
-        count++;
-      } catch (_) {
-        _notifyOperationProgressPeriodically(
-          operationLabel: operationLabel,
-          processedCount: processedCount,
-          totalCount: totalCount,
-          force: index + 1 == histories.length,
-        );
-        continue;
-      }
-
-      _notifyOperationProgressPeriodically(
-        operationLabel: operationLabel,
-        processedCount: processedCount,
-        totalCount: totalCount,
-        force: index + 1 == histories.length,
-      );
-    }
-
-    _setOperationProgress(
-      operationLabel: operationLabel,
-      processedCount: totalCount,
-      totalCount: totalCount,
-    );
-
-    return candidateByGid.values.toList(growable: false);
+    return result;
   }
 
   Future<List<GalleryMetadata>> _requestGalleryMetadatasInBatches(
@@ -578,240 +478,102 @@ class GalleryUpdateQueueService extends GetxController
     }
   }
 
-  Map<int, List<GalleryMetadata>> _buildChildrenByParentMap(
-    List<GalleryMetadata> metadatas,
-  ) {
-    final Map<int, List<GalleryMetadata>> childrenByParentGid = <int, List<GalleryMetadata>>{};
+  List<_QueueUpdateTarget> _resolveApiUpdateTargets({
+    required List<GalleryMetadata> metadatas,
+    required Map<int, GalleryDownloadedData> downloadedByGid,
+  }) {
+    final Map<int, _MetadataUpdateTarget> targetByLatestGid = <int, _MetadataUpdateTarget>{};
 
     for (final GalleryMetadata metadata in metadatas) {
-      final GalleryUrl? parentGalleryUrl = metadata.parentGalleryUrl;
-      if (parentGalleryUrl == null) {
+      galleryHistoryLineageService.cacheMetadata(metadata);
+
+      final GalleryDownloadedData? downloadedGallery = downloadedByGid[metadata.galleryUrl.gid];
+      if (downloadedGallery == null || !_isGalleryDownloaded(downloadedGallery.gid)) {
         continue;
       }
 
-      childrenByParentGid
-          .putIfAbsent(parentGalleryUrl.gid, () => <GalleryMetadata>[])
-          .add(metadata);
-    }
-
-    return childrenByParentGid;
-  }
-
-  Set<int> _collectRecentDownloadedGids({
-    required Map<int, List<GalleryMetadata>> childrenByParentGid,
-    required Map<int, GalleryDownloadedData> downloadedByGid,
-    required Set<int> downloadedGids,
-  }) {
-    final Map<int, Set<int>> parentByChildGid = <int, Set<int>>{};
-    for (final entry in childrenByParentGid.entries) {
-      final int parentGid = entry.key;
-      for (final GalleryMetadata child in entry.value) {
-        parentByChildGid.putIfAbsent(child.galleryUrl.gid, () => <int>{}).add(parentGid);
-      }
-    }
-
-    for (final GalleryDownloadedData gallery in downloadedByGid.values) {
-      final String? oldVersionGalleryUrlText = gallery.oldVersionGalleryUrl;
-      if (oldVersionGalleryUrlText == null || oldVersionGalleryUrlText.isEmpty) {
+      final GalleryUrl? latestGalleryUrl = _metadataLatestGalleryUrl(metadata);
+      if (latestGalleryUrl == null) {
         continue;
       }
 
-      final GalleryUrl? oldVersionGalleryUrl = GalleryUrl.tryParse(oldVersionGalleryUrlText);
-      if (oldVersionGalleryUrl == null || !downloadedGids.contains(oldVersionGalleryUrl.gid)) {
+      if (downloadedByGid.containsKey(latestGalleryUrl.gid) ||
+          _downloadService.containGallery(latestGalleryUrl.gid)) {
         continue;
       }
 
-      parentByChildGid.putIfAbsent(gallery.gid, () => <int>{}).add(oldVersionGalleryUrl.gid);
-    }
-
-    final Set<int> hasDownloadedDescendant = <int>{};
-
-    void markAncestors(int childGid) {
-      final Set<int> visited = <int>{};
-      final Queue<int> queue = Queue<int>()..add(childGid);
-
-      while (queue.isNotEmpty) {
-        final int currentGid = queue.removeFirst();
-
-        if (!visited.add(currentGid)) {
-          continue;
-        }
-
-        final Set<int> parents = parentByChildGid[currentGid] ?? const <int>{};
-        for (final int parentGid in parents) {
-          hasDownloadedDescendant.add(parentGid);
-          queue.add(parentGid);
-        }
-      }
-    }
-
-    for (final int downloadedGid in downloadedGids) {
-      markAncestors(downloadedGid);
-    }
-
-    return downloadedGids.where((gid) => !hasDownloadedDescendant.contains(gid)).toSet();
-  }
-
-  GalleryMetadata? _resolveLatestNewVersionMetadata({
-    required int rootGid,
-    required Map<int, List<GalleryMetadata>> childrenByParentGid,
-    required Set<int> downloadedGids,
-  }) {
-    final Set<int> visited = <int>{};
-    final List<GalleryMetadata> candidates = <GalleryMetadata>[];
-
-    void search(int currentGid) {
-      if (!visited.add(currentGid)) {
-        return;
-      }
-
-      final List<GalleryMetadata> children =
-          childrenByParentGid[currentGid] ?? const <GalleryMetadata>[];
-
-      for (final GalleryMetadata child in children) {
-        if (!downloadedGids.contains(child.galleryUrl.gid)) {
-          candidates.add(child);
-        }
-        search(child.galleryUrl.gid);
-      }
-    }
-
-    search(rootGid);
-    return _pickLatestMetadata(candidates);
-  }
-
-  GalleryMetadata? _pickLatestMetadata(List<GalleryMetadata> metadatas) {
-    if (metadatas.isEmpty) {
-      return null;
-    }
-
-    metadatas.sort((a, b) {
-      final DateTime? aTime = DateTime.tryParse(a.publishTime);
-      final DateTime? bTime = DateTime.tryParse(b.publishTime);
-
-      if (aTime != null && bTime != null) {
-        final int timeResult = bTime.compareTo(aTime);
-        if (timeResult != 0) {
-          return timeResult;
-        }
-      }
-
-      return b.galleryUrl.gid.compareTo(a.galleryUrl.gid);
-    });
-
-    return metadatas.first;
-  }
-
-  Future<_QueueUpdateTarget?> _resolveUpdateTargetForQueue({
-    required GalleryDownloadedData oldGallery,
-    required Map<int, List<GalleryMetadata>> childrenByParentGid,
-    required Map<int, GalleryDownloadedData> downloadedByGid,
-    required Set<int> downloadedGids,
-  }) async {
-    if (_abortRequested) {
-      return null;
-    }
-
-    final GalleryMetadata? metadata = _resolveLatestNewVersionMetadata(
-      rootGid: oldGallery.gid,
-      childrenByParentGid: childrenByParentGid,
-      downloadedGids: downloadedGids,
-    );
-
-    final GalleryUrl? startUrl = metadata?.galleryUrl ?? GalleryUrl.tryParse(oldGallery.galleryUrl);
-    if (startUrl == null) {
-      return null;
-    }
-
-    if (_abortRequested) {
-      return null;
-    }
-
-    final GalleryDetail? startDetail = await _fetchGalleryDetailForHistory(
-      startUrl,
-      useCacheIfAvailable: false,
-    );
-    if (startDetail == null) {
-      return null;
-    }
-
-    if (_abortRequested) {
-      return null;
-    }
-
-    final Set<int> visitedGids = <int>{oldGallery.gid};
-    final GalleryDetail? latestDetail = await _resolveLatestGalleryDetail(
-      startDetail,
-      visitedGids,
-    );
-
-    if (latestDetail == null) {
-      return null;
-    }
-
-    if (latestDetail.galleryUrl.gid == oldGallery.gid) {
-      return null;
-    }
-
-    if (_downloadService.containGallery(latestDetail.galleryUrl.gid)) {
-      return null;
-    }
-
-    final GalleryDownloadedData? downloadedGallery = await _resolveLatestDownloadedGalleryInLineage(
-      latestDetail: latestDetail,
-      downloadedByGid: downloadedByGid,
-    );
-
-    if (downloadedGallery == null || downloadedGallery.gid == latestDetail.galleryUrl.gid) {
-      return null;
-    }
-
-    return (
-      downloadedGallery: downloadedGallery,
-      latestGalleryUrl: latestDetail.galleryUrl,
-    );
-  }
-
-  Future<GalleryDownloadedData?> _resolveLatestDownloadedGalleryInLineage({
-    required GalleryDetail latestDetail,
-    required Map<int, GalleryDownloadedData> downloadedByGid,
-  }) async {
-    GalleryDetail currentDetail = latestDetail;
-    final Set<int> visitedGids = <int>{currentDetail.galleryUrl.gid};
-
-    while (!_abortRequested) {
-      final GalleryDownloadedData? downloadedGallery =
-          downloadedByGid[currentDetail.galleryUrl.gid];
-      if (downloadedGallery != null && _isGalleryDownloaded(downloadedGallery.gid)) {
-        return downloadedGallery;
-      }
-
-      final GalleryUrl? parentUrl = currentDetail.parentGalleryUrl;
-      if (parentUrl == null || !visitedGids.add(parentUrl.gid)) {
-        break;
-      }
-
-      final GalleryDownloadedData? parentDownloadedGallery = downloadedByGid[parentUrl.gid];
-      if (parentDownloadedGallery != null && _isGalleryDownloaded(parentDownloadedGallery.gid)) {
-        return parentDownloadedGallery;
-      }
-
-      final GalleryDetail? parentDetail = await _fetchGalleryDetailForHistory(
-        parentUrl,
-        useCacheIfAvailable: false,
+      final _MetadataUpdateTarget candidate = (
+        downloadedGallery: downloadedGallery,
+        metadata: metadata,
+        latestGalleryUrl: latestGalleryUrl,
       );
-      if (parentDetail == null) {
-        return null;
+      final _MetadataUpdateTarget? existing = targetByLatestGid[latestGalleryUrl.gid];
+      if (existing == null || _isMetadataNewer(metadata, existing.metadata)) {
+        targetByLatestGid[latestGalleryUrl.gid] = candidate;
       }
-
-      currentDetail = parentDetail;
     }
 
-    return null;
+    return targetByLatestGid.values
+        .map(
+          (_MetadataUpdateTarget target) => (
+            downloadedGallery: target.downloadedGallery,
+            latestGalleryUrl: target.latestGalleryUrl,
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  GalleryUrl? _metadataLatestGalleryUrl(GalleryMetadata metadata) {
+    final GalleryUrl? currentGalleryUrl = metadata.currentGalleryUrl;
+    if (currentGalleryUrl == null || currentGalleryUrl.gid == metadata.galleryUrl.gid) {
+      return null;
+    }
+
+    return currentGalleryUrl;
+  }
+
+  bool _isMetadataNewer(GalleryMetadata candidate, GalleryMetadata current) {
+    final DateTime? candidateTime = DateTime.tryParse(candidate.publishTime);
+    final DateTime? currentTime = DateTime.tryParse(current.publishTime);
+
+    if (candidateTime != null && currentTime != null) {
+      final int timeResult = candidateTime.compareTo(currentTime);
+      if (timeResult != 0) {
+        return timeResult > 0;
+      }
+    } else if (candidateTime != null) {
+      return true;
+    } else if (currentTime != null) {
+      return false;
+    }
+
+    return candidate.galleryUrl.gid > current.galleryUrl.gid;
   }
 
   Future<({GalleryDetail latestDetail, GalleryDownloadedData? downloadedGallery})?>
       _resolveHistoryUpdateTarget(GalleryDetail baseDetail) async {
+    final GalleryHistoryChain? historyChain =
+        await galleryHistoryLineageService.getHistoryChainFromFirstGallery(
+      baseDetail: baseDetail,
+      fetchDetail: _fetchGalleryDetailForHistory,
+      useCache: false,
+    );
+
+    if (historyChain != null) {
+      final GalleryDetail? latestDetail = await _resolveLatestDetailFromHistoryChain(
+        historyChain,
+        baseDetail,
+      );
+      if (latestDetail == null) {
+        return null;
+      }
+
+      return (
+        latestDetail: latestDetail,
+        downloadedGallery: _resolveLatestDownloadedGalleryInHistoryChain(historyChain),
+      );
+    }
+
     final Set<int> visitedGids = <int>{baseDetail.galleryUrl.gid};
 
     final GalleryDetail? latestDetail = await _resolveLatestGalleryDetail(baseDetail, visitedGids);
@@ -856,6 +618,40 @@ class GalleryUpdateQueueService extends GetxController
     }
 
     return (latestDetail: latestDetail, downloadedGallery: null);
+  }
+
+  Future<GalleryDetail?> _resolveLatestDetailFromHistoryChain(
+    GalleryHistoryChain historyChain,
+    GalleryDetail baseDetail,
+  ) {
+    final GalleryUrl latestGalleryUrl = historyChain.latestGalleryUrl;
+    if (latestGalleryUrl.gid == baseDetail.galleryUrl.gid) {
+      return Future<GalleryDetail?>.value(baseDetail);
+    }
+
+    if (latestGalleryUrl.gid == historyChain.firstDetail.galleryUrl.gid) {
+      return Future<GalleryDetail?>.value(historyChain.firstDetail);
+    }
+
+    return _fetchGalleryDetailForHistory(latestGalleryUrl, useCacheIfAvailable: false);
+  }
+
+  GalleryDownloadedData? _resolveLatestDownloadedGalleryInHistoryChain(
+    GalleryHistoryChain historyChain,
+  ) {
+    final int latestIndex = historyChain.indexOfGid(historyChain.latestGalleryUrl.gid);
+    final int endIndex = latestIndex == -1 ? historyChain.entries.length - 1 : latestIndex;
+
+    for (int index = endIndex; index >= 0; index--) {
+      final GalleryHistoryEntry entry = historyChain.entries[index];
+      final GalleryDownloadedData? downloadedGallery = _downloadService.gallerys
+          .firstWhereOrNull((gallery) => gallery.gid == entry.galleryUrl.gid);
+      if (downloadedGallery != null && _isGalleryDownloaded(downloadedGallery.gid)) {
+        return downloadedGallery;
+      }
+    }
+
+    return null;
   }
 
   Future<GalleryDetail?> _resolveLatestGalleryDetail(

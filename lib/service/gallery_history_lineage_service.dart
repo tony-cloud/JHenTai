@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:jhentai/database/dao/gallery_parent_cache_dao.dart';
 import 'package:jhentai/model/gallery_detail.dart';
+import 'package:jhentai/model/gallery_history_entry.dart';
 import 'package:jhentai/model/gallery_metadata.dart';
 import 'package:jhentai/model/gallery_url.dart';
 import 'package:jhentai/network/eh_request.dart';
@@ -10,8 +11,82 @@ import 'package:jhentai/utils/eh_spider_parser.dart';
 
 GalleryHistoryLineageService galleryHistoryLineageService = GalleryHistoryLineageService();
 
+typedef GalleryHistoryDetailFetcher = Future<GalleryDetail?> Function(
+  GalleryUrl galleryUrl, {
+  bool useCacheIfAvailable,
+});
+
+class GalleryHistoryChain {
+  final GalleryDetail firstDetail;
+  final List<GalleryHistoryEntry> entries;
+  final GalleryUrl latestGalleryUrl;
+
+  GalleryHistoryChain({
+    required this.firstDetail,
+    required this.entries,
+    required this.latestGalleryUrl,
+  });
+
+  factory GalleryHistoryChain.fromFirstDetail(
+    GalleryDetail firstDetail, {
+    GalleryUrl? latestGalleryUrl,
+  }) {
+    final List<GalleryHistoryEntry> entries = <GalleryHistoryEntry>[
+      (
+        galleryUrl: firstDetail.galleryUrl,
+        title: _formatDetailTitle(firstDetail),
+        updateTime: firstDetail.publishTime,
+      ),
+      ...?firstDetail.childrenGallerys,
+    ];
+
+    return GalleryHistoryChain(
+      firstDetail: firstDetail,
+      entries: entries,
+      latestGalleryUrl:
+          latestGalleryUrl ?? firstDetail.newVersionGalleryUrl ?? firstDetail.galleryUrl,
+    );
+  }
+
+  int indexOfGid(int gid) {
+    return entries.indexWhere((entry) => entry.galleryUrl.gid == gid);
+  }
+
+  bool containsGid(int gid) {
+    return indexOfGid(gid) != -1;
+  }
+
+  List<GalleryHistoryEntry> entriesBeforeGid(int gid) {
+    final int index = indexOfGid(gid);
+    if (index <= 0) {
+      return const <GalleryHistoryEntry>[];
+    }
+
+    return entries.sublist(0, index);
+  }
+
+  List<GalleryHistoryEntry> entriesAfterGid(int gid) {
+    final int index = indexOfGid(gid);
+    if (index == -1 || index + 1 >= entries.length) {
+      return const <GalleryHistoryEntry>[];
+    }
+
+    return entries.sublist(index + 1);
+  }
+
+  static String _formatDetailTitle(GalleryDetail detail) {
+    final String? japaneseTitle = detail.japaneseTitle;
+    if (japaneseTitle != null && japaneseTitle.isNotEmpty) {
+      return japaneseTitle;
+    }
+
+    return detail.rawTitle;
+  }
+}
+
 class GalleryHistoryLineageService {
   final Map<int, GalleryDetail> _detailCache = <int, GalleryDetail>{};
+  final Map<int, GalleryMetadata> _metadataCache = <int, GalleryMetadata>{};
 
   DateTime? _lastMetadataRequestAt;
 
@@ -21,6 +96,96 @@ class GalleryHistoryLineageService {
 
   void cacheDetail(GalleryDetail detail) {
     _detailCache[detail.galleryUrl.gid] = detail;
+  }
+
+  GalleryMetadata? getCachedMetadata(GalleryUrl galleryUrl) {
+    return _metadataCache[galleryUrl.gid];
+  }
+
+  void cacheMetadata(GalleryMetadata metadata) {
+    _metadataCache[metadata.galleryUrl.gid] = metadata;
+  }
+
+  Future<GalleryMetadata?> getGalleryMetadata({
+    required GalleryUrl galleryUrl,
+    bool useCache = true,
+    bool allowOnline = true,
+    Duration minRequestInterval = const Duration(milliseconds: 1250),
+  }) async {
+    if (useCache) {
+      final GalleryMetadata? cachedMetadata = getCachedMetadata(galleryUrl);
+      if (cachedMetadata != null) {
+        return cachedMetadata;
+      }
+    }
+
+    if (!allowOnline) {
+      return null;
+    }
+
+    await _waitForMetadataRateLimit(minRequestInterval);
+
+    try {
+      final GalleryMetadata? metadata = await ehRequest.requestGalleryMetadata<GalleryMetadata?>(
+        gid: galleryUrl.gid,
+        token: galleryUrl.token,
+        parser: EHSpiderParser.galleryMetadataJson2GalleryMetadata,
+      );
+
+      if (metadata != null) {
+        cacheMetadata(metadata);
+        await GalleryParentCacheDao.upsertParentGallery(
+          metadata.galleryUrl.gid,
+          metadata.parentGalleryUrl,
+        );
+      }
+
+      return metadata;
+    } catch (e, s) {
+      log.warning('Fetch gallery metadata failed, gid:${galleryUrl.gid}', e, true);
+      log.error('Fetch gallery metadata failed', e, s);
+      return null;
+    }
+  }
+
+  Future<GalleryHistoryChain?> getHistoryChainFromFirstGallery({
+    required GalleryDetail baseDetail,
+    required GalleryHistoryDetailFetcher fetchDetail,
+    bool useCache = true,
+    bool allowOnline = true,
+    Duration minRequestInterval = const Duration(milliseconds: 1250),
+  }) async {
+    final GalleryMetadata? metadata = await getGalleryMetadata(
+      galleryUrl: baseDetail.galleryUrl,
+      useCache: useCache,
+      allowOnline: allowOnline,
+      minRequestInterval: minRequestInterval,
+    );
+
+    final GalleryUrl? firstGalleryUrl = metadata?.firstGalleryUrl;
+    final GalleryUrl? latestGalleryUrl = metadata?.currentGalleryUrl;
+
+    GalleryDetail? firstDetail;
+    if (firstGalleryUrl != null && firstGalleryUrl.gid != baseDetail.galleryUrl.gid) {
+      firstDetail = await fetchDetail(
+        firstGalleryUrl,
+        useCacheIfAvailable: useCache,
+      );
+    } else if (firstGalleryUrl == null && baseDetail.parentGalleryUrl != null) {
+      return null;
+    } else {
+      firstDetail = baseDetail;
+    }
+
+    if (firstDetail == null) {
+      return null;
+    }
+
+    cacheDetail(firstDetail);
+    return GalleryHistoryChain.fromFirstDetail(
+      firstDetail,
+      latestGalleryUrl: latestGalleryUrl,
+    );
   }
 
   Future<int> clearParentGalleryCache() {
@@ -128,6 +293,7 @@ class GalleryHistoryLineageService {
         );
 
         for (final GalleryMetadata metadata in metadatas) {
+          cacheMetadata(metadata);
           batchParentMap[metadata.galleryUrl.gid] = metadata.parentGalleryUrl;
         }
         requestSucceeded = true;

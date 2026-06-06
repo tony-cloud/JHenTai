@@ -17,6 +17,7 @@ import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/mixin/login_required_logic_mixin.dart';
 import 'package:jhentai/model/gallery.dart';
 import 'package:jhentai/model/gallery_comment.dart';
+import 'package:jhentai/model/gallery_history_entry.dart';
 import 'package:jhentai/model/gallery_tag.dart';
 import 'package:jhentai/model/gallery_thumbnail.dart';
 import 'package:jhentai/model/gallery_url.dart';
@@ -980,6 +981,30 @@ class DetailsPageLogic extends GetxController
 
   Future<({GalleryDetail latestDetail, List<GalleryDownloadedData> downloadedGalleries})?>
       _collectDownloadedGalleriesFromHistory() async {
+    final GalleryHistoryChain? historyChain =
+        await galleryHistoryLineageService.getHistoryChainFromFirstGallery(
+      baseDetail: state.galleryDetails!,
+      fetchDetail: fetchGalleryDetailForHistory,
+      useCache: false,
+    );
+
+    if (historyChain != null) {
+      final GalleryDetail? latestDetail = await _resolveLatestDetailFromHistoryChain(historyChain);
+      if (latestDetail == null) {
+        return null;
+      }
+
+      final GalleryDownloadedData? downloadedGallery =
+          _resolveLatestDownloadedGalleryInHistoryChain(historyChain);
+
+      return (
+        latestDetail: latestDetail,
+        downloadedGalleries: downloadedGallery == null
+            ? <GalleryDownloadedData>[]
+            : <GalleryDownloadedData>[downloadedGallery],
+      );
+    }
+
     Set<int> visitedGids = <int>{state.galleryDetails!.galleryUrl.gid};
 
     GalleryDetail? latestDetail =
@@ -1019,12 +1044,56 @@ class DetailsPageLogic extends GetxController
     return (latestDetail: latestDetail, downloadedGalleries: downloadedGalleries);
   }
 
+  Future<GalleryDetail?> _resolveLatestDetailFromHistoryChain(
+    GalleryHistoryChain historyChain,
+  ) {
+    final GalleryUrl latestGalleryUrl = historyChain.latestGalleryUrl;
+    final GalleryDetail baseDetail = state.galleryDetails!;
+
+    if (latestGalleryUrl.gid == baseDetail.galleryUrl.gid) {
+      return Future<GalleryDetail?>.value(baseDetail);
+    }
+
+    if (latestGalleryUrl.gid == historyChain.firstDetail.galleryUrl.gid) {
+      return Future<GalleryDetail?>.value(historyChain.firstDetail);
+    }
+
+    return fetchGalleryDetailForHistory(latestGalleryUrl, useCacheIfAvailable: false);
+  }
+
+  GalleryDownloadedData? _resolveLatestDownloadedGalleryInHistoryChain(
+    GalleryHistoryChain historyChain,
+  ) {
+    final int latestIndex = historyChain.indexOfGid(historyChain.latestGalleryUrl.gid);
+    final int endIndex = latestIndex == -1 ? historyChain.entries.length - 1 : latestIndex;
+
+    for (int index = endIndex; index >= 0; index--) {
+      final GalleryHistoryEntry entry = historyChain.entries[index];
+      final GalleryDownloadedData? downloadedGallery = galleryDownloadService.gallerys
+          .firstWhereOrNull((gallery) => gallery.gid == entry.galleryUrl.gid);
+      if (downloadedGallery == null) {
+        continue;
+      }
+
+      final GalleryDownloadInfo? info =
+          galleryDownloadService.galleryDownloadInfos[downloadedGallery.gid];
+      if (info?.downloadProgress.downloadStatus == DownloadStatus.downloaded) {
+        return downloadedGallery;
+      }
+    }
+
+    return null;
+  }
+
   Future<GalleryDetail?> _resolveLatestGalleryDetail(
       GalleryDetail baseDetail, Set<int> visitedGids) async {
     GalleryDetail currentDetail = baseDetail;
 
     while (currentDetail.childrenGallerys?.isNotEmpty ?? false) {
-      GalleryUrl nextUrl = currentDetail.childrenGallerys!.last.galleryUrl;
+      GalleryUrl? nextUrl = currentDetail.newVersionGalleryUrl;
+      if (nextUrl == null) {
+        break;
+      }
       if (visitedGids.contains(nextUrl.gid)) {
         break;
       }
