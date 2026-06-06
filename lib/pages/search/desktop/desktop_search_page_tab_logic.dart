@@ -18,6 +18,12 @@ class DesktopSearchPageTabLogic extends BasePageLogic
   final bool loadImmediately;
 
   @override
+  bool get enableBatchFavoriteAction => true;
+
+  @override
+  bool get enableBatchTagAction => true;
+
+  @override
   final DesktopSearchPageTabState state = DesktopSearchPageTabState();
 
   DesktopSearchPageTabLogic(this.newSearchArgument, this.loadImmediately);

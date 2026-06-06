@@ -231,6 +231,7 @@ class en_US {
       'failToGetThumbnails': "Fail To Get Thumbnails",
       'favoriteGallerySuccess': "Favorite Gallery Success",
       'favoriteGalleryFailed': "Favorite Gallery Failed",
+      'batchAddFavorite': 'Add Selected To Favorite',
       'removeFavoriteSuccess': "Remove Favorite Success",
       'removeFavoriteFailed': "Remove Favorite Failed",
       'getGalleryFavoriteInfoFailed': 'Get gallery favorite info failed',
@@ -299,6 +300,7 @@ class en_US {
       'useTranslation': 'Use Translation',
       'addTagSuccess': 'Add Tag Success',
       'addTagFailed': 'Add Tag Failed',
+      'batchAddTag': 'Add Tag To Selected',
       'parentGallery': 'Parent',
       'blockUploaderLocally': 'Block user locally',
 

@@ -267,6 +267,7 @@ class ru_RU {
       'failToGetThumbnails': "Не удалось получить миниатюры",
       'favoriteGallerySuccess': "Галерея успешно добавлена в избранное",
       'favoriteGalleryFailed': "Не удалось добавить галерею в избранное",
+      'batchAddFavorite': 'Добавить выбранное в избранное',
       'removeFavoriteSuccess': "Успешно удалено из избранного",
       'removeFavoriteFailed': "Не удалось удалить из избранного",
       'getGalleryFavoriteInfoFailed': 'Не удалось получить информацию об избранном для галереи',
@@ -337,6 +338,7 @@ class ru_RU {
       'useTranslation': 'Использовать перевод',
       'addTagSuccess': 'Тег успешно добавлен',
       'addTagFailed': 'Не удалось добавить тег',
+      'batchAddTag': 'Добавить тег к выбранному',
       'parentGallery': 'Родительская галерея',
       'blockUploaderLocally': 'Заблокировать пользователя локально',
 

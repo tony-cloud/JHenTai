@@ -266,6 +266,7 @@ class zh_TW {
       'failToGetThumbnails': "獲取畫廊縮圖資料失敗",
       'favoriteGallerySuccess': "收藏畫廊成功",
       'favoriteGalleryFailed': "收藏畫廊失敗",
+      'batchAddFavorite': '批量收藏所選畫廊',
       'removeFavoriteSuccess': "取消收藏成功",
       'removeFavoriteFailed': "取消收藏失敗",
       'getGalleryFavoriteInfoFailed': '獲取畫廊收藏資訊失敗',
@@ -329,6 +330,7 @@ class zh_TW {
       'useTranslation': '使用翻譯標籤',
       'addTagSuccess': '新增標籤成功',
       'addTagFailed': '新增標籤失敗',
+      'batchAddTag': '為所選畫廊批量新增標籤',
       'parentGallery': '父畫廊',
       'blockUploaderLocally': '於本機端隱藏的上傳者',
 

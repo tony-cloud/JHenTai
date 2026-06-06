@@ -38,6 +38,8 @@ mixin ArchiveDownloadPageMixin on StatelessWidget
       IconButton(
           icon: const Icon(Icons.pause), onPressed: archiveDownloadPageLogic.handleMultiPauseTasks),
       IconButton(
+          icon: const Icon(Icons.label), onPressed: archiveDownloadPageLogic.handleMultiTagItems),
+      IconButton(
           icon: const Icon(Icons.bookmark),
           onPressed: archiveDownloadPageLogic.handleMultiChangeGroup),
       IconButton(

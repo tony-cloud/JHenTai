@@ -14,6 +14,12 @@ class WatchedPageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin {
   bool get useSearchConfig => true;
 
   @override
+  bool get enableBatchFavoriteAction => true;
+
+  @override
+  bool get enableBatchTagAction => true;
+
+  @override
   bool get autoLoadNeedLogin => true;
 
   @override

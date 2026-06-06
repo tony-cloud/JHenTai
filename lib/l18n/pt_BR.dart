@@ -260,6 +260,7 @@ class pt_BR {
       'failToGetThumbnails': "Falha ao obter miniaturas",
       'favoriteGallerySuccess': "Favorite Gallery Success",
       'favoriteGalleryFailed': "Falha na galeria Favorita",
+      'batchAddFavorite': 'Adicionar selecionados aos favoritos',
       'removeFavoriteSuccess': "Remove Favorite Success",
       'removeFavoriteFailed': "Remove Favorite Failed",
       'getGalleryFavoriteInfoFailed': 'Get gallery favorite info failed',
@@ -328,6 +329,7 @@ class pt_BR {
       'useTranslation': 'Use Translation',
       'addTagSuccess': 'Add Tag Success',
       'addTagFailed': 'Add Tag Failed',
+      'batchAddTag': 'Adicionar tag aos selecionados',
       'parentGallery': 'Parent',
       'blockUploaderLocally': 'Block user locally',
 

@@ -4,6 +4,7 @@ import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
 import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_batch_tag_util.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/setting/super_resolution_setting.dart';
 
@@ -16,8 +17,10 @@ import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/gallery_update_queue_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/setting/read_setting.dart';
+import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/process_util.dart';
 import 'package:jhentai/utils/route_util.dart';
+import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/eh_download_dialog.dart';
@@ -450,6 +453,52 @@ mixin GalleryDownloadPageLogicMixin on GetxController
     multiSelectDownloadPageState.inMultiSelectMode = false;
     multiSelectDownloadPageState.selectedGids.clear();
     updateSafely([bottomAppbarId, bodyId]);
+  }
+
+  Future<void> handleMultiTagItems() async {
+    if (!userSetting.hasLoggedIn()) {
+      toast('needLoginToOperate'.tr);
+      return;
+    }
+
+    final List<GalleryDownloadedData> selectedGallerys = downloadService.gallerys
+        .where((gallery) => multiSelectDownloadPageState.selectedGids.contains(gallery.gid))
+        .toList(growable: false);
+
+    if (selectedGallerys.isEmpty) {
+      exitSelectMode();
+      return;
+    }
+
+    final String? newTag = await showBatchAddTagDialog();
+    if (newTag == null) {
+      return;
+    }
+
+    final BatchTagResult result = await addTagToTargets(
+      selectedGallerys
+          .map(
+            (gallery) => BatchTagTarget(
+              gid: gallery.gid,
+              token: gallery.token,
+              galleryUrl: gallery.galleryUrl,
+            ),
+          )
+          .toList(growable: false),
+      tag: newTag,
+    );
+
+    toast(
+      '${'batchAddTag'.tr}: ${'success'.tr} ${result.successCount}, '
+      '${'failed'.tr} ${result.failedCount}',
+      isCenter: false,
+    );
+
+    if (result.failedCount > 0 && result.firstErrorMessage != null) {
+      snack('failed'.tr, result.firstErrorMessage!, isShort: true);
+    }
+
+    exitSelectMode();
   }
 
   Future<void> handleMultiDelete() async {

@@ -5,7 +5,10 @@ import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/mixin/scroll_to_top_logic_mixin.dart';
 import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_batch_tag_util.dart';
 import 'package:jhentai/setting/archive_bot_setting.dart';
+import 'package:jhentai/setting/user_setting.dart';
+import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/widget/eh_archive_parse_source_select_dialog.dart';
 
 import 'package:jhentai/database/database.dart';
@@ -325,6 +328,52 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
     multiSelectDownloadPageState.inMultiSelectMode = false;
     multiSelectDownloadPageState.selectedGids.clear();
     updateSafely([bottomAppbarId, bodyId]);
+  }
+
+  Future<void> handleMultiTagItems() async {
+    if (!userSetting.hasLoggedIn()) {
+      toast('needLoginToOperate'.tr);
+      return;
+    }
+
+    final List<ArchiveDownloadedData> selectedArchives = archiveDownloadService.archives
+        .where((archive) => multiSelectDownloadPageState.selectedGids.contains(archive.gid))
+        .toList(growable: false);
+
+    if (selectedArchives.isEmpty) {
+      exitSelectMode();
+      return;
+    }
+
+    final String? newTag = await showBatchAddTagDialog();
+    if (newTag == null) {
+      return;
+    }
+
+    final BatchTagResult result = await addTagToTargets(
+      selectedArchives
+          .map(
+            (archive) => BatchTagTarget(
+              gid: archive.gid,
+              token: archive.token,
+              galleryUrl: archive.galleryUrl,
+            ),
+          )
+          .toList(growable: false),
+      tag: newTag,
+    );
+
+    toast(
+      '${'batchAddTag'.tr}: ${'success'.tr} ${result.successCount}, '
+      '${'failed'.tr} ${result.failedCount}',
+      isCenter: false,
+    );
+
+    if (result.failedCount > 0 && result.firstErrorMessage != null) {
+      snack('failed'.tr, result.firstErrorMessage!, isShort: true);
+    }
+
+    exitSelectMode();
   }
 
   Future<void> handleMultiDelete() async {

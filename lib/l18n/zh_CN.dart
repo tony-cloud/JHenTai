@@ -229,6 +229,7 @@ class zh_CN {
       'failToGetThumbnails': "获取画廊缩略图数据失败",
       'favoriteGallerySuccess': "收藏画廊成功",
       'favoriteGalleryFailed': "收藏画廊失败",
+      'batchAddFavorite': '批量收藏所选画廊',
       'removeFavoriteSuccess': "取消收藏成功",
       'removeFavoriteFailed': "取消收藏失败",
       'getGalleryFavoriteInfoFailed': '获取画廊收藏信息失败',
@@ -292,6 +293,7 @@ class zh_CN {
       'useTranslation': '使用翻译标签',
       'addTagSuccess': '添加标签成功',
       'addTagFailed': '添加标签失败',
+      'batchAddTag': '为所选画廊批量添加标签',
       'parentGallery': '父画廊',
       'blockUploaderLocally': '本地屏蔽上传者',
 

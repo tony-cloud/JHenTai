@@ -258,6 +258,7 @@ class ko_KR {
       'failToGetThumbnails': "섬네일 가져오기 실패",
       'favoriteGallerySuccess': "즐겨찾기 저장 성공",
       'favoriteGalleryFailed': "즐겨찾기 저장 실패",
+      'batchAddFavorite': '선택한 갤러리를 즐겨찾기에 추가',
       'removeFavoriteSuccess': "Remove Favorite Success",
       'removeFavoriteFailed': "Remove Favorite Failed",
       'getGalleryFavoriteInfoFailed': 'Get gallery favorite info failed',
@@ -322,6 +323,7 @@ class ko_KR {
       'useTranslation': 'Use Translation',
       'addTagSuccess': 'Add Tag Success',
       'addTagFailed': 'Add Tag Failed',
+      'batchAddTag': '선택한 항목에 태그 추가',
       'parentGallery': 'Parent',
       'blockUploaderLocally': 'Block user locally',
 

@@ -14,12 +14,14 @@ import 'package:jhentai/network/eh_request.dart';
 import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/pages/base/base_page_logic.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_batch_download_util.dart';
+import 'package:jhentai/pages/base/multi_select/multi_select_batch_tag_util.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_gallery_state_mixin.dart';
 import 'package:jhentai/service/archive_download_service.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 import 'package:jhentai/service/gallery_update_queue_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/download_setting.dart';
+import 'package:jhentai/setting/favorite_setting.dart';
 import 'package:jhentai/setting/rpc_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/service/rpc_service.dart';
@@ -27,9 +29,15 @@ import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/widget/eh_favorite_dialog.dart';
 import 'package:jhentai/widget/eh_batch_download_dialog.dart';
 import 'package:jhentai/widget/eh_download_dialog.dart';
 import 'package:jhentai/widget/fade_slide_widget.dart';
+
+enum _MultiSelectGalleryAction {
+  favorite,
+  tag,
+}
 
 mixin MultiSelectGalleryLogicMixin on BasePageLogic {
   MultiSelectGalleryStateMixin get multiSelectGalleryState;
@@ -38,6 +46,12 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
   bool _isHandlingBatchDownloadAndUpdate = false;
 
   bool get isHandlingBatchDownloadAndUpdate => _isHandlingBatchDownloadAndUpdate;
+
+  bool get enableBatchFavoriteAction => false;
+
+  bool get enableBatchTagAction => false;
+
+  bool get hasExtraMultiSelectActions => enableBatchFavoriteAction || enableBatchTagAction;
 
   bool get useRpcBatchDownloadAndUpdate {
     if (GetPlatform.isWeb) {
@@ -147,14 +161,170 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
     updateSafely([bodyId, multiSelectBottomBarId]);
   }
 
+  List<Gallery> getSelectedGalleries() {
+    return state.gallerys
+        .where((gallery) => multiSelectGalleryState.selectedGids.contains(gallery.gid))
+        .toList(growable: false);
+  }
+
+  Future<void> handleBatchFavoriteSelected() async {
+    if (!userSetting.hasLoggedIn()) {
+      toast('needLoginToOperate'.tr);
+      return;
+    }
+
+    final List<Gallery> selectedGallerys = getSelectedGalleries();
+    if (selectedGallerys.isEmpty) {
+      exitSelectMode();
+      return;
+    }
+
+    if (!favoriteSetting.inited) {
+      await favoriteSetting.fetchDataFromEH();
+    }
+
+    final ({bool isDelete, int favIndex, String note, bool remember})? result =
+        await Get.dialog(const EHFavoriteDialog());
+
+    if (result == null) {
+      return;
+    }
+
+    if (result.remember) {
+      userSetting.saveDefaultFavoriteIndex(result.favIndex);
+    }
+
+    int successCount = 0;
+    int failedCount = 0;
+    String? firstErrorMessage;
+    bool changedFavoriteCounts = false;
+
+    for (final Gallery gallery in selectedGallerys) {
+      final int? previousFavIndex = gallery.favoriteTagIndex;
+
+      try {
+        await ehRequest.requestAddFavorite(
+          gallery.gid,
+          gallery.token,
+          result.favIndex,
+          result.note,
+        );
+
+        if (previousFavIndex != result.favIndex) {
+          if (result.favIndex >= 0 && result.favIndex < favoriteSetting.favoriteCounts.length) {
+            favoriteSetting.favoriteCounts[result.favIndex]++;
+          }
+          if (previousFavIndex != null &&
+              previousFavIndex >= 0 &&
+              previousFavIndex < favoriteSetting.favoriteCounts.length) {
+            favoriteSetting.favoriteCounts[previousFavIndex]--;
+          }
+          changedFavoriteCounts = true;
+        }
+
+        gallery
+          ..favoriteTagIndex = result.favIndex
+          ..favoriteTagName = favoriteSetting.favoriteTagNames[result.favIndex];
+        successCount++;
+      } on DioException catch (e) {
+        log.error('favoriteGalleryFailed'.tr, e.errorMsg);
+        failedCount++;
+        firstErrorMessage ??= e.errorMsg;
+      } on EHSiteException catch (e) {
+        log.error('favoriteGalleryFailed'.tr, e.message);
+        failedCount++;
+        firstErrorMessage ??= e.message;
+      } catch (e, s) {
+        log.error('favoriteGalleryFailed'.tr, e, s);
+        failedCount++;
+        firstErrorMessage ??= e.toString();
+      }
+    }
+
+    if (changedFavoriteCounts) {
+      await favoriteSetting.saveBeanConfig();
+    }
+
+    _showBatchActionResult(
+      actionLabel: 'batchAddFavorite'.tr,
+      successCount: successCount,
+      failedCount: failedCount,
+    );
+
+    if (successCount > 0 && this is UpdateGlobalGalleryStatusLogicMixin) {
+      (this as UpdateGlobalGalleryStatusLogicMixin).updateGlobalGalleryStatus();
+    }
+
+    if (failedCount > 0 && firstErrorMessage != null) {
+      snack('failed'.tr, firstErrorMessage, isShort: true);
+    }
+
+    exitSelectMode();
+  }
+
+  Future<void> handleBatchTagSelected() async {
+    if (!userSetting.hasLoggedIn()) {
+      toast('needLoginToOperate'.tr);
+      return;
+    }
+
+    final List<Gallery> selectedGallerys = getSelectedGalleries();
+    if (selectedGallerys.isEmpty) {
+      exitSelectMode();
+      return;
+    }
+
+    final String? newTag = await showBatchAddTagDialog();
+    if (newTag == null) {
+      return;
+    }
+
+    final BatchTagResult result = await addTagToTargets(
+      selectedGallerys
+          .map(
+            (gallery) => BatchTagTarget(
+              gid: gallery.gid,
+              token: gallery.token,
+              galleryUrl: gallery.galleryUrl.url,
+            ),
+          )
+          .toList(growable: false),
+      tag: newTag,
+    );
+
+    _showBatchActionResult(
+      actionLabel: 'batchAddTag'.tr,
+      successCount: result.successCount,
+      failedCount: result.failedCount,
+    );
+
+    if (result.failedCount > 0 && result.firstErrorMessage != null) {
+      snack('failed'.tr, result.firstErrorMessage!, isShort: true);
+    }
+
+    exitSelectMode();
+  }
+
+  void _showBatchActionResult({
+    required String actionLabel,
+    required int successCount,
+    required int failedCount,
+  }) {
+    final List<String> parts = <String>['${'success'.tr} $successCount'];
+
+    if (failedCount > 0) {
+      parts.add('${'failed'.tr} $failedCount');
+    }
+
+    toast('$actionLabel: ${parts.join(', ')}', isCenter: false);
+  }
+
   Future<void> handleBatchDownload() async {
     if (multiSelectGalleryState.selectedGids.isEmpty) {
       return;
     }
 
-    final List<Gallery> selectedGallerys = state.gallerys
-        .where((gallery) => multiSelectGalleryState.selectedGids.contains(gallery.gid))
-        .toList();
+    final List<Gallery> selectedGallerys = getSelectedGalleries();
 
     if (selectedGallerys.isEmpty) {
       exitSelectMode();
@@ -223,9 +393,7 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
       return;
     }
 
-    final List<Gallery> selectedGallerys = state.gallerys
-        .where((gallery) => multiSelectGalleryState.selectedGids.contains(gallery.gid))
-        .toList();
+    final List<Gallery> selectedGallerys = getSelectedGalleries();
 
     if (selectedGallerys.isEmpty) {
       exitSelectMode();
@@ -516,6 +684,34 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
                     tooltip: 'downloadAndUpdateSelected'.tr,
                     icon: const Icon(Icons.system_update_alt),
                   ),
+                  if (hasExtraMultiSelectActions) const SizedBox(width: 4),
+                  if (hasExtraMultiSelectActions)
+                    PopupMenuButton<_MultiSelectGalleryAction>(
+                      enabled: multiSelectGalleryState.selectedGids.isNotEmpty,
+                      tooltip: 'multiSelect'.tr,
+                      onSelected: (_MultiSelectGalleryAction action) {
+                        switch (action) {
+                          case _MultiSelectGalleryAction.favorite:
+                            handleBatchFavoriteSelected();
+                            break;
+                          case _MultiSelectGalleryAction.tag:
+                            handleBatchTagSelected();
+                            break;
+                        }
+                      },
+                      itemBuilder: (_) => <PopupMenuEntry<_MultiSelectGalleryAction>>[
+                        if (enableBatchFavoriteAction)
+                          PopupMenuItem<_MultiSelectGalleryAction>(
+                            value: _MultiSelectGalleryAction.favorite,
+                            child: Text('batchAddFavorite'.tr),
+                          ),
+                        if (enableBatchTagAction)
+                          PopupMenuItem<_MultiSelectGalleryAction>(
+                            value: _MultiSelectGalleryAction.tag,
+                            child: Text('batchAddTag'.tr),
+                          ),
+                      ],
+                    ),
                 ],
               ),
             ),

@@ -33,6 +33,8 @@ mixin GalleryDownloadPageMixin on StatelessWidget
           icon: const Icon(Icons.refresh),
           onPressed: galleryDownloadPageLogic.handleMultiReDownloadItems),
       IconButton(
+          icon: const Icon(Icons.label), onPressed: galleryDownloadPageLogic.handleMultiTagItems),
+      IconButton(
           icon: const Icon(Icons.bookmark),
           onPressed: galleryDownloadPageLogic.handleMultiChangeGroup),
       IconButton(
