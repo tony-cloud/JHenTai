@@ -5,3 +5,7 @@
 # Xcode-related
 **/dgph
 **/xcuserdata/
+
+Podfile.lock
+.swiftpm
+**/Package.resolved
