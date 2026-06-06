@@ -729,20 +729,29 @@ class GalleryDownloadService extends GetxController
 
     GalleryDetail newGalleryDetail;
     try {
-      ({GalleryDetail galleryDetails, String apikey}) detailPageInfo = await retry(
-        () => ehRequest.requestDetailPage(
-            galleryUrl: newVersionGalleryUrl.url,
-            parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey),
-        retryIf: (e) => e is DioException,
-        maxAttempts: _maxRetryTimes,
+      final detailPageResult =
+          await requestGalleryDetailWithExFallback<({GalleryDetail galleryDetails, String apikey})>(
+        galleryUrl: newVersionGalleryUrl,
+        parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey,
+        logContext: 'Update gallery detail',
       );
-      newGalleryDetail = detailPageInfo.galleryDetails;
+      newGalleryDetail = detailPageResult.detailPageInfo.galleryDetails;
     } on DioException catch (e) {
-      log.info('${'updateGalleryError'.tr}, reason: ${e.errorMsg}');
+      log.info(
+        '${'updateGalleryError'.tr}, '
+        'gid:${newVersionGalleryUrl.gid}, '
+        'url:${newVersionGalleryUrl.url}, '
+        'reason: ${e.errorMsg}',
+      );
       snack('updateGalleryError'.tr, e.errorMsg ?? '', isShort: true);
       return;
     } on EHSiteException catch (e) {
-      log.info('${'updateGalleryError'.tr}, reason: ${e.message}');
+      log.info(
+        '${'updateGalleryError'.tr}, '
+        'gid:${newVersionGalleryUrl.gid}, '
+        'url:${newVersionGalleryUrl.url}, '
+        'reason: ${e.message}',
+      );
       snack('updateGalleryError'.tr, e.message, isShort: true);
       pauseAllDownloadGallery();
       return;
@@ -1238,14 +1247,19 @@ class GalleryDownloadService extends GetxController
   Future<void> _generateComicInfoInDisk(GalleryDownloadedData gallery) async {
     GalleryDetail galleryDetail;
     try {
-      ({GalleryDetail galleryDetails, String apikey}) detailPageInfo = await retry(
-        () => ehRequest.requestDetailPage(
-            galleryUrl: gallery.galleryUrl,
-            parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey),
-        retryIf: (e) => e is DioException,
-        maxAttempts: _maxRetryTimes,
+      final detailPageResult =
+          await requestGalleryDetailWithExFallback<({GalleryDetail galleryDetails, String apikey})>(
+        galleryUrl: GalleryUrl.parse(gallery.galleryUrl),
+        parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey,
+        logContext: 'Generate comic info gallery detail',
       );
-      galleryDetail = detailPageInfo.galleryDetails;
+      if (detailPageResult.galleryUrl.url != gallery.galleryUrl) {
+        gallery = await _replaceGalleryUrlAfterExFallback(
+          gallery,
+          detailPageResult.galleryUrl.url,
+        );
+      }
+      galleryDetail = detailPageResult.detailPageInfo.galleryDetails;
     } catch (e) {
       log.error('Get gallery detail failed, gallery: ${gallery.gid}', e);
       return;
@@ -1669,80 +1683,100 @@ class GalleryDownloadService extends GetxController
     required CancelToken cancelToken,
     required HtmlParser<T> parser,
   }) async {
+    final detailPageResult = await requestGalleryDetailWithExFallback<T>(
+      galleryUrl: GalleryUrl.parse(gallery.galleryUrl),
+      thumbnailsPageIndex: thumbnailsPageIndex,
+      cancelToken: cancelToken,
+      parser: parser,
+      logContext: 'Parse image href gallery detail',
+      onRetry: (Object error) => log.download(
+        'Parse image hrefs failed, retry. Reason: ${(error as DioException).toString()}',
+        level: Level.warning,
+      ),
+    );
+
+    if (detailPageResult.galleryUrl.url != gallery.galleryUrl) {
+      final GalleryDownloadedData updatedGallery = await _replaceGalleryUrlAfterExFallback(
+        gallery,
+        detailPageResult.galleryUrl.url,
+      );
+      return (gallery: updatedGallery, detailPageInfo: detailPageResult.detailPageInfo);
+    }
+
+    return (gallery: gallery, detailPageInfo: detailPageResult.detailPageInfo);
+  }
+
+  Future<({GalleryUrl galleryUrl, T detailPageInfo})> requestGalleryDetailWithExFallback<T>({
+    required GalleryUrl galleryUrl,
+    int thumbnailsPageIndex = 0,
+    CancelToken? cancelToken,
+    bool useCacheIfAvailable = true,
+    required HtmlParser<T> parser,
+    String logContext = 'Gallery detail',
+    void Function(Object error)? onRetry,
+  }) async {
     try {
-      final T detailPageInfo = await _requestDownloadDetailPage(
-        galleryUrl: gallery.galleryUrl,
+      final T detailPageInfo = await _requestGalleryDetailPage<T>(
+        galleryUrl: galleryUrl.url,
         thumbnailsPageIndex: thumbnailsPageIndex,
         cancelToken: cancelToken,
+        useCacheIfAvailable: useCacheIfAvailable,
         parser: parser,
+        onRetry: onRetry,
       );
-      return (gallery: gallery, detailPageInfo: detailPageInfo);
+      return (galleryUrl: galleryUrl, detailPageInfo: detailPageInfo);
     } catch (e) {
-      if (!_shouldFallbackDetailPageToEx(gallery, e)) {
+      if (!_shouldFallbackGalleryDetailToEx(galleryUrl, e)) {
         rethrow;
       }
-      return _requestDownloadDetailPageFromEx(
-        gallery: gallery,
+
+      final GalleryUrl fallbackGalleryUrl = galleryUrl.copyWith(isEH: false);
+      log.warning(
+        '$logContext got 404 on EH, retry with EX. '
+        'gid:${galleryUrl.gid}, '
+        'url:${galleryUrl.url}, '
+        'fallbackUrl:${fallbackGalleryUrl.url}',
+        e,
+      );
+
+      final T detailPageInfo = await _requestGalleryDetailPage<T>(
+        galleryUrl: fallbackGalleryUrl.url,
         thumbnailsPageIndex: thumbnailsPageIndex,
         cancelToken: cancelToken,
+        useCacheIfAvailable: useCacheIfAvailable,
         parser: parser,
+        onRetry: onRetry,
       );
+      return (galleryUrl: fallbackGalleryUrl, detailPageInfo: detailPageInfo);
     }
   }
 
-  Future<T> _requestDownloadDetailPage<T>({
+  Future<T> _requestGalleryDetailPage<T>({
     required String galleryUrl,
     required int thumbnailsPageIndex,
-    required CancelToken cancelToken,
+    required CancelToken? cancelToken,
+    required bool useCacheIfAvailable,
     required HtmlParser<T> parser,
+    void Function(Object error)? onRetry,
   }) {
     return retry(
       () => ehRequest.requestDetailPage<T>(
         galleryUrl: galleryUrl,
         thumbnailsPageIndex: thumbnailsPageIndex,
         cancelToken: cancelToken,
+        useCacheIfAvailable: useCacheIfAvailable,
         parser: parser,
       ),
       delayFactor: const Duration(milliseconds: 500),
       retryIf: (e) =>
           e is DioException && e.type != DioExceptionType.cancel && e.response?.statusCode != 404,
-      onRetry: (e) => log.download(
-        'Parse image hrefs failed, retry. Reason: ${(e as DioException).toString()}',
-        level: Level.warning,
-      ),
+      onRetry: (e) => onRetry?.call(e),
       maxAttempts: _maxRetryTimes,
     );
   }
 
-  Future<({GalleryDownloadedData gallery, T detailPageInfo})> _requestDownloadDetailPageFromEx<T>({
-    required GalleryDownloadedData gallery,
-    required int thumbnailsPageIndex,
-    required CancelToken cancelToken,
-    required HtmlParser<T> parser,
-  }) async {
-    final GalleryUrl fallbackGalleryUrl =
-        GalleryUrl.parse(gallery.galleryUrl).copyWith(isEH: false);
-
-    log.download(
-      'EH gallery detail page got 404, retry with EX. Gid: ${gallery.gid}, page: $thumbnailsPageIndex',
-      level: Level.warning,
-    );
-
-    final T detailPageInfo = await _requestDownloadDetailPage(
-      galleryUrl: fallbackGalleryUrl.url,
-      thumbnailsPageIndex: thumbnailsPageIndex,
-      cancelToken: cancelToken,
-      parser: parser,
-    );
-
-    final GalleryDownloadedData updatedGallery =
-        await _replaceGalleryUrlAfterExFallback(gallery, fallbackGalleryUrl.url);
-    return (gallery: updatedGallery, detailPageInfo: detailPageInfo);
-  }
-
-  bool _shouldFallbackDetailPageToEx(GalleryDownloadedData gallery, Object error) {
-    final GalleryUrl? galleryUrl = GalleryUrl.tryParse(gallery.galleryUrl);
-    if (galleryUrl == null || !galleryUrl.isEH || !userSetting.hasLoggedIn()) {
+  bool _shouldFallbackGalleryDetailToEx(GalleryUrl galleryUrl, Object error) {
+    if (!galleryUrl.isEH || !userSetting.hasLoggedIn()) {
       return false;
     }
 

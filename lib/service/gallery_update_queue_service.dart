@@ -302,7 +302,7 @@ class GalleryUpdateQueueService extends GetxController
       } catch (e, s) {
         _failedCount++;
         log.error(
-          'Update gallery in queue failed, gid:${updateTarget.downloadedGallery.gid}',
+          'Update gallery in queue failed, ${_formatUpdateTargetLogContext(updateTarget)}',
           e,
           s,
         );
@@ -358,7 +358,12 @@ class GalleryUpdateQueueService extends GetxController
       _startedCount = 1;
     } catch (e, s) {
       _failedCount = 1;
-      log.error('Update gallery from history failed', e, s);
+      log.error(
+        'Update gallery from history failed, '
+        '${_formatDownloadedUpdateLogContext(downloadedGallery, latestDetail.galleryUrl)}',
+        e,
+        s,
+      );
     }
 
     _notifyStateChanged();
@@ -940,26 +945,59 @@ class GalleryUpdateQueueService extends GetxController
     }
 
     try {
-      final ({GalleryDetail galleryDetails, String apikey}) detailPageInfo =
-          await ehRequest.requestDetailPage<({GalleryDetail galleryDetails, String apikey})>(
-        galleryUrl: galleryUrl.url,
+      final ({GalleryDetail galleryDetails, String apikey}) detailPageInfo = (await _downloadService
+              .requestGalleryDetailWithExFallback<({GalleryDetail galleryDetails, String apikey})>(
+        galleryUrl: galleryUrl,
         parser: EHSpiderParser.detailPage2GalleryAndDetailAndApikey,
         useCacheIfAvailable: useCacheIfAvailable,
-      );
+        logContext: 'Update history gallery detail',
+      ))
+          .detailPageInfo;
       galleryHistoryLineageService.cacheDetail(detailPageInfo.galleryDetails);
       return detailPageInfo.galleryDetails;
     } on DioException catch (e) {
-      log.error('updateGalleryError'.tr, e.errorMsg);
+      log.error(
+        '${'updateGalleryError'.tr}, ${_formatGalleryUrlLogContext(galleryUrl)}',
+        e.errorMsg,
+      );
       snack('updateGalleryError'.tr, e.errorMsg ?? '', isShort: true);
     } on EHSiteException catch (e) {
-      log.error('updateGalleryError'.tr, e.message);
+      log.error(
+        '${'updateGalleryError'.tr}, ${_formatGalleryUrlLogContext(galleryUrl)}',
+        e.message,
+      );
       snack('updateGalleryError'.tr, e.message, isShort: true);
     } catch (e, s) {
-      log.error('updateGalleryError'.tr, e, s);
+      log.error(
+        '${'updateGalleryError'.tr}, ${_formatGalleryUrlLogContext(galleryUrl)}',
+        e,
+        s,
+      );
       snack('updateGalleryError'.tr, e.toString(), isShort: true);
     }
 
     return null;
+  }
+
+  String _formatUpdateTargetLogContext(_QueueUpdateTarget target) {
+    return _formatDownloadedUpdateLogContext(
+      target.downloadedGallery,
+      target.latestGalleryUrl,
+    );
+  }
+
+  String _formatDownloadedUpdateLogContext(
+    GalleryDownloadedData downloadedGallery,
+    GalleryUrl targetGalleryUrl,
+  ) {
+    return 'downloaded gid:${downloadedGallery.gid}, '
+        'downloaded url:${downloadedGallery.galleryUrl}, '
+        'target gid:${targetGalleryUrl.gid}, '
+        'target url:${targetGalleryUrl.url}';
+  }
+
+  String _formatGalleryUrlLogContext(GalleryUrl galleryUrl) {
+    return 'gid:${galleryUrl.gid}, url:${galleryUrl.url}';
   }
 
   void _notifyStateChanged() {
