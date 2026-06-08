@@ -18,9 +18,13 @@ class DetailPageInfo {
   });
 
   /// 20 40 50 100 200 400
-  int get thumbnailsCountPerPage => currentPageNo != pageCount
-      ? thumbnails.length
-      : pageCount != 1
-          ? (imageNoFrom - 1) ~/ currentPageNo
-          : [20, 40, 50, 100, 200, 400].firstWhere((number) => number >= imageCount);
+  int get thumbnailsCountPerPage {
+    if (currentPageNo != pageCount) {
+      return thumbnails.length;
+    }
+    if (pageCount != 1 && currentPageNo > 1) {
+      return imageNoFrom ~/ (currentPageNo - 1);
+    }
+    return [20, 40, 50, 100, 200, 400].firstWhere((number) => number >= imageCount);
+  }
 }

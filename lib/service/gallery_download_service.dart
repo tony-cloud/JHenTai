@@ -1893,6 +1893,16 @@ class GalleryDownloadService extends GetxController
       /// if gallery's [thumbnailsCountPerPage] is not equal to default setting, we probably can't get target thumbnails this turn
       /// because the [thumbnailsPageIndex] we computed before is wrong, so we need to parse again
       if (galleryDownloadInfo.imageHrefs[serialNo] == null) {
+        if (reParseDepth >= _maxReparseImageUrlAttempts) {
+          log.download(
+            'Parse image hrefs failed after re-parse attempts. Gid: ${gallery.gid}, index: $serialNo, requestedPageIndex: $requestPageIndex, returnedRange: ${detailPageInfo.imageNoFrom}-${detailPageInfo.imageNoTo}, thumbnailsCountPerPage: ${detailPageInfo.thumbnailsCountPerPage}, changed: $thumbnailsCountPerPageChanged',
+            level: Level.error,
+          );
+          snack('error'.tr, 'parsePageFailed'.tr, isShort: true);
+          pauseDownloadGallery(gallery);
+          return;
+        }
+
         log.download(
           'Parse image hrefs error, thumbnails count per page is not equal to default setting, parse again. Thumbnails count per page: ${detailPageInfo.thumbnailsCountPerPage}, changed: $thumbnailsCountPerPageChanged',
           level: Level.warning,
@@ -1906,7 +1916,7 @@ class GalleryDownloadService extends GetxController
             serialNo,
             previousFailedUrl: previousFailedUrl,
             reParseDepth: reParseDepth + 1,
-            forceRefresh: forceRefresh,
+            forceRefresh: true,
           ),
         );
       }
@@ -2076,6 +2086,27 @@ class GalleryDownloadService extends GetxController
           ),
         );
       } on EHParseException catch (e) {
+        if (e.type == EHParseExceptionType.unsupportedImagePageStyle &&
+            reParseDepth < _maxReparseImageUrlAttempts) {
+          log.download(
+            'Parse image url returned unsupported page style, force re-parse href. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}',
+            level: Level.warning,
+          );
+          await ehRequest.removeCacheByUrl(
+              galleryDownloadInfo.imageHrefs[serialNo]!.replacedMPVHref(serialNo + 1));
+          return _submitTask(
+            gid: gallery.gid,
+            priority: _computeImageTaskPriority(gallery, serialNo),
+            task: _parseImageHrefTask(
+              gallery,
+              serialNo,
+              previousFailedUrl: previousFailedUrl,
+              reParseDepth: reParseDepth + 1,
+              forceRefresh: true,
+            ),
+          );
+        }
+
         log.download('Parse image url error, reason: ${e.message.tr}', level: Level.error);
         snack('error'.tr, e.message.tr, isShort: true);
 
@@ -2755,10 +2786,21 @@ class GalleryDownloadService extends GetxController
       );
     }
 
-    final result = await ehRequest.requestMpvPage(
-      mpvUrl,
-      cancelToken: galleryDownloadInfo.cancelToken,
-      parser: EHSpiderParser.mpvPage2MpvKeyAndImageKeys,
+    final result = await retry(
+      () => ehRequest.requestMpvPage(
+        mpvUrl,
+        cancelToken: galleryDownloadInfo.cancelToken,
+        parser: EHSpiderParser.mpvPage2MpvKeyAndImageKeys,
+      ),
+      retryIf: (e) =>
+          e is DioException && e.type != DioExceptionType.cancel ||
+          e is EHParseException && e.type == EHParseExceptionType.unsupportedImagePageStyle,
+      onRetry: (e) => log.download(
+        'Fetch MPV image keys failed, retry. Reason: ${_mpvKeyFetchRetryReason(e)}',
+        level: Level.warning,
+      ),
+      delayFactor: const Duration(milliseconds: 500),
+      maxAttempts: _maxRetryTimes,
     );
 
     bool metadataChanged = false;
@@ -2781,6 +2823,16 @@ class GalleryDownloadService extends GetxController
     if (metadataChanged) {
       _saveGalleryMetadataInDisk(gallery);
     }
+  }
+
+  String _mpvKeyFetchRetryReason(Object error) {
+    if (error is DioException) {
+      return error.errorMsg ?? '';
+    }
+    if (error is EHParseException) {
+      return error.message.tr;
+    }
+    return error.toString();
   }
 
   Future<({String? reloadKey, String? url})?> _fetchLegacyReloadKeyForOriginalImage(
