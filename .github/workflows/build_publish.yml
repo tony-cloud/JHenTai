@@ -61,7 +61,7 @@ jobs:
       arch: ${{ steps.get_version.outputs.arch}}
     runs-on: ${{ matrix.os }}
     env:
-      FLUTTER_VERSION: 3.35.4
+      FLUTTER_VERSION: 3.44.0
       JH_API_SECRET_CONFIG: ${{ secrets.JH_API_SECRET_CONFIG }}
       ANDROID_SIGNING_KEY: ${{ secrets.ANDROID_SIGNING_KEY }}
       ANDROID_ALIAS: ${{ secrets.ANDROID_ALIAS }}
