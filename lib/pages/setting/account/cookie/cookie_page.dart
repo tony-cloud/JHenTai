@@ -57,16 +57,18 @@ class _CookiePageState extends State<CookiePage> {
                           LoadingStateIndicator(
                             loadingState: _refreshIgneousState,
                             loadingWidgetBuilder: () =>
-                                const CupertinoActivityIndicator().marginOnly(right: 10),
+                                const CupertinoActivityIndicator()
+                                    .marginOnly(right: 10),
                             idleWidgetBuilder: () => IconButton(
-                                icon: const Icon(Icons.refresh), onPressed: _refreshIgneousCookie),
+                                icon: const Icon(Icons.refresh),
+                                onPressed: _refreshIgneousCookie),
                             successWidgetSameWithIdle: true,
                             errorWidgetSameWithIdle: true,
                           )
                         ],
                       )
                     : null,
-                onTap: _copyAllCookies,
+                onTap: () => _copyCookie(cookie),
                 dense: true,
               ),
             )
@@ -75,8 +77,8 @@ class _CookiePageState extends State<CookiePage> {
     );
   }
 
-  Future<void> _copyAllCookies() async {
-    await FlutterClipboard.copy(CookieUtil.parse2String(ehRequest.cookies));
+  Future<void> _copyCookie(Cookie cookie) async {
+    await FlutterClipboard.copy(CookieUtil.parse2String([cookie]));
     toast('hasCopiedToClipboard'.tr);
   }
 
@@ -124,9 +126,11 @@ class _CookiePageState extends State<CookiePage> {
         }),
       );
 
-      log.info('Refresh igneous cookie, set-cookie: ${response.headers.value('set-cookie')}');
+      log.info(
+          'Refresh igneous cookie, set-cookie: ${response.headers.value('set-cookie')}');
 
-      List<String>? cookiePairs = response.headers.value('set-cookie')?.split(';');
+      List<String>? cookiePairs =
+          response.headers.value('set-cookie')?.split(';');
       if (cookiePairs == null) {
         snack('refreshIgneousFailed'.tr, 'Sad panda');
         setStateSafely(() {
@@ -193,8 +197,10 @@ class _CookiePageState extends State<CookiePage> {
     }
 
     _dio = Dio(BaseOptions(
-      connectTimeout: Duration(milliseconds: networkSetting.connectTimeout.value),
-      receiveTimeout: Duration(milliseconds: networkSetting.receiveTimeout.value),
+      connectTimeout:
+          Duration(milliseconds: networkSetting.connectTimeout.value),
+      receiveTimeout:
+          Duration(milliseconds: networkSetting.receiveTimeout.value),
     ));
 
     EHIpProvider ehIpProvider = RoundRobinIpProvider(NetworkSetting.host2IPs);
@@ -217,11 +223,13 @@ class _CookiePageState extends State<CookiePage> {
         handler.next(options.copyWith(
           path: rawPath.replaceFirst(host, ip),
           headers: {...options.headers, 'host': host},
-          extra: options.extra..[EHRequest.domainFrontingExtraKey] = {'host': host, 'ip': ip},
+          extra: options.extra
+            ..[EHRequest.domainFrontingExtraKey] = {'host': host, 'ip': ip},
         ));
       },
       onError: (DioException e, ErrorInterceptorHandler handler) {
-        if (!e.requestOptions.extra.containsKey(EHRequest.domainFrontingExtraKey)) {
+        if (!e.requestOptions.extra
+            .containsKey(EHRequest.domainFrontingExtraKey)) {
           handler.next(e);
           return;
         }
@@ -229,8 +237,10 @@ class _CookiePageState extends State<CookiePage> {
         if (e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.badResponse ||
             e.type == DioExceptionType.connectionError) {
-          String host = e.requestOptions.extra[EHRequest.domainFrontingExtraKey]['host'];
-          String ip = e.requestOptions.extra[EHRequest.domainFrontingExtraKey]['ip'];
+          String host =
+              e.requestOptions.extra[EHRequest.domainFrontingExtraKey]['host'];
+          String ip =
+              e.requestOptions.extra[EHRequest.domainFrontingExtraKey]['ip'];
           ehIpProvider.addUnavailableIp(host, ip);
           log.info('Refresh igneous, add unavailable host-ip: $host-$ip');
         }

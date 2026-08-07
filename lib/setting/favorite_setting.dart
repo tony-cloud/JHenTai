@@ -15,7 +15,9 @@ import 'package:jhentai/utils/eh_spider_parser.dart';
 
 FavoriteSetting favoriteSetting = FavoriteSetting();
 
-class FavoriteSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
+class FavoriteSetting
+    with JHLifeCircleBeanWithConfigStorage
+    implements JHLifeCircleBean {
   RxList<String> favoriteTagNames = [
     'Favorite 0',
     'Favorite 1',
@@ -31,10 +33,12 @@ class FavoriteSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
 
   List<int> favoriteCounts = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
-  bool get inited => favoriteTagNames[0] != 'Favorite 0' || favoriteCounts[0] != -1;
+  bool get inited =>
+      favoriteTagNames[0] != 'Favorite 0' || favoriteCounts[0] != -1;
 
   @override
-  List<JHLifeCircleBean> get initDependencies => super.initDependencies..add(userSetting);
+  List<JHLifeCircleBean> get initDependencies =>
+      super.initDependencies..add(userSetting);
 
   @override
   ConfigEnum get configEnum => ConfigEnum.favoriteSetting;
@@ -43,7 +47,8 @@ class FavoriteSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
   void applyBeanConfig(String configString) {
     Map map = jsonDecode(configString);
 
-    favoriteTagNames.assignAll((jsonDecode(map['favoriteTagNames']) as List).cast<String>());
+    favoriteTagNames.assignAll(
+        (jsonDecode(map['favoriteTagNames']) as List).cast<String>());
     favoriteCounts = (jsonDecode(map['favoriteCounts']) as List).cast<int>();
   }
 
@@ -95,9 +100,10 @@ class FavoriteSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
     try {
       await retry(
         () async {
-          Map<String, List> map = await ehRequest
-              .requestFavoritePage(EHSpiderParser.favoritePage2FavoriteTagsAndCounts);
-          favoriteTagNames.assignAll((map['favoriteTagNames'] as List).cast<String>());
+          Map<String, List> map = await ehRequest.requestFavoritePage(
+              EHSpiderParser.favoritePage2FavoriteTagsAndCounts);
+          favoriteTagNames
+              .assignAll((map['favoriteTagNames'] as List).cast<String>());
           favoriteCounts = map['favoriteCounts'] as List<int>;
         },
         retryIf: (e) => e is DioException,
@@ -108,6 +114,9 @@ class FavoriteSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCi
       return;
     } on EHSiteException catch (e) {
       log.error('Fetch favorite setting from EH fail', e.message);
+      return;
+    } catch (e) {
+      log.error('Fetch favorite setting from EH fail', e.toString());
       return;
     }
 

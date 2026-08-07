@@ -38,7 +38,8 @@ class DesktopSearchPageTabView
             global: false,
             init: logic,
             id: logic.suggestionBodyId,
-            builder: (_) => state.inputGalleryUrl == null && state.inputGalleryImagePageUrl == null
+            builder: (_) => state.inputGalleryUrl == null &&
+                    state.inputGalleryImagePageUrl == null
                 ? Expanded(child: buildSuggestionAndHistoryBody(context))
                 : buildOpenGalleryArea(),
           )
@@ -62,7 +63,8 @@ class DesktopSearchPageTabView
       child: Row(
         children: [
           Expanded(child: buildSearchField().marginOnly(left: 8)),
-          ...buildActionButtons(),
+          ...buildActionButtons(
+              compactSize: UIConfig.desktopSearchBarHeight, spacing: 4),
         ],
       ),
     );

@@ -16,13 +16,17 @@ import 'package:jhentai/service/log.dart';
 
 MyTagsSetting myTagsSetting = MyTagsSetting();
 
-class MyTagsSetting with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
-  Map<int, ({bool enable, Color? tagSetBackGroundColor, List<WatchedTag> tags})> onlineTags = {};
+class MyTagsSetting
+    with JHLifeCircleBeanErrorCatch
+    implements JHLifeCircleBean {
+  Map<int, ({bool enable, Color? tagSetBackGroundColor, List<WatchedTag> tags})>
+      onlineTags = {};
 
   static const int defaultTagSetNo = 1;
 
   @override
-  List<JHLifeCircleBean> get initDependencies => super.initDependencies..add(userSetting);
+  List<JHLifeCircleBean> get initDependencies =>
+      super.initDependencies..add(userSetting);
 
   @override
   Future<void> doInitBean() async {
@@ -69,6 +73,9 @@ class MyTagsSetting with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean 
     } on EHSiteException catch (e) {
       log.error('getTagSetFailed'.tr, e.message);
       return;
+    } catch (e) {
+      log.error('getTagSetFailed'.tr, e.toString());
+      return;
     }
 
     onlineTags[defaultTagSetNo] = (
@@ -105,7 +112,8 @@ class MyTagsSetting with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean 
     try {
       pageInfo = await retry(
         () => ehRequest.requestMyTagsPage(
-            tagSetNo: tagSetNo, parser: EHSpiderParser.myTagsPage2TagSetNamesAndTagSetsAndApikey),
+            tagSetNo: tagSetNo,
+            parser: EHSpiderParser.myTagsPage2TagSetNamesAndTagSetsAndApikey),
         retryIf: (e) => e is DioException,
         maxAttempts: 3,
       );
@@ -115,6 +123,9 @@ class MyTagsSetting with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean 
     } on EHSiteException catch (e) {
       log.error('getTagSetFailed'.tr, e.message);
       return;
+    } catch (e) {
+      log.error('getTagSetFailed'.tr, e.toString());
+      return;
     }
 
     onlineTags[tagSetNo] = (
@@ -122,16 +133,25 @@ class MyTagsSetting with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean 
       tagSetBackGroundColor: pageInfo.tagSetBackgroundColor,
       tags: pageInfo.tags,
     );
-    log.info('refresh tag set: $tagSetNo success, length: ${onlineTags[tagSetNo]!.tags.length}');
+    log.info(
+        'refresh tag set: $tagSetNo success, length: ${onlineTags[tagSetNo]!.tags.length}');
   }
 
-  ({Color? tagSetBackGroundColor, WatchedTag tag})? getOnlineTagSetByTagData(TagData tagData) {
-    for (({bool enable, Color? tagSetBackGroundColor, List<WatchedTag> tags}) tagSetInfo
-        in onlineTags.values) {
+  ({Color? tagSetBackGroundColor, WatchedTag tag})? getOnlineTagSetByTagData(
+      TagData tagData) {
+    for (({
+      bool enable,
+      Color? tagSetBackGroundColor,
+      List<WatchedTag> tags
+    }) tagSetInfo in onlineTags.values) {
       WatchedTag? tagSet = tagSetInfo.tags.firstWhereOrNull((tagSet) =>
-          tagSet.tagData.namespace == tagData.namespace && tagSet.tagData.key == tagData.key);
+          tagSet.tagData.namespace == tagData.namespace &&
+          tagSet.tagData.key == tagData.key);
       if (tagSet != null) {
-        return (tagSetBackGroundColor: tagSetInfo.tagSetBackGroundColor, tag: tagSet);
+        return (
+          tagSetBackGroundColor: tagSetInfo.tagSetBackGroundColor,
+          tag: tagSet
+        );
       }
     }
 
@@ -139,12 +159,14 @@ class MyTagsSetting with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean 
   }
 
   bool containWatchedOnlineTag(TagData tagData) {
-    ({Color? tagSetBackGroundColor, WatchedTag tag})? tagInfo = getOnlineTagSetByTagData(tagData);
+    ({Color? tagSetBackGroundColor, WatchedTag tag})? tagInfo =
+        getOnlineTagSetByTagData(tagData);
     return tagInfo?.tag.watched == true;
   }
 
   bool containHiddenOnlineTag(TagData tagData) {
-    ({Color? tagSetBackGroundColor, WatchedTag tag})? tagInfo = getOnlineTagSetByTagData(tagData);
+    ({Color? tagSetBackGroundColor, WatchedTag tag})? tagInfo =
+        getOnlineTagSetByTagData(tagData);
     return tagInfo?.tag.hidden == true;
   }
 

@@ -28,15 +28,24 @@ void snack(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: const TextStyle(fontSize: 18)),
-            Text(message, style: const TextStyle(fontSize: 12)).marginOnly(top: 6),
+            Text(message, style: const TextStyle(fontSize: 12))
+                .marginOnly(top: 6),
           ],
         ),
       ),
       showCloseIcon: onPressed == null,
-      action: onPressed == null ? null : SnackBarAction(label: '->', onPressed: onPressed),
+      action: onPressed == null
+          ? null
+          : SnackBarAction(label: '->', onPressed: onPressed),
       duration: Duration(milliseconds: isShort ? 3000 : 5000),
-      behavior: styleSetting.isInMobileLayout ? null : SnackBarBehavior.floating,
-      width: styleSetting.isInMobileLayout ? null : max(fullScreenWidth / 2, UIConfig.snackWidth),
+
+      /// Flutter 3.38 起带 action 的 SnackBar 默认不再自动消失，用 persist 恢复按 duration 自动消失
+      persist: false,
+      behavior:
+          styleSetting.isInMobileLayout ? null : SnackBarBehavior.floating,
+      width: styleSetting.isInMobileLayout
+          ? null
+          : max(fullScreenWidth / 2, UIConfig.snackWidth),
     ),
   );
 }

@@ -77,6 +77,10 @@ class DesktopSearchPage extends StatelessWidget with Scroll2TopPageMixin {
                 onPressed: () =>
                     logic.addNewTab(keyword: '', loadImmediately: false),
                 icon: const Icon(Icons.add),
+                constraints: const BoxConstraints.tightFor(
+                    width: UIConfig.desktopSearchTabHeight,
+                    height: UIConfig.desktopSearchTabHeight),
+                padding: EdgeInsets.zero,
               ),
             ],
           ),
@@ -237,6 +241,10 @@ class _SearchTabState extends State<_SearchTab> {
                     : widget.unSelectedTextColor,
                 size: UIConfig.desktopSearchTabIconSize,
               ),
+              constraints: const BoxConstraints.tightFor(
+                  width: UIConfig.desktopSearchTabHeight,
+                  height: UIConfig.desktopSearchTabHeight),
+              padding: EdgeInsets.zero,
             ),
           ],
         ),

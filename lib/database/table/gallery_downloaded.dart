@@ -30,7 +30,8 @@ class GalleryDownloaded extends Table {
 
   TextColumn get insertTime => text()();
 
-  BoolColumn get downloadOriginalImage => boolean().withDefault(const Constant(false))();
+  BoolColumn get downloadOriginalImage =>
+      boolean().withDefault(const Constant(false))();
 
   IntColumn get priority => integer()();
 
@@ -41,6 +42,11 @@ class GalleryDownloaded extends Table {
   TextColumn get tags => text().withDefault(const Constant(''))();
 
   TextColumn get tagRefreshTime => text().nullable()();
+
+  /// Sanitized and truncated title used as the directory name on disk.
+  /// Computed once when the download task is first created and stored here to
+  /// ensure the path never changes even if the truncation algorithm is updated.
+  TextColumn get sanitizedTitle => text().nullable()();
 
   @override
   Set<Column<Object>>? get primaryKey => {gid};
@@ -62,7 +68,8 @@ class GalleryDownloadedOld extends Table {
 
   TextColumn get galleryUrl => text().named('galleryUrl')();
 
-  TextColumn get oldVersionGalleryUrl => text().named('oldVersionGalleryUrl').nullable()();
+  TextColumn get oldVersionGalleryUrl =>
+      text().named('oldVersionGalleryUrl').nullable()();
 
   TextColumn get uploader => text().nullable()();
 
@@ -72,11 +79,14 @@ class GalleryDownloadedOld extends Table {
 
   TextColumn get insertTime => text().named('insertTime').nullable()();
 
-  BoolColumn get downloadOriginalImage => boolean().named('downloadOriginalImage').withDefault(const Constant(false))();
+  BoolColumn get downloadOriginalImage => boolean()
+      .named('downloadOriginalImage')
+      .withDefault(const Constant(false))();
 
   IntColumn get priority => integer().nullable()();
 
-  IntColumn get sortOrder => integer().named('sortOrder').withDefault(const Constant(0))();
+  IntColumn get sortOrder =>
+      integer().named('sortOrder').withDefault(const Constant(0))();
 
   TextColumn get groupName => text().named('groupName').nullable()();
 

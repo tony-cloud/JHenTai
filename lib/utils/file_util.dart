@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -28,15 +29,16 @@ class FileUtil {
   }
 
   static int naturalCompareFile(File aFile, File bFile) {
-    return naturalCompare(
-        basenameWithoutExtension(aFile.path), basenameWithoutExtension(bFile.path));
+    return naturalCompare(basenameWithoutExtension(aFile.path),
+        basenameWithoutExtension(bFile.path));
   }
 
   static int naturalCompare(String a, String b) {
     List<RegExpMatch> aParts = RegExp(r'(\d+|\D+)').allMatches(a).toList();
     List<RegExpMatch> bParts = RegExp(r'(\d+|\D+)').allMatches(b).toList();
 
-    var minParts = aParts.length < bParts.length ? aParts.length : bParts.length;
+    var minParts =
+        aParts.length < bParts.length ? aParts.length : bParts.length;
 
     for (var i = 0; i < minParts; i++) {
       String aPart = aParts[i].group(0)!;
@@ -64,5 +66,22 @@ class FileUtil {
   static Future<String> computeSha1Hash(File file) async {
     final digest = await sha1.bind(file.openRead()).first;
     return digest.toString();
+  }
+
+  /// Truncates [title] so that its UTF-8 encoded length does not exceed
+  /// [maxBytes], always cutting at a code-point boundary so the result is
+  /// always valid UTF-8. [maxBytes] covers the title portion only; the caller
+  /// is responsible for subtracting the byte length of any surrounding prefix
+  /// or suffix before passing [maxBytes].
+  static String truncateTitleToBytes(String title, int maxBytes) {
+    List<int> bytes = utf8.encode(title);
+    if (bytes.length <= maxBytes) {
+      return title;
+    }
+    int end = maxBytes;
+    while (end > 0 && (bytes[end] & 0xC0) == 0x80) {
+      end--;
+    }
+    return utf8.decode(bytes.sublist(0, end)).trim();
   }
 }
