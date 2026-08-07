@@ -50,6 +50,14 @@ endfunction()
 set(FLUTTER_MANAGED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/flutter")
 add_subdirectory(${FLUTTER_MANAGED_DIR})
 
+# flutter_fd_utils currently links the Windows-only flutter_wrapper_plugin
+# target on Linux. Provide a compatible interface target until the dependency
+# removes that extra link requirement.
+if(NOT TARGET flutter_wrapper_plugin)
+  add_library(flutter_wrapper_plugin INTERFACE)
+  target_link_libraries(flutter_wrapper_plugin INTERFACE flutter)
+endif()
+
 # System-level dependencies.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)

@@ -296,7 +296,7 @@ jobs:
           sudo apt-get install -y ninja-build libfuse2 webkit2gtk-4.1
           
           # Compile
-          flutter build linux --release --verbose
+          flutter build linux --release
 
           # Build debian package
           mkdir -p build/linux/JHenTai-${{ steps.get_version.outputs.version }}-Linux-${{ steps.get_version.outputs.arch }}
