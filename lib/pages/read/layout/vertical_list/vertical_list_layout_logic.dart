@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/pages/read/layout/vertical_list/vertical_list_layout_state.dart';
+import 'package:jhentai/pages/read/layout/base/smart_scaling.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:jhentai/setting/read_setting.dart';
@@ -64,7 +65,7 @@ class VerticalListLayoutLogic extends BaseLayoutLogic {
         return _toPrevScreen();
       case TurnPageMode.adaptive:
         List<ItemPosition> positions = getCurrentVisibleItems();
-        if (positions.length > 1) {
+        if (_shouldAdaptiveTurnByImage(positions)) {
           return _toPrevImage();
         }
         return _toPrevScreen();
@@ -81,7 +82,7 @@ class VerticalListLayoutLogic extends BaseLayoutLogic {
         return _toNextScreen();
       case TurnPageMode.adaptive:
         List<ItemPosition> positions = getCurrentVisibleItems();
-        if (positions.length > 1) {
+        if (_shouldAdaptiveTurnByImage(positions)) {
           return _toNextImage();
         }
         return _toNextScreen();
@@ -236,6 +237,19 @@ class VerticalListLayoutLogic extends BaseLayoutLogic {
     return readPageLogic.filterAndSortItems(state.itemPositionsListener.itemPositions.value);
   }
 
+  bool _shouldAdaptiveTurnByImage(List<ItemPosition> positions) {
+    final Size? soleVisibleItemSize = positions.length == 1
+        ? readPageState.imageContainerSizes[positions.first.index]
+        : null;
+    return shouldAdaptiveTurnByImage(
+      visibleItemCount: positions.length,
+      soleVisibleItemSize: soleVisibleItemSize,
+      viewportSize: readPageState.displayRegionSize,
+      scrollAxis: Axis.vertical,
+      smartScalingEnabled: readSetting.smartScaling.isTrue,
+    );
+  }
+
   void _readProgressListener() {
     int? firstImageIndex = getCurrentVisibleItems().firstOrNull?.index;
 
@@ -267,11 +281,23 @@ class VerticalListLayoutLogic extends BaseLayoutLogic {
   /// Compute image container size
   @override
   FittedSizes getImageFittedSize(Size imageSize) {
+    final Size viewportSize = Size(
+      readPageState.displayRegionSize.width * readSetting.imageRegionWidthRatio.value / 100,
+      readPageState.displayRegionSize.height,
+    );
+    if (readSetting.smartScaling.isTrue) {
+      return computeSmartScalingFittedSize(
+        imageSize: imageSize,
+        viewportSize: viewportSize,
+        scrollAxis: Axis.vertical,
+        thresholdPercent: readSetting.smartScalingThreshold.value,
+      );
+    }
+
     return applyBoxFit(
       BoxFit.contain,
       Size(imageSize.width, imageSize.height),
-      Size(readPageState.displayRegionSize.width * readSetting.imageRegionWidthRatio.value / 100,
-          double.infinity),
+      Size(viewportSize.width, double.infinity),
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:jhentai/setting/read_setting.dart';
 import 'package:jhentai/utils/screen_size_util.dart';
 import 'package:jhentai/pages/read/layout/base/base_layout_logic.dart';
+import 'package:jhentai/pages/read/layout/base/smart_scaling.dart';
 import 'package:jhentai/pages/read/layout/horizontal_list/horizontal_list_layout_state.dart';
 
 class HorizontalListLayoutLogic extends BaseLayoutLogic {
@@ -50,7 +51,7 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
         return _toPrevScreen();
       case TurnPageMode.adaptive:
         List<ItemPosition> positions = getCurrentVisibleItems();
-        if (positions.length > 1) {
+        if (_shouldAdaptiveTurnByImage(positions)) {
           return _toPrevImage();
         }
         return _toPrevScreen();
@@ -67,7 +68,7 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
         return _toNextScreen();
       case TurnPageMode.adaptive:
         List<ItemPosition> positions = getCurrentVisibleItems();
-        if (positions.length > 1) {
+        if (_shouldAdaptiveTurnByImage(positions)) {
           return _toNextImage();
         }
         return _toNextScreen();
@@ -221,6 +222,19 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
     return readPageLogic.filterAndSortItems(state.itemPositionsListener.itemPositions.value);
   }
 
+  bool _shouldAdaptiveTurnByImage(List<ItemPosition> positions) {
+    final Size? soleVisibleItemSize = positions.length == 1
+        ? readPageState.imageContainerSizes[positions.first.index]
+        : null;
+    return shouldAdaptiveTurnByImage(
+      visibleItemCount: positions.length,
+      soleVisibleItemSize: soleVisibleItemSize,
+      viewportSize: readPageState.displayRegionSize,
+      scrollAxis: Axis.horizontal,
+      smartScalingEnabled: readSetting.smartScaling.isTrue,
+    );
+  }
+
   void _readProgressListener() {
     int? firstImageIndex = getCurrentVisibleItems().firstOrNull?.index;
 
@@ -242,6 +256,15 @@ class HorizontalListLayoutLogic extends BaseLayoutLogic {
 
   @override
   FittedSizes getImageFittedSize(Size imageSize) {
+    if (readSetting.smartScaling.isTrue) {
+      return computeSmartScalingFittedSize(
+        imageSize: imageSize,
+        viewportSize: readPageState.displayRegionSize,
+        scrollAxis: Axis.horizontal,
+        thresholdPercent: readSetting.smartScalingThreshold.value,
+      );
+    }
+
     return applyBoxFit(
       BoxFit.contain,
       Size(imageSize.width, imageSize.height),

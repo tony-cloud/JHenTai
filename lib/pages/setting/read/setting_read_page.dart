@@ -47,6 +47,11 @@ class SettingReadPage extends StatelessWidget {
               _buildEnableBottomMenu().center(),
               _buildReverseTurnPageDirection().center(),
               _buildDisableTurnPageOnTap().center(),
+              _buildSmartScaling().center(),
+              if (readSetting.smartScaling.isTrue)
+                _buildSmartScalingThreshold()
+                    .fadeInWidget(const Key('smartScalingThreshold'))
+                    .center(),
               _buildEnableImageMaxKilobytes().center(),
               if (readSetting.enableMaxImageKilobyte.isTrue)
                 _buildImageMaxKilobytes(context)
@@ -287,6 +292,35 @@ class SettingReadPage extends StatelessWidget {
       title: Text('disablePageTurningOnTap'.tr),
       value: readSetting.disablePageTurningOnTap.value,
       onChanged: readSetting.saveDisablePageTurningOnTap,
+    );
+  }
+
+  Widget _buildSmartScaling() {
+    return SwitchListTile(
+      title: Text('smartScaling'.tr),
+      subtitle: Text('smartScalingHint'.tr),
+      value: readSetting.smartScaling.value,
+      onChanged: readSetting.saveSmartScaling,
+    );
+  }
+
+  Widget _buildSmartScalingThreshold() {
+    return Column(
+      children: [
+        ListTile(
+          title: Text('smartScalingThreshold'.tr),
+          subtitle: Text('smartScalingThresholdHint'.tr),
+          trailing: Text('${readSetting.smartScalingThreshold.value}%'),
+        ),
+        Slider(
+          value: readSetting.smartScalingThreshold.value.toDouble(),
+          min: 0,
+          max: 100,
+          divisions: 100,
+          label: '${readSetting.smartScalingThreshold.value}%',
+          onChanged: (double value) => readSetting.saveSmartScalingThreshold(value.round()),
+        ).marginSymmetric(horizontal: 12),
+      ],
     );
   }
 

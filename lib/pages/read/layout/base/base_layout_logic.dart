@@ -34,6 +34,7 @@ import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/utils/screen_size_util.dart';
 import 'package:jhentai/pages/read/read_page_logic.dart';
 import 'package:jhentai/pages/read/read_page_state.dart';
+import 'package:jhentai/pages/read/layout/base/smart_scaling.dart';
 
 abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStateMixin {
   static const String pageId = 'pageId';
@@ -448,6 +449,15 @@ abstract class BaseLayoutLogic extends GetxController with GetTickerProviderStat
 
   /// Compute image container size
   FittedSizes getImageFittedSize(Size imageSize) {
+    if (readSetting.smartScaling.isTrue) {
+      return computeSmartScalingFittedSize(
+        imageSize: imageSize,
+        viewportSize: readPageState.displayRegionSize,
+        scrollAxis: Axis.vertical,
+        thresholdPercent: readSetting.smartScalingThreshold.value,
+      );
+    }
+
     return applyBoxFit(
       BoxFit.contain,
       Size(imageSize.width, imageSize.height),

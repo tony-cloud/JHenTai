@@ -751,6 +751,12 @@ class en_US {
       'reverseTurnPageDirection': 'Reverse Page Turning Direction',
       'disableGestureWhenScrolling': 'Disable Gesture When Scrolling',
       'disablePageTurningOnTap': 'Disable Page Turning On Tap',
+      'smartScaling': 'Smart Scaling',
+      'smartScalingHint':
+          'Scale images that only slightly exceed the screen so the whole image is visible',
+      'smartScalingThreshold': 'Fit-to-Screen Threshold',
+      'smartScalingThresholdHint':
+          'Maximum extra size that will still be scaled to fit the screen',
       'turnPageMode': 'Turn Page Mode',
       'turnPageModeHint': 'To next screen or next image',
       'enableImageMaxKilobytes': 'Enable Image Compression',

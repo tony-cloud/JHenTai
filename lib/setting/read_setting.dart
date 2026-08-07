@@ -42,6 +42,8 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
   RxBool displayFirstPageAlone = true.obs;
   RxBool reverseTurnPageDirection = false.obs;
   RxBool disablePageTurningOnTap = false.obs;
+  RxBool smartScaling = false.obs;
+  RxInt smartScalingThreshold = 20.obs;
   RxBool enableMaxImageKilobyte = (GetPlatform.isDesktop ||
           PlatformDispatcher.instance.views.first.physicalSize.width /
                   PlatformDispatcher.instance.views.first.devicePixelRatio >=
@@ -130,6 +132,13 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
     reverseTurnPageDirection.value =
         map['reverseTurnPageDirection'] ?? reverseTurnPageDirection.value;
     disablePageTurningOnTap.value = map['disablePageTurningOnTap'] ?? disablePageTurningOnTap.value;
+    smartScaling.value = map['smartScaling'] ?? map['smartTapTurnPage'] ?? smartScaling.value;
+    smartScalingThreshold.value =
+        ((map['smartScalingThreshold'] as num?)?.toInt() ??
+                (map['smartTapTurnPageThreshold'] as num?)?.toInt() ??
+                smartScalingThreshold.value)
+            .clamp(0, 100)
+            .toInt();
     enableMaxImageKilobyte.value = map['enableMaxImageKilobyte'] ?? enableMaxImageKilobyte.value;
     maxImageKilobyte.value = map['maxImageKilobyte'] ?? maxImageKilobyte.value;
   }
@@ -168,6 +177,8 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
       'displayFirstPageAlone': displayFirstPageAlone.value,
       'reverseTurnPageDirection': reverseTurnPageDirection.value,
       'disablePageTurningOnTap': disablePageTurningOnTap.value,
+      'smartScaling': smartScaling.value,
+      'smartScalingThreshold': smartScalingThreshold.value,
       'enableMaxImageKilobyte': enableMaxImageKilobyte.value,
       'maxImageKilobyte': maxImageKilobyte.value,
     });
@@ -362,6 +373,19 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
   Future<void> saveDisablePageTurningOnTap(bool value) async {
     log.debug('saveDisablePageTurningOnTap:$value');
     disablePageTurningOnTap.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveSmartScaling(bool value) async {
+    log.debug('saveSmartScaling:$value');
+    smartScaling.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveSmartScalingThreshold(int value) async {
+    value = value.clamp(0, 100).toInt();
+    log.debug('saveSmartScalingThreshold:$value');
+    smartScalingThreshold.value = value;
     await saveBeanConfig();
   }
 

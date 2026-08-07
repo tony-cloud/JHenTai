@@ -87,6 +87,7 @@ class ReadPageLogic extends GetxController {
   late Worker enableCustomBrightnessListener;
   late Worker customBrightnessListener;
   late Worker preloadListener;
+  late Worker smartScalingListener;
   late Worker keepScreenAwakeListener;
   late Worker wakelockTimeLimitListener;
 
@@ -205,6 +206,14 @@ class ReadPageLogic extends GetxController {
       },
     );
 
+    smartScalingListener = everAll(
+      [readSetting.smartScaling, readSetting.smartScalingThreshold],
+      (_) {
+        clearImageContainerSized();
+        updateSafely([layoutId]);
+      },
+    );
+
     _scheduleLocalMemoryCache(state.readPageInfo.currentImageIndex);
 
     inited = true;
@@ -227,6 +236,7 @@ class ReadPageLogic extends GetxController {
     enableCustomBrightnessListener.dispose();
     customBrightnessListener.dispose();
     preloadListener.dispose();
+    smartScalingListener.dispose();
     keepScreenAwakeListener.dispose();
     wakelockTimeLimitListener.dispose();
 
