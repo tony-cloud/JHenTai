@@ -30,6 +30,7 @@ import 'package:jhentai/model/jh_response/fetch_image_hashes_vo.dart';
 import 'package:jhentai/model/jh_response/jh_response.dart';
 import 'package:jhentai/network/jh_request.dart';
 import 'package:jhentai/service/image_block_service.dart';
+import 'package:jhentai/service/isolate_service.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/gallery_history_lineage_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
@@ -37,6 +38,7 @@ import 'package:jhentai/setting/download_setting.dart';
 import 'package:jhentai/setting/site_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/convert_util.dart';
+import 'package:jhentai/utils/coalescing_async_task_runner.dart';
 import 'package:jhentai/utils/jh_response_parser.dart';
 import 'package:jhentai/utils/speed_computer.dart';
 import 'package:jhentai/service/log.dart';
@@ -96,6 +98,9 @@ class GalleryDownloadService extends GetxController
   static const int _maxTitleLength = 85;
   static const int _importGalleryCopyBatchSize = 16;
 
+  final CoalescingAsyncTaskRunner<int> _metadataWrites =
+      CoalescingAsyncTaskRunner<int>();
+
   static const int defaultDownloadGalleryPriority = 4;
   static const int _priorityBase = 100000000;
 
@@ -117,7 +122,7 @@ class GalleryDownloadService extends GetxController
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
-      super.initDependencies..addAll([rpcSetting, rpcService, rpcRequest]);
+      super.initDependencies..addAll([isolateService, rpcSetting, rpcService, rpcRequest]);
 
   bool get _shouldUseRemoteRpcData {
     if (rpcSetting.enableRpcMode.isFalse) {
@@ -537,7 +542,7 @@ class GalleryDownloadService extends GetxController
       return;
     }
 
-    _ensureDownloadDirExists();
+    await _ensureDownloadDirExists();
 
     /// If it's a new download task, record info.
     if (!resume) {
@@ -711,8 +716,9 @@ class GalleryDownloadService extends GetxController
     await superResolutionService.deleteSuperResolve(gallery.gid, SuperResolutionType.gallery);
 
     await _clearGalleryDownloadInfoInDatabase(gallery.gid);
+    _metadataWrites.cancel(gallery.gid);
     if (deleteImages) {
-      _clearDownloadedImageInDisk(gallery);
+      await _clearDownloadedImageInDisk(gallery);
     }
     _clearGalleryInfoInMemory(gallery);
   }
@@ -792,7 +798,7 @@ class GalleryDownloadService extends GetxController
 
     log.info('Import gallery: ${gallery.title}');
 
-    _ensureDownloadDirExists();
+    await _ensureDownloadDirExists();
 
     final io.Directory galleryDir =
         io.Directory(computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
@@ -884,7 +890,7 @@ class GalleryDownloadService extends GetxController
     galleryDownloadInfo.speedComputer.start();
     await _updateImageStatus(gallery, image, serialNo, DownloadStatus.downloading);
     await _updateGalleryDownloadStatus(gallery, DownloadStatus.downloading);
-    _deleteImageInDisk(image);
+    await _deleteImageInDisk(image);
 
     update([
       '$galleryDownloadSuccessId::${gallery.gid}',
@@ -1046,20 +1052,21 @@ class GalleryDownloadService extends GetxController
     await completed;
 
     io.Directory downloadDir = io.Directory(downloadSetting.downloadPath.value);
-    if (!downloadDir.existsSync()) {
+    if (!await downloadDir.exists()) {
       return 0;
     }
 
     int restoredCount = 0;
-    for (io.FileSystemEntity galleryDir in downloadDir.listSync()) {
+    await for (io.FileSystemEntity galleryDir in downloadDir.list()) {
       io.File metadataFile = io.File(path.join(galleryDir.path, metadataFileName));
 
       /// metadata file does not exist
-      if (!metadataFile.existsSync()) {
+      if (!await metadataFile.exists()) {
         continue;
       }
 
-      Map metadata = jsonDecode(metadataFile.readAsStringSync());
+      final String metadataContents = await metadataFile.readAsString();
+      Map metadata = await isolateService.jsonDecodeAsync(metadataContents);
 
       /// compatible with new field
       (metadata['gallery'] as Map).putIfAbsent('downloadOriginalImage', () => false);
@@ -1081,17 +1088,19 @@ class GalleryDownloadService extends GetxController
       }
 
       GalleryDownloadedData gallery = GalleryDownloadedData.fromJson(metadata['gallery']);
-      List<GalleryImage?> images = (jsonDecode(metadata['images']) as List)
+      List<GalleryImage?> images = ((await isolateService.jsonDecodeAsync(metadata['images'])) as List)
           .map((map) => map == null ? null : GalleryImage.fromJson(map))
           .toList();
 
       String? mpvKey = metadata['mpvKey'] as String?;
       List<String?>? mpvImageKeys = metadata['mpvImageKeys'] == null
           ? null
-          : (jsonDecode(metadata['mpvImageKeys']) as List).map((e) => e as String?).toList();
+          : ((await isolateService.jsonDecodeAsync(metadata['mpvImageKeys'])) as List)
+              .map((e) => e as String?)
+              .toList();
       List<String?>? mpvSkipServerIdentifiers = metadata['mpvSkipServerIdentifiers'] == null
           ? null
-          : (jsonDecode(metadata['mpvSkipServerIdentifiers']) as List)
+          : ((await isolateService.jsonDecodeAsync(metadata['mpvSkipServerIdentifiers'])) as List)
               .map((e) => e as String?)
               .toList();
 
@@ -1135,6 +1144,7 @@ class GalleryDownloadService extends GetxController
       );
 
       restoredCount++;
+      await Future<void>.delayed(Duration.zero);
     }
 
     if (restoredCount > 0) {
@@ -3847,6 +3857,7 @@ class GalleryDownloadService extends GetxController
   }
 
   void _clearGalleryInfoInMemory(GalleryDownloadedData gallery) {
+    _metadataWrites.cancel(gallery.gid);
     gallerys.removeWhere((g) => g.gid == gallery.gid);
     GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos.remove(gallery.gid);
     galleryDownloadInfo?.speedComputer.dispose();
@@ -3957,59 +3968,73 @@ class GalleryDownloadService extends GetxController
   // Disk
 
   Future<void> _saveGalleryMetadataInDisk(GalleryDownloadedData gallery) async {
-    final GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gallery.gid];
-    if (galleryDownloadInfo == null) {
-      return;
-    }
-
-    final Map<String, Object?> metadata = {
-      'gallery': gallery
-          .copyWith(
-            downloadStatusIndex: galleryDownloadInfo.downloadProgress.downloadStatus.index,
-            priority: galleryDownloadInfo.priority,
-            groupName: galleryDownloadInfo.group,
-          )
-          .toJson(),
-      'images': jsonEncode(galleryDownloadInfo.images),
-    };
-
-    metadata['mpvKey'] = galleryDownloadInfo.mpvKey;
-    metadata['mpvImageKeys'] = jsonEncode(galleryDownloadInfo.mpvImageKeys);
-    metadata['mpvSkipServerIdentifiers'] = jsonEncode(galleryDownloadInfo.mpvSkipServerIdentifiers);
-
-    final io.File file = io.File(path.join(
-        computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid), metadataFileName));
-    if (!await file.exists()) {
-      await file.create(recursive: true);
-    }
-    await file.writeAsString(jsonEncode(metadata));
-  }
-
-  void _clearDownloadedImageInDisk(GalleryDownloadedData gallery) {
-    io.Directory directory =
-        io.Directory(computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
-    if (!directory.existsSync()) {
-      return;
-    }
-    directory.deleteSync(recursive: true);
-  }
-
-  void _deleteImageInDisk(GalleryImage image) {
-    try {
-      io.File file = io.File(image.path!);
-      if (!file.existsSync()) {
+    return _metadataWrites.schedule(gallery.gid, (isSuperseded) async {
+      final GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gallery.gid];
+      if (galleryDownloadInfo == null) {
         return;
       }
-      file.deleteSync();
+
+      final Map<String, Object?> metadata = {
+        'gallery': gallery
+            .copyWith(
+              downloadStatusIndex: galleryDownloadInfo.downloadProgress.downloadStatus.index,
+              priority: galleryDownloadInfo.priority,
+              groupName: galleryDownloadInfo.group,
+            )
+            .toJson(),
+        // Copy the containers before crossing the isolate boundary. Encoding
+        // the potentially large object graph happens on the worker isolate.
+        'images': List<GalleryImage?>.from(galleryDownloadInfo.images),
+        'mpvKey': galleryDownloadInfo.mpvKey,
+        'mpvImageKeys': List<String?>.from(galleryDownloadInfo.mpvImageKeys),
+        'mpvSkipServerIdentifiers':
+            List<String?>.from(galleryDownloadInfo.mpvSkipServerIdentifiers),
+      };
+
+      final String encoded = await isolateService.run(
+        _encodeGalleryMetadata,
+        metadata,
+        debugLabel: 'gallery-metadata-${gallery.gid}',
+      );
+      if (isSuperseded() ||
+          !identical(galleryDownloadInfos[gallery.gid], galleryDownloadInfo)) {
+        return;
+      }
+
+      final io.File file = io.File(path.join(
+          computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid), metadataFileName));
+      if (!await file.exists()) {
+        await file.create(recursive: true);
+      }
+      await file.writeAsString(encoded, flush: true);
+    });
+  }
+
+  Future<void> _clearDownloadedImageInDisk(GalleryDownloadedData gallery) async {
+    final io.Directory directory =
+        io.Directory(computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
+    if (!await directory.exists()) {
+      return;
+    }
+    await directory.delete(recursive: true);
+  }
+
+  Future<void> _deleteImageInDisk(GalleryImage image) async {
+    try {
+      final io.File file = io.File(image.path!);
+      if (!await file.exists()) {
+        return;
+      }
+      await file.delete();
     } on Exception catch (e) {
       log.error('Delete image in disk error', e);
       log.uploadError(e);
     }
   }
 
-  void _ensureDownloadDirExists() {
+  Future<void> _ensureDownloadDirExists() async {
     try {
-      io.Directory(downloadSetting.downloadPath.value).createSync(recursive: true);
+      await io.Directory(downloadSetting.downloadPath.value).create(recursive: true);
     } on Exception catch (e) {
       toast('brokenDownloadPathHint'.tr);
       log.error(e);
@@ -4018,7 +4043,7 @@ class GalleryDownloadService extends GetxController
         extraInfos: {
           'defaultDownloadPath': downloadSetting.defaultDownloadPath,
           'downloadPath': downloadSetting.downloadPath.value,
-          'exists': pathService.getVisibleDir().existsSync(),
+          'exists': await pathService.getVisibleDir().exists(),
         },
       );
     }
@@ -4035,6 +4060,15 @@ class GalleryDownloadService extends GetxController
       log.warning('Remove cache failed: $url', e, true);
     }
   }
+}
+
+String _encodeGalleryMetadata(Map<String, Object?> metadata) {
+  final Map<String, Object?> encodedMetadata = Map<String, Object?>.from(metadata);
+  encodedMetadata['images'] = jsonEncode(encodedMetadata['images']);
+  encodedMetadata['mpvImageKeys'] = jsonEncode(encodedMetadata['mpvImageKeys']);
+  encodedMetadata['mpvSkipServerIdentifiers'] =
+      jsonEncode(encodedMetadata['mpvSkipServerIdentifiers']);
+  return jsonEncode(encodedMetadata);
 }
 
 enum DownloadStatus {

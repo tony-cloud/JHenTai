@@ -11,6 +11,20 @@ import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/model/jh_layout.dart';
 import 'package:jhentai/pages/layout/desktop/desktop_layout_page_logic.dart';
 
+/// Navigator futures complete when a dialog starts popping, before its reverse
+/// transition has painted. Await this wrapper before starting work that can
+/// rebuild a large part of the current view.
+Future<T?> waitForGetDialogDismissal<T>(Future<T?> dialogResult) async {
+  final T? result = await dialogResult;
+  if (result == null) {
+    return null;
+  }
+
+  await Future<void>.delayed(Get.defaultDialogTransitionDuration);
+  await WidgetsBinding.instance.endOfFrame;
+  return result;
+}
+
 /// adaptive to different layout
 Future<T?>? toRoute<T>(
   String routeName, {

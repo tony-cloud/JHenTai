@@ -21,6 +21,7 @@ import 'package:jhentai/model/archive_bot_response/archive_resolve_vo.dart';
 import 'package:jhentai/model/archive_unlock_result.dart';
 import 'package:jhentai/network/archive_bot_request.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/service/isolate_service.dart';
 import 'package:jhentai/service/super_resolution_service.dart';
 import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/setting/download_setting.dart';
@@ -136,7 +137,8 @@ class ArchiveDownloadService extends GetxController
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
-      super.initDependencies..addAll([wakelockService, rpcSetting, rpcService, rpcRequest]);
+      super.initDependencies
+        ..addAll([isolateService, wakelockService, rpcSetting, rpcService, rpcRequest]);
 
   @override
   Future<void> doInitBean() async {
@@ -1171,7 +1173,8 @@ class ArchiveDownloadService extends GetxController
         continue;
       }
 
-      Map metadata = jsonDecode(metadataFile.readAsStringSync());
+      final String metadataContents = await metadataFile.readAsString();
+      Map metadata = await isolateService.jsonDecodeAsync(metadataContents);
 
       /// compatible with new field
       metadata.putIfAbsent('sortOrder', () => 0);
@@ -1208,6 +1211,7 @@ class ArchiveDownloadService extends GetxController
       _initArchiveInMemory(archive, sort: false);
 
       restoredCount++;
+      await Future<void>.delayed(Duration.zero);
     }
 
     if (restoredCount > 0) {
@@ -1257,7 +1261,13 @@ class ArchiveDownloadService extends GetxController
         final List<Future<String>> hashFutures = <Future<String>>[];
         for (int index = cursor; index < chunkEnd; index++) {
           final GalleryImage image = images[index];
-          hashFutures.add(FileUtil.computeSha1Hash(File(join(visibleDir, image.path))));
+          hashFutures.add(
+            isolateService.run(
+              FileUtil.computeSha1HashFromPath,
+              join(visibleDir, image.path),
+              debugLabel: 'archive-mitigation-hash',
+            ),
+          );
         }
 
         final List<String> hashes = await Future.wait(hashFutures);

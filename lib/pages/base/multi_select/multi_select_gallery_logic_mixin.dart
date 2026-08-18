@@ -27,6 +27,7 @@ import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/service/rpc_service.dart';
 import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
+import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_favorite_dialog.dart';
@@ -332,13 +333,16 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
       return;
     }
 
-    final ({String group, bool downloadOriginalImage})? result = await Get.dialog(
-      EHDownloadDialog(
-        title: 'chooseGroup'.tr,
-        currentGroup: downloadSetting.defaultGalleryGroup.value,
-        candidates: galleryDownloadService.allGroups,
-        showDownloadOriginalImageCheckBox: userSetting.hasLoggedIn(),
-        downloadOriginalImage: downloadSetting.downloadOriginalImageByDefault.value,
+    final ({String group, bool downloadOriginalImage})? result =
+        await waitForGetDialogDismissal(
+      Get.dialog(
+        EHDownloadDialog(
+          title: 'chooseGroup'.tr,
+          currentGroup: downloadSetting.defaultGalleryGroup.value,
+          candidates: galleryDownloadService.allGroups,
+          showDownloadOriginalImageCheckBox: userSetting.hasLoggedIn(),
+          downloadOriginalImage: downloadSetting.downloadOriginalImageByDefault.value,
+        ),
       ),
     );
 
@@ -420,13 +424,15 @@ mixin MultiSelectGalleryLogicMixin on BasePageLogic {
   }
 
   Future<EHBatchDownloadConfig?> showBatchDownloadAndUpdateDialog() {
-    return Get.dialog(
-      EHBatchDownloadDialog(
-        title: 'chooseGroup'.tr,
-        currentGroup: downloadSetting.defaultGalleryGroup.value,
-        candidates: galleryDownloadService.allGroups,
-        showDownloadOriginalImageCheckBox: userSetting.hasLoggedIn(),
-        downloadOriginalImage: downloadSetting.downloadOriginalImageByDefault.value,
+    return waitForGetDialogDismissal(
+      Get.dialog(
+        EHBatchDownloadDialog(
+          title: 'chooseGroup'.tr,
+          currentGroup: downloadSetting.defaultGalleryGroup.value,
+          candidates: galleryDownloadService.allGroups,
+          showDownloadOriginalImageCheckBox: userSetting.hasLoggedIn(),
+          downloadOriginalImage: downloadSetting.downloadOriginalImageByDefault.value,
+        ),
       ),
     );
   }

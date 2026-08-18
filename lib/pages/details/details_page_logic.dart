@@ -374,13 +374,16 @@ class DetailsPageLogic extends GetxController
 
     /// new download
     if (galleryDownloadedData == null || downloadProgress == null) {
-      ({String group, bool downloadOriginalImage})? result = await Get.dialog(
-        EHDownloadDialog(
-          title: 'chooseGroup'.tr,
-          currentGroup: downloadSetting.defaultGalleryGroup.value,
-          candidates: galleryDownloadService.allGroups,
-          showDownloadOriginalImageCheckBox: userSetting.hasLoggedIn(),
-          downloadOriginalImage: downloadSetting.downloadOriginalImageByDefault.value,
+      ({String group, bool downloadOriginalImage})? result =
+          await waitForGetDialogDismissal(
+        Get.dialog(
+          EHDownloadDialog(
+            title: 'chooseGroup'.tr,
+            currentGroup: downloadSetting.defaultGalleryGroup.value,
+            candidates: galleryDownloadService.allGroups,
+            showDownloadOriginalImageCheckBox: userSetting.hasLoggedIn(),
+            downloadOriginalImage: downloadSetting.downloadOriginalImageByDefault.value,
+          ),
         ),
       );
 
@@ -412,7 +415,7 @@ class DetailsPageLogic extends GetxController
             : tagMap2TagString(state.gallery!.tags),
         tagRefreshTime: DateTime.now().toString(),
       );
-      galleryDownloadService.downloadGallery(galleryDownloadedData);
+      await galleryDownloadService.downloadGallery(galleryDownloadedData);
 
       updateGlobalGalleryStatus();
 

@@ -64,7 +64,11 @@ class FileUtil {
   }
 
   static Future<String> computeSha1Hash(File file) async {
-    final digest = await sha1.bind(file.openRead()).first;
+    return computeSha1HashFromPath(file.path);
+  }
+
+  static Future<String> computeSha1HashFromPath(String path) async {
+    final digest = await sha1.bind(File(path).openRead()).first;
     return digest.toString();
   }
 
