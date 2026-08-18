@@ -31,6 +31,37 @@ Future<DownloadFilter?> showDownloadFilterDialog({
   );
 }
 
+@visibleForTesting
+Widget buildDownloadTagSuggestionPopup({
+  required LayerLink layerLink,
+  required double width,
+  required Widget child,
+}) {
+  return UnconstrainedBox(
+    child: CompositedTransformFollower(
+      link: layerLink,
+      showWhenUnlinked: false,
+      targetAnchor: Alignment.bottomCenter,
+      followerAnchor: Alignment.topCenter,
+      offset: const Offset(0, 4),
+      child: Material(
+        key: const ValueKey<String>('download-tag-suggestion-popup'),
+        elevation: 4,
+        borderRadius: BorderRadius.circular(8),
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: width,
+            maxWidth: width,
+            maxHeight: 240,
+          ),
+          child: child,
+        ),
+      ),
+    ),
+  );
+}
+
 class _DownloadFilterDialog extends StatefulWidget {
   const _DownloadFilterDialog({
     required this.initialFilter,
@@ -210,7 +241,6 @@ class _TagSelectorState extends State<_TagSelector> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final LayerLink _layerLink = LayerLink();
-  final GlobalKey _textFieldKey = GlobalKey();
 
   final List<_SelectedTag> _tags = <_SelectedTag>[];
   List<TagAutoCompletionMatch> _suggestions = <TagAutoCompletionMatch>[];
@@ -219,7 +249,6 @@ class _TagSelectorState extends State<_TagSelector> {
   Timer? _debounce;
   int _requestId = 0;
   double _fieldWidth = 280;
-  double _fieldHeight = 40;
 
   Timer? _hideOnUnfocusTimer;
 
@@ -272,7 +301,6 @@ class _TagSelectorState extends State<_TagSelector> {
       containerWidth = 360;
     }
     _fieldWidth = containerWidth;
-    _updateFieldSize();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +314,6 @@ class _TagSelectorState extends State<_TagSelector> {
           child: CompositedTransformTarget(
             link: _layerLink,
             child: TextField(
-              key: _textFieldKey,
               controller: _controller,
               focusNode: _focusNode,
               decoration: InputDecoration(
@@ -517,30 +544,14 @@ class _TagSelectorState extends State<_TagSelector> {
 
   OverlayEntry _buildOverlay() {
     return OverlayEntry(
-      builder: (BuildContext context) {
-        final double width = _fieldWidth;
-        return CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: Offset(0, _fieldHeight + 4),
-          child: Material(
-            elevation: 4,
-            borderRadius: BorderRadius.circular(8),
-            clipBehavior: Clip.antiAlias,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: width,
-                maxWidth: width,
-                maxHeight: 240,
-              ),
-              child: _TagSuggestionList(
-                suggestions: _suggestions,
-                onTap: _handleSuggestionTap,
-              ),
-            ),
-          ),
-        );
-      },
+      builder: (BuildContext context) => buildDownloadTagSuggestionPopup(
+        layerLink: _layerLink,
+        width: _fieldWidth,
+        child: _TagSuggestionList(
+          suggestions: _suggestions,
+          onTap: _handleSuggestionTap,
+        ),
+      ),
     );
   }
 
@@ -580,19 +591,6 @@ class _TagSelectorState extends State<_TagSelector> {
     _overlayEntry?.remove();
     _overlayEntry?.dispose();
     _overlayEntry = null;
-  }
-
-  void _updateFieldSize() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      final RenderObject? renderObject = _textFieldKey.currentContext?.findRenderObject();
-      if (renderObject is RenderBox && renderObject.hasSize) {
-        _fieldHeight = renderObject.size.height;
-        _overlayEntry?.markNeedsBuild();
-      }
-    });
   }
 
   Widget _buildSelectedTagChips(BuildContext context, double maxWidth) {
