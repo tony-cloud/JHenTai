@@ -37,7 +37,7 @@ const List<String> _defaultQrContentWhitelist = <String>[
   'pixiv',
   'instagram',
   'misskey',
-  'docs.google.com',
+  'google.com',
   'privatter',
   'odaibako',
   'blog',
@@ -58,6 +58,8 @@ const List<String> _defaultQrContentWhitelist = <String>[
   'ktcom.jp',
   '.jp',
   'yahoo',
+  'amazon',
+  'chocobox',
 ];
 
 const int _qrMaxDimension = 800;
