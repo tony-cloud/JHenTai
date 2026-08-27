@@ -100,6 +100,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildClearReadProgress(),
             _buildRepairMissingImages(context),
             _buildCleanupDuplicatedGallery(context),
+            _buildDuplicateGalleryReview(),
             _buildClearParentGalleryCache(context),
             _buildRpcSettings(),
             _buildFtpServer(context),
@@ -312,6 +313,22 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
         ],
       ),
       onLongPress: _cleanupDuplicatedGallery,
+    );
+  }
+
+  Widget _buildDuplicateGalleryReview() {
+    return ListTile(
+      title: Text('duplicateGalleryReview'.tr),
+      subtitle: Text('duplicateGalleryReviewSettingHint'.tr),
+      trailing: const Icon(Icons.keyboard_arrow_right).marginOnly(right: 4),
+      onTap: () {
+        if (galleryDownloadService.usesRemoteRpcData &&
+            !galleryDownloadService.supportsRemoteDuplicateGalleryReview) {
+          toast('duplicateGalleryReviewUnavailableInRpcMode'.tr, isCenter: false);
+          return;
+        }
+        toRoute(Routes.duplicateGalleryCleanup);
+      },
     );
   }
 

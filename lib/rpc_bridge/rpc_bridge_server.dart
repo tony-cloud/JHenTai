@@ -76,6 +76,7 @@ class RpcBridgeServer {
         RPCCapabilities.downloadGalleryRead,
         RPCCapabilities.downloadGalleryControl,
         RPCCapabilities.downloadGalleryMaintenance,
+        RPCCapabilities.downloadGalleryDuplicateReview,
         RPCCapabilities.downloadGalleryBatch,
         RPCCapabilities.downloadGalleryThumbnail,
         RPCCapabilities.downloadArchiveList,
@@ -416,6 +417,8 @@ class RpcBridgeServer {
         return _handleDownloadGalleryResumeAll();
       case RPCMethods.downloadGalleryCleanupDuplicates:
         return _handleDownloadGalleryCleanupDuplicates();
+      case RPCMethods.downloadGalleryStorageStats:
+        return _handleDownloadGalleryStorageStats(params);
       case RPCMethods.downloadGalleryClearParentCache:
         return _handleDownloadGalleryClearParentCache();
       case RPCMethods.downloadGalleryBatchSelected:
@@ -1246,6 +1249,28 @@ class RpcBridgeServer {
       'deleted': result.deleted,
       'skipped': result.skipped,
       'failed': result.failed,
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleDownloadGalleryStorageStats(
+    Map<String, dynamic> params,
+  ) async {
+    final List<int> gids = ((params['gids'] as List?) ?? const <dynamic>[])
+        .map(_asInt)
+        .toList(growable: false);
+    final Map<int, ({int sizeBytes, int imageCount})> stats =
+        await galleryDownloadService.getGalleryStorageStatsLocally(gids);
+
+    return <String, dynamic>{
+      'stats': stats.entries
+          .map(
+            (entry) => <String, dynamic>{
+              'gid': entry.key,
+              'sizeBytes': entry.value.sizeBytes,
+              'imageCount': entry.value.imageCount,
+            },
+          )
+          .toList(growable: false),
     };
   }
 

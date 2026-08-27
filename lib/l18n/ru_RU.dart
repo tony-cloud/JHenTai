@@ -648,6 +648,27 @@ class ru_RU {
           'Проверено @checked галерей, удалено @deleted, пропущено @skipped, ошибок @failed.',
       'cleanupDuplicatedGalleryUnavailableInRpcMode':
           'Текущий RPC-бэкенд не поддерживает эту задачу обслуживания',
+      'duplicateGalleryReview': 'Review Different-Language Downloads',
+      'duplicateGalleryReviewSettingHint': 'Compare downloads with the same English title before deleting them',
+      'duplicateGalleryReviewUnavailableInRpcMode':
+          'Update the RPC backend before using duplicate gallery review',
+      'duplicateGalleryReviewLoadFailed': 'Unable to load duplicate gallery groups.',
+      'duplicateGalleryReviewEmpty': 'No downloads with the same English title were found.',
+      'duplicateGalleryReviewHint':
+          'Titles are grouped after removing language markers. Tap a gallery to compare it in the reader, then choose what to keep or delete.',
+      'duplicateGalleryStats': '@size · @downloaded/@total images · @group · GID @gid',
+      'duplicateGalleryChooseAction': 'Choose cleanup action',
+      'duplicateGalleryActionKeep': 'Keep',
+      'duplicateGalleryActionDelete': 'Delete',
+      'deleteAndUnfavorite': 'Delete & unfavorite',
+      'duplicateGalleryApply': 'Apply cleanup',
+      'duplicateGalleryRetry': 'Retry',
+      'duplicateGalleryRefresh': 'Refresh',
+      'duplicateGalleryConfirm': 'Confirm',
+      'duplicateGalleryConfirmTitle': 'Delete selected downloads?',
+      'duplicateGalleryConfirmMessage':
+          'Delete @delete downloads. @unfavorite of them will also be removed from favorites.',
+      'duplicateGalleryCleanupResult': 'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
       'clearParentGalleryCache': 'Очистить кэш родительских галерей',
       'clearParentGalleryCacheHint': 'Долгий тап для очистки кэша связей родительских галерей',
       'clearParentGalleryCacheResult': 'Очищено @count кэшированных связей родительских галерей.',

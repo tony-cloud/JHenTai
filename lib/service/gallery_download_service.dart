@@ -142,6 +142,9 @@ class GalleryDownloadService extends GetxController
   bool get supportsRemoteGalleryMaintenance =>
       rpcService.supportsCapability(RPCCapabilities.downloadGalleryMaintenance);
 
+  bool get supportsRemoteDuplicateGalleryReview =>
+      rpcService.supportsCapability(RPCCapabilities.downloadGalleryDuplicateReview);
+
   bool _hasActiveGalleryDownloads() {
     return galleryDownloadInfos.values.any((info) =>
         info.downloadProgress.downloadStatus == DownloadStatus.downloading ||
@@ -3359,6 +3362,78 @@ class GalleryDownloadService extends GetxController
     }
 
     return cleanupDuplicatedGalleriesLocally();
+  }
+
+  Future<Map<int, ({int sizeBytes, int imageCount})>> getGalleryStorageStats(
+    List<int> gids,
+  ) async {
+    if (usesRemoteRpcData) {
+      if (!supportsRemoteDuplicateGalleryReview) {
+        throw UnsupportedError('Current RPC backend does not support duplicate gallery review');
+      }
+      final Map<String, dynamic> result =
+          await rpcRequest.requestDownloadGalleryStorageStats(gids: gids);
+      final Map<int, ({int sizeBytes, int imageCount})> stats =
+          <int, ({int sizeBytes, int imageCount})>{};
+      for (final dynamic raw in (result['stats'] as List?) ?? const <dynamic>[]) {
+        if (raw is! Map) {
+          continue;
+        }
+        final Map<String, dynamic> item = raw.cast<String, dynamic>();
+        final int gid = _readRpcInt(item, 'gid');
+        stats[gid] = (
+          sizeBytes: _readRpcInt(item, 'sizeBytes'),
+          imageCount: _readRpcInt(item, 'imageCount'),
+        );
+      }
+      return stats;
+    }
+
+    return getGalleryStorageStatsLocally(gids);
+  }
+
+  Future<Map<int, ({int sizeBytes, int imageCount})>> getGalleryStorageStatsLocally(
+    List<int> gids,
+  ) async {
+    final Set<int> requestedGids = gids.toSet();
+    final List<GalleryDownloadedData> targets = gallerys
+        .where((gallery) => requestedGids.contains(gallery.gid))
+        .toList(growable: false);
+    final List<MapEntry<int, ({int sizeBytes, int imageCount})>> entries = [];
+    const int directoryScanConcurrency = 8;
+    for (int offset = 0; offset < targets.length; offset += directoryScanConcurrency) {
+      entries.addAll(await Future.wait(
+        targets.skip(offset).take(directoryScanConcurrency).map((gallery) async {
+          final GalleryDownloadInfo? info = galleryDownloadInfos[gallery.gid];
+          int sizeBytes = 0;
+          final io.Directory directory =
+              io.Directory(computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
+
+          try {
+            if (await directory.exists()) {
+              await for (final io.FileSystemEntity entity
+                  in directory.list(recursive: true, followLinks: false)) {
+                if (entity is io.File) {
+                  sizeBytes += await entity.length();
+                }
+              }
+            }
+          } catch (error, stackTrace) {
+            log.error('Calculate downloaded gallery size failed, gid:${gallery.gid}', error, stackTrace);
+          }
+
+          return MapEntry<int, ({int sizeBytes, int imageCount})>(
+            gallery.gid,
+            (
+              sizeBytes: sizeBytes,
+              imageCount: info?.downloadProgress.curCount ?? 0,
+            ),
+          );
+        }),
+      ));
+    }
+
+    return Map<int, ({int sizeBytes, int imageCount})>.fromEntries(entries);
   }
 
   Future<int> clearParentGalleryCacheLocally() {

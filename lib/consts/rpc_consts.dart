@@ -54,6 +54,7 @@ class RPCMethods {
   static const String downloadGalleryPauseAll = 'download.gallery.pauseAll';
   static const String downloadGalleryResumeAll = 'download.gallery.resumeAll';
   static const String downloadGalleryCleanupDuplicates = 'download.gallery.cleanupDuplicates';
+  static const String downloadGalleryStorageStats = 'download.gallery.storageStats';
   static const String downloadGalleryClearParentCache = 'download.gallery.clearParentCache';
   static const String downloadGalleryBatchSelected = 'download.gallery.batchSelected';
   static const String downloadGalleryBatchFavorite = 'download.gallery.batchFavorite';
@@ -101,6 +102,7 @@ class RPCCapabilities {
   static const String authLogin = 'auth.login';
   static const String downloadGalleryControl = 'download.gallery.control';
   static const String downloadGalleryMaintenance = 'download.gallery.maintenance';
+  static const String downloadGalleryDuplicateReview = 'download.gallery.duplicateReview';
   static const String downloadGalleryBatch = 'download.gallery.batch';
   static const String downloadArchiveList = 'download.archive.list';
   static const String downloadArchiveControl = 'download.archive.control';

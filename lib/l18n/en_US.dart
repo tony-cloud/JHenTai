@@ -636,6 +636,28 @@ class en_US {
           'Checked @checked galleries, deleted @deleted, skipped @skipped, failed @failed.',
       'cleanupDuplicatedGalleryUnavailableInRpcMode':
           'Current RPC backend does not support this maintenance task',
+      'duplicateGalleryReview': 'Review Different-Language Downloads',
+      'duplicateGalleryReviewSettingHint':
+          'Compare downloads with the same English title before deleting them',
+      'duplicateGalleryReviewUnavailableInRpcMode':
+          'Update the RPC backend before using duplicate gallery review',
+      'duplicateGalleryReviewLoadFailed': 'Unable to load duplicate gallery groups.',
+      'duplicateGalleryReviewEmpty': 'No downloads with the same English title were found.',
+      'duplicateGalleryReviewHint':
+          'Titles are grouped after removing language markers. Tap a gallery to compare it in the reader, then choose what to keep or delete.',
+      'duplicateGalleryStats': '@size · @downloaded/@total images · @group · GID @gid',
+      'duplicateGalleryChooseAction': 'Choose cleanup action',
+      'duplicateGalleryActionKeep': 'Keep',
+      'duplicateGalleryActionDelete': 'Delete',
+      'deleteAndUnfavorite': 'Delete & unfavorite',
+      'duplicateGalleryApply': 'Apply cleanup',
+      'duplicateGalleryRetry': 'Retry',
+      'duplicateGalleryRefresh': 'Refresh',
+      'duplicateGalleryConfirm': 'Confirm',
+      'duplicateGalleryConfirmTitle': 'Delete selected downloads?',
+      'duplicateGalleryConfirmMessage':
+          'Delete @delete downloads. @unfavorite of them will also be removed from favorites.',
+      'duplicateGalleryCleanupResult': 'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
       'clearParentGalleryCache': 'Clear Parent Gallery Cache',
       'clearParentGalleryCacheHint': 'Long press to clear cached parent-gallery relations',
       'clearParentGalleryCacheResult': 'Cleared @count cached parent-gallery relations.',

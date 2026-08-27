@@ -19,6 +19,7 @@ import 'package:jhentai/pages/setting/about/setting_about_page.dart';
 import 'package:jhentai/pages/setting/account/cookie/cookie_page.dart';
 import 'package:jhentai/pages/setting/account/login/login_page.dart';
 import 'package:jhentai/pages/setting/advanced/setting_advanced_page.dart';
+import 'package:jhentai/pages/setting/advanced/duplicate_gallery_cleanup/duplicate_gallery_cleanup_page.dart';
 import 'package:jhentai/pages/setting/advanced/setting_rpc_server_page.dart';
 import 'package:jhentai/pages/setting/cloud/config_sync/config_sync_page.dart';
 import 'package:jhentai/pages/setting/cloud/setting_cloud_page.dart';
@@ -128,6 +129,7 @@ class Routes {
   static const String archiveBotSettings = '/setting/download/archive_bot';
 
   static const String superResolution = "/setting_advanced/superResolution";
+  static const String duplicateGalleryCleanup = "/setting_advanced/duplicateGalleryCleanup";
   static const String settingRpcServer = '/setting_advanced/rpcServer';
   static const String logList = "/setting_advanced/logList";
   static const String log = "/setting_advanced/logList/log";
@@ -432,6 +434,12 @@ class Routes {
     EHPage(
       name: superResolution,
       page: () => const SettingSuperResolutionPage().withEscOrFifthButton2BackRightRoute(),
+      transition: defaultTransition,
+      offAllBefore: false,
+    ),
+    EHPage(
+      name: duplicateGalleryCleanup,
+      page: () => const DuplicateGalleryCleanupPage().withEscOrFifthButton2BackRightRoute(),
       transition: defaultTransition,
       offAllBefore: false,
     ),
