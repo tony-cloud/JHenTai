@@ -835,6 +835,8 @@ class en_US {
       'waitingIsolate': 'Waiting',
       'downloaded': 'Downloaded',
       'downloadFailed': 'Download Failed',
+      'downloadStorageFull': 'Storage is full. Downloads were paused; free some space and resume.',
+      'downloadStorageWriteFailed': 'The image could not be stored. This gallery was paused.',
       'unpacking': 'Unpacking',
       'completed': 'Completed',
       'needReUnlock': 'Need Re-Unlock',

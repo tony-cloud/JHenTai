@@ -781,6 +781,8 @@ class zh_TW {
       'waitingIsolate': '等待中',
       'downloaded': '下載完成',
       'downloadFailed': '下載失敗',
+      'downloadStorageFull': '儲存空間已滿。下載已暫停，請釋放空間後繼續。',
+      'downloadStorageWriteFailed': '圖片無法寫入儲存空間，該畫廊已暫停。',
       'unpacking': '解壓中',
       'completed': '已完成',
       'needReUnlock': '需要重新解鎖',

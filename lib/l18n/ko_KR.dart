@@ -800,6 +800,8 @@ class ko_KR {
       'waitingIsolate': 'Waiting',
       'downloaded': '다운로드 완료',
       'downloadFailed': '다운로드 실패',
+      'downloadStorageFull': 'Storage is full. Downloads were paused; free some space and resume.',
+      'downloadStorageWriteFailed': 'The image could not be stored. This gallery was paused.',
       'unpacking': '압축 푸는 중',
       'completed': '완료',
       'needReUnlock': '다시 잠금 해제해야 합니다',

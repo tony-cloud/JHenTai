@@ -800,6 +800,8 @@ class zh_CN {
       'waitingIsolate': '等待中',
       'downloaded': '下载完成',
       'downloadFailed': '下载失败',
+      'downloadStorageFull': '存储空间已满。下载已暂停，请释放空间后继续。',
+      'downloadStorageWriteFailed': '图片无法写入存储，该画廊已暂停。',
       'unpacking': '解压中',
       'completed': '已完成',
       'needReUnlock': '需要重新解锁',

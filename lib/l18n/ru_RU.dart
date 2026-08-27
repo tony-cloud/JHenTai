@@ -819,6 +819,8 @@ class ru_RU {
       'waitingIsolate': 'Ожидание',
       'downloaded': 'Загружено',
       'downloadFailed': 'Ошибка загрузки',
+      'downloadStorageFull': 'Storage is full. Downloads were paused; free some space and resume.',
+      'downloadStorageWriteFailed': 'The image could not be stored. This gallery was paused.',
       'unpacking': 'Распаковка',
       'completed': 'Завершено',
       'needReUnlock': 'Нужна повторная разблокировка',

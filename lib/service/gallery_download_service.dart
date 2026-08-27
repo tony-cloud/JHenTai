@@ -39,6 +39,7 @@ import 'package:jhentai/setting/site_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/utils/coalescing_async_task_runner.dart';
+import 'package:jhentai/utils/download_file_validation.dart';
 import 'package:jhentai/utils/jh_response_parser.dart';
 import 'package:jhentai/utils/speed_computer.dart';
 import 'package:jhentai/service/log.dart';
@@ -2325,6 +2326,10 @@ class GalleryDownloadService extends GetxController
               return false;
             }
 
+            if (isStorageWriteFailure(e)) {
+              return false;
+            }
+
             int? statusCode = e.response?.statusCode;
             if (statusCode == 403) {
               return false;
@@ -2351,6 +2356,15 @@ class GalleryDownloadService extends GetxController
         if (e.type == DioExceptionType.cancel) {
           return;
         }
+        if (isStorageWriteFailure(e)) {
+          return _handleImageStorageFailure(
+            gallery,
+            image,
+            serialNo,
+            path,
+            e,
+          );
+        }
         log.download(
           'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.errorMsg}. Url:${image.url}',
           level: Level.warning,
@@ -2360,6 +2374,14 @@ class GalleryDownloadService extends GetxController
           return;
         }
         return _reParseImageUrlAndDownload(gallery, serialNo);
+      } on io.FileSystemException catch (e) {
+        return _handleImageStorageFailure(
+          gallery,
+          image,
+          serialNo,
+          path,
+          e,
+        );
       } on io.HttpException catch (e) {
         log.download(
           'Download ${gallery.title} image: $serialNo failed, try re-parse. Reason: ${e.message}. Url:${image.url}',
@@ -2406,29 +2428,29 @@ class GalleryDownloadService extends GetxController
       }
 
       io.File downloadedFile = io.File(path);
-      try {
-        if (!downloadedFile.existsSync() || downloadedFile.lengthSync() == 0) {
-          log.download(
-            'Download ${gallery.title} image: $serialNo returned empty content, try re-parse. Url:${image.url}',
-            level: Level.warning,
+      final DownloadFileValidationResult fileValidation = await validateDownloadedFile(
+        downloadedFile,
+        expectedBytes: expectedDownloadedFileLength(response.headers),
+      );
+      if (!fileValidation.isValid) {
+        if (fileValidation.error != null) {
+          return _handleImageStorageFailure(
+            gallery,
+            image,
+            serialNo,
+            path,
+            fileValidation.error!,
           );
-          galleryDownloadInfo.speedComputer.resetProgress(serialNo);
-          if (downloadedFile.existsSync()) {
-            try {
-              downloadedFile.deleteSync();
-            } catch (e, stack) {
-              log.error('Delete empty image file failed', e, stack);
-            }
-          }
-          return _reParseImageUrlAndDownload(gallery, serialNo);
         }
-      } on io.FileSystemException catch (e, stack) {
-        log.error(
-          'Validate downloaded image failed due to file system error, will retry. Gid: ${gallery.gid}, index: $serialNo',
-          e,
-          stack,
+
+        log.download(
+          'Download ${gallery.title} image: $serialNo was not stored completely '
+          '(actual:${fileValidation.actualBytes}, expected:${fileValidation.expectedBytes ?? 'unknown'}), '
+          'try re-parse. Url:${image.url}',
+          level: Level.warning,
         );
         galleryDownloadInfo.speedComputer.resetProgress(serialNo);
+        await _deletePartialImageFile(downloadedFile, gallery.gid, serialNo);
         return _reParseImageUrlAndDownload(gallery, serialNo);
       }
 
@@ -2504,6 +2526,150 @@ class GalleryDownloadService extends GetxController
 
       await _updateProgressAfterImageDownloaded(gallery, serialNo);
     };
+  }
+
+  Future<void> _handleImageStorageFailure(
+    GalleryDownloadedData gallery,
+    GalleryImage image,
+    int serialNo,
+    String imagePath,
+    Object error,
+  ) async {
+    final bool noSpaceLeft = isNoSpaceLeftOnDevice(error);
+    log.error(
+      'Store downloaded image failed. Gid:${gallery.gid}, index:$serialNo, '
+      'noSpaceLeft:$noSpaceLeft',
+      error,
+      StackTrace.current,
+    );
+
+    await _deletePartialImageFile(io.File(imagePath), gallery.gid, serialNo);
+    _markImageAsFailedInMemory(gallery, image, serialNo);
+
+    try {
+      await _markImageAsFailed(gallery, image, serialNo);
+    } catch (persistenceError, stackTrace) {
+      // ENOSPC can prevent SQLite and metadata updates too. The in-memory
+      // state above is authoritative until space is available again.
+      log.error(
+        'Persist image storage failure status failed. Gid:${gallery.gid}, index:$serialNo',
+        persistenceError,
+        stackTrace,
+      );
+    }
+
+    snack(
+      'error'.tr,
+      noSpaceLeft ? 'downloadStorageFull'.tr : 'downloadStorageWriteFailed'.tr,
+      isShort: true,
+    );
+    await _pauseDownloadsAfterStorageFailure(
+      failedGallery: gallery,
+      pauseAll: noSpaceLeft,
+    );
+  }
+
+  void _markImageAsFailedInMemory(
+    GalleryDownloadedData gallery,
+    GalleryImage image,
+    int serialNo,
+  ) {
+    final GalleryDownloadInfo? info = galleryDownloadInfos[gallery.gid];
+    if (info == null) {
+      return;
+    }
+
+    image.downloadStatus = DownloadStatus.downloadFailed;
+    info.images[serialNo] = image;
+    info.speedComputer.resetProgress(serialNo);
+    if (info.downloadProgress.hasDownloaded[serialNo]) {
+      info.downloadProgress.hasDownloaded[serialNo] = false;
+      if (info.downloadProgress.curCount > 0) {
+        info.downloadProgress.curCount--;
+      }
+    }
+    update([
+      '$downloadImageId::${gallery.gid}::$serialNo',
+      '$downloadImageUrlId::${gallery.gid}::$serialNo',
+      '$galleryDownloadProgressId::${gallery.gid}',
+    ]);
+  }
+
+  Future<void> _deletePartialImageFile(
+    io.File file,
+    int gid,
+    int serialNo,
+  ) async {
+    try {
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (error, stackTrace) {
+      log.error(
+        'Delete partial downloaded image failed. Gid:$gid, index:$serialNo',
+        error,
+        stackTrace,
+      );
+    }
+  }
+
+  Future<void> _pauseDownloadsAfterStorageFailure({
+    required GalleryDownloadedData failedGallery,
+    required bool pauseAll,
+  }) async {
+    final List<GalleryDownloadedData> targets = pauseAll
+        ? List<GalleryDownloadedData>.from(gallerys)
+        : <GalleryDownloadedData>[failedGallery];
+
+    for (final GalleryDownloadedData gallery in targets) {
+      try {
+        await pauseDownloadGallery(gallery);
+      } catch (error, stackTrace) {
+        log.error(
+          'Persist pause after image storage failure failed. Gid:${gallery.gid}',
+          error,
+          stackTrace,
+        );
+      }
+
+      final GalleryDownloadInfo? info = galleryDownloadInfos[gallery.gid];
+      final bool failedGalleryIsIncomplete = gallery.gid == failedGallery.gid &&
+          info != null &&
+          info.downloadProgress.hasDownloaded.any((downloaded) => !downloaded);
+      if (info?.downloadProgress.downloadStatus == DownloadStatus.downloading ||
+          failedGalleryIsIncomplete) {
+        _forcePauseGalleryInMemory(gallery);
+      }
+    }
+  }
+
+  void _forcePauseGalleryInMemory(GalleryDownloadedData gallery) {
+    final GalleryDownloadInfo? info = galleryDownloadInfos[gallery.gid];
+    if (info == null) {
+      return;
+    }
+
+    info.downloadProgress.downloadStatus = DownloadStatus.paused;
+    for (final AsyncTask task in List<AsyncTask>.from(info.tasks)) {
+      executor.cancelTask(task);
+    }
+    info.tasks.clear();
+    if (!info.cancelToken.isCancelled) {
+      info.cancelToken.cancel();
+    }
+    info.speedComputer.pause();
+    for (final GalleryImage? candidate in info.images) {
+      if (candidate?.downloadStatus == DownloadStatus.downloading) {
+        candidate!.downloadStatus = DownloadStatus.paused;
+      }
+    }
+
+    final int galleryIndex = gallerys.indexWhere((candidate) => candidate.gid == gallery.gid);
+    if (galleryIndex >= 0) {
+      gallerys[galleryIndex] = gallery.copyWith(downloadStatusIndex: DownloadStatus.paused.index);
+    }
+    update(['$galleryDownloadProgressId::${gallery.gid}', downloadImageId]);
+    _notifyDownloadActivityChanged();
   }
 
   ImageBlockReason? _resolveBlockReason(

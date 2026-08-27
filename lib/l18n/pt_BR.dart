@@ -820,6 +820,8 @@ class pt_BR {
       'waitingIsolate': 'Waiting',
       'downloaded': 'Baixado',
       'downloadFailed': 'Download falhou',
+      'downloadStorageFull': 'Storage is full. Downloads were paused; free some space and resume.',
+      'downloadStorageWriteFailed': 'The image could not be stored. This gallery was paused.',
       'unpacking': 'Desenpacotando',
       'completed': 'Completo',
       'needReUnlock': 'Precisa de novo desbloqueio',
