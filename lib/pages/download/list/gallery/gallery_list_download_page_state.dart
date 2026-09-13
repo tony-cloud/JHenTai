@@ -16,6 +16,7 @@ class GalleryListDownloadPageState
       GroupedListController<String, GalleryDownloadedData>();
 
   List<GalleryDownloadedData> visibleGallerys = [];
+  Map<String, int> visibleGalleryCounts = {};
 
   int? pendingFocusGid;
   int? highlightedGid;

@@ -313,18 +313,19 @@ class GalleryListDownloadPageLogic extends GetxController
   }
 
   List<String> computeVisibleGroups(List<GalleryDownloadedData> visibleGallerys) {
-    final Set<String> groups = downloadFilterService.visibleGroups(visibleGallerys);
-    return downloadService.allGroups.where(groups.contains).toList();
+    final Map<String, int> counts = {};
+    for (final GalleryDownloadedData gallery in visibleGallerys) {
+      final String? group = downloadService.galleryDownloadInfos[gallery.gid]?.group;
+      if (group != null) {
+        counts[group] = (counts[group] ?? 0) + 1;
+      }
+    }
+    state.visibleGalleryCounts = counts;
+    return downloadService.allGroups.where(counts.containsKey).toList();
   }
 
   int visibleGalleryCount(String groupName) {
-    int count = 0;
-    for (GalleryDownloadedData gallery in state.visibleGallerys) {
-      if (downloadService.galleryDownloadInfos[gallery.gid]?.group == groupName) {
-        count++;
-      }
-    }
-    return count;
+    return state.visibleGalleryCounts[groupName] ?? 0;
   }
 
   Future<void> handleTapFilterButton(BuildContext context) async {

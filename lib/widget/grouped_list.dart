@@ -67,6 +67,7 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
 
   final Map<G, bool> _groups = {};
   Map<G, List<E>> _group2Elements = {};
+  final Map<G, Map<String, int>> _elementIndices = {};
 
   final Map<Object, Completer<void>> _deletingElements = {};
 
@@ -131,14 +132,12 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
   List<Widget> _buildSlivers(BuildContext context) {
     List<Widget> slivers = [];
 
-    Map<G, List<E>> group2Elements = widget.elements.groupListsBy<G>((e) => widget.elementGroup(e));
-
     for (G group in _groups.keys) {
       slivers.add(_buildGroupSliver(context, group));
 
-      if (group2Elements.containsKey(group)) {
+      if (_group2Elements.containsKey(group)) {
         final bool isOpen = _groups[group] ?? false;
-        slivers.add(_buildElementsSliver(context, group2Elements[group]!, group, isOpen));
+        slivers.add(_buildElementsSliver(context, _group2Elements[group]!, group, isOpen));
       }
     }
 
@@ -147,27 +146,48 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
 
   Widget _buildGroupSliver(BuildContext context, G group) {
     return SliverToBoxAdapter(
+      key: ValueKey('header::${widget.groupUniqueKey(group)}'),
       child: _buildGroup(group, context),
     );
   }
 
   Widget _buildElementsSliver(BuildContext context, List<E> elements, G group, bool isOpen) {
+    final bool enableAnimation = elements.length <= maxGalleryNum4Animation;
+    final Key sliverKey = ValueKey('elements::${widget.groupUniqueKey(group)}');
+    if (!isOpen) {
+      // Zero-height children still make SliverList build every collapsed row
+      // while looking for content to fill the viewport.
+      return SliverToBoxAdapter(key: sliverKey, child: const SizedBox.shrink());
+    }
+
     final SliverChildBuilderDelegate delegate = SliverChildBuilderDelegate(
       (context, index) {
-        return _buildElement(
-            context, elements[index], group, elements.length <= maxGalleryNum4Animation);
+        final E element = elements[index];
+        return KeyedSubtree(
+          key: ValueKey(widget.elementUniqueKey(element)),
+          child: enableAnimation
+              ? _buildElement(context, element, group, true)
+              : widget.elementBuilder(context, group, element, isOpen),
+        );
       },
       childCount: elements.length,
+      findChildIndexCallback: (key) {
+        if (key is! ValueKey<String>) {
+          return null;
+        }
+        return _elementIndices[group]?[key.value];
+      },
     );
 
     if (isOpen && widget.openElementExtent != null) {
       return SliverFixedExtentList(
+        key: sliverKey,
         itemExtent: widget.openElementExtent!,
         delegate: delegate,
       );
     }
 
-    return SliverList(delegate: delegate);
+    return SliverList(key: sliverKey, delegate: delegate);
   }
 
   GetBuilder<GroupedListLogic> _buildGroup(G group, BuildContext context) {
@@ -214,15 +234,21 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
 
   @override
   Future<void> removeElement(E element) {
+    final G group = widget.elementGroup(element);
+    if (_groups[group] != true ||
+        (_group2Elements[group]?.length ?? 0) > maxGalleryNum4Animation) {
+      // Virtualized/offscreen rows have no animation callback to wait for.
+      return Future<void>.value();
+    }
+
     Completer<void> completer = Completer();
     String elementKey = widget.elementUniqueKey(element);
     _deletingElements[elementKey] = completer;
 
-    G group = widget.elementGroup(element);
-    _group2Elements[group]!.remove(element);
-
     logic.update(['element::$elementKey']);
-    return completer.future;
+    return completer.future
+        .timeout(const Duration(milliseconds: 200), onTimeout: () {})
+        .whenComplete(() => _deletingElements.remove(elementKey));
   }
 
   @override
@@ -242,6 +268,13 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
 
     _groups.addAll(widget.groups);
     _group2Elements = widget.elements.groupListsBy<G>((e) => widget.elementGroup(e));
+    _elementIndices.clear();
+    for (final entry in _group2Elements.entries) {
+      _elementIndices[entry.key] = {
+        for (int index = 0; index < entry.value.length; index++)
+          widget.elementUniqueKey(entry.value[index]): index,
+      };
+    }
   }
 }
 

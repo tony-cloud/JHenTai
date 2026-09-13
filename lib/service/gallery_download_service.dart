@@ -89,6 +89,9 @@ class GalleryDownloadService extends GetxController
   List<GalleryDownloadedData> gallerys = [];
   Map<int, GalleryDownloadInfo> galleryDownloadInfos = {};
 
+  final Expando<DateTime> _galleryInsertTimes = Expando<DateTime>();
+  bool _galleryOrderDirty = false;
+
   List<GalleryDownloadedData> gallerysWithGroup(String group) =>
       gallerys.where((g) => galleryDownloadInfos[g.gid]!.group == group).toList();
 
@@ -949,6 +952,7 @@ class GalleryDownloadService extends GetxController
     }
 
     galleryDownloadInfos[gallery.gid]?.group = group;
+    _galleryOrderDirty = true;
 
     if (!allGroups.contains(group) && !await _addGroup(group)) {
       return false;
@@ -976,6 +980,7 @@ class GalleryDownloadService extends GetxController
 
       for (GalleryDownloadedData g in galleryDownloadedDatas) {
         galleryDownloadInfos[g.gid]!.group = newGroup;
+        _galleryOrderDirty = true;
         await _updateGalleryInDatabase(
           GalleryDownloadedCompanion(gid: Value(g.gid), groupName: Value(newGroup)),
         );
@@ -1000,6 +1005,8 @@ class GalleryDownloadService extends GetxController
     if (_skipRemoteMutation('updateGalleryOrder')) {
       return;
     }
+
+    _galleryOrderDirty = true;
 
     await appDb.transaction(() async {
       for (GalleryDownloadedData gallery in gallerys) {
@@ -1421,8 +1428,13 @@ class GalleryDownloadService extends GetxController
     }
 
     /// priority is same, order by insert time
-    DateTime insertTime = DateFormat('yyyy-MM-dd HH:mm:ss').parse(gallery.insertTime);
-    int timePriority = int.parse(DateFormat('MMddHHmmss').format(insertTime)) * 2000;
+    DateTime insertTime = _galleryInsertTime(gallery);
+    int timePriority = (insertTime.month * 100000000 +
+            insertTime.day * 1000000 +
+            insertTime.hour * 10000 +
+            insertTime.minute * 100 +
+            insertTime.second) *
+        2000;
 
     return groupPriority + timePriority;
   }
@@ -1534,39 +1546,36 @@ class GalleryDownloadService extends GetxController
     }
   }
 
+  DateTime _galleryInsertTime(GalleryDownloadedData gallery) {
+    return _galleryInsertTimes[gallery] ??=
+        DateFormat('yyyy-MM-dd HH:mm:ss').parse(gallery.insertTime);
+  }
+
+  int _compareGallerys(GalleryDownloadedData a, GalleryDownloadedData b, String defaultGroup) {
+    final GalleryDownloadInfo? aInfo = galleryDownloadInfos[a.gid];
+    final GalleryDownloadInfo? bInfo = galleryDownloadInfos[b.gid];
+    if (aInfo == null || bInfo == null) {
+      return 0;
+    }
+
+    if (aInfo.group != bInfo.group) {
+      if (aInfo.group == defaultGroup) {
+        return 1;
+      }
+      if (bInfo.group == defaultGroup) {
+        return -1;
+      }
+      return aInfo.group.compareTo(bInfo.group);
+    }
+
+    final int order = aInfo.sortOrder.compareTo(bInfo.sortOrder);
+    return order != 0 ? order : _galleryInsertTime(b).compareTo(_galleryInsertTime(a));
+  }
+
   void _sortGallerys() {
-    gallerys.sort((a, b) {
-      GalleryDownloadInfo? aInfo = galleryDownloadInfos[a.gid];
-      GalleryDownloadInfo? bInfo = galleryDownloadInfos[b.gid];
-      if (aInfo == null || bInfo == null) {
-        return 0;
-      }
-
-      if (!(aInfo.group == 'default'.tr && bInfo.group == 'default'.tr)) {
-        if (aInfo.group == 'default'.tr) {
-          return 1;
-        }
-        if (bInfo.group == 'default'.tr) {
-          return -1;
-        }
-      }
-
-      int gResult = aInfo.group.compareTo(bInfo.group);
-      if (gResult != 0) {
-        return gResult;
-      }
-
-      int aOrder = galleryDownloadInfos[a.gid]!.sortOrder;
-      int bOrder = galleryDownloadInfos[b.gid]!.sortOrder;
-      if (aOrder - bOrder != 0) {
-        return aOrder - bOrder;
-      }
-
-      DateTime aTime = DateFormat('yyyy-MM-dd HH:mm:ss').parse(a.insertTime);
-      DateTime bTime = DateFormat('yyyy-MM-dd HH:mm:ss').parse(b.insertTime);
-
-      return bTime.difference(aTime).inMilliseconds;
-    });
+    final String defaultGroup = 'default'.tr;
+    gallerys.sort((a, b) => _compareGallerys(a, b, defaultGroup));
+    _galleryOrderDirty = false;
   }
 
   bool _taskHasBeenPausedOrRemoved(GalleryDownloadedData gallery) {
@@ -1599,6 +1608,13 @@ class GalleryDownloadService extends GetxController
       }
 
       for (int serialNo = 0; serialNo < gallery.pageCount; serialNo++) {
+        if (serialNo > 0 && serialNo % 32 == 0) {
+          // Scheduling thousands of image tasks also runs on the UI isolate.
+          await Future<void>.delayed(Duration.zero);
+          if (_taskHasBeenPausedOrRemoved(gallery)) {
+            return;
+          }
+        }
         _processImage(gallery, serialNo);
       }
     };
@@ -4023,7 +4039,6 @@ class GalleryDownloadService extends GetxController
     if (!allGroups.contains(gallery.groupName)) {
       allGroups.add(gallery.groupName);
     }
-    gallerys.add(gallery);
 
     List<GalleryImage?> resolvedImages = images ?? List.generate(gallery.pageCount, (_) => null);
     if (resolvedImages.length != gallery.pageCount) {
@@ -4088,8 +4103,22 @@ class GalleryDownloadService extends GetxController
       mpvSkipServerIdentifiers: resolvedMpvSkipServerIdentifiers,
     );
 
-    if (sort) {
-      _sortGallerys();
+    if (sort && !_galleryOrderDirty) {
+      // The library is already ordered. Re-sorting it for every new download
+      // blocks the UI before the count notification, especially during a batch.
+      final String defaultGroup = 'default'.tr;
+      final int index = lowerBound(
+        gallerys,
+        gallery,
+        compare: (a, b) => _compareGallerys(a, b, defaultGroup),
+      );
+      gallerys.insert(index, gallery);
+    } else {
+      gallerys.add(gallery);
+      _galleryOrderDirty = true;
+      if (sort) {
+        _sortGallerys();
+      }
     }
 
     update([galleryCountChangedId, '$galleryDownloadProgressId::${gallery.gid}']);
