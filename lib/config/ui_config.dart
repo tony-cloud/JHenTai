@@ -767,19 +767,30 @@ class EHScrollBehaviourWithScrollBar extends MaterialScrollBehavior {
         final ScrollController? controller = details.controller;
         final bool canUseInteractiveScrollbar =
             controller == null || controller.positions.length <= 1;
+        final ScrollBehavior contentScrollBehavior = ScrollConfiguration.of(context);
 
-        return ScrollbarTheme(
-          data: ScrollbarThemeData(
-            radius: styleSetting.isInMobileLayout
-                ? CupertinoScrollbar.defaultRadius
-                : const Radius.circular(8),
-            thickness: WidgetStateProperty.all(
-                styleSetting.isInMobileLayout ? CupertinoScrollbar.defaultThickness : 8),
-          ),
-          child: Scrollbar(
-            controller: canUseInteractiveScrollbar ? controller : null,
-            interactive: canUseInteractiveScrollbar,
-            child: child,
+        // Flutter permits mobile scrollbar drags to overscroll and fling on
+        // release. Use its bounded desktop interaction for the scrollbar only;
+        // the theme still selects its native appearance. Restore the original
+        // behavior below it so content drags can still pull to refresh.
+        return ScrollConfiguration(
+          behavior: contentScrollBehavior.copyWith(platform: TargetPlatform.windows),
+          child: ScrollbarTheme(
+            data: ScrollbarThemeData(
+              radius: styleSetting.isInMobileLayout
+                  ? CupertinoScrollbar.defaultRadius
+                  : const Radius.circular(8),
+              thickness: WidgetStateProperty.all(
+                  styleSetting.isInMobileLayout ? CupertinoScrollbar.defaultThickness : 8),
+            ),
+            child: Scrollbar(
+              controller: canUseInteractiveScrollbar ? controller : null,
+              interactive: canUseInteractiveScrollbar,
+              child: ScrollConfiguration(
+                behavior: contentScrollBehavior,
+                child: child,
+              ),
+            ),
           ),
         );
     }
