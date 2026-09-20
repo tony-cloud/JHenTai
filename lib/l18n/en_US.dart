@@ -82,7 +82,8 @@ class en_US {
       'qrScanTailCountHint': 'Only scan the last N images (0 scans all)',
       'qrScanTailAll': 'All',
       'qrContentWhitelist': 'QR content whitelist',
-      'qrContentWhitelistHint': 'Skip QR hits containing whitelisted keywords (@count entries)',
+      'qrContentWhitelistHint':
+          'Skip QR hits containing whitelisted keywords (@count entries)',
       'qrContentWhitelistDialogHint':
           'One keyword per line. Matches are case-insensitive substrings.',
       'qrContentWhitelistNote':
@@ -90,7 +91,7 @@ class en_US {
       'restoreDefaults': 'Restore defaults',
       'qrBlockAdvancedTool': 'Advanced QR block tool',
       'qrBlockTagLabel': 'Tag or keyword',
-      'qrBlockTagHint': 'Tag to search galleries',
+      'qrBlockTagHint': 'Tag to search gallerys',
       'qrBlockGalleryCount': 'Gallery count',
       'qrBlockTailImageCount': 'Images from the end',
       'qrBlockSortLabel': 'Sort',
@@ -159,6 +160,23 @@ class en_US {
       'logout': 'Logout',
       'passwordLogin': 'Password Login',
       'cookieLogin': 'Cookie Login',
+      'passwordTab': 'Account',
+      'cookieTab': 'Cookie',
+      'webTab': 'Web',
+      'webTabHint':
+          'Click the button below to launch the browser. After logging in, you will be returned automatically.',
+      'launchWebLogin': 'Launch Browser Login',
+      'onlineVerification': 'Online Verification',
+      'webviewVerification': 'WebView Verification',
+      'skipVerification': 'Skip Verification',
+      'assist': 'Assist',
+      'onlineVerificationHint': 'Validate via HTTP request',
+      'webviewVerificationHint': 'Validate via WebView (use when online verification fails)',
+      'skipVerificationHint': 'Save directly without verification',
+      'igneousFieldHint': 'Only required for EX site; EH site can leave blank',
+      'clipboardCookieDetected': 'Clipboard cookie detected and filled in',
+      'verifyAndLogin': 'Verify and Login',
+      'recommended': 'Recommended',
       'youHaveLoggedInAs': 'Hello:   ',
       'cookieIsBlack': 'Cookie is Black',
       'cookieFormatError': 'Cookie Format Error',
@@ -244,10 +262,11 @@ class en_US {
       'downloadAndUpdateBusy': 'Download and update is already running',
       'downloadAndUpdateQueued': 'Queued',
       'downloadAndUpdateNoTask': 'No gallery needs download or update',
-      'downloadAndUpdateAllCurrentFavcat': 'Download And Update All In Current Favorite Category',
+      'downloadAndUpdateAllCurrentFavcat':
+          'Download And Update All In Current Favorite Category',
       'downloadAndUpdateSelected': 'Download And Update Selected',
       'useArchiveDownloadForNewGalleryOnly':
-          'Use archive download for never downloaded galleries only',
+          'Use archive download for never downloaded gallerys only',
       'resumeDownload': 'Resume Download',
       'pauseDownload': 'Pause Download',
       'addNewTagSetSuccess': 'Add New Tag Set Success',
@@ -303,6 +322,10 @@ class en_US {
       'batchAddTag': 'Add Tag To Selected',
       'parentGallery': 'Parent',
       'blockUploaderLocally': 'Block user locally',
+      'blockTitleLocally': 'Block selected title locally',
+      'blockRuleAlreadyExists': 'This rule already exists',
+      'blockThisGallery': 'Block this gallery',
+      'blockGallerySuccess': 'Gallery blocked. You can modify it in Preference - Block Rules',
 
       /// detail dialog
       'galleryUrl': 'Gallery Url',
@@ -365,6 +388,12 @@ class en_US {
       'advancedSetting': 'Advanced Setting',
       'logLevel': 'Log level',
       'logLevelHint': 'Lowest level written to logs',
+      'refreshRate': 'Refresh Rate',
+      'refreshRateCurrent': 'Current',
+      'refreshRateHint':
+          'Applies immediately. May not take effect due to system restrictions.',
+      'refreshRateSecurityHint':
+          'Only change if necessary. If issues occur, reset the app data.',
       'securitySetting': 'Security Setting',
       'ehSetting': 'EH Site Setting',
       'readSetting': 'Read Setting',
@@ -405,6 +434,10 @@ class en_US {
       'addLocalTags': 'Add Tags',
       'hidden': 'Hidden',
       'nope': 'Nope',
+      'status': 'Status',
+      'tagSetDefaultColor': 'Default color of tag set',
+      'weight': 'Weight',
+      'color': 'Color',
       'getTagSetFailed': 'Get Tag Set Failed',
       'updateTagSetFailed': 'Update Tag Set Failed',
       'updateTagFailed': 'Update Tag Failed',
@@ -471,7 +504,7 @@ class en_US {
       'whenScrollDown': 'When Scroll Down',
       'preloadGalleryCover': 'Preload gallery cover',
       'preloadGalleryCoverHint':
-          'Preload the covers of galleries that are not yet displayed on the page',
+          'Preload the covers of gallerys that are not yet displayed on the page',
       'enableSwipeBackGesture': 'Enable Swipe Back Gesture',
       'enableLeftMenuDrawerGesture': 'Enable Left Menu Drawer Gesture',
       'enableQuickSearchDrawerGesture': 'Enable QuickSearch Drawer Gesture',
@@ -480,7 +513,7 @@ class en_US {
       'enableDefaultFavorite': 'Enable Default Favorite',
       'enableDefaultFavoriteHint': 'Long press to re-select',
       'enableDefaultTagSet': 'Enable Default Tag Set',
-      'enableDefaultTagSetHint': 'Long press to re-select',
+      'enableDefaultTagSetHint': 'Add to your default tag set directly',
       'disableDefaultTagSetHint': 'Select manually',
       'launchInFullScreen': 'Launch In Full Screen',
       'launchInFullScreenHint': 'Switch manually by F11',
@@ -593,7 +626,8 @@ class en_US {
       'timeoutRetryTimes': 'Timeout Retry Times',
       'timeoutRetryTimesHint': 'Retry count for connect/receive timeouts, 0 disables retries',
       'serverErrorRetryTimes': 'Server Error Retry Times',
-      'serverErrorRetryTimesHint': 'Retry count for 5xx or connection errors; 403 is never retried',
+      'serverErrorRetryTimesHint':
+          'Retry count for 5xx or connection errors; 403 is never retried',
       'pageCacheMaxAge': 'Page Cache Expiration Time',
       'pageCacheMaxAgeHint': 'You can update cache by refresh page',
       'cacheImageExpireDuration': 'Image Cache Expiration Time',
@@ -608,7 +642,6 @@ class en_US {
       'openLog': 'Open Log',
       'clearLogs': 'Clear Logs',
       'clearImagesCache': 'Clear Images Cache',
-      'longPress2Clear': 'Long press to clear',
       'checkUpdateAfterLaunchingApp': 'Check update after launching app',
       'refreshGalleryTagsAutomatically': 'Refresh gallery tags automatically',
       'refreshArchiveTagsAutomatically': 'Refresh archive tags automatically',
@@ -616,8 +649,9 @@ class en_US {
           'Auto-mitigate archive to download after completion',
       'autoMitigateArchiveToDownloadAfterCompleteHint':
           'Only completed original-quality archives are auto-mitigated',
-      'mitigateArchiveToDownload': 'Mitigate Archive Galleries To Download',
-      'mitigateArchiveToDownloadHint': 'Run mitigation now for completed original-quality archives',
+      'mitigateArchiveToDownload': 'Mitigate Archive Gallerys To Download',
+      'mitigateArchiveToDownloadHint':
+          'Run mitigation now for completed original-quality archives',
       'mitigateArchiveToDownloadResult':
           'Checked @checked archives, migrated @migrated, replaced @replaced, kept-original @kept, skipped @skipped, failed @failed.',
       'historySearchLimit': 'History search limit',
@@ -629,11 +663,11 @@ class en_US {
       'repairMissingImagesHint': 'Long press to scan and fix missing images',
       'noMissingImagesDetected': 'No missing images detected',
       'repairMissingImagesResult': 'Repaired @count images (renamed @renamed).',
-      'cleanupDuplicatedGallery': 'Cleanup Duplicated Galleries',
+      'cleanupDuplicatedGallery': 'Cleanup Duplicated Gallerys',
       'cleanupDuplicatedGalleryHint':
-          'Long press to cleanup old galleries in a parent-child history chain',
+          'Long press to cleanup old gallerys in a parent-child history chain',
       'cleanupDuplicatedGalleryResult':
-          'Checked @checked galleries, deleted @deleted, skipped @skipped, failed @failed.',
+          'Checked @checked gallerys, deleted @deleted, skipped @skipped, failed @failed.',
       'cleanupDuplicatedGalleryUnavailableInRpcMode':
           'Current RPC backend does not support this maintenance task',
       'duplicateGalleryReview': 'Review Different-Language Downloads',
@@ -657,7 +691,8 @@ class en_US {
       'duplicateGalleryConfirmTitle': 'Delete selected downloads?',
       'duplicateGalleryConfirmMessage':
           'Delete @delete downloads. @unfavorite of them will also be removed from favorites.',
-      'duplicateGalleryCleanupResult': 'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
+      'duplicateGalleryCleanupResult':
+          'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
       'clearParentGalleryCache': 'Clear Parent Gallery Cache',
       'clearParentGalleryCacheHint': 'Long press to clear cached parent-gallery relations',
       'clearParentGalleryCacheResult': 'Cleared @count cached parent-gallery relations.',
@@ -742,11 +777,44 @@ class en_US {
       'landscape': 'Landscape',
       'portrait': 'Portrait',
       'readDirection': 'Read Direction',
+      'enableOrientationSpecificReadDirection': 'Orientation-Specific Read Direction',
+      'enableOrientationSpecificReadDirectionHint':
+          'Set different read directions for portrait and landscape orientations',
+      'autoDetectWebtoon': 'Auto-detect Webtoon',
+      'autoDetectWebtoonHint':
+          'Automatically use top-to-bottom continuous reading mode for gallerys tagged with webtoon',
+      'portraitReadDirection': 'Portrait Read Direction',
+      'landscapeReadDirection': 'Landscape Read Direction',
+      'autoSwitchedReadDirection': 'Auto-switched read direction',
       'notchOptimization': 'Notch Optimization',
       'notchOptimizationHint':
           'Add padding before the first image to avoid the notch and status bar',
       'imageRegionWidthRatio': 'Image Region Width Ratio',
       'gestureRegionWidthRatio': 'Gesture Region Width Ratio',
+      'portraitImageRegionWidthRatio': 'Portrait Image Width Ratio',
+      'landscapeImageRegionWidthRatio': 'Landscape Image Width Ratio',
+      'tapZoneStyle': 'Tap Zone Style',
+      'tapZoneStyleHint': 'Customize the tap zones on the reading page',
+      'tapZonePreset': 'Preset',
+      'tapZonePresetClassic': 'Classic',
+      'tapZonePresetVertical': 'Vertical',
+      'tapZoneRatio': 'Zone Size',
+      'tapZoneAction': 'Tap Zone Action',
+      'tapZoneActionNone': 'None',
+      'tapZoneActionPrevPage': 'Previous Page',
+      'tapZoneActionNextPage': 'Next Page',
+      'tapZoneActionToggleMenu': 'Toggle Menu',
+      'tapZoneActionFlipLeft': 'Flip Left',
+      'tapZoneActionFlipRight': 'Flip Right',
+      'tapZoneLeftColumnRatio': 'Left Column Width',
+      'tapZoneMiddleColumnRatio': 'Middle Column Width',
+      'tapZoneRightColumnRatio': 'Right Column Width',
+      'tapZoneTopRowRatio': 'Top Row Height',
+      'tapZoneMiddleRowRatio': 'Middle Row Height',
+      'tapZoneBottomRowRatio': 'Bottom Row Height',
+      'tapZonePreview': 'Preview',
+      'tapZoneGuideHint':
+          'Tap anywhere to dismiss. Zones can be configured in Settings - Read.',
       'useThirdPartyViewer': 'Use Custom Viewer',
       'thirdPartyViewerPath': 'Custom Viewer Path(Executable file)',
       'showThumbnails': 'Show Thumbnails',
@@ -770,7 +838,6 @@ class en_US {
       'enableDoubleTapToScaleUp': 'Enable Double Tap to Scale up',
       'enableTapDragToScaleUp': 'Enable Tap Drag to Scale up',
       'enableBottomMenu': 'Enable Bottom Menu',
-      'reverseTurnPageDirection': 'Reverse Page Turning Direction',
       'disableGestureWhenScrolling': 'Disable Gesture When Scrolling',
       'disablePageTurningOnTap': 'Disable Page Turning On Tap',
       'smartScaling': 'Smart Scaling',
@@ -835,7 +902,8 @@ class en_US {
       'waitingIsolate': 'Waiting',
       'downloaded': 'Downloaded',
       'downloadFailed': 'Download Failed',
-      'downloadStorageFull': 'Storage is full. Downloads were paused; free some space and resume.',
+      'downloadStorageFull':
+          'Storage is full. Downloads were paused; free some space and resume.',
       'downloadStorageWriteFailed': 'The image could not be stored. This gallery was paused.',
       'unpacking': 'Unpacking',
       'completed': 'Completed',
@@ -921,8 +989,8 @@ class en_US {
       'searchGalleryName': 'Search Gallery Name',
       'searchGalleryTags': 'Search Gallery Tags',
       'searchGalleryDescription': 'Search Gallery Description',
-      'onlySearchExpungedGalleries': "Only Search Expunged Galleries",
-      'onlyShowGalleriesWithTorrents': 'Only Show Galleries With Torrents',
+      'onlySearchExpungedGalleries': "Only Search Expunged Gallerys",
+      'onlyShowGalleriesWithTorrents': 'Only Show Gallerys With Torrents',
       'searchLowPowerTags': 'Search LowPower Tags',
       'searchDownVotedTags': 'Search DownVoted Tags',
       'pageAtLeast': 'Page At Least',
@@ -1001,7 +1069,8 @@ class en_US {
           'Download only 1 gallery simultaneously in 1 group with highest priority by default',
       'alwaysUseDefaultGroup': 'Always Use Default Group',
       'enableStoreMetadataForRestore': 'Enable Store Metadata for Restore',
-      'enableStoreMetadataForRestoreHint': 'If disable this, you can\'t restore download tasks',
+      'enableStoreMetadataForRestoreHint':
+          'If disable this, you can\'t restore download tasks',
       'archiveDownloadIsolateCount': 'Archive Download Thread Count',
       'archiveDownloadIsolateCountHint':
           'Sum of threads for all tasks needs to be less than 10, otherwise the download will fail',
@@ -1039,7 +1108,11 @@ class en_US {
       'checkInFailed': 'Check-in failed',
       'checkInSuccess': 'Check-in success',
       'checkInSuccessHint': 'Got GP: %s, current total GP: %s.',
-      'pauseDownloadByInvalidArchiveBotKey': 'Archive bot settings is invalid, download paused',
+      'pauseDownloadByInvalidArchiveBotKey':
+          'Archive bot settings is invalid, download paused',
+      'archiveBotNotConfigured': 'Archive bot is not configured, go to settings?',
+      'getBotCostFailed': 'Failed to get bot cost',
+      'archiveBotShort': 'Bot',
       'chooseArchiveParseSource': 'Change Parse Source',
       'official': 'Official',
       'archiveBot': 'Archive Bot',
@@ -1068,7 +1141,8 @@ class en_US {
       'upload2cloud': 'Upload to Cloud',
       'upload2cloudHint': 'Upload your current local configuration',
       'tap2upload': 'Tap to upload',
-      'copyIdentificationCodeSuccess': 'Upload successfully. Identification code has been copied',
+      'copyIdentificationCodeSuccess':
+          'Upload successfully. Identification code has been copied',
       'copyShareCode': 'Copy Share Code',
       'import': 'Import',
       'save2Local': 'Save to Local',
@@ -1102,7 +1176,7 @@ class en_US {
       'noBlockingRuleHint': 'Add at least 1 rule',
       'notSameBlockingRuleTargetHint': 'All sub-rules should have the same blocking target',
       'blockingRuleHelp': '''
-Blocking Target: Filter galleries on the list page or filter comments on the details page. All sub-rules under the same rule must have the same blocking target.
+Blocking Target: Filter gallerys on the list page or filter comments on the details page. All sub-rules under the same rule must have the same blocking target.
 Blocking Attribute: Specify the attribute of the target based on which the rule is written to block.
 Blocking Pattern: Use regular expressions for complex scenarios.
 Blocking Expression: Simple strings or regular expressions.
@@ -1110,14 +1184,13 @@ Blocking Expression: Simple strings or regular expressions.
 Note1: Different rules have an OR (||) relationship, while all sub-rules under the same rule have an AND (&&) relationship.
 Note2: When blocking tag, the rule will check each tag in the gallery, the expression should be written for a single tag.
 Note3: When blocking tag, you need specify full tag with namespace if you use '=' rule.
-Note4: You need to use a gallery layout that can display all tags in E-Hentai, such as "Extended," otherwise some galleries may not be filtered correctly.
+Note4: You need to use a gallery layout that can display all tags in E-Hentai, such as "Extended," otherwise some gallerys may not be filtered correctly.
 
-Example 1: Block galleries that have the "yaoi" tag and do not have the "tomgirl" tag————Gallery Tag Contain male:yaoi && Gallery Tag NotContain male:tomgirl
+Example 1: Block gallerys that have the "yaoi" tag and do not have the "tomgirl" tag————Gallery Tag Contain male:yaoi && Gallery Tag NotContain male:tomgirl
 Example 2: Block comments with a score not exceeding 10————Comment Score <= 10
     ''',
 
       /// quick search page
-      'quickSearch': 'Quick Search',
 
       /// dashboard page
       'seeAll': 'All',
@@ -1132,6 +1205,19 @@ Example 2: Block comments with a score not exceeding 10————Comment Score
       /// tagSet dialog
       'chooseTagSet': 'Choose Tag Set',
 
+      /// tag dialog actions
+      'tagActionAccurate': 'Accurate',
+      'tagActionInaccurate': 'Inaccurate',
+      'tagActionFollow': 'Follow Tag',
+      'tagActionHide': 'Hide Tag',
+      'tagActionTagSets': 'Manage Tag Sets',
+      'tagActionVoteUpTooltip': 'Vote that this tag is correct for this gallery',
+      'tagActionVoteDownTooltip': 'Vote that this tag is wrong for this gallery',
+      'tagActionFollowHint': 'Add this tag to a watched tag set',
+      'tagActionHideHint': 'Add this tag to a hidden tag set',
+      'tagActionTagSetsHint': 'Open tag set management',
+      'currentTagSet': 'Current',
+
       /// tag namespace
       'language': 'Language',
       'artist': 'Artist',
@@ -1145,6 +1231,10 @@ Example 2: Block comments with a score not exceeding 10————Comment Score
       'cosplayer': 'Cosplayer',
       'reclass': 'Reclass',
       'temp': 'Temp',
+      'permissionPermanentlyDenied': 'Permission permanently denied',
+      'permissionPermanentlyDeniedHint':
+          'Saving to album requires permission. Please go to system settings and grant full access to this app',
+      'goToSetting': 'Go to settings',
       'other': 'Other',
     };
   }

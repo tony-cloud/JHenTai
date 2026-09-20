@@ -17,7 +17,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 import 'package:jhentai/service/archive_download_service.dart';
 
-/// Load galleries in download directory but is not downloaded by JHenTai
+/// Load gallerys in download directory but is not downloaded by JHenTai
 LocalGalleryService localGalleryService = LocalGalleryService();
 
 class LocalGalleryService extends GetxController
@@ -63,7 +63,7 @@ class LocalGalleryService extends GetxController
     update([galleryCountChangedId]);
 
     DateTime start = DateTime.now();
-    return _loadGalleriesFromDisk().whenComplete(() {
+    return _loadGallerysFromDisk().whenComplete(() {
       log.info(
         'Refresh local gallerys, preCount:$preCount, newCount: ${allGallerys.length}, timeCost: ${DateTime.now().difference(start).inMilliseconds}ms',
       );
@@ -124,14 +124,17 @@ class LocalGalleryService extends GetxController
     update([galleryCountChangedId]);
   }
 
-  Future<void> _loadGalleriesFromDisk() {
+  Future<void> _loadGallerysFromDisk() {
     List<Future> futures = downloadSetting.extraGalleryScanPath
         .map((path) => _parseDirectory(Directory(path), true))
         .toList();
 
     return Future.wait(futures).onError((error, stackTrace) {
-      log.error('_loadGalleriesFromDisk failed, path: ${downloadSetting.extraGalleryScanPath}',
-          error, stackTrace);
+      log.error(
+        '_loadGallerysFromDisk failed, path: ${downloadSetting.extraGalleryScanPath}',
+        error,
+        stackTrace,
+      );
       return [];
     }).whenComplete(() {
       allGallerys.sort((a, b) => FileUtil.naturalCompare(a.title, b.title));
@@ -150,9 +153,9 @@ class LocalGalleryService extends GetxController
     /// skip if it is JHenTai gallery directory -> metadata file exists
     future = future.then<bool>((success) {
       if (success) {
-        return File(join(directory.path, GalleryDownloadService.metadataFileName))
-            .exists()
-            .then((value) => !value);
+        return File(
+          join(directory.path, GalleryDownloadService.metadataFileName),
+        ).exists().then((value) => !value);
       } else {
         completer.isCompleted ? null : completer.complete(result);
         return false;
@@ -164,9 +167,9 @@ class LocalGalleryService extends GetxController
 
     future = future.then<bool>((success) {
       if (success) {
-        return File(join(directory.path, ArchiveDownloadService.metadataFileName))
-            .exists()
-            .then((value) => !value);
+        return File(
+          join(directory.path, ArchiveDownloadService.metadataFileName),
+        ).exists().then((value) => !value);
       } else {
         completer.isCompleted ? null : completer.complete(result);
         return false;
@@ -196,8 +199,12 @@ class LocalGalleryService extends GetxController
                   if (subResult.isLegalGalleryDir || subResult.isLegalNestedGalleryDir) {
                     result.isLegalNestedGalleryDir = true;
                     (path2SubDir[parentPath] ??= []).addIfNotExists(directory.path);
-                    path2SubDir[parentPath]!.sort((a, b) => FileUtil.naturalCompare(
-                        basenameWithoutExtension(a), basenameWithoutExtension(b)));
+                    path2SubDir[parentPath]!.sort(
+                      (a, b) => FileUtil.naturalCompare(
+                        basenameWithoutExtension(a),
+                        basenameWithoutExtension(b),
+                      ),
+                    );
                   }
                 }),
               );

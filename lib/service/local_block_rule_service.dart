@@ -105,7 +105,9 @@ class LocalBlockRuleService with JHLifeCircleBeanErrorCatch implements JHLifeCir
   }
 
   Future<({bool success, String? msg})> replaceBlockRulesByGroup(
-      String groupId, List<LocalBlockRule> rules) async {
+    String groupId,
+    List<LocalBlockRule> rules,
+  ) async {
     log.info('Replace block rules, groupId:$groupId, rules:$rules');
 
     for (LocalBlockRule rule in rules) {
@@ -152,6 +154,48 @@ class LocalBlockRuleService with JHLifeCircleBeanErrorCatch implements JHLifeCir
     return BlockRuleDao.existsGroup(groupId);
   }
 
+  Future<({bool success, bool inserted, String? msg})> insertBlockRuleIfAbsent(
+    LocalBlockRule rule,
+  ) async {
+    log.info('Insert block rule if absent: $rule');
+
+    LocalBlockRuleHandler handler = getHandlerByRule(rule);
+    ({bool success, String? msg}) validateResult = handler.validateRule(rule);
+    if (!validateResult.success) {
+      log.info('Insert block rule failed, result:$validateResult');
+      return (success: false, inserted: false, msg: validateResult.msg);
+    }
+
+    bool inserted = false;
+    await appDb.transaction(() async {
+      List<BlockRuleData> datas = await BlockRuleDao.selectBlockRulesByTarget(
+        rule.target.code,
+      );
+      bool exists = datas.any(
+        (data) =>
+            data.attribute == rule.attribute.code &&
+            data.pattern == rule.pattern.code &&
+            data.expression == rule.expression,
+      );
+      if (exists) {
+        return;
+      }
+
+      await BlockRuleDao.insertBlockRule(
+        BlockRuleCompanion.insert(
+          groupId: rule.groupId!,
+          target: rule.target.code,
+          attribute: rule.attribute.code,
+          pattern: rule.pattern.code,
+          expression: rule.expression,
+        ),
+      );
+      inserted = true;
+    });
+
+    return (success: true, inserted: inserted, msg: null);
+  }
+
   Future<List<T>> executeRules<T>(List<T> items) async {
     List<T> results = List.of(items);
 
@@ -165,14 +209,16 @@ class LocalBlockRuleService with JHLifeCircleBeanErrorCatch implements JHLifeCir
       List<BlockRuleData> datas = await BlockRuleDao.selectBlockRulesByTarget(targetEnum.code);
 
       Map<String, List<LocalBlockRule>> groupedRules = datas
-          .map((data) => LocalBlockRule(
-                id: data.id,
-                groupId: data.groupId,
-                target: LocalBlockTargetEnum.fromCode(data.target),
-                attribute: LocalBlockAttributeEnum.fromCode(data.attribute),
-                pattern: LocalBlockPatternEnum.fromCode(data.pattern),
-                expression: data.expression,
-              ))
+          .map(
+            (data) => LocalBlockRule(
+              id: data.id,
+              groupId: data.groupId,
+              target: LocalBlockTargetEnum.fromCode(data.target),
+              attribute: LocalBlockAttributeEnum.fromCode(data.attribute),
+              pattern: LocalBlockPatternEnum.fromCode(data.pattern),
+              expression: data.expression,
+            ),
+          )
           .groupListsBy((rule) => rule.groupId!);
 
       groupedRules.forEach((groupId, rules) {
@@ -484,7 +530,8 @@ abstract class NotContainLocalBlockRuleHandler<ITEM>
 
   @override
   bool matchRule(LocalBlockRule rule) {
-    return rule.pattern == LocalBlockPatternEnum.notContain && matchRuleAttribute(rule.attribute);
+    return rule.pattern == LocalBlockPatternEnum.notContain &&
+        matchRuleAttribute(rule.attribute);
   }
 
   @override
@@ -527,21 +574,23 @@ class GalleryTagEqualLocalBlockRuleHandler extends EqualLocalBlockRuleHandler<Ga
 class GalleryUploaderEqualLocalBlockRuleHandler extends EqualLocalBlockRuleHandler<Gallery>
     with GalleryUploaderAttributeGetter {}
 
-class CommentUsernameEqualLocalBlockRuleHandler extends EqualLocalBlockRuleHandler<GalleryComment>
-    with CommentUsernameAttributeGetter {}
+class CommentUsernameEqualLocalBlockRuleHandler
+    extends EqualLocalBlockRuleHandler<GalleryComment> with CommentUsernameAttributeGetter {}
 
-class CommentUserIdEqualLocalBlockRuleHandler extends EqualLocalBlockRuleHandler<GalleryComment>
-    with CommentUserIdAttributeGetter {}
+class CommentUserIdEqualLocalBlockRuleHandler
+    extends EqualLocalBlockRuleHandler<GalleryComment> with CommentUserIdAttributeGetter {}
 
 class CommentScoreGreaterThanLocalBlockRuleHandler
-    extends GreaterThanLocalBlockRuleHandler<GalleryComment> with CommentScoreAttributeGetter {}
+    extends GreaterThanLocalBlockRuleHandler<GalleryComment>
+    with CommentScoreAttributeGetter {}
 
 class CommentScoreGreaterThanEqualLocalBlockRuleHandler
     extends GreaterThanEqualLocalBlockRuleHandler<GalleryComment>
     with CommentScoreAttributeGetter {}
 
 class CommentScoreSmallerThanLocalBlockRuleHandler
-    extends SmallerThanLocalBlockRuleHandler<GalleryComment> with CommentScoreAttributeGetter {}
+    extends SmallerThanLocalBlockRuleHandler<GalleryComment>
+    with CommentScoreAttributeGetter {}
 
 class CommentScoreSmallerThanEqualLocalBlockRuleHandler
     extends SmallerThanEqualLocalBlockRuleHandler<GalleryComment>
@@ -556,23 +605,24 @@ class GalleryTagLikeLocalBlockRuleHandler extends LikeLocalBlockRuleHandler<Gall
 class GalleryUploaderLikeLocalBlockRuleHandler extends LikeLocalBlockRuleHandler<Gallery>
     with GalleryUploaderAttributeGetter {}
 
-class CommentUserNameLikeLocalBlockRuleHandler extends LikeLocalBlockRuleHandler<GalleryComment>
-    with CommentUsernameAttributeGetter {}
+class CommentUserNameLikeLocalBlockRuleHandler
+    extends LikeLocalBlockRuleHandler<GalleryComment> with CommentUsernameAttributeGetter {}
 
 class CommentContentLikeLocalBlockRuleHandler extends LikeLocalBlockRuleHandler<GalleryComment>
     with CommentContentAttributeGetter {}
 
-class GalleryTitleNotContainLocalBlockRuleHandler extends NotContainLocalBlockRuleHandler<Gallery>
-    with GalleryTitleAttributeGetter {}
+class GalleryTitleNotContainLocalBlockRuleHandler
+    extends NotContainLocalBlockRuleHandler<Gallery> with GalleryTitleAttributeGetter {}
 
-class GalleryTagNotContainLocalBlockRuleHandler extends NotContainLocalBlockRuleHandler<Gallery>
-    with GalleryTagAttributeGetter {}
+class GalleryTagNotContainLocalBlockRuleHandler
+    extends NotContainLocalBlockRuleHandler<Gallery> with GalleryTagAttributeGetter {}
 
 class GalleryUploaderNotContainLocalBlockRuleHandler
     extends NotContainLocalBlockRuleHandler<Gallery> with GalleryUploaderAttributeGetter {}
 
 class CommentUserNameNotContainLocalBlockRuleHandler
-    extends NotContainLocalBlockRuleHandler<GalleryComment> with CommentUsernameAttributeGetter {}
+    extends NotContainLocalBlockRuleHandler<GalleryComment>
+    with CommentUsernameAttributeGetter {}
 
 class GalleryTitleRegexLocalBlockRuleHandler extends RegexLocalBlockRuleHandler<Gallery>
     with GalleryTitleAttributeGetter {}
@@ -583,16 +633,15 @@ class GalleryTagRegexLocalBlockRuleHandler extends RegexLocalBlockRuleHandler<Ga
 class GalleryUploaderRegexLocalBlockRuleHandler extends RegexLocalBlockRuleHandler<Gallery>
     with GalleryUploaderAttributeGetter {}
 
-class CommentUserNameRegexLocalBlockRuleHandler extends RegexLocalBlockRuleHandler<GalleryComment>
-    with CommentUsernameAttributeGetter {}
+class CommentUserNameRegexLocalBlockRuleHandler
+    extends RegexLocalBlockRuleHandler<GalleryComment> with CommentUsernameAttributeGetter {}
 
-class CommentContentRegexLocalBlockRuleHandler extends RegexLocalBlockRuleHandler<GalleryComment>
-    with CommentContentAttributeGetter {}
+class CommentContentRegexLocalBlockRuleHandler
+    extends RegexLocalBlockRuleHandler<GalleryComment> with CommentContentAttributeGetter {}
 
 enum LocalBlockTargetEnum {
   gallery(0, 'gallery', Gallery),
-  comment(1, 'comment', GalleryComment),
-  ;
+  comment(1, 'comment', GalleryComment);
 
   final int code;
   final String desc;
@@ -612,8 +661,7 @@ enum LocalBlockAttributeEnum {
   userName(100, LocalBlockTargetEnum.comment, 'userName'),
   userId(110, LocalBlockTargetEnum.comment, 'userId'),
   score(120, LocalBlockTargetEnum.comment, 'score'),
-  content(130, LocalBlockTargetEnum.comment, 'content'),
-  ;
+  content(130, LocalBlockTargetEnum.comment, 'content');
 
   final int code;
   final LocalBlockTargetEnum target;
@@ -631,52 +679,47 @@ enum LocalBlockAttributeEnum {
 
 enum LocalBlockPatternEnum {
   equal(
-    0,
-    [
-      LocalBlockAttributeEnum.tag,
-      LocalBlockAttributeEnum.uploader,
-      LocalBlockAttributeEnum.userName,
-      LocalBlockAttributeEnum.userId,
-    ],
-    '=',
-  ),
+      0,
+      [
+        LocalBlockAttributeEnum.tag,
+        LocalBlockAttributeEnum.uploader,
+        LocalBlockAttributeEnum.userName,
+        LocalBlockAttributeEnum.userId,
+      ],
+      '='),
   gt(10, [LocalBlockAttributeEnum.score], '>'),
   gte(20, [LocalBlockAttributeEnum.score], '>='),
   st(30, [LocalBlockAttributeEnum.score], '<'),
   ste(40, [LocalBlockAttributeEnum.score], '<='),
   like(
-    50,
-    [
-      LocalBlockAttributeEnum.title,
-      LocalBlockAttributeEnum.tag,
-      LocalBlockAttributeEnum.uploader,
-      LocalBlockAttributeEnum.userName,
-      LocalBlockAttributeEnum.content,
-    ],
-    'contain',
-  ),
+      50,
+      [
+        LocalBlockAttributeEnum.title,
+        LocalBlockAttributeEnum.tag,
+        LocalBlockAttributeEnum.uploader,
+        LocalBlockAttributeEnum.userName,
+        LocalBlockAttributeEnum.content,
+      ],
+      'contain'),
   notContain(
-    60,
-    [
-      LocalBlockAttributeEnum.title,
-      LocalBlockAttributeEnum.tag,
-      LocalBlockAttributeEnum.uploader,
-      LocalBlockAttributeEnum.userName,
-    ],
-    'notContain',
-  ),
+      60,
+      [
+        LocalBlockAttributeEnum.title,
+        LocalBlockAttributeEnum.tag,
+        LocalBlockAttributeEnum.uploader,
+        LocalBlockAttributeEnum.userName,
+      ],
+      'notContain'),
   regex(
-    70,
-    [
-      LocalBlockAttributeEnum.title,
-      LocalBlockAttributeEnum.tag,
-      LocalBlockAttributeEnum.uploader,
-      LocalBlockAttributeEnum.userName,
-      LocalBlockAttributeEnum.content,
-    ],
-    'regex',
-  ),
-  ;
+      70,
+      [
+        LocalBlockAttributeEnum.title,
+        LocalBlockAttributeEnum.tag,
+        LocalBlockAttributeEnum.uploader,
+        LocalBlockAttributeEnum.userName,
+        LocalBlockAttributeEnum.content,
+      ],
+      'regex');
 
   final int code;
   final List<LocalBlockAttributeEnum> attributes;
@@ -742,5 +785,5 @@ class LocalBlockRule {
       expression: json["expression"],
     );
   }
-//
+  //
 }

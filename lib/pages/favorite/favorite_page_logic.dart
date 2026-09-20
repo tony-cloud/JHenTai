@@ -3,14 +3,16 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
-import 'package:jhentai/enum/config_enum.dart';
-import 'package:jhentai/exception/eh_site_exception.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
-import 'package:jhentai/model/gallery.dart';
 import 'package:jhentai/model/gallery_page.dart';
-import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/network/eh_request.dart';
+import 'package:jhentai/widget/eh_favorite_sort_order_dialog.dart';
+
+import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/exception/eh_site_exception.dart';
+import 'package:jhentai/model/gallery.dart';
+import 'package:jhentai/model/search_config.dart';
 import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/pages/base/base_page_logic.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_gallery_logic_mixin.dart';
@@ -21,7 +23,6 @@ import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
 import 'package:jhentai/utils/snack_util.dart';
-import 'package:jhentai/widget/eh_favorite_sort_order_dialog.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin {
@@ -45,8 +46,9 @@ class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin 
       return;
     }
 
-    FavoriteSortOrder? result =
-        await Get.dialog(EHFavoriteSortOrderDialog(init: state.favoriteSortOrder));
+    FavoriteSortOrder? result = await Get.dialog(
+      EHFavoriteSortOrderDialog(init: state.favoriteSortOrder),
+    );
     if (result == null) {
       return;
     }
@@ -78,8 +80,8 @@ class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin 
         return loadMore(checkLoadingState: false);
       }
 
-      log.error('change favorite sort order fail', e.message);
-      snack('failed'.tr, e.message ?? '');
+      log.error('change favorite sort order fail', e.errorMsg);
+      snack('failed'.tr, e.errorMsg ?? '');
       state.loadingState = LoadingState.error;
       updateSafely([loadingStateId]);
       return;
@@ -112,7 +114,8 @@ class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin 
 
     try {
       if (useRpcBatchDownloadAndUpdate) {
-        final Map<String, dynamic> result = await rpcRequest.requestDownloadGalleryBatchFavorite(
+        final Map<String, dynamic> result =
+            await rpcRequest.requestDownloadGalleryBatchFavorite(
           searchConfig: state.searchConfig.toJson(),
           config: buildBatchDownloadConfigPayload(config),
           cancelToken: _downloadAndUpdateAllCancelToken,
@@ -172,9 +175,7 @@ class FavoritePageLogic extends BasePageLogic with MultiSelectGalleryLogicMixin 
     );
   }
 
-  Future<List<Gallery>> _collectCurrentFavcatGallerys(
-    CancelToken cancelToken,
-  ) async {
+  Future<List<Gallery>> _collectCurrentFavcatGallerys(CancelToken cancelToken) async {
     final SearchConfig searchConfig = SearchConfig.fromJson(state.searchConfig.toJson());
     final List<Gallery> gallerys = <Gallery>[];
     final Set<int> handledGids = <int>{};

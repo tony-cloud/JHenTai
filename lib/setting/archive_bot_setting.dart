@@ -14,7 +14,10 @@ class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLife
   final RxnString apiKey = RxnString(null);
   final RxBool useProxyServer = false.obs;
 
-  bool get isReady => (apiAddress.value != null || useProxyServer.isTrue) && apiKey.value != null;
+  final RxBool preferBotSource = false.obs;
+
+  bool get isReady =>
+      (apiAddress.value != null || useProxyServer.isTrue) && apiKey.value != null;
 
   @override
   ConfigEnum get configEnum => ConfigEnum.archiveBotSetting;
@@ -24,6 +27,7 @@ class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLife
     Map map = jsonDecode(configString);
     apiAddress.value = map['apiAddress'] ?? apiAddress.value;
     apiKey.value = map['apiKey'];
+    preferBotSource.value = map['preferBotSource'] ?? false;
     useProxyServer.value = map['useProxyServer'] ?? true;
   }
 
@@ -32,6 +36,7 @@ class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLife
     return jsonEncode({
       'apiAddress': apiAddress.value,
       'apiKey': apiKey.value,
+      'preferBotSource': preferBotSource.value,
       'useProxyServer': useProxyServer.value,
     });
   }
@@ -59,6 +64,11 @@ class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLife
   Future<void> saveApiKey(String? value) async {
     log.debug('saveApiKey: $value');
     apiKey.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> savePreferBotSource(bool value) async {
+    preferBotSource.value = value;
     await saveBeanConfig();
   }
 

@@ -11,11 +11,7 @@ import 'package:jhentai/pages/layout/mobile_v2/mobile_layout_page_v2_state.dart'
 /// For mobile v2 layout
 class SimpleDashboardPage extends BasePage {
   const SimpleDashboardPage({super.key})
-      : super(
-          showMenuButton: true,
-          showTitle: true,
-          showScroll2TopButton: true,
-        );
+      : super(showMenuButton: true, showTitle: true, showScroll2TopButton: true);
 
   @override
   String get name => 'home'.tr;
@@ -31,10 +27,14 @@ class SimpleDashboardPage extends BasePage {
   List<Widget> buildAppBarActions() {
     return [
       IconButton(icon: const Icon(Icons.settings), onPressed: logic.handleTapFilterButton),
-      IconButton(icon: const Icon(Icons.search), onPressed: () => toRoute(Routes.mobileV2Search)),
       IconButton(
-          icon: const Icon(Icons.more_vert),
-          onPressed: MobileLayoutPageV2State.scaffoldKey.currentState?.openEndDrawer),
+        icon: const Icon(Icons.search),
+        onPressed: () => toRoute(Routes.mobileV2Search),
+      ),
+      IconButton(
+        icon: const Icon(Icons.more_vert),
+        onPressed: MobileLayoutPageV2State.scaffoldKey.currentState?.openEndDrawer,
+      ),
     ];
   }
 }

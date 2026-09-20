@@ -19,11 +19,7 @@ import 'package:jhentai/pages/gallerys/dashboard/dashboard_page_logic.dart';
 /// For mobile v2 layout
 class DashboardPage extends BasePage {
   const DashboardPage({super.key})
-      : super(
-          showMenuButton: true,
-          showTitle: true,
-          showScroll2TopButton: true,
-        );
+      : super(showMenuButton: true, showTitle: true, showScroll2TopButton: true);
 
   @override
   String get name => 'home'.tr;
@@ -89,9 +85,7 @@ class DashboardPage extends BasePage {
   Widget _buildRanklistDesc() {
     return const SliverPadding(
       padding: EdgeInsets.only(left: 10, right: 10, top: 4),
-      sliver: SliverToBoxAdapter(
-        child: _RankListDesc(),
-      ),
+      sliver: SliverToBoxAdapter(child: _RankListDesc()),
     );
   }
 
@@ -110,7 +104,9 @@ class DashboardPage extends BasePage {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               itemCount: state.ranklistGallerys.length,
               itemBuilder: (_, index) => EHDashboardCard(
-                  gallery: state.ranklistGallerys[index], badge: _getRanklistBadge(index)),
+                gallery: state.ranklistGallerys[index],
+                badge: _getRanklistBadge(index),
+              ),
               separatorBuilder: (_, __) => const VerticalDivider(),
             ).enableMouseDrag(withScrollBar: false).fadeInWidget(),
           ),
@@ -122,9 +118,7 @@ class DashboardPage extends BasePage {
   Widget _buildPopularListDesc() {
     return const SliverPadding(
       padding: EdgeInsets.only(left: 10, right: 10, top: 8),
-      sliver: SliverToBoxAdapter(
-        child: _PopularListDesc(),
-      ),
+      sliver: SliverToBoxAdapter(child: _PopularListDesc()),
     );
   }
 
@@ -142,7 +136,8 @@ class DashboardPage extends BasePage {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 10),
               itemCount: state.popularGallerys.length,
-              itemBuilder: (_, index) => EHDashboardCard(gallery: state.popularGallerys[index]),
+              itemBuilder: (_, index) =>
+                  EHDashboardCard(gallery: state.popularGallerys[index]),
               separatorBuilder: (_, __) => const VerticalDivider(),
             ).enableMouseDrag(withScrollBar: false).fadeInWidget(),
           ),
@@ -158,19 +153,28 @@ class DashboardPage extends BasePage {
         child: _GalleryListDesc(
           actions: [
             IconButton(
-              icon: Icon(Icons.settings,
-                  size: 22, color: UIConfig.dashboardPageGalleryDescButtonColor(context)),
+              icon: Icon(
+                Icons.settings,
+                size: 22,
+                color: UIConfig.dashboardPageGalleryDescButtonColor(context),
+              ),
               onPressed: logic.handleTapFilterButton,
               style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero, visualDensity: const VisualDensity(vertical: -4)),
+                padding: EdgeInsets.zero,
+                visualDensity: const VisualDensity(vertical: -4),
+              ),
             ),
             IconButton(
-              icon: Icon(Icons.refresh,
-                  size: 25, color: UIConfig.dashboardPageGalleryDescButtonColor(context)),
+              icon: Icon(
+                Icons.refresh,
+                size: 25,
+                color: UIConfig.dashboardPageGalleryDescButtonColor(context),
+              ),
               onPressed: logic.handleClearAndRefresh,
               style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  visualDensity: const VisualDensity(vertical: -4, horizontal: -4)),
+                padding: EdgeInsets.zero,
+                visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
+              ),
             ),
           ],
         ),
@@ -210,32 +214,39 @@ class _RankListDesc extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('🏆 ', style: TextStyle(fontSize: 16)),
-            Text('ranklistBoard'.tr,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(
+              'ranklistBoard'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
           ],
         ),
         const Expanded(child: SizedBox()),
         TextButton(
           style: TextButton.styleFrom(
-              padding: const EdgeInsets.only(left: 12),
-              visualDensity: const VisualDensity(vertical: -4)),
-          onPressed: () => const TapTabBarButtonNotification(Routes.ranklist).dispatch(context),
+            padding: const EdgeInsets.only(left: 12),
+            visualDensity: const VisualDensity(vertical: -4),
+          ),
+          onPressed: () =>
+              const TapTabBarButtonNotification(Routes.ranklist).dispatch(context),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'seeAll'.tr,
                 style: TextStyle(
-                    color: UIConfig.dashboardPageSeeAllTextColor(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    height: 1),
+                  color: UIConfig.dashboardPageSeeAllTextColor(context),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  height: 1,
+                ),
               ),
-              Icon(Icons.keyboard_arrow_right,
-                  color: UIConfig.dashboardPageArrowButtonColor(context)),
+              Icon(
+                Icons.keyboard_arrow_right,
+                color: UIConfig.dashboardPageArrowButtonColor(context),
+              ),
             ],
           ),
-        )
+        ),
       ],
     );
   }
@@ -252,14 +263,18 @@ class _PopularListDesc extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('🥵 ', style: TextStyle(fontSize: 16)),
-            Text('popular'.tr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(
+              'popular'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
           ],
         ),
         const Expanded(child: SizedBox()),
         TextButton(
           style: TextButton.styleFrom(
-              padding: const EdgeInsets.only(left: 12),
-              visualDensity: const VisualDensity(vertical: -4)),
+            padding: const EdgeInsets.only(left: 12),
+            visualDensity: const VisualDensity(vertical: -4),
+          ),
           onPressed: () => const TapTabBarButtonNotification(Routes.popular).dispatch(context),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -267,16 +282,19 @@ class _PopularListDesc extends StatelessWidget {
               Text(
                 'seeAll'.tr,
                 style: TextStyle(
-                    color: UIConfig.dashboardPageSeeAllTextColor(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    height: 1),
+                  color: UIConfig.dashboardPageSeeAllTextColor(context),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  height: 1,
+                ),
               ),
-              Icon(Icons.keyboard_arrow_right,
-                  color: UIConfig.dashboardPageArrowButtonColor(context)),
+              Icon(
+                Icons.keyboard_arrow_right,
+                color: UIConfig.dashboardPageArrowButtonColor(context),
+              ),
             ],
           ),
-        )
+        ),
       ],
     );
   }
@@ -295,11 +313,14 @@ class _GalleryListDesc extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('🎁 ', style: TextStyle(fontSize: 16)),
-            Text('newest'.tr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(
+              'newest'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
           ],
         ),
         const Expanded(child: SizedBox()),
-        Row(mainAxisSize: MainAxisSize.min, children: actions)
+        Row(mainAxisSize: MainAxisSize.min, children: actions),
       ],
     );
   }

@@ -4,6 +4,8 @@ enum ConfigEnum {
   renameDownloadMetadata('renameDownloadMetadata'),
   migrateGalleryHistory('migrateGalleryHistory'),
   migrateStorageConfig('migrateStorageConfig'),
+  renameGallerysPageLogicKey('renameGallerysPageLogicKey'),
+  tapZoneGuideShown('tapZoneGuideShown'),
 
   /// settings
   favoriteSetting('favoriteSetting'),
@@ -32,6 +34,7 @@ enum ConfigEnum {
   desktopLeftColumnWidthRatio('desktopLeftColumnWidthRatio'),
   tabletLeftColumnWidthRatio('tabletLeftColumnWidthRatio'),
   leftColumnWidthRatio('leftColumnWidthRatio'),
+  frameRateMode('frameRateMode'),
 
   /// config
   ehCookie('eh_cookies'),
@@ -52,13 +55,14 @@ enum ConfigEnum {
   tagTranslationServiceLoadingState('TagTranslationServiceLoadingState'),
   tagTranslationServiceTimestamp('TagTranslationServiceTimestamp'),
   tagSearchOrderOptimizationServiceVersion('TagTranslationServiceVersion'),
-  tagSearchOrderOptimizationServiceLoadingState('TagSearchOrderOptimizationServiceLoadingState'),
+  tagSearchOrderOptimizationServiceLoadingState(
+    'TagSearchOrderOptimizationServiceLoadingState',
+  ),
   displayBlockingRulesGroup('displayBlockingRulesGroup'),
 
   /// cache
   isSpreadPage('isSpreadPage'),
-  galleryImageHash('galleryImageHash'),
-  ;
+  galleryImageHash('galleryImageHash');
 
   final String key;
 

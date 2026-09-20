@@ -29,6 +29,8 @@ import 'package:jhentai/pages/setting/adblock/setting_adblock_page.dart';
 import 'package:jhentai/pages/setting/eh/profile/setting_eh_profile_page.dart';
 import 'package:jhentai/pages/setting/eh/setting_eh_page.dart';
 import 'package:jhentai/pages/setting/eh/tagsets/tag_sets_page.dart';
+import 'package:jhentai/pages/setting/advanced/frame_rate/setting_frame_rate_page.dart';
+import 'package:jhentai/pages/setting/read/tap_zone/setting_tap_zone_page.dart';
 import 'package:jhentai/pages/setting/mousewheel/setting_mouse_wheel_page.dart';
 import 'package:jhentai/pages/setting/network/proxy/setting_proxy_page.dart';
 import 'package:jhentai/pages/setting/network/setting_network_page.dart';
@@ -71,7 +73,7 @@ class Routes {
   /// left
   static const String desktopHome = "/desktop_home";
   static const String mobileLayoutV2 = "/mobile_layout_v2";
-  static const String gallerys = "/gallerys";
+  static const String gallery = "/gallery";
   static const String dashboard = "/dashboard";
   static const String popular = "/popular";
   static const String ranklist = "/ranklist";
@@ -101,6 +103,8 @@ class Routes {
   static const String settingPreference = "/setting_preference";
   static const String settingNetwork = "/setting_network";
   static const String settingDownload = "/setting_download";
+  static const String settingFrameRate = "/setting_frame_rate";
+  static const String settingTapZone = "/setting_tap_zone";
   static const String settingAdvanced = "/setting_advanced";
   static const String settingAdBlock = "/setting_adblock";
   static const String settingPerformance = "/setting_performance";
@@ -136,10 +140,13 @@ class Routes {
 
   static const String configSync = "/setting_cloud/configSync";
 
-  static final Transition defaultTransition =
-      preferenceSetting.enableSwipeBackGesture.isTrue ? Transition.cupertino : Transition.fadeIn;
+  static final Transition defaultTransition = preferenceSetting.enableSwipeBackGesture.isTrue
+      ? Transition.cupertino
+      : Transition.fadeIn;
 
   static List<EHPage> pages = <EHPage>[
+    EHPage(name: settingFrameRate, page: () => const SettingFrameRatePage()),
+    EHPage(name: settingTapZone, page: () => const SettingTapZonePage()),
     EHPage(
       name: home,
       page: () => const HomePage(),
@@ -166,7 +173,7 @@ class Routes {
       side: Side.fullScreen,
     ),
     EHPage(
-      name: gallerys,
+      name: gallery,
       page: () => const GallerysPage(),
       transition: defaultTransition,
       side: Side.left,
@@ -194,11 +201,7 @@ class Routes {
       page: () => DetailsPage().withEscOrFifthButton2BackRightRoute(),
       transition: defaultTransition,
     ),
-    EHPage(
-      name: imagePage,
-      page: GalleryImagePage.new,
-      transition: defaultTransition,
-    ),
+    EHPage(name: imagePage, page: GalleryImagePage.new, transition: defaultTransition),
     EHPage(
       name: popular,
       page: () => PopularPage(showTitle: true, name: 'popular'.tr),
@@ -280,8 +283,9 @@ class Routes {
     ),
     EHPage(
       name: quickSearch,
-      page: () =>
-          QuickSearchPage(automaticallyImplyLeading: true).withEscOrFifthButton2BackRightRoute(),
+      page: () => QuickSearchPage(
+        automaticallyImplyLeading: true,
+      ).withEscOrFifthButton2BackRightRoute(),
       transition: defaultTransition,
       offAllBefore: false,
     ),

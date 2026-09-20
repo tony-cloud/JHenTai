@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:jhentai/model/tap_zone_config.dart';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -48,11 +49,15 @@ class ReadPage extends StatefulWidget {
 class _ReadTapRegions extends StatefulWidget {
   const _ReadTapRegions({
     required this.centerRegionRatio,
+    this.tapZoneConfig,
+    this.onTapZone,
     required this.onTapLeft,
     required this.onTapCenter,
     required this.onTapRight,
   });
 
+  final TapZoneConfig? tapZoneConfig;
+  final ValueChanged<TapZoneAction>? onTapZone;
   final double centerRegionRatio;
   final VoidCallback onTapLeft;
   final VoidCallback onTapCenter;
@@ -126,6 +131,23 @@ class _ReadTapRegionsState extends State<_ReadTapRegions> {
       return;
     }
 
+    final TapZoneConfig? config = widget.tapZoneConfig;
+    if (config != null) {
+      final double x = localPosition.dx / size.width * 100;
+      final double y = localPosition.dy / size.height * 100;
+      final int col = x < config.leftColumnWidthRatio
+          ? 0
+          : x < config.leftColumnWidthRatio + config.middleColumnWidthRatio
+              ? 1
+              : 2;
+      final int row = y < config.topRowHeightRatio
+          ? 0
+          : y < config.topRowHeightRatio + config.middleRowHeightRatio
+              ? 1
+              : 2;
+      widget.onTapZone?.call(config.actions[row * 3 + col]);
+      return;
+    }
     final double ratio = widget.centerRegionRatio.clamp(0.0, 1.0);
     final double centerWidth = size.width * ratio;
     final double sideWidth = (size.width - centerWidth) / 2;
@@ -346,6 +368,9 @@ class _ReadPageState extends State<ReadPage>
     return Obx(() {
       return _ReadTapRegions(
         centerRegionRatio: readSetting.gestureRegionWidthRatio.value / 100,
+        tapZoneConfig:
+            readSetting.tapZoneConfigJson.value == null ? null : readSetting.tapZoneConfig,
+        onTapZone: logic.handleTapZone,
         onTapLeft: logic.tapLeftRegion,
         onTapCenter: logic.tapCenterRegion,
         onTapRight: logic.tapRightRegion,
@@ -494,7 +519,9 @@ class _ReadPageState extends State<ReadPage>
                       ? -UIConfig.readPageBottomThumbnailsRegionHeight
                       : 0) -
                   UIConfig.readPageBottomSliderHeight -
-                  (readSetting.enableBottomMenu.isTrue ? UIConfig.readPageBottomActionHeight : 0) -
+                  (readSetting.enableBottomMenu.isTrue
+                      ? UIConfig.readPageBottomActionHeight
+                      : 0) -
                   max(MediaQuery.of(context).viewPadding.bottom,
                       UIConfig.readPageBottomSpacingHeight),
           child: ColoredBox(
@@ -557,7 +584,8 @@ class _ReadPageState extends State<ReadPage>
                         width: 24,
                         decoration: BoxDecoration(
                           color: state.readPageInfo.currentImageIndex == index
-                              ? UIConfig.readPageBottomCurrentImageHighlightBackgroundColor(context)
+                              ? UIConfig.readPageBottomCurrentImageHighlightBackgroundColor(
+                                  context)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -650,7 +678,8 @@ class _ReadPageState extends State<ReadPage>
         borderRadius: BorderRadius.circular(8),
       ),
       alignment: Alignment.center,
-      child: const Icon(Icons.remove_circle_outline, color: UIConfig.readPageWarningButtonColor),
+      child:
+          const Icon(Icons.remove_circle_outline, color: UIConfig.readPageWarningButtonColor),
     );
   }
 

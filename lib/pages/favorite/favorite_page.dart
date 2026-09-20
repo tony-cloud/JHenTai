@@ -6,24 +6,15 @@ import 'package:jhentai/pages/base/base_page.dart';
 import 'package:jhentai/pages/favorite/favorite_page_logic.dart';
 import 'package:jhentai/pages/favorite/favorite_page_state.dart';
 
-enum _FavoritePageMenuAction {
-  downloadAndUpdateAll,
-}
+enum _FavoritePageMenuAction { downloadAndUpdateAll }
 
 class FavoritePage extends BasePage {
-  const FavoritePage({
-    super.key,
-    super.showMenuButton,
-    super.showTitle,
-    super.name,
-  }) : super(
-          showJumpButton: true,
-          showFilterButton: true,
-          showScroll2TopButton: true,
-        );
+  const FavoritePage({super.key, super.showMenuButton, super.showTitle, super.name})
+      : super(showJumpButton: true, showFilterButton: true, showScroll2TopButton: true);
 
   @override
-  FavoritePageLogic get logic => Get.put<FavoritePageLogic>(FavoritePageLogic(), permanent: true);
+  FavoritePageLogic get logic =>
+      Get.put<FavoritePageLogic>(FavoritePageLogic(), permanent: true);
 
   @override
   FavoritePageState get state => Get.find<FavoritePageLogic>().state;
@@ -38,8 +29,9 @@ class FavoritePage extends BasePage {
     return [
       if (state.gallerys.isNotEmpty)
         IconButton(
-            icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 20),
-            onPressed: logic.handleTapJumpButton),
+          icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 20),
+          onPressed: logic.handleTapJumpButton,
+        ),
       if (state.gallerys.isNotEmpty)
         IconButton(icon: const Icon(Icons.sort), onPressed: logic.handleChangeSortOrder),
       PopupMenuButton<_FavoritePageMenuAction>(
@@ -57,8 +49,9 @@ class FavoritePage extends BasePage {
         ],
       ),
       IconButton(
-          icon: const Icon(Icons.filter_alt_outlined, size: 28),
-          onPressed: logic.handleTapFilterButton),
+        icon: const Icon(Icons.filter_alt_outlined, size: 28),
+        onPressed: logic.handleTapFilterButton,
+      ),
     ];
   }
 }

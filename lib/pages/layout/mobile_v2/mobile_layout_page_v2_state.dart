@@ -128,8 +128,10 @@ class MobileLayoutPageV2State with DoubleTapToRefreshStateMixin {
       ),
     ];
 
-    selectedDrawerTabIndex =
-        icons.firstIndexWhereOrNull((icon) => icon.name == preferenceSetting.defaultTab.value) ?? 0;
+    selectedDrawerTabIndex = icons.firstIndexWhereOrNull(
+          (icon) => icon.name == preferenceSetting.defaultTab.value,
+        ) ??
+        0;
     icons[selectedDrawerTabIndex].shouldRender = true;
   }
 }

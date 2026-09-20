@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:get/get.dart';
 import 'package:jhentai/enum/config_enum.dart';
+import 'package:jhentai/model/tap_zone_config.dart';
 import 'package:jhentai/service/log.dart';
 
 import 'package:jhentai/service/jh_service.dart';
@@ -25,11 +26,18 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
   RxBool enableTapDragToScaleUp = false.obs;
   RxBool enableBottomMenu = false.obs;
   Rx<DeviceDirection> deviceDirection = DeviceDirection.followSystem.obs;
-  Rx<ReadDirection> readDirection =
-      GetPlatform.isMobile ? ReadDirection.top2bottomList.obs : ReadDirection.left2rightList.obs;
+  Rx<ReadDirection> readDirection = GetPlatform.isMobile
+      ? ReadDirection.top2bottomList.obs
+      : ReadDirection.left2rightList.obs;
+  RxBool enableOrientationSpecificReadDirection = false.obs;
+  Rx<ReadDirection> portraitReadDirection = ReadDirection.top2bottomList.obs;
+  Rx<ReadDirection> landscapeReadDirection = ReadDirection.left2rightDoubleColumn.obs;
   RxBool notchOptimization = false.obs;
   RxInt imageRegionWidthRatio = 100.obs;
   RxInt gestureRegionWidthRatio = 60.obs;
+  RxInt portraitImageRegionWidthRatio = 100.obs;
+  RxInt landscapeImageRegionWidthRatio = 100.obs;
+  RxnString tapZoneConfigJson = RxnString();
   RxBool useThirdPartyViewer = false.obs;
   RxnString thirdPartyViewerPath = RxnString();
   RxDouble autoModeInterval = 2.0.obs;
@@ -44,6 +52,8 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
   RxBool disablePageTurningOnTap = false.obs;
   RxBool smartScaling = false.obs;
   RxInt smartScalingThreshold = 20.obs;
+  RxBool portraitDisplayFirstPageAlone = true.obs;
+  RxBool landscapeDisplayFirstPageAlone = true.obs;
   RxBool enableMaxImageKilobyte = (GetPlatform.isDesktop ||
           PlatformDispatcher.instance.views.first.physicalSize.width /
                   PlatformDispatcher.instance.views.first.devicePixelRatio >=
@@ -51,6 +61,7 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
       ? false.obs
       : true.obs;
   RxInt maxImageKilobyte = (1024 * 5).obs;
+  RxBool autoDetectWebtoon = false.obs;
 
   bool get isInListReadDirection =>
       readDirection.value == ReadDirection.top2bottomList ||
@@ -111,16 +122,27 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
     enablePageTurnAnime.value = map['enablePageTurnAnime'];
     enableDoubleTapToScaleUp.value =
         map['enableDoubleTapToScaleUp'] ?? enableDoubleTapToScaleUp.value;
-    enableTapDragToScaleUp.value = map['enableTapDragToScaleUp'] ?? enableTapDragToScaleUp.value;
+    enableTapDragToScaleUp.value =
+        map['enableTapDragToScaleUp'] ?? enableTapDragToScaleUp.value;
     enableBottomMenu.value = map['enableBottomMenu'] ?? enableBottomMenu.value;
     autoModeInterval.value = map['autoModeInterval'] ?? autoModeInterval.value;
-    autoModeStyle.value = AutoModeStyle.values[map['autoModeStyle'] ?? AutoModeStyle.scroll.index];
+    autoModeStyle.value =
+        AutoModeStyle.values[map['autoModeStyle'] ?? AutoModeStyle.scroll.index];
     deviceDirection.value =
         DeviceDirection.values[map['deviceDirection'] ?? DeviceDirection.followSystem.index];
     readDirection.value = ReadDirection.values[map['readDirection']];
     notchOptimization.value = map['notchOptimization'] ?? notchOptimization.value;
     imageRegionWidthRatio.value = map['imageRegionWidthRatio'] ?? imageRegionWidthRatio.value;
-    gestureRegionWidthRatio.value = map['gestureRegionWidthRatio'] ?? gestureRegionWidthRatio.value;
+    gestureRegionWidthRatio.value =
+        map['gestureRegionWidthRatio'] ?? gestureRegionWidthRatio.value;
+    portraitImageRegionWidthRatio.value = map['portraitImageRegionWidthRatio'] ??
+        map['imageRegionWidthRatio'] ??
+        portraitImageRegionWidthRatio.value;
+    landscapeImageRegionWidthRatio.value = map['landscapeImageRegionWidthRatio'] ??
+        map['imageRegionWidthRatio'] ??
+        landscapeImageRegionWidthRatio.value;
+    tapZoneConfigJson.value = map['tapZoneConfig'];
+    _cachedTapZoneConfig = null;
     useThirdPartyViewer.value = map['useThirdPartyViewer'] ?? useThirdPartyViewer.value;
     thirdPartyViewerPath.value = map['thirdPartyViewerPath'];
     turnPageMode.value = TurnPageMode.values[map['turnPageMode']];
@@ -131,16 +153,36 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
     displayFirstPageAlone.value = map['displayFirstPageAlone'] ?? displayFirstPageAlone.value;
     reverseTurnPageDirection.value =
         map['reverseTurnPageDirection'] ?? reverseTurnPageDirection.value;
-    disablePageTurningOnTap.value = map['disablePageTurningOnTap'] ?? disablePageTurningOnTap.value;
+    disablePageTurningOnTap.value =
+        map['disablePageTurningOnTap'] ?? disablePageTurningOnTap.value;
     smartScaling.value = map['smartScaling'] ?? map['smartTapTurnPage'] ?? smartScaling.value;
-    smartScalingThreshold.value =
-        ((map['smartScalingThreshold'] as num?)?.toInt() ??
-                (map['smartTapTurnPageThreshold'] as num?)?.toInt() ??
-                smartScalingThreshold.value)
-            .clamp(0, 100)
-            .toInt();
-    enableMaxImageKilobyte.value = map['enableMaxImageKilobyte'] ?? enableMaxImageKilobyte.value;
+    smartScalingThreshold.value = ((map['smartScalingThreshold'] as num?)?.toInt() ??
+            (map['smartTapTurnPageThreshold'] as num?)?.toInt() ??
+            smartScalingThreshold.value)
+        .clamp(0, 100)
+        .toInt();
+    enableMaxImageKilobyte.value =
+        map['enableMaxImageKilobyte'] ?? enableMaxImageKilobyte.value;
     maxImageKilobyte.value = map['maxImageKilobyte'] ?? maxImageKilobyte.value;
+    portraitDisplayFirstPageAlone.value = map['portraitDisplayFirstPageAlone'] ??
+        map['displayFirstPageAlone'] ??
+        portraitDisplayFirstPageAlone.value;
+    landscapeDisplayFirstPageAlone.value = map['landscapeDisplayFirstPageAlone'] ??
+        map['displayFirstPageAlone'] ??
+        landscapeDisplayFirstPageAlone.value;
+    enableMaxImageKilobyte.value =
+        map['enableMaxImageKilobyte'] ?? enableMaxImageKilobyte.value;
+    maxImageKilobyte.value = map['maxImageKilobyte'] ?? maxImageKilobyte.value;
+    enableOrientationSpecificReadDirection.value =
+        map['enableOrientationSpecificReadDirection'] ??
+            enableOrientationSpecificReadDirection.value;
+    autoDetectWebtoon.value = map['autoDetectWebtoon'] ?? autoDetectWebtoon.value;
+
+    /// On first load, migrate existing readDirection to both portrait and landscape
+    portraitReadDirection.value =
+        ReadDirection.values[map['portraitReadDirection'] ?? map['readDirection']];
+    landscapeReadDirection.value =
+        ReadDirection.values[map['landscapeReadDirection'] ?? map['readDirection']];
   }
 
   @override
@@ -167,6 +209,9 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
       'notchOptimization': notchOptimization.value,
       'imageRegionWidthRatio': imageRegionWidthRatio.value,
       'gestureRegionWidthRatio': gestureRegionWidthRatio.value,
+      'portraitImageRegionWidthRatio': portraitImageRegionWidthRatio.value,
+      'landscapeImageRegionWidthRatio': landscapeImageRegionWidthRatio.value,
+      'tapZoneConfig': tapZoneConfigJson.value,
       'useThirdPartyViewer': useThirdPartyViewer.value,
       'thirdPartyViewerPath': thirdPartyViewerPath.value,
       'turnPageMode': turnPageMode.value.index,
@@ -181,6 +226,12 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
       'smartScalingThreshold': smartScalingThreshold.value,
       'enableMaxImageKilobyte': enableMaxImageKilobyte.value,
       'maxImageKilobyte': maxImageKilobyte.value,
+      'portraitDisplayFirstPageAlone': portraitDisplayFirstPageAlone.value,
+      'landscapeDisplayFirstPageAlone': landscapeDisplayFirstPageAlone.value,
+      'enableOrientationSpecificReadDirection': enableOrientationSpecificReadDirection.value,
+      'autoDetectWebtoon': autoDetectWebtoon.value,
+      'portraitReadDirection': portraitReadDirection.value.index,
+      'landscapeReadDirection': landscapeReadDirection.value.index,
     });
   }
 
@@ -286,6 +337,43 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
     await saveBeanConfig();
   }
 
+  Future<void> savePortraitImageRegionWidthRatio(int value) async {
+    log.debug('savePortraitImageRegionWidthRatio:$value');
+    portraitImageRegionWidthRatio.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveLandscapeImageRegionWidthRatio(int value) async {
+    log.debug('saveLandscapeImageRegionWidthRatio:$value');
+    landscapeImageRegionWidthRatio.value = value;
+    await saveBeanConfig();
+  }
+
+  TapZoneConfig? _cachedTapZoneConfig;
+
+  TapZoneConfig get tapZoneConfig {
+    if (_cachedTapZoneConfig != null) {
+      return _cachedTapZoneConfig!;
+    }
+    String? json = tapZoneConfigJson.value;
+    if (json == null) {
+      return _cachedTapZoneConfig = TapZoneConfig.classic();
+    }
+    try {
+      return _cachedTapZoneConfig = TapZoneConfig.fromJsonString(json);
+    } catch (e) {
+      log.error('Failed to parse tapZoneConfig, fallback to classic', e);
+      return _cachedTapZoneConfig = TapZoneConfig.classic();
+    }
+  }
+
+  Future<void> saveTapZoneConfig(TapZoneConfig value) async {
+    log.debug('saveTapZoneConfig:${value.toJsonString()}');
+    _cachedTapZoneConfig = value;
+    tapZoneConfigJson.value = value.toJsonString();
+    await saveBeanConfig();
+  }
+
   Future<void> saveUseThirdPartyViewer(bool value) async {
     log.debug('saveUseThirdPartyViewer:$value');
     useThirdPartyViewer.value = value;
@@ -382,10 +470,15 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
     await saveBeanConfig();
   }
 
-  Future<void> saveSmartScalingThreshold(int value) async {
-    value = value.clamp(0, 100).toInt();
-    log.debug('saveSmartScalingThreshold:$value');
-    smartScalingThreshold.value = value;
+  Future<void> savePortraitDisplayFirstPageAlone(bool value) async {
+    log.debug('savePortraitDisplayFirstPageAlone:$value');
+    portraitDisplayFirstPageAlone.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveLandscapeDisplayFirstPageAlone(bool value) async {
+    log.debug('saveLandscapeDisplayFirstPageAlone:$value');
+    landscapeDisplayFirstPageAlone.value = value;
     await saveBeanConfig();
   }
 
@@ -398,6 +491,25 @@ class ReadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircle
   Future<void> saveMaxImageKilobyte(int value) async {
     log.debug('saveMaxImageKilobyte:$value');
     maxImageKilobyte.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveSmartScalingThreshold(int value) async {
+    value = value.clamp(0, 100).toInt();
+    log.debug('saveSmartScalingThreshold:$value');
+    smartScalingThreshold.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveAutoDetectWebtoon(bool value) async {
+    log.debug('saveAutoDetectWebtoon:$value');
+    autoDetectWebtoon.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> savePortraitReadDirection(ReadDirection value) async {
+    log.debug('savePortraitReadDirection:${value.name}');
+    portraitReadDirection.value = value;
     await saveBeanConfig();
   }
 }
@@ -425,7 +537,4 @@ enum TurnPageMode {
   adaptive,
 }
 
-enum AutoModeStyle {
-  scroll,
-  turnPage,
-}
+enum AutoModeStyle { scroll, turnPage }

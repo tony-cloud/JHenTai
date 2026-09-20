@@ -113,6 +113,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             _buildHistorySearchLimit(),
             _buildCheckClipboard(),
             if (GetPlatform.isAndroid) _buildVerifyAppLinks(),
+            if (GetPlatform.isAndroid) _buildRefreshRate(),
             _buildInNoImageMode(),
             _buildImportData(context),
             _buildExportData(context),
@@ -127,7 +128,9 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       title: Text('enableLogging'.tr),
       subtitle: Text('needRestart'.tr),
       trailing: Switch(
-          value: advancedSetting.enableLogging.value, onChanged: advancedSetting.saveEnableLogging),
+        value: advancedSetting.enableLogging.value,
+        onChanged: advancedSetting.saveEnableLogging,
+      ),
     );
   }
 
@@ -161,10 +164,10 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
           advancedSetting.saveLogLevel(level);
         },
         items: _logLevels
-            .map((level) => DropdownMenuItem<Level>(
-                  value: level,
-                  child: Text(level.name.toUpperCase()),
-                ))
+            .map(
+              (level) =>
+                  DropdownMenuItem<Level>(value: level, child: Text(level.name.toUpperCase())),
+            )
             .toList(),
       ),
     );
@@ -191,10 +194,12 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             successWidgetBuilder: () => Text(
               _logSize,
               style: TextStyle(
-                  color: UIConfig.resumePauseButtonColor(context), fontWeight: FontWeight.w500),
+                color: UIConfig.resumePauseButtonColor(context),
+                fontWeight: FontWeight.w500,
+              ),
             ),
             errorTapCallback: _loadingLogSize,
-          ).marginOnly(right: 8)
+          ).marginOnly(right: 8),
         ],
       ),
       onLongPress: _clearAndLoadingLogSize,
@@ -223,10 +228,12 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             successWidgetBuilder: () => Text(
               _imageCacheSize,
               style: TextStyle(
-                  color: UIConfig.resumePauseButtonColor(context), fontWeight: FontWeight.w500),
+                color: UIConfig.resumePauseButtonColor(context),
+                fontWeight: FontWeight.w500,
+              ),
             ),
             errorTapCallback: _getImagesCacheSize,
-          ).marginOnly(right: 8)
+          ).marginOnly(right: 8),
         ],
       ),
       onLongPress: _clearAndLoadingImageCacheSize,
@@ -276,12 +283,10 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
                 Icon(Icons.refresh, color: UIConfig.resumePauseButtonColor(tileContext)),
             successWidgetBuilder: () =>
                 Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
-            errorWidgetBuilder: () => Icon(
-              Icons.error_outline,
-              color: Theme.of(tileContext).colorScheme.error,
-            ),
+            errorWidgetBuilder: () =>
+                Icon(Icons.error_outline, color: Theme.of(tileContext).colorScheme.error),
             errorTapCallback: _repairMissingImages,
-          ).marginOnly(right: 8)
+          ).marginOnly(right: 8),
         ],
       ),
       onLongPress: _repairMissingImages,
@@ -300,16 +305,16 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
           LoadingStateIndicator(
             loadingState: _cleanupDuplicatedGalleryState,
             useCupertinoIndicator: true,
-            idleWidgetBuilder: () =>
-                Icon(Icons.cleaning_services, color: UIConfig.resumePauseButtonColor(tileContext)),
+            idleWidgetBuilder: () => Icon(
+              Icons.cleaning_services,
+              color: UIConfig.resumePauseButtonColor(tileContext),
+            ),
             successWidgetBuilder: () =>
                 Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
-            errorWidgetBuilder: () => Icon(
-              Icons.error_outline,
-              color: Theme.of(tileContext).colorScheme.error,
-            ),
+            errorWidgetBuilder: () =>
+                Icon(Icons.error_outline, color: Theme.of(tileContext).colorScheme.error),
             errorTapCallback: _cleanupDuplicatedGallery,
-          ).marginOnly(right: 8)
+          ).marginOnly(right: 8),
         ],
       ),
       onLongPress: _cleanupDuplicatedGallery,
@@ -348,12 +353,10 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
                 Icon(Icons.delete_sweep, color: UIConfig.resumePauseButtonColor(tileContext)),
             successWidgetBuilder: () =>
                 Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
-            errorWidgetBuilder: () => Icon(
-              Icons.error_outline,
-              color: Theme.of(tileContext).colorScheme.error,
-            ),
+            errorWidgetBuilder: () =>
+                Icon(Icons.error_outline, color: Theme.of(tileContext).colorScheme.error),
             errorTapCallback: _clearParentGalleryCache,
-          ).marginOnly(right: 8)
+          ).marginOnly(right: 8),
         ],
       ),
       onLongPress: _clearParentGalleryCache,
@@ -368,10 +371,11 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             .tr
             .replaceAll('@port', ftpServerSetting.port.value.toString())
             .replaceAll(
-                '@access',
-                ftpServerSetting.allowReadAndWrite.isTrue
-                    ? 'ftpServerAccessReadWrite'.tr
-                    : 'ftpServerAccessReadOnly'.tr)
+              '@access',
+              ftpServerSetting.allowReadAndWrite.isTrue
+                  ? 'ftpServerAccessReadWrite'.tr
+                  : 'ftpServerAccessReadOnly'.tr,
+            )
         : 'ftpServerDisabledSummary'.tr;
 
     return ListTile(
@@ -381,8 +385,10 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (running)
-            Icon(Icons.wifi_tethering, color: UIConfig.resumePauseButtonColor(context))
-                .marginOnly(right: 8),
+            Icon(
+              Icons.wifi_tethering,
+              color: UIConfig.resumePauseButtonColor(context),
+            ).marginOnly(right: 8),
           const Icon(Icons.keyboard_arrow_right).marginOnly(right: 4),
         ],
       ),
@@ -408,10 +414,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
   }
 
   Future<void> _showFtpServerDialog(BuildContext context) async {
-    await showDialog(
-      context: context,
-      builder: (_) => const FtpServerDialog(),
-    );
+    await showDialog(context: context, builder: (_) => const FtpServerDialog());
   }
 
   Widget _buildCheckUpdate() {
@@ -496,20 +499,15 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
                 Icon(Icons.sync, color: UIConfig.resumePauseButtonColor(tileContext)),
             successWidgetBuilder: () =>
                 Icon(Icons.check, color: UIConfig.resumePauseButtonColor(tileContext)),
-            errorWidgetBuilder: () => Icon(
-              Icons.error_outline,
-              color: Theme.of(tileContext).colorScheme.error,
-            ),
+            errorWidgetBuilder: () =>
+                Icon(Icons.error_outline, color: Theme.of(tileContext).colorScheme.error),
             errorTapCallback: _mitigateArchiveToDownloadManually,
           ).marginOnly(right: 8),
           if (showInterruptButton)
             IconButton(
               onPressed: _interruptArchiveMitigation,
               tooltip: 'stop'.tr,
-              icon: Icon(
-                Icons.stop_circle_outlined,
-                color: UIConfig.alertColor(tileContext),
-              ),
+              icon: Icon(Icons.stop_circle_outlined, color: UIConfig.alertColor(tileContext)),
             ),
         ],
       ),
@@ -537,6 +535,14 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
     );
   }
 
+  Widget _buildRefreshRate() {
+    return ListTile(
+      title: Text('refreshRate'.tr),
+      trailing: const Icon(Icons.keyboard_arrow_right).marginOnly(right: 4),
+      onTap: () => toRoute(Routes.settingFrameRate),
+    );
+  }
+
   Widget _buildInNoImageMode() {
     return SwitchListTile(
       title: Text('noImageMode'.tr),
@@ -557,7 +563,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             successWidgetSameWithIdle: true,
             useCupertinoIndicator: true,
             errorWidgetSameWithIdle: true,
-          ).marginOnly(right: 8)
+          ).marginOnly(right: 8),
         ],
       ),
       onTap: () => _importData(context),
@@ -576,7 +582,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
             successWidgetSameWithIdle: true,
             useCupertinoIndicator: true,
             errorWidgetSameWithIdle: true,
-          ).marginOnly(right: 8)
+          ).marginOnly(right: 8),
         ],
       ),
       onTap: () => _exportData(context),
@@ -621,22 +627,21 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
     setStateSafely(() => _imageCacheLoadingState = LoadingState.loading);
 
     try {
-      _imageCacheSize = await compute(
-        (dirPath) {
-          Directory cacheImagesDirectory = Directory(dirPath);
+      _imageCacheSize = await compute((dirPath) {
+        Directory cacheImagesDirectory = Directory(dirPath);
 
-          int totalBytes;
-          if (!cacheImagesDirectory.existsSync()) {
-            totalBytes = 0;
-          } else {
-            totalBytes = cacheImagesDirectory.listSync().fold<int>(
-                0, (previousValue, element) => previousValue += (element as File).lengthSync());
-          }
+        int totalBytes;
+        if (!cacheImagesDirectory.existsSync()) {
+          totalBytes = 0;
+        } else {
+          totalBytes = cacheImagesDirectory.listSync().fold<int>(
+                0,
+                (previousValue, element) => previousValue += (element as File).lengthSync(),
+              );
+        }
 
-          return byte2String(totalBytes.toDouble());
-        },
-        join(pathService.tempDir.path, cacheImageFolderName),
-      );
+        return byte2String(totalBytes.toDouble());
+      }, join(pathService.tempDir.path, cacheImageFolderName));
     } catch (e) {
       log.error(e);
       _imageCacheSize = '-1B';
@@ -672,8 +677,10 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       }
       setStateSafely(() => _repairMissingImagesState = LoadingState.success);
       toast(
-        'repairMissingImagesResult'
-            .trParams({'count': '${result.repaired}', 'renamed': '${result.renamed}'}),
+        'repairMissingImagesResult'.trParams({
+          'count': '${result.repaired}',
+          'renamed': '${result.renamed}',
+        }),
         isCenter: false,
       );
     } catch (e, s) {
@@ -756,10 +763,7 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
       }
 
       setStateSafely(() => _clearParentGalleryCacheState = LoadingState.success);
-      toast(
-        'clearParentGalleryCacheResult'.trParams({'count': '$count'}),
-        isCenter: false,
-      );
+      toast('clearParentGalleryCacheResult'.trParams({'count': '$count'}), isCenter: false);
     } catch (e, s) {
       log.error('Clear parent gallery cache failed', e, s);
       if (mounted) {
@@ -950,8 +954,11 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
         indicatorRadius: 10,
         idleWidgetBuilder: () => Icon(Icons.refresh, color: accent, size: 20),
         successWidgetBuilder: () => Icon(Icons.check, color: accent, size: 20),
-        errorWidgetBuilder: () =>
-            Icon(Icons.error_outline, color: Theme.of(tileContext).colorScheme.error, size: 20),
+        errorWidgetBuilder: () => Icon(
+          Icons.error_outline,
+          color: Theme.of(tileContext).colorScheme.error,
+          size: 20,
+        ),
         errorTapCallback: () {
           runTask();
         },
@@ -1098,8 +1105,9 @@ class _SettingAdvancedPageState extends State<SettingAdvancedPage> {
   void _saveHistorySearchLimit(String text) {
     final int? parsed = text.isEmpty ? 0 : int.tryParse(text);
     if (parsed == null) {
-      _historySearchLimitController.text =
-          _formatHistoryLimitText(advancedSetting.historySearchLimit.value);
+      _historySearchLimitController.text = _formatHistoryLimitText(
+        advancedSetting.historySearchLimit.value,
+      );
       return;
     }
 

@@ -12,24 +12,39 @@ class $OldSuperResolutionInfoTable extends OldSuperResolutionInfo
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<int> type = GeneratedColumn<int>(
-      'type', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<int> status = GeneratedColumn<int>(
-      'status', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _imageStatusesMeta =
-      const VerificationMeta('imageStatuses');
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _imageStatusesMeta = const VerificationMeta('imageStatuses');
   @override
   late final GeneratedColumn<String> imageStatuses = GeneratedColumn<String>(
-      'imageStatuses', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'imageStatuses',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [gid, type, status, imageStatuses];
   @override
@@ -39,31 +54,29 @@ class $OldSuperResolutionInfoTable extends OldSuperResolutionInfo
   static const String $name = 'super_resolution_info';
   @override
   VerificationContext validateIntegrity(
-      Insertable<OldSuperResolutionInfoData> instance,
-      {bool isInserting = false}) {
+    Insertable<OldSuperResolutionInfoData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     }
     if (data.containsKey('type')) {
-      context.handle(
-          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+      context.handle(_typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
     } else if (isInserting) {
       context.missing(_typeMeta);
     }
     if (data.containsKey('status')) {
-      context.handle(_statusMeta,
-          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+      context.handle(_statusMeta, status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     } else if (isInserting) {
       context.missing(_statusMeta);
     }
     if (data.containsKey('imageStatuses')) {
       context.handle(
-          _imageStatusesMeta,
-          imageStatuses.isAcceptableOrUnknown(
-              data['imageStatuses']!, _imageStatusesMeta));
+        _imageStatusesMeta,
+        imageStatuses.isAcceptableOrUnknown(data['imageStatuses']!, _imageStatusesMeta),
+      );
     } else if (isInserting) {
       context.missing(_imageStatusesMeta);
     }
@@ -73,18 +86,22 @@ class $OldSuperResolutionInfoTable extends OldSuperResolutionInfo
   @override
   Set<GeneratedColumn> get $primaryKey => {gid};
   @override
-  OldSuperResolutionInfoData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  OldSuperResolutionInfoData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return OldSuperResolutionInfoData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      type: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}type'])!,
-      status: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}status'])!,
-      imageStatuses: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}imageStatuses'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}type'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}status'],
+      )!,
+      imageStatuses: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}imageStatuses'],
+      )!,
     );
   }
 
@@ -100,11 +117,12 @@ class OldSuperResolutionInfoData extends DataClass
   final int type;
   final int status;
   final String imageStatuses;
-  const OldSuperResolutionInfoData(
-      {required this.gid,
-      required this.type,
-      required this.status,
-      required this.imageStatuses});
+  const OldSuperResolutionInfoData({
+    required this.gid,
+    required this.type,
+    required this.status,
+    required this.imageStatuses,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -124,8 +142,10 @@ class OldSuperResolutionInfoData extends DataClass
     );
   }
 
-  factory OldSuperResolutionInfoData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory OldSuperResolutionInfoData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return OldSuperResolutionInfoData(
       gid: serializer.fromJson<int>(json['gid']),
@@ -145,23 +165,25 @@ class OldSuperResolutionInfoData extends DataClass
     };
   }
 
-  OldSuperResolutionInfoData copyWith(
-          {int? gid, int? type, int? status, String? imageStatuses}) =>
+  OldSuperResolutionInfoData copyWith({
+    int? gid,
+    int? type,
+    int? status,
+    String? imageStatuses,
+  }) =>
       OldSuperResolutionInfoData(
         gid: gid ?? this.gid,
         type: type ?? this.type,
         status: status ?? this.status,
         imageStatuses: imageStatuses ?? this.imageStatuses,
       );
-  OldSuperResolutionInfoData copyWithCompanion(
-      OldSuperResolutionInfoCompanion data) {
+  OldSuperResolutionInfoData copyWithCompanion(OldSuperResolutionInfoCompanion data) {
     return OldSuperResolutionInfoData(
       gid: data.gid.present ? data.gid.value : this.gid,
       type: data.type.present ? data.type.value : this.type,
       status: data.status.present ? data.status.value : this.status,
-      imageStatuses: data.imageStatuses.present
-          ? data.imageStatuses.value
-          : this.imageStatuses,
+      imageStatuses:
+          data.imageStatuses.present ? data.imageStatuses.value : this.imageStatuses,
     );
   }
 
@@ -188,8 +210,7 @@ class OldSuperResolutionInfoData extends DataClass
           other.imageStatuses == this.imageStatuses);
 }
 
-class OldSuperResolutionInfoCompanion
-    extends UpdateCompanion<OldSuperResolutionInfoData> {
+class OldSuperResolutionInfoCompanion extends UpdateCompanion<OldSuperResolutionInfoData> {
   final Value<int> gid;
   final Value<int> type;
   final Value<int> status;
@@ -222,11 +243,12 @@ class OldSuperResolutionInfoCompanion
     });
   }
 
-  OldSuperResolutionInfoCompanion copyWith(
-      {Value<int>? gid,
-      Value<int>? type,
-      Value<int>? status,
-      Value<String>? imageStatuses}) {
+  OldSuperResolutionInfoCompanion copyWith({
+    Value<int>? gid,
+    Value<int>? type,
+    Value<int>? status,
+    Value<String>? imageStatuses,
+  }) {
     return OldSuperResolutionInfoCompanion(
       gid: gid ?? this.gid,
       type: type ?? this.type,
@@ -274,24 +296,39 @@ class $SuperResolutionInfoTable extends SuperResolutionInfo
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<int> type = GeneratedColumn<int>(
-      'type', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<int> status = GeneratedColumn<int>(
-      'status', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _imageStatusesMeta =
-      const VerificationMeta('imageStatuses');
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _imageStatusesMeta = const VerificationMeta('imageStatuses');
   @override
   late final GeneratedColumn<String> imageStatuses = GeneratedColumn<String>(
-      'image_statuses', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'image_statuses',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [gid, type, status, imageStatuses];
   @override
@@ -301,33 +338,31 @@ class $SuperResolutionInfoTable extends SuperResolutionInfo
   static const String $name = 'super_resolution_info_v2';
   @override
   VerificationContext validateIntegrity(
-      Insertable<SuperResolutionInfoData> instance,
-      {bool isInserting = false}) {
+    Insertable<SuperResolutionInfoData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     } else if (isInserting) {
       context.missing(_gidMeta);
     }
     if (data.containsKey('type')) {
-      context.handle(
-          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+      context.handle(_typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
     } else if (isInserting) {
       context.missing(_typeMeta);
     }
     if (data.containsKey('status')) {
-      context.handle(_statusMeta,
-          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+      context.handle(_statusMeta, status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     } else if (isInserting) {
       context.missing(_statusMeta);
     }
     if (data.containsKey('image_statuses')) {
       context.handle(
-          _imageStatusesMeta,
-          imageStatuses.isAcceptableOrUnknown(
-              data['image_statuses']!, _imageStatusesMeta));
+        _imageStatusesMeta,
+        imageStatuses.isAcceptableOrUnknown(data['image_statuses']!, _imageStatusesMeta),
+      );
     } else if (isInserting) {
       context.missing(_imageStatusesMeta);
     }
@@ -337,18 +372,22 @@ class $SuperResolutionInfoTable extends SuperResolutionInfo
   @override
   Set<GeneratedColumn> get $primaryKey => {gid, type};
   @override
-  SuperResolutionInfoData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  SuperResolutionInfoData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SuperResolutionInfoData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      type: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}type'])!,
-      status: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}status'])!,
-      imageStatuses: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}image_statuses'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}type'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}status'],
+      )!,
+      imageStatuses: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_statuses'],
+      )!,
     );
   }
 
@@ -364,11 +403,12 @@ class SuperResolutionInfoData extends DataClass
   final int type;
   final int status;
   final String imageStatuses;
-  const SuperResolutionInfoData(
-      {required this.gid,
-      required this.type,
-      required this.status,
-      required this.imageStatuses});
+  const SuperResolutionInfoData({
+    required this.gid,
+    required this.type,
+    required this.status,
+    required this.imageStatuses,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -388,8 +428,10 @@ class SuperResolutionInfoData extends DataClass
     );
   }
 
-  factory SuperResolutionInfoData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory SuperResolutionInfoData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SuperResolutionInfoData(
       gid: serializer.fromJson<int>(json['gid']),
@@ -409,8 +451,12 @@ class SuperResolutionInfoData extends DataClass
     };
   }
 
-  SuperResolutionInfoData copyWith(
-          {int? gid, int? type, int? status, String? imageStatuses}) =>
+  SuperResolutionInfoData copyWith({
+    int? gid,
+    int? type,
+    int? status,
+    String? imageStatuses,
+  }) =>
       SuperResolutionInfoData(
         gid: gid ?? this.gid,
         type: type ?? this.type,
@@ -422,9 +468,8 @@ class SuperResolutionInfoData extends DataClass
       gid: data.gid.present ? data.gid.value : this.gid,
       type: data.type.present ? data.type.value : this.type,
       status: data.status.present ? data.status.value : this.status,
-      imageStatuses: data.imageStatuses.present
-          ? data.imageStatuses.value
-          : this.imageStatuses,
+      imageStatuses:
+          data.imageStatuses.present ? data.imageStatuses.value : this.imageStatuses,
     );
   }
 
@@ -451,8 +496,7 @@ class SuperResolutionInfoData extends DataClass
           other.imageStatuses == this.imageStatuses);
 }
 
-class SuperResolutionInfoCompanion
-    extends UpdateCompanion<SuperResolutionInfoData> {
+class SuperResolutionInfoCompanion extends UpdateCompanion<SuperResolutionInfoData> {
   final Value<int> gid;
   final Value<int> type;
   final Value<int> status;
@@ -491,12 +535,13 @@ class SuperResolutionInfoCompanion
     });
   }
 
-  SuperResolutionInfoCompanion copyWith(
-      {Value<int>? gid,
-      Value<int>? type,
-      Value<int>? status,
-      Value<String>? imageStatuses,
-      Value<int>? rowid}) {
+  SuperResolutionInfoCompanion copyWith({
+    Value<int>? gid,
+    Value<int>? type,
+    Value<int>? status,
+    Value<String>? imageStatuses,
+    Value<int>? rowid,
+  }) {
     return SuperResolutionInfoCompanion(
       gid: gid ?? this.gid,
       type: type ?? this.type,
@@ -545,93 +590,132 @@ class $TagTable extends Tag with TableInfo<$TagTable, TagData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TagTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _namespaceMeta =
-      const VerificationMeta('namespace');
+  static const VerificationMeta _namespaceMeta = const VerificationMeta('namespace');
   @override
   late final GeneratedColumn<String> namespace = GeneratedColumn<String>(
-      'namespace', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'namespace',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
-      '_key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _translatedNamespaceMeta =
-      const VerificationMeta('translatedNamespace');
+    '_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _translatedNamespaceMeta = const VerificationMeta(
+    'translatedNamespace',
+  );
   @override
-  late final GeneratedColumn<String> translatedNamespace =
-      GeneratedColumn<String>('translatedNamespace', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _tagNameMeta =
-      const VerificationMeta('tagName');
+  late final GeneratedColumn<String> translatedNamespace = GeneratedColumn<String>(
+    'translatedNamespace',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tagNameMeta = const VerificationMeta('tagName');
   @override
   late final GeneratedColumn<String> tagName = GeneratedColumn<String>(
-      'tagName', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _fullTagNameMeta =
-      const VerificationMeta('fullTagName');
+    'tagName',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fullTagNameMeta = const VerificationMeta('fullTagName');
   @override
   late final GeneratedColumn<String> fullTagName = GeneratedColumn<String>(
-      'fullTagName', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'fullTagName',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _introMeta = const VerificationMeta('intro');
   @override
   late final GeneratedColumn<String> intro = GeneratedColumn<String>(
-      'intro', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'intro',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _linksMeta = const VerificationMeta('links');
   @override
   late final GeneratedColumn<String> links = GeneratedColumn<String>(
-      'links', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'links',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [namespace, key, translatedNamespace, tagName, fullTagName, intro, links];
+  List<GeneratedColumn> get $columns => [
+        namespace,
+        key,
+        translatedNamespace,
+        tagName,
+        fullTagName,
+        intro,
+        links,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'tag';
   @override
-  VerificationContext validateIntegrity(Insertable<TagData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<TagData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('namespace')) {
-      context.handle(_namespaceMeta,
-          namespace.isAcceptableOrUnknown(data['namespace']!, _namespaceMeta));
+      context.handle(
+        _namespaceMeta,
+        namespace.isAcceptableOrUnknown(data['namespace']!, _namespaceMeta),
+      );
     } else if (isInserting) {
       context.missing(_namespaceMeta);
     }
     if (data.containsKey('_key')) {
-      context.handle(
-          _keyMeta, key.isAcceptableOrUnknown(data['_key']!, _keyMeta));
+      context.handle(_keyMeta, key.isAcceptableOrUnknown(data['_key']!, _keyMeta));
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('translatedNamespace')) {
       context.handle(
+        _translatedNamespaceMeta,
+        translatedNamespace.isAcceptableOrUnknown(
+          data['translatedNamespace']!,
           _translatedNamespaceMeta,
-          translatedNamespace.isAcceptableOrUnknown(
-              data['translatedNamespace']!, _translatedNamespaceMeta));
+        ),
+      );
     }
     if (data.containsKey('tagName')) {
-      context.handle(_tagNameMeta,
-          tagName.isAcceptableOrUnknown(data['tagName']!, _tagNameMeta));
+      context.handle(
+        _tagNameMeta,
+        tagName.isAcceptableOrUnknown(data['tagName']!, _tagNameMeta),
+      );
     }
     if (data.containsKey('fullTagName')) {
       context.handle(
-          _fullTagNameMeta,
-          fullTagName.isAcceptableOrUnknown(
-              data['fullTagName']!, _fullTagNameMeta));
+        _fullTagNameMeta,
+        fullTagName.isAcceptableOrUnknown(data['fullTagName']!, _fullTagNameMeta),
+      );
     }
     if (data.containsKey('intro')) {
-      context.handle(
-          _introMeta, intro.isAcceptableOrUnknown(data['intro']!, _introMeta));
+      context.handle(_introMeta, intro.isAcceptableOrUnknown(data['intro']!, _introMeta));
     }
     if (data.containsKey('links')) {
-      context.handle(
-          _linksMeta, links.isAcceptableOrUnknown(data['links']!, _linksMeta));
+      context.handle(_linksMeta, links.isAcceptableOrUnknown(data['links']!, _linksMeta));
     }
     return context;
   }
@@ -642,20 +726,34 @@ class $TagTable extends Tag with TableInfo<$TagTable, TagData> {
   TagData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TagData(
-      namespace: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}namespace'])!,
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}_key'])!,
+      namespace: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}namespace'],
+      )!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}_key'],
+      )!,
       translatedNamespace: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}translatedNamespace']),
-      tagName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}tagName']),
-      fullTagName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}fullTagName']),
-      intro: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}intro']),
-      links: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}links']),
+        DriftSqlType.string,
+        data['${effectivePrefix}translatedNamespace'],
+      ),
+      tagName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tagName'],
+      ),
+      fullTagName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fullTagName'],
+      ),
+      intro: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}intro'],
+      ),
+      links: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}links'],
+      ),
     );
   }
 
@@ -673,14 +771,15 @@ class TagData extends DataClass implements Insertable<TagData> {
   final String? fullTagName;
   final String? intro;
   final String? links;
-  const TagData(
-      {required this.namespace,
-      required this.key,
-      this.translatedNamespace,
-      this.tagName,
-      this.fullTagName,
-      this.intro,
-      this.links});
+  const TagData({
+    required this.namespace,
+    required this.key,
+    this.translatedNamespace,
+    this.tagName,
+    this.fullTagName,
+    this.intro,
+    this.links,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -711,27 +810,20 @@ class TagData extends DataClass implements Insertable<TagData> {
       translatedNamespace: translatedNamespace == null && nullToAbsent
           ? const Value.absent()
           : Value(translatedNamespace),
-      tagName: tagName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(tagName),
-      fullTagName: fullTagName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(fullTagName),
-      intro:
-          intro == null && nullToAbsent ? const Value.absent() : Value(intro),
-      links:
-          links == null && nullToAbsent ? const Value.absent() : Value(links),
+      tagName: tagName == null && nullToAbsent ? const Value.absent() : Value(tagName),
+      fullTagName:
+          fullTagName == null && nullToAbsent ? const Value.absent() : Value(fullTagName),
+      intro: intro == null && nullToAbsent ? const Value.absent() : Value(intro),
+      links: links == null && nullToAbsent ? const Value.absent() : Value(links),
     );
   }
 
-  factory TagData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TagData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TagData(
       namespace: serializer.fromJson<String>(json['namespace']),
       key: serializer.fromJson<String>(json['_key']),
-      translatedNamespace:
-          serializer.fromJson<String?>(json['translatedNamespace']),
+      translatedNamespace: serializer.fromJson<String?>(json['translatedNamespace']),
       tagName: serializer.fromJson<String?>(json['tagName']),
       fullTagName: serializer.fromJson<String?>(json['fullTagName']),
       intro: serializer.fromJson<String?>(json['intro']),
@@ -752,20 +844,20 @@ class TagData extends DataClass implements Insertable<TagData> {
     };
   }
 
-  TagData copyWith(
-          {String? namespace,
-          String? key,
-          Value<String?> translatedNamespace = const Value.absent(),
-          Value<String?> tagName = const Value.absent(),
-          Value<String?> fullTagName = const Value.absent(),
-          Value<String?> intro = const Value.absent(),
-          Value<String?> links = const Value.absent()}) =>
+  TagData copyWith({
+    String? namespace,
+    String? key,
+    Value<String?> translatedNamespace = const Value.absent(),
+    Value<String?> tagName = const Value.absent(),
+    Value<String?> fullTagName = const Value.absent(),
+    Value<String?> intro = const Value.absent(),
+    Value<String?> links = const Value.absent(),
+  }) =>
       TagData(
         namespace: namespace ?? this.namespace,
         key: key ?? this.key,
-        translatedNamespace: translatedNamespace.present
-            ? translatedNamespace.value
-            : this.translatedNamespace,
+        translatedNamespace:
+            translatedNamespace.present ? translatedNamespace.value : this.translatedNamespace,
         tagName: tagName.present ? tagName.value : this.tagName,
         fullTagName: fullTagName.present ? fullTagName.value : this.fullTagName,
         intro: intro.present ? intro.value : this.intro,
@@ -779,8 +871,7 @@ class TagData extends DataClass implements Insertable<TagData> {
           ? data.translatedNamespace.value
           : this.translatedNamespace,
       tagName: data.tagName.present ? data.tagName.value : this.tagName,
-      fullTagName:
-          data.fullTagName.present ? data.fullTagName.value : this.fullTagName,
+      fullTagName: data.fullTagName.present ? data.fullTagName.value : this.fullTagName,
       intro: data.intro.present ? data.intro.value : this.intro,
       links: data.links.present ? data.links.value : this.links,
     );
@@ -801,8 +892,8 @@ class TagData extends DataClass implements Insertable<TagData> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      namespace, key, translatedNamespace, tagName, fullTagName, intro, links);
+  int get hashCode =>
+      Object.hash(namespace, key, translatedNamespace, tagName, fullTagName, intro, links);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -859,8 +950,7 @@ class TagCompanion extends UpdateCompanion<TagData> {
     return RawValuesInsertable({
       if (namespace != null) 'namespace': namespace,
       if (key != null) '_key': key,
-      if (translatedNamespace != null)
-        'translatedNamespace': translatedNamespace,
+      if (translatedNamespace != null) 'translatedNamespace': translatedNamespace,
       if (tagName != null) 'tagName': tagName,
       if (fullTagName != null) 'fullTagName': fullTagName,
       if (intro != null) 'intro': intro,
@@ -869,15 +959,16 @@ class TagCompanion extends UpdateCompanion<TagData> {
     });
   }
 
-  TagCompanion copyWith(
-      {Value<String>? namespace,
-      Value<String>? key,
-      Value<String?>? translatedNamespace,
-      Value<String?>? tagName,
-      Value<String?>? fullTagName,
-      Value<String?>? intro,
-      Value<String?>? links,
-      Value<int>? rowid}) {
+  TagCompanion copyWith({
+    Value<String>? namespace,
+    Value<String>? key,
+    Value<String?>? translatedNamespace,
+    Value<String?>? tagName,
+    Value<String?>? fullTagName,
+    Value<String?>? intro,
+    Value<String?>? links,
+    Value<int>? rowid,
+  }) {
     return TagCompanion(
       namespace: namespace ?? this.namespace,
       key: key ?? this.key,
@@ -945,139 +1036,209 @@ class $ArchiveDownloadedTable extends ArchiveDownloaded
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tokenMeta = const VerificationMeta('token');
   @override
   late final GeneratedColumn<String> token = GeneratedColumn<String>(
-      'token', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _categoryMeta =
-      const VerificationMeta('category');
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
-      'category', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _pageCountMeta =
-      const VerificationMeta('pageCount');
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pageCountMeta = const VerificationMeta('pageCount');
   @override
   late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
-      'page_count', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _galleryUrlMeta =
-      const VerificationMeta('galleryUrl');
+    'page_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _galleryUrlMeta = const VerificationMeta('galleryUrl');
   @override
   late final GeneratedColumn<String> galleryUrl = GeneratedColumn<String>(
-      'gallery_url', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _coverUrlMeta =
-      const VerificationMeta('coverUrl');
+    'gallery_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _coverUrlMeta = const VerificationMeta('coverUrl');
   @override
   late final GeneratedColumn<String> coverUrl = GeneratedColumn<String>(
-      'cover_url', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _uploaderMeta =
-      const VerificationMeta('uploader');
+    'cover_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _uploaderMeta = const VerificationMeta('uploader');
   @override
   late final GeneratedColumn<String> uploader = GeneratedColumn<String>(
-      'uploader', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'uploader',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sizeMeta = const VerificationMeta('size');
   @override
   late final GeneratedColumn<int> size = GeneratedColumn<int>(
-      'size', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _publishTimeMeta =
-      const VerificationMeta('publishTime');
+    'size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _publishTimeMeta = const VerificationMeta('publishTime');
   @override
   late final GeneratedColumn<String> publishTime = GeneratedColumn<String>(
-      'publish_time', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _archiveStatusCodeMeta =
-      const VerificationMeta('archiveStatusCode');
+    'publish_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _archiveStatusCodeMeta = const VerificationMeta(
+    'archiveStatusCode',
+  );
   @override
   late final GeneratedColumn<int> archiveStatusCode = GeneratedColumn<int>(
-      'archive_status_index', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _archivePageUrlMeta =
-      const VerificationMeta('archivePageUrl');
+    'archive_status_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _archivePageUrlMeta = const VerificationMeta('archivePageUrl');
   @override
   late final GeneratedColumn<String> archivePageUrl = GeneratedColumn<String>(
-      'archive_page_url', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _downloadPageUrlMeta =
-      const VerificationMeta('downloadPageUrl');
+    'archive_page_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _downloadPageUrlMeta = const VerificationMeta(
+    'downloadPageUrl',
+  );
   @override
   late final GeneratedColumn<String> downloadPageUrl = GeneratedColumn<String>(
-      'download_page_url', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _downloadUrlMeta =
-      const VerificationMeta('downloadUrl');
+    'download_page_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _downloadUrlMeta = const VerificationMeta('downloadUrl');
   @override
   late final GeneratedColumn<String> downloadUrl = GeneratedColumn<String>(
-      'download_url', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _isOriginalMeta =
-      const VerificationMeta('isOriginal');
+    'download_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isOriginalMeta = const VerificationMeta('isOriginal');
   @override
   late final GeneratedColumn<bool> isOriginal = GeneratedColumn<bool>(
-      'is_original', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("is_original" IN (0, 1))'));
-  static const VerificationMeta _insertTimeMeta =
-      const VerificationMeta('insertTime');
+    'is_original',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("is_original" IN (0, 1))'),
+  );
+  static const VerificationMeta _insertTimeMeta = const VerificationMeta('insertTime');
   @override
   late final GeneratedColumn<String> insertTime = GeneratedColumn<String>(
-      'insert_time', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _sortOrderMeta =
-      const VerificationMeta('sortOrder');
+    'insert_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta('sortOrder');
   @override
   late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
-      'sort_order', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _groupNameMeta =
-      const VerificationMeta('groupName');
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _groupNameMeta = const VerificationMeta('groupName');
   @override
   late final GeneratedColumn<String> groupName = GeneratedColumn<String>(
-      'group_name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'group_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
   late final GeneratedColumn<String> tags = GeneratedColumn<String>(
-      'tags', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _tagRefreshTimeMeta =
-      const VerificationMeta('tagRefreshTime');
+    'tags',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _tagRefreshTimeMeta = const VerificationMeta('tagRefreshTime');
   @override
   late final GeneratedColumn<String> tagRefreshTime = GeneratedColumn<String>(
-      'tag_refresh_time', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _parseSourceMeta =
-      const VerificationMeta('parseSource');
+    'tag_refresh_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parseSourceMeta = const VerificationMeta('parseSource');
   @override
   late final GeneratedColumn<int> parseSource = GeneratedColumn<int>(
-      'parse_source', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _sanitizedTitleMeta =
-      const VerificationMeta('sanitizedTitle');
+    'parse_source',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _sanitizedTitleMeta = const VerificationMeta('sanitizedTitle');
   @override
   late final GeneratedColumn<String> sanitizedTitle = GeneratedColumn<String>(
-      'sanitized_title', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'sanitized_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
         gid,
@@ -1101,7 +1262,7 @@ class $ArchiveDownloadedTable extends ArchiveDownloaded
         tags,
         tagRefreshTime,
         parseSource,
-        sanitizedTitle
+        sanitizedTitle,
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1110,145 +1271,159 @@ class $ArchiveDownloadedTable extends ArchiveDownloaded
   static const String $name = 'archive_downloaded_v2';
   @override
   VerificationContext validateIntegrity(
-      Insertable<ArchiveDownloadedData> instance,
-      {bool isInserting = false}) {
+    Insertable<ArchiveDownloadedData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     }
     if (data.containsKey('token')) {
-      context.handle(
-          _tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
+      context.handle(_tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
     } else if (isInserting) {
       context.missing(_tokenMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
     } else if (isInserting) {
       context.missing(_categoryMeta);
     }
     if (data.containsKey('page_count')) {
-      context.handle(_pageCountMeta,
-          pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta));
+      context.handle(
+        _pageCountMeta,
+        pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta),
+      );
     } else if (isInserting) {
       context.missing(_pageCountMeta);
     }
     if (data.containsKey('gallery_url')) {
       context.handle(
-          _galleryUrlMeta,
-          galleryUrl.isAcceptableOrUnknown(
-              data['gallery_url']!, _galleryUrlMeta));
+        _galleryUrlMeta,
+        galleryUrl.isAcceptableOrUnknown(data['gallery_url']!, _galleryUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_galleryUrlMeta);
     }
     if (data.containsKey('cover_url')) {
-      context.handle(_coverUrlMeta,
-          coverUrl.isAcceptableOrUnknown(data['cover_url']!, _coverUrlMeta));
+      context.handle(
+        _coverUrlMeta,
+        coverUrl.isAcceptableOrUnknown(data['cover_url']!, _coverUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_coverUrlMeta);
     }
     if (data.containsKey('uploader')) {
-      context.handle(_uploaderMeta,
-          uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta));
+      context.handle(
+        _uploaderMeta,
+        uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta),
+      );
     }
     if (data.containsKey('size')) {
-      context.handle(
-          _sizeMeta, size.isAcceptableOrUnknown(data['size']!, _sizeMeta));
+      context.handle(_sizeMeta, size.isAcceptableOrUnknown(data['size']!, _sizeMeta));
     } else if (isInserting) {
       context.missing(_sizeMeta);
     }
     if (data.containsKey('publish_time')) {
       context.handle(
-          _publishTimeMeta,
-          publishTime.isAcceptableOrUnknown(
-              data['publish_time']!, _publishTimeMeta));
+        _publishTimeMeta,
+        publishTime.isAcceptableOrUnknown(data['publish_time']!, _publishTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_publishTimeMeta);
     }
     if (data.containsKey('archive_status_index')) {
       context.handle(
+        _archiveStatusCodeMeta,
+        archiveStatusCode.isAcceptableOrUnknown(
+          data['archive_status_index']!,
           _archiveStatusCodeMeta,
-          archiveStatusCode.isAcceptableOrUnknown(
-              data['archive_status_index']!, _archiveStatusCodeMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_archiveStatusCodeMeta);
     }
     if (data.containsKey('archive_page_url')) {
       context.handle(
-          _archivePageUrlMeta,
-          archivePageUrl.isAcceptableOrUnknown(
-              data['archive_page_url']!, _archivePageUrlMeta));
+        _archivePageUrlMeta,
+        archivePageUrl.isAcceptableOrUnknown(data['archive_page_url']!, _archivePageUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_archivePageUrlMeta);
     }
     if (data.containsKey('download_page_url')) {
       context.handle(
+        _downloadPageUrlMeta,
+        downloadPageUrl.isAcceptableOrUnknown(
+          data['download_page_url']!,
           _downloadPageUrlMeta,
-          downloadPageUrl.isAcceptableOrUnknown(
-              data['download_page_url']!, _downloadPageUrlMeta));
+        ),
+      );
     }
     if (data.containsKey('download_url')) {
       context.handle(
-          _downloadUrlMeta,
-          downloadUrl.isAcceptableOrUnknown(
-              data['download_url']!, _downloadUrlMeta));
+        _downloadUrlMeta,
+        downloadUrl.isAcceptableOrUnknown(data['download_url']!, _downloadUrlMeta),
+      );
     }
     if (data.containsKey('is_original')) {
       context.handle(
-          _isOriginalMeta,
-          isOriginal.isAcceptableOrUnknown(
-              data['is_original']!, _isOriginalMeta));
+        _isOriginalMeta,
+        isOriginal.isAcceptableOrUnknown(data['is_original']!, _isOriginalMeta),
+      );
     } else if (isInserting) {
       context.missing(_isOriginalMeta);
     }
     if (data.containsKey('insert_time')) {
       context.handle(
-          _insertTimeMeta,
-          insertTime.isAcceptableOrUnknown(
-              data['insert_time']!, _insertTimeMeta));
+        _insertTimeMeta,
+        insertTime.isAcceptableOrUnknown(data['insert_time']!, _insertTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_insertTimeMeta);
     }
     if (data.containsKey('sort_order')) {
-      context.handle(_sortOrderMeta,
-          sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
     }
     if (data.containsKey('group_name')) {
-      context.handle(_groupNameMeta,
-          groupName.isAcceptableOrUnknown(data['group_name']!, _groupNameMeta));
+      context.handle(
+        _groupNameMeta,
+        groupName.isAcceptableOrUnknown(data['group_name']!, _groupNameMeta),
+      );
     } else if (isInserting) {
       context.missing(_groupNameMeta);
     }
     if (data.containsKey('tags')) {
-      context.handle(
-          _tagsMeta, tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta));
+      context.handle(_tagsMeta, tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta));
     }
     if (data.containsKey('tag_refresh_time')) {
       context.handle(
-          _tagRefreshTimeMeta,
-          tagRefreshTime.isAcceptableOrUnknown(
-              data['tag_refresh_time']!, _tagRefreshTimeMeta));
+        _tagRefreshTimeMeta,
+        tagRefreshTime.isAcceptableOrUnknown(data['tag_refresh_time']!, _tagRefreshTimeMeta),
+      );
     }
     if (data.containsKey('parse_source')) {
       context.handle(
-          _parseSourceMeta,
-          parseSource.isAcceptableOrUnknown(
-              data['parse_source']!, _parseSourceMeta));
+        _parseSourceMeta,
+        parseSource.isAcceptableOrUnknown(data['parse_source']!, _parseSourceMeta),
+      );
     }
     if (data.containsKey('sanitized_title')) {
       context.handle(
-          _sanitizedTitleMeta,
-          sanitizedTitle.isAcceptableOrUnknown(
-              data['sanitized_title']!, _sanitizedTitleMeta));
+        _sanitizedTitleMeta,
+        sanitizedTitle.isAcceptableOrUnknown(data['sanitized_title']!, _sanitizedTitleMeta),
+      );
     }
     return context;
   }
@@ -1259,50 +1434,91 @@ class $ArchiveDownloadedTable extends ArchiveDownloaded
   ArchiveDownloadedData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ArchiveDownloadedData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      token: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}token'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
-      pageCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}page_count'])!,
-      galleryUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}gallery_url'])!,
-      coverUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}cover_url'])!,
-      uploader: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uploader']),
-      size: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}size'])!,
-      publishTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}publish_time'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      pageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}page_count'],
+      )!,
+      galleryUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gallery_url'],
+      )!,
+      coverUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_url'],
+      )!,
+      uploader: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uploader'],
+      ),
+      size: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}size'],
+      )!,
+      publishTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}publish_time'],
+      )!,
       archiveStatusCode: attachedDatabase.typeMapping.read(
-          DriftSqlType.int, data['${effectivePrefix}archive_status_index'])!,
+        DriftSqlType.int,
+        data['${effectivePrefix}archive_status_index'],
+      )!,
       archivePageUrl: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}archive_page_url'])!,
+        DriftSqlType.string,
+        data['${effectivePrefix}archive_page_url'],
+      )!,
       downloadPageUrl: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}download_page_url']),
-      downloadUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}download_url']),
-      isOriginal: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_original'])!,
-      insertTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}insert_time'])!,
-      sortOrder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
-      groupName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}group_name'])!,
-      tags: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}tags'])!,
+        DriftSqlType.string,
+        data['${effectivePrefix}download_page_url'],
+      ),
+      downloadUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}download_url'],
+      ),
+      isOriginal: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_original'],
+      )!,
+      insertTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}insert_time'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      groupName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}group_name'],
+      )!,
+      tags: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tags'],
+      )!,
       tagRefreshTime: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}tag_refresh_time']),
-      parseSource: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}parse_source'])!,
-      sanitizedTitle: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sanitized_title']),
+        DriftSqlType.string,
+        data['${effectivePrefix}tag_refresh_time'],
+      ),
+      parseSource: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}parse_source'],
+      )!,
+      sanitizedTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sanitized_title'],
+      ),
     );
   }
 
@@ -1312,8 +1528,7 @@ class $ArchiveDownloadedTable extends ArchiveDownloaded
   }
 }
 
-class ArchiveDownloadedData extends DataClass
-    implements Insertable<ArchiveDownloadedData> {
+class ArchiveDownloadedData extends DataClass implements Insertable<ArchiveDownloadedData> {
   final int gid;
   final String token;
   final String title;
@@ -1340,29 +1555,30 @@ class ArchiveDownloadedData extends DataClass
   /// Computed once when the download task is first created and stored here to
   /// ensure the path never changes even if the truncation algorithm is updated.
   final String? sanitizedTitle;
-  const ArchiveDownloadedData(
-      {required this.gid,
-      required this.token,
-      required this.title,
-      required this.category,
-      required this.pageCount,
-      required this.galleryUrl,
-      required this.coverUrl,
-      this.uploader,
-      required this.size,
-      required this.publishTime,
-      required this.archiveStatusCode,
-      required this.archivePageUrl,
-      this.downloadPageUrl,
-      this.downloadUrl,
-      required this.isOriginal,
-      required this.insertTime,
-      required this.sortOrder,
-      required this.groupName,
-      required this.tags,
-      this.tagRefreshTime,
-      required this.parseSource,
-      this.sanitizedTitle});
+  const ArchiveDownloadedData({
+    required this.gid,
+    required this.token,
+    required this.title,
+    required this.category,
+    required this.pageCount,
+    required this.galleryUrl,
+    required this.coverUrl,
+    this.uploader,
+    required this.size,
+    required this.publishTime,
+    required this.archiveStatusCode,
+    required this.archivePageUrl,
+    this.downloadPageUrl,
+    this.downloadUrl,
+    required this.isOriginal,
+    required this.insertTime,
+    required this.sortOrder,
+    required this.groupName,
+    required this.tags,
+    this.tagRefreshTime,
+    required this.parseSource,
+    this.sanitizedTitle,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1410,9 +1626,7 @@ class ArchiveDownloadedData extends DataClass
       pageCount: Value(pageCount),
       galleryUrl: Value(galleryUrl),
       coverUrl: Value(coverUrl),
-      uploader: uploader == null && nullToAbsent
-          ? const Value.absent()
-          : Value(uploader),
+      uploader: uploader == null && nullToAbsent ? const Value.absent() : Value(uploader),
       size: Value(size),
       publishTime: Value(publishTime),
       archiveStatusCode: Value(archiveStatusCode),
@@ -1420,9 +1634,8 @@ class ArchiveDownloadedData extends DataClass
       downloadPageUrl: downloadPageUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(downloadPageUrl),
-      downloadUrl: downloadUrl == null && nullToAbsent
-          ? const Value.absent()
-          : Value(downloadUrl),
+      downloadUrl:
+          downloadUrl == null && nullToAbsent ? const Value.absent() : Value(downloadUrl),
       isOriginal: Value(isOriginal),
       insertTime: Value(insertTime),
       sortOrder: Value(sortOrder),
@@ -1438,8 +1651,10 @@ class ArchiveDownloadedData extends DataClass
     );
   }
 
-  factory ArchiveDownloadedData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory ArchiveDownloadedData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ArchiveDownloadedData(
       gid: serializer.fromJson<int>(json['gid']),
@@ -1495,29 +1710,30 @@ class ArchiveDownloadedData extends DataClass
     };
   }
 
-  ArchiveDownloadedData copyWith(
-          {int? gid,
-          String? token,
-          String? title,
-          String? category,
-          int? pageCount,
-          String? galleryUrl,
-          String? coverUrl,
-          Value<String?> uploader = const Value.absent(),
-          int? size,
-          String? publishTime,
-          int? archiveStatusCode,
-          String? archivePageUrl,
-          Value<String?> downloadPageUrl = const Value.absent(),
-          Value<String?> downloadUrl = const Value.absent(),
-          bool? isOriginal,
-          String? insertTime,
-          int? sortOrder,
-          String? groupName,
-          String? tags,
-          Value<String?> tagRefreshTime = const Value.absent(),
-          int? parseSource,
-          Value<String?> sanitizedTitle = const Value.absent()}) =>
+  ArchiveDownloadedData copyWith({
+    int? gid,
+    String? token,
+    String? title,
+    String? category,
+    int? pageCount,
+    String? galleryUrl,
+    String? coverUrl,
+    Value<String?> uploader = const Value.absent(),
+    int? size,
+    String? publishTime,
+    int? archiveStatusCode,
+    String? archivePageUrl,
+    Value<String?> downloadPageUrl = const Value.absent(),
+    Value<String?> downloadUrl = const Value.absent(),
+    bool? isOriginal,
+    String? insertTime,
+    int? sortOrder,
+    String? groupName,
+    String? tags,
+    Value<String?> tagRefreshTime = const Value.absent(),
+    int? parseSource,
+    Value<String?> sanitizedTitle = const Value.absent(),
+  }) =>
       ArchiveDownloadedData(
         gid: gid ?? this.gid,
         token: token ?? this.token,
@@ -1531,20 +1747,17 @@ class ArchiveDownloadedData extends DataClass
         publishTime: publishTime ?? this.publishTime,
         archiveStatusCode: archiveStatusCode ?? this.archiveStatusCode,
         archivePageUrl: archivePageUrl ?? this.archivePageUrl,
-        downloadPageUrl: downloadPageUrl.present
-            ? downloadPageUrl.value
-            : this.downloadPageUrl,
+        downloadPageUrl:
+            downloadPageUrl.present ? downloadPageUrl.value : this.downloadPageUrl,
         downloadUrl: downloadUrl.present ? downloadUrl.value : this.downloadUrl,
         isOriginal: isOriginal ?? this.isOriginal,
         insertTime: insertTime ?? this.insertTime,
         sortOrder: sortOrder ?? this.sortOrder,
         groupName: groupName ?? this.groupName,
         tags: tags ?? this.tags,
-        tagRefreshTime:
-            tagRefreshTime.present ? tagRefreshTime.value : this.tagRefreshTime,
+        tagRefreshTime: tagRefreshTime.present ? tagRefreshTime.value : this.tagRefreshTime,
         parseSource: parseSource ?? this.parseSource,
-        sanitizedTitle:
-            sanitizedTitle.present ? sanitizedTitle.value : this.sanitizedTitle,
+        sanitizedTitle: sanitizedTitle.present ? sanitizedTitle.value : this.sanitizedTitle,
       );
   ArchiveDownloadedData copyWithCompanion(ArchiveDownloadedCompanion data) {
     return ArchiveDownloadedData(
@@ -1553,39 +1766,29 @@ class ArchiveDownloadedData extends DataClass
       title: data.title.present ? data.title.value : this.title,
       category: data.category.present ? data.category.value : this.category,
       pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
-      galleryUrl:
-          data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
+      galleryUrl: data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
       coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
       uploader: data.uploader.present ? data.uploader.value : this.uploader,
       size: data.size.present ? data.size.value : this.size,
-      publishTime:
-          data.publishTime.present ? data.publishTime.value : this.publishTime,
+      publishTime: data.publishTime.present ? data.publishTime.value : this.publishTime,
       archiveStatusCode: data.archiveStatusCode.present
           ? data.archiveStatusCode.value
           : this.archiveStatusCode,
-      archivePageUrl: data.archivePageUrl.present
-          ? data.archivePageUrl.value
-          : this.archivePageUrl,
-      downloadPageUrl: data.downloadPageUrl.present
-          ? data.downloadPageUrl.value
-          : this.downloadPageUrl,
-      downloadUrl:
-          data.downloadUrl.present ? data.downloadUrl.value : this.downloadUrl,
-      isOriginal:
-          data.isOriginal.present ? data.isOriginal.value : this.isOriginal,
-      insertTime:
-          data.insertTime.present ? data.insertTime.value : this.insertTime,
+      archivePageUrl:
+          data.archivePageUrl.present ? data.archivePageUrl.value : this.archivePageUrl,
+      downloadPageUrl:
+          data.downloadPageUrl.present ? data.downloadPageUrl.value : this.downloadPageUrl,
+      downloadUrl: data.downloadUrl.present ? data.downloadUrl.value : this.downloadUrl,
+      isOriginal: data.isOriginal.present ? data.isOriginal.value : this.isOriginal,
+      insertTime: data.insertTime.present ? data.insertTime.value : this.insertTime,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       groupName: data.groupName.present ? data.groupName.value : this.groupName,
       tags: data.tags.present ? data.tags.value : this.tags,
-      tagRefreshTime: data.tagRefreshTime.present
-          ? data.tagRefreshTime.value
-          : this.tagRefreshTime,
-      parseSource:
-          data.parseSource.present ? data.parseSource.value : this.parseSource,
-      sanitizedTitle: data.sanitizedTitle.present
-          ? data.sanitizedTitle.value
-          : this.sanitizedTitle,
+      tagRefreshTime:
+          data.tagRefreshTime.present ? data.tagRefreshTime.value : this.tagRefreshTime,
+      parseSource: data.parseSource.present ? data.parseSource.value : this.parseSource,
+      sanitizedTitle:
+          data.sanitizedTitle.present ? data.sanitizedTitle.value : this.sanitizedTitle,
     );
   }
 
@@ -1641,7 +1844,7 @@ class ArchiveDownloadedData extends DataClass
         tags,
         tagRefreshTime,
         parseSource,
-        sanitizedTitle
+        sanitizedTitle,
       ]);
   @override
   bool operator ==(Object other) =>
@@ -1671,8 +1874,7 @@ class ArchiveDownloadedData extends DataClass
           other.sanitizedTitle == this.sanitizedTitle);
 }
 
-class ArchiveDownloadedCompanion
-    extends UpdateCompanion<ArchiveDownloadedData> {
+class ArchiveDownloadedCompanion extends UpdateCompanion<ArchiveDownloadedData> {
   final Value<int> gid;
   final Value<String> token;
   final Value<String> title;
@@ -1805,29 +2007,30 @@ class ArchiveDownloadedCompanion
     });
   }
 
-  ArchiveDownloadedCompanion copyWith(
-      {Value<int>? gid,
-      Value<String>? token,
-      Value<String>? title,
-      Value<String>? category,
-      Value<int>? pageCount,
-      Value<String>? galleryUrl,
-      Value<String>? coverUrl,
-      Value<String?>? uploader,
-      Value<int>? size,
-      Value<String>? publishTime,
-      Value<int>? archiveStatusCode,
-      Value<String>? archivePageUrl,
-      Value<String?>? downloadPageUrl,
-      Value<String?>? downloadUrl,
-      Value<bool>? isOriginal,
-      Value<String>? insertTime,
-      Value<int>? sortOrder,
-      Value<String>? groupName,
-      Value<String>? tags,
-      Value<String?>? tagRefreshTime,
-      Value<int>? parseSource,
-      Value<String?>? sanitizedTitle}) {
+  ArchiveDownloadedCompanion copyWith({
+    Value<int>? gid,
+    Value<String>? token,
+    Value<String>? title,
+    Value<String>? category,
+    Value<int>? pageCount,
+    Value<String>? galleryUrl,
+    Value<String>? coverUrl,
+    Value<String?>? uploader,
+    Value<int>? size,
+    Value<String>? publishTime,
+    Value<int>? archiveStatusCode,
+    Value<String>? archivePageUrl,
+    Value<String?>? downloadPageUrl,
+    Value<String?>? downloadUrl,
+    Value<bool>? isOriginal,
+    Value<String>? insertTime,
+    Value<int>? sortOrder,
+    Value<String>? groupName,
+    Value<String>? tags,
+    Value<String?>? tagRefreshTime,
+    Value<int>? parseSource,
+    Value<String?>? sanitizedTitle,
+  }) {
     return ArchiveDownloadedCompanion(
       gid: gid ?? this.gid,
       token: token ?? this.token,
@@ -1965,112 +2168,171 @@ class $ArchiveDownloadedOldTable extends ArchiveDownloadedOld
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _tokenMeta = const VerificationMeta('token');
   @override
   late final GeneratedColumn<String> token = GeneratedColumn<String>(
-      'token', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _categoryMeta =
-      const VerificationMeta('category');
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
-      'category', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _pageCountMeta =
-      const VerificationMeta('pageCount');
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pageCountMeta = const VerificationMeta('pageCount');
   @override
   late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
-      'pageCount', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _galleryUrlMeta =
-      const VerificationMeta('galleryUrl');
+    'pageCount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _galleryUrlMeta = const VerificationMeta('galleryUrl');
   @override
   late final GeneratedColumn<String> galleryUrl = GeneratedColumn<String>(
-      'galleryUrl', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _coverUrlMeta =
-      const VerificationMeta('coverUrl');
+    'galleryUrl',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _coverUrlMeta = const VerificationMeta('coverUrl');
   @override
   late final GeneratedColumn<String> coverUrl = GeneratedColumn<String>(
-      'coverUrl', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _uploaderMeta =
-      const VerificationMeta('uploader');
+    'coverUrl',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _uploaderMeta = const VerificationMeta('uploader');
   @override
   late final GeneratedColumn<String> uploader = GeneratedColumn<String>(
-      'uploader', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'uploader',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sizeMeta = const VerificationMeta('size');
   @override
   late final GeneratedColumn<int> size = GeneratedColumn<int>(
-      'size', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _publishTimeMeta =
-      const VerificationMeta('publishTime');
+    'size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _publishTimeMeta = const VerificationMeta('publishTime');
   @override
   late final GeneratedColumn<String> publishTime = GeneratedColumn<String>(
-      'publishTime', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _archiveStatusIndexMeta =
-      const VerificationMeta('archiveStatusIndex');
+    'publishTime',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _archiveStatusIndexMeta = const VerificationMeta(
+    'archiveStatusIndex',
+  );
   @override
   late final GeneratedColumn<int> archiveStatusIndex = GeneratedColumn<int>(
-      'archiveStatusIndex', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _archivePageUrlMeta =
-      const VerificationMeta('archivePageUrl');
+    'archiveStatusIndex',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _archivePageUrlMeta = const VerificationMeta('archivePageUrl');
   @override
   late final GeneratedColumn<String> archivePageUrl = GeneratedColumn<String>(
-      'archivePageUrl', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _downloadPageUrlMeta =
-      const VerificationMeta('downloadPageUrl');
+    'archivePageUrl',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _downloadPageUrlMeta = const VerificationMeta(
+    'downloadPageUrl',
+  );
   @override
   late final GeneratedColumn<String> downloadPageUrl = GeneratedColumn<String>(
-      'downloadPageUrl', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _downloadUrlMeta =
-      const VerificationMeta('downloadUrl');
+    'downloadPageUrl',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _downloadUrlMeta = const VerificationMeta('downloadUrl');
   @override
   late final GeneratedColumn<String> downloadUrl = GeneratedColumn<String>(
-      'downloadUrl', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _isOriginalMeta =
-      const VerificationMeta('isOriginal');
+    'downloadUrl',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isOriginalMeta = const VerificationMeta('isOriginal');
   @override
   late final GeneratedColumn<bool> isOriginal = GeneratedColumn<bool>(
-      'isOriginal', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: true,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("isOriginal" IN (0, 1))'));
-  static const VerificationMeta _insertTimeMeta =
-      const VerificationMeta('insertTime');
+    'isOriginal',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("isOriginal" IN (0, 1))'),
+  );
+  static const VerificationMeta _insertTimeMeta = const VerificationMeta('insertTime');
   @override
   late final GeneratedColumn<String> insertTime = GeneratedColumn<String>(
-      'insertTime', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _sortOrderMeta =
-      const VerificationMeta('sortOrder');
+    'insertTime',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta('sortOrder');
   @override
   late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
-      'sortOrder', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _groupNameMeta =
-      const VerificationMeta('groupName');
+    'sortOrder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _groupNameMeta = const VerificationMeta('groupName');
   @override
   late final GeneratedColumn<String> groupName = GeneratedColumn<String>(
-      'groupName', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'groupName',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
         gid,
@@ -2090,7 +2352,7 @@ class $ArchiveDownloadedOldTable extends ArchiveDownloadedOld
         isOriginal,
         insertTime,
         sortOrder,
-        groupName
+        groupName,
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2099,121 +2361,133 @@ class $ArchiveDownloadedOldTable extends ArchiveDownloadedOld
   static const String $name = 'archive_downloaded';
   @override
   VerificationContext validateIntegrity(
-      Insertable<ArchiveDownloadedOldData> instance,
-      {bool isInserting = false}) {
+    Insertable<ArchiveDownloadedOldData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     } else if (isInserting) {
       context.missing(_gidMeta);
     }
     if (data.containsKey('token')) {
-      context.handle(
-          _tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
+      context.handle(_tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
     } else if (isInserting) {
       context.missing(_tokenMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
     } else if (isInserting) {
       context.missing(_categoryMeta);
     }
     if (data.containsKey('pageCount')) {
-      context.handle(_pageCountMeta,
-          pageCount.isAcceptableOrUnknown(data['pageCount']!, _pageCountMeta));
+      context.handle(
+        _pageCountMeta,
+        pageCount.isAcceptableOrUnknown(data['pageCount']!, _pageCountMeta),
+      );
     } else if (isInserting) {
       context.missing(_pageCountMeta);
     }
     if (data.containsKey('galleryUrl')) {
       context.handle(
-          _galleryUrlMeta,
-          galleryUrl.isAcceptableOrUnknown(
-              data['galleryUrl']!, _galleryUrlMeta));
+        _galleryUrlMeta,
+        galleryUrl.isAcceptableOrUnknown(data['galleryUrl']!, _galleryUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_galleryUrlMeta);
     }
     if (data.containsKey('coverUrl')) {
-      context.handle(_coverUrlMeta,
-          coverUrl.isAcceptableOrUnknown(data['coverUrl']!, _coverUrlMeta));
+      context.handle(
+        _coverUrlMeta,
+        coverUrl.isAcceptableOrUnknown(data['coverUrl']!, _coverUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_coverUrlMeta);
     }
     if (data.containsKey('uploader')) {
-      context.handle(_uploaderMeta,
-          uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta));
+      context.handle(
+        _uploaderMeta,
+        uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta),
+      );
     }
     if (data.containsKey('size')) {
-      context.handle(
-          _sizeMeta, size.isAcceptableOrUnknown(data['size']!, _sizeMeta));
+      context.handle(_sizeMeta, size.isAcceptableOrUnknown(data['size']!, _sizeMeta));
     } else if (isInserting) {
       context.missing(_sizeMeta);
     }
     if (data.containsKey('publishTime')) {
       context.handle(
-          _publishTimeMeta,
-          publishTime.isAcceptableOrUnknown(
-              data['publishTime']!, _publishTimeMeta));
+        _publishTimeMeta,
+        publishTime.isAcceptableOrUnknown(data['publishTime']!, _publishTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_publishTimeMeta);
     }
     if (data.containsKey('archiveStatusIndex')) {
       context.handle(
+        _archiveStatusIndexMeta,
+        archiveStatusIndex.isAcceptableOrUnknown(
+          data['archiveStatusIndex']!,
           _archiveStatusIndexMeta,
-          archiveStatusIndex.isAcceptableOrUnknown(
-              data['archiveStatusIndex']!, _archiveStatusIndexMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_archiveStatusIndexMeta);
     }
     if (data.containsKey('archivePageUrl')) {
       context.handle(
-          _archivePageUrlMeta,
-          archivePageUrl.isAcceptableOrUnknown(
-              data['archivePageUrl']!, _archivePageUrlMeta));
+        _archivePageUrlMeta,
+        archivePageUrl.isAcceptableOrUnknown(data['archivePageUrl']!, _archivePageUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_archivePageUrlMeta);
     }
     if (data.containsKey('downloadPageUrl')) {
       context.handle(
-          _downloadPageUrlMeta,
-          downloadPageUrl.isAcceptableOrUnknown(
-              data['downloadPageUrl']!, _downloadPageUrlMeta));
+        _downloadPageUrlMeta,
+        downloadPageUrl.isAcceptableOrUnknown(data['downloadPageUrl']!, _downloadPageUrlMeta),
+      );
     }
     if (data.containsKey('downloadUrl')) {
       context.handle(
-          _downloadUrlMeta,
-          downloadUrl.isAcceptableOrUnknown(
-              data['downloadUrl']!, _downloadUrlMeta));
+        _downloadUrlMeta,
+        downloadUrl.isAcceptableOrUnknown(data['downloadUrl']!, _downloadUrlMeta),
+      );
     }
     if (data.containsKey('isOriginal')) {
       context.handle(
-          _isOriginalMeta,
-          isOriginal.isAcceptableOrUnknown(
-              data['isOriginal']!, _isOriginalMeta));
+        _isOriginalMeta,
+        isOriginal.isAcceptableOrUnknown(data['isOriginal']!, _isOriginalMeta),
+      );
     } else if (isInserting) {
       context.missing(_isOriginalMeta);
     }
     if (data.containsKey('insertTime')) {
       context.handle(
-          _insertTimeMeta,
-          insertTime.isAcceptableOrUnknown(
-              data['insertTime']!, _insertTimeMeta));
+        _insertTimeMeta,
+        insertTime.isAcceptableOrUnknown(data['insertTime']!, _insertTimeMeta),
+      );
     }
     if (data.containsKey('sortOrder')) {
-      context.handle(_sortOrderMeta,
-          sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta));
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
+      );
     }
     if (data.containsKey('groupName')) {
-      context.handle(_groupNameMeta,
-          groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta));
+      context.handle(
+        _groupNameMeta,
+        groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta),
+      );
     }
     return context;
   }
@@ -2221,46 +2495,78 @@ class $ArchiveDownloadedOldTable extends ArchiveDownloadedOld
   @override
   Set<GeneratedColumn> get $primaryKey => {gid, isOriginal};
   @override
-  ArchiveDownloadedOldData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  ArchiveDownloadedOldData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ArchiveDownloadedOldData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      token: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}token'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
-      pageCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}pageCount'])!,
-      galleryUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}galleryUrl'])!,
-      coverUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}coverUrl'])!,
-      uploader: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uploader']),
-      size: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}size'])!,
-      publishTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}publishTime'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      pageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pageCount'],
+      )!,
+      galleryUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}galleryUrl'],
+      )!,
+      coverUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}coverUrl'],
+      )!,
+      uploader: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uploader'],
+      ),
+      size: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}size'],
+      )!,
+      publishTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}publishTime'],
+      )!,
       archiveStatusIndex: attachedDatabase.typeMapping.read(
-          DriftSqlType.int, data['${effectivePrefix}archiveStatusIndex'])!,
-      archivePageUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}archivePageUrl'])!,
-      downloadPageUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}downloadPageUrl']),
-      downloadUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}downloadUrl']),
-      isOriginal: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}isOriginal'])!,
-      insertTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}insertTime']),
-      sortOrder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}sortOrder'])!,
-      groupName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}groupName']),
+        DriftSqlType.int,
+        data['${effectivePrefix}archiveStatusIndex'],
+      )!,
+      archivePageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}archivePageUrl'],
+      )!,
+      downloadPageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}downloadPageUrl'],
+      ),
+      downloadUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}downloadUrl'],
+      ),
+      isOriginal: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}isOriginal'],
+      )!,
+      insertTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}insertTime'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sortOrder'],
+      )!,
+      groupName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}groupName'],
+      ),
     );
   }
 
@@ -2290,25 +2596,26 @@ class ArchiveDownloadedOldData extends DataClass
   final String? insertTime;
   final int sortOrder;
   final String? groupName;
-  const ArchiveDownloadedOldData(
-      {required this.gid,
-      required this.token,
-      required this.title,
-      required this.category,
-      required this.pageCount,
-      required this.galleryUrl,
-      required this.coverUrl,
-      this.uploader,
-      required this.size,
-      required this.publishTime,
-      required this.archiveStatusIndex,
-      required this.archivePageUrl,
-      this.downloadPageUrl,
-      this.downloadUrl,
-      required this.isOriginal,
-      this.insertTime,
-      required this.sortOrder,
-      this.groupName});
+  const ArchiveDownloadedOldData({
+    required this.gid,
+    required this.token,
+    required this.title,
+    required this.category,
+    required this.pageCount,
+    required this.galleryUrl,
+    required this.coverUrl,
+    this.uploader,
+    required this.size,
+    required this.publishTime,
+    required this.archiveStatusIndex,
+    required this.archivePageUrl,
+    this.downloadPageUrl,
+    this.downloadUrl,
+    required this.isOriginal,
+    this.insertTime,
+    required this.sortOrder,
+    this.groupName,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2352,9 +2659,7 @@ class ArchiveDownloadedOldData extends DataClass
       pageCount: Value(pageCount),
       galleryUrl: Value(galleryUrl),
       coverUrl: Value(coverUrl),
-      uploader: uploader == null && nullToAbsent
-          ? const Value.absent()
-          : Value(uploader),
+      uploader: uploader == null && nullToAbsent ? const Value.absent() : Value(uploader),
       size: Value(size),
       publishTime: Value(publishTime),
       archiveStatusIndex: Value(archiveStatusIndex),
@@ -2362,22 +2667,20 @@ class ArchiveDownloadedOldData extends DataClass
       downloadPageUrl: downloadPageUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(downloadPageUrl),
-      downloadUrl: downloadUrl == null && nullToAbsent
-          ? const Value.absent()
-          : Value(downloadUrl),
+      downloadUrl:
+          downloadUrl == null && nullToAbsent ? const Value.absent() : Value(downloadUrl),
       isOriginal: Value(isOriginal),
-      insertTime: insertTime == null && nullToAbsent
-          ? const Value.absent()
-          : Value(insertTime),
+      insertTime:
+          insertTime == null && nullToAbsent ? const Value.absent() : Value(insertTime),
       sortOrder: Value(sortOrder),
-      groupName: groupName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(groupName),
+      groupName: groupName == null && nullToAbsent ? const Value.absent() : Value(groupName),
     );
   }
 
-  factory ArchiveDownloadedOldData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory ArchiveDownloadedOldData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ArchiveDownloadedOldData(
       gid: serializer.fromJson<int>(json['gid']),
@@ -2425,25 +2728,26 @@ class ArchiveDownloadedOldData extends DataClass
     };
   }
 
-  ArchiveDownloadedOldData copyWith(
-          {int? gid,
-          String? token,
-          String? title,
-          String? category,
-          int? pageCount,
-          String? galleryUrl,
-          String? coverUrl,
-          Value<String?> uploader = const Value.absent(),
-          int? size,
-          String? publishTime,
-          int? archiveStatusIndex,
-          String? archivePageUrl,
-          Value<String?> downloadPageUrl = const Value.absent(),
-          Value<String?> downloadUrl = const Value.absent(),
-          bool? isOriginal,
-          Value<String?> insertTime = const Value.absent(),
-          int? sortOrder,
-          Value<String?> groupName = const Value.absent()}) =>
+  ArchiveDownloadedOldData copyWith({
+    int? gid,
+    String? token,
+    String? title,
+    String? category,
+    int? pageCount,
+    String? galleryUrl,
+    String? coverUrl,
+    Value<String?> uploader = const Value.absent(),
+    int? size,
+    String? publishTime,
+    int? archiveStatusIndex,
+    String? archivePageUrl,
+    Value<String?> downloadPageUrl = const Value.absent(),
+    Value<String?> downloadUrl = const Value.absent(),
+    bool? isOriginal,
+    Value<String?> insertTime = const Value.absent(),
+    int? sortOrder,
+    Value<String?> groupName = const Value.absent(),
+  }) =>
       ArchiveDownloadedOldData(
         gid: gid ?? this.gid,
         token: token ?? this.token,
@@ -2457,45 +2761,36 @@ class ArchiveDownloadedOldData extends DataClass
         publishTime: publishTime ?? this.publishTime,
         archiveStatusIndex: archiveStatusIndex ?? this.archiveStatusIndex,
         archivePageUrl: archivePageUrl ?? this.archivePageUrl,
-        downloadPageUrl: downloadPageUrl.present
-            ? downloadPageUrl.value
-            : this.downloadPageUrl,
+        downloadPageUrl:
+            downloadPageUrl.present ? downloadPageUrl.value : this.downloadPageUrl,
         downloadUrl: downloadUrl.present ? downloadUrl.value : this.downloadUrl,
         isOriginal: isOriginal ?? this.isOriginal,
         insertTime: insertTime.present ? insertTime.value : this.insertTime,
         sortOrder: sortOrder ?? this.sortOrder,
         groupName: groupName.present ? groupName.value : this.groupName,
       );
-  ArchiveDownloadedOldData copyWithCompanion(
-      ArchiveDownloadedOldCompanion data) {
+  ArchiveDownloadedOldData copyWithCompanion(ArchiveDownloadedOldCompanion data) {
     return ArchiveDownloadedOldData(
       gid: data.gid.present ? data.gid.value : this.gid,
       token: data.token.present ? data.token.value : this.token,
       title: data.title.present ? data.title.value : this.title,
       category: data.category.present ? data.category.value : this.category,
       pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
-      galleryUrl:
-          data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
+      galleryUrl: data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
       coverUrl: data.coverUrl.present ? data.coverUrl.value : this.coverUrl,
       uploader: data.uploader.present ? data.uploader.value : this.uploader,
       size: data.size.present ? data.size.value : this.size,
-      publishTime:
-          data.publishTime.present ? data.publishTime.value : this.publishTime,
+      publishTime: data.publishTime.present ? data.publishTime.value : this.publishTime,
       archiveStatusIndex: data.archiveStatusIndex.present
           ? data.archiveStatusIndex.value
           : this.archiveStatusIndex,
-      archivePageUrl: data.archivePageUrl.present
-          ? data.archivePageUrl.value
-          : this.archivePageUrl,
-      downloadPageUrl: data.downloadPageUrl.present
-          ? data.downloadPageUrl.value
-          : this.downloadPageUrl,
-      downloadUrl:
-          data.downloadUrl.present ? data.downloadUrl.value : this.downloadUrl,
-      isOriginal:
-          data.isOriginal.present ? data.isOriginal.value : this.isOriginal,
-      insertTime:
-          data.insertTime.present ? data.insertTime.value : this.insertTime,
+      archivePageUrl:
+          data.archivePageUrl.present ? data.archivePageUrl.value : this.archivePageUrl,
+      downloadPageUrl:
+          data.downloadPageUrl.present ? data.downloadPageUrl.value : this.downloadPageUrl,
+      downloadUrl: data.downloadUrl.present ? data.downloadUrl.value : this.downloadUrl,
+      isOriginal: data.isOriginal.present ? data.isOriginal.value : this.isOriginal,
+      insertTime: data.insertTime.present ? data.insertTime.value : this.insertTime,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       groupName: data.groupName.present ? data.groupName.value : this.groupName,
     );
@@ -2528,24 +2823,25 @@ class ArchiveDownloadedOldData extends DataClass
 
   @override
   int get hashCode => Object.hash(
-      gid,
-      token,
-      title,
-      category,
-      pageCount,
-      galleryUrl,
-      coverUrl,
-      uploader,
-      size,
-      publishTime,
-      archiveStatusIndex,
-      archivePageUrl,
-      downloadPageUrl,
-      downloadUrl,
-      isOriginal,
-      insertTime,
-      sortOrder,
-      groupName);
+        gid,
+        token,
+        title,
+        category,
+        pageCount,
+        galleryUrl,
+        coverUrl,
+        uploader,
+        size,
+        publishTime,
+        archiveStatusIndex,
+        archivePageUrl,
+        downloadPageUrl,
+        downloadUrl,
+        isOriginal,
+        insertTime,
+        sortOrder,
+        groupName,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2570,8 +2866,7 @@ class ArchiveDownloadedOldData extends DataClass
           other.groupName == this.groupName);
 }
 
-class ArchiveDownloadedOldCompanion
-    extends UpdateCompanion<ArchiveDownloadedOldData> {
+class ArchiveDownloadedOldCompanion extends UpdateCompanion<ArchiveDownloadedOldData> {
   final Value<int> gid;
   final Value<String> token;
   final Value<String> title;
@@ -2688,26 +2983,27 @@ class ArchiveDownloadedOldCompanion
     });
   }
 
-  ArchiveDownloadedOldCompanion copyWith(
-      {Value<int>? gid,
-      Value<String>? token,
-      Value<String>? title,
-      Value<String>? category,
-      Value<int>? pageCount,
-      Value<String>? galleryUrl,
-      Value<String>? coverUrl,
-      Value<String?>? uploader,
-      Value<int>? size,
-      Value<String>? publishTime,
-      Value<int>? archiveStatusIndex,
-      Value<String>? archivePageUrl,
-      Value<String?>? downloadPageUrl,
-      Value<String?>? downloadUrl,
-      Value<bool>? isOriginal,
-      Value<String?>? insertTime,
-      Value<int>? sortOrder,
-      Value<String?>? groupName,
-      Value<int>? rowid}) {
+  ArchiveDownloadedOldCompanion copyWith({
+    Value<int>? gid,
+    Value<String>? token,
+    Value<String>? title,
+    Value<String>? category,
+    Value<int>? pageCount,
+    Value<String>? galleryUrl,
+    Value<String>? coverUrl,
+    Value<String?>? uploader,
+    Value<int>? size,
+    Value<String>? publishTime,
+    Value<int>? archiveStatusIndex,
+    Value<String>? archivePageUrl,
+    Value<String?>? downloadPageUrl,
+    Value<String?>? downloadUrl,
+    Value<bool>? isOriginal,
+    Value<String?>? insertTime,
+    Value<int>? sortOrder,
+    Value<String?>? groupName,
+    Value<int>? rowid,
+  }) {
     return ArchiveDownloadedOldCompanion(
       gid: gid ?? this.gid,
       token: token ?? this.token,
@@ -2827,20 +3123,25 @@ class $ArchiveGroupTable extends ArchiveGroup
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ArchiveGroupTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _groupNameMeta =
-      const VerificationMeta('groupName');
+  static const VerificationMeta _groupNameMeta = const VerificationMeta('groupName');
   @override
   late final GeneratedColumn<String> groupName = GeneratedColumn<String>(
-      'groupName', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _sortOrderMeta =
-      const VerificationMeta('sortOrder');
+    'groupName',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta('sortOrder');
   @override
   late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
-      'sortOrder', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+    'sortOrder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [groupName, sortOrder];
   @override
@@ -2849,19 +3150,25 @@ class $ArchiveGroupTable extends ArchiveGroup
   String get actualTableName => $name;
   static const String $name = 'archive_group';
   @override
-  VerificationContext validateIntegrity(Insertable<ArchiveGroupData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<ArchiveGroupData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('groupName')) {
-      context.handle(_groupNameMeta,
-          groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta));
+      context.handle(
+        _groupNameMeta,
+        groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta),
+      );
     } else if (isInserting) {
       context.missing(_groupNameMeta);
     }
     if (data.containsKey('sortOrder')) {
-      context.handle(_sortOrderMeta,
-          sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta));
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
+      );
     }
     return context;
   }
@@ -2872,10 +3179,14 @@ class $ArchiveGroupTable extends ArchiveGroup
   ArchiveGroupData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ArchiveGroupData(
-      groupName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}groupName'])!,
-      sortOrder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}sortOrder'])!,
+      groupName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}groupName'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sortOrder'],
+      )!,
     );
   }
 
@@ -2885,8 +3196,7 @@ class $ArchiveGroupTable extends ArchiveGroup
   }
 }
 
-class ArchiveGroupData extends DataClass
-    implements Insertable<ArchiveGroupData> {
+class ArchiveGroupData extends DataClass implements Insertable<ArchiveGroupData> {
   final String groupName;
   final int sortOrder;
   const ArchiveGroupData({required this.groupName, required this.sortOrder});
@@ -2899,14 +3209,10 @@ class ArchiveGroupData extends DataClass
   }
 
   ArchiveGroupCompanion toCompanion(bool nullToAbsent) {
-    return ArchiveGroupCompanion(
-      groupName: Value(groupName),
-      sortOrder: Value(sortOrder),
-    );
+    return ArchiveGroupCompanion(groupName: Value(groupName), sortOrder: Value(sortOrder));
   }
 
-  factory ArchiveGroupData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory ArchiveGroupData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ArchiveGroupData(
       groupName: serializer.fromJson<String>(json['groupName']),
@@ -2922,8 +3228,7 @@ class ArchiveGroupData extends DataClass
     };
   }
 
-  ArchiveGroupData copyWith({String? groupName, int? sortOrder}) =>
-      ArchiveGroupData(
+  ArchiveGroupData copyWith({String? groupName, int? sortOrder}) => ArchiveGroupData(
         groupName: groupName ?? this.groupName,
         sortOrder: sortOrder ?? this.sortOrder,
       );
@@ -2979,8 +3284,11 @@ class ArchiveGroupCompanion extends UpdateCompanion<ArchiveGroupData> {
     });
   }
 
-  ArchiveGroupCompanion copyWith(
-      {Value<String>? groupName, Value<int>? sortOrder, Value<int>? rowid}) {
+  ArchiveGroupCompanion copyWith({
+    Value<String>? groupName,
+    Value<int>? sortOrder,
+    Value<int>? rowid,
+  }) {
     return ArchiveGroupCompanion(
       groupName: groupName ?? this.groupName,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -3023,115 +3331,177 @@ class $GalleryDownloadedTable extends GalleryDownloaded
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tokenMeta = const VerificationMeta('token');
   @override
   late final GeneratedColumn<String> token = GeneratedColumn<String>(
-      'token', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _categoryMeta =
-      const VerificationMeta('category');
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
-      'category', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _pageCountMeta =
-      const VerificationMeta('pageCount');
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pageCountMeta = const VerificationMeta('pageCount');
   @override
   late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
-      'page_count', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _galleryUrlMeta =
-      const VerificationMeta('galleryUrl');
+    'page_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _galleryUrlMeta = const VerificationMeta('galleryUrl');
   @override
   late final GeneratedColumn<String> galleryUrl = GeneratedColumn<String>(
-      'gallery_url', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _oldVersionGalleryUrlMeta =
-      const VerificationMeta('oldVersionGalleryUrl');
+    'gallery_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _oldVersionGalleryUrlMeta = const VerificationMeta(
+    'oldVersionGalleryUrl',
+  );
   @override
-  late final GeneratedColumn<String> oldVersionGalleryUrl =
-      GeneratedColumn<String>('old_version_gallery_url', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _uploaderMeta =
-      const VerificationMeta('uploader');
+  late final GeneratedColumn<String> oldVersionGalleryUrl = GeneratedColumn<String>(
+    'old_version_gallery_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _uploaderMeta = const VerificationMeta('uploader');
   @override
   late final GeneratedColumn<String> uploader = GeneratedColumn<String>(
-      'uploader', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _publishTimeMeta =
-      const VerificationMeta('publishTime');
+    'uploader',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _publishTimeMeta = const VerificationMeta('publishTime');
   @override
   late final GeneratedColumn<String> publishTime = GeneratedColumn<String>(
-      'publish_time', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _downloadStatusIndexMeta =
-      const VerificationMeta('downloadStatusIndex');
+    'publish_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _downloadStatusIndexMeta = const VerificationMeta(
+    'downloadStatusIndex',
+  );
   @override
   late final GeneratedColumn<int> downloadStatusIndex = GeneratedColumn<int>(
-      'download_status_index', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _insertTimeMeta =
-      const VerificationMeta('insertTime');
+    'download_status_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _insertTimeMeta = const VerificationMeta('insertTime');
   @override
   late final GeneratedColumn<String> insertTime = GeneratedColumn<String>(
-      'insert_time', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _downloadOriginalImageMeta =
-      const VerificationMeta('downloadOriginalImage');
+    'insert_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _downloadOriginalImageMeta = const VerificationMeta(
+    'downloadOriginalImage',
+  );
   @override
-  late final GeneratedColumn<bool> downloadOriginalImage =
-      GeneratedColumn<bool>('download_original_image', aliasedName, false,
-          type: DriftSqlType.bool,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintIsAlways(
-              'CHECK ("download_original_image" IN (0, 1))'),
-          defaultValue: const Constant(false));
-  static const VerificationMeta _priorityMeta =
-      const VerificationMeta('priority');
+  late final GeneratedColumn<bool> downloadOriginalImage = GeneratedColumn<bool>(
+    'download_original_image',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("download_original_image" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta('priority');
   @override
   late final GeneratedColumn<int> priority = GeneratedColumn<int>(
-      'priority', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _sortOrderMeta =
-      const VerificationMeta('sortOrder');
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta('sortOrder');
   @override
   late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
-      'sort_order', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _groupNameMeta =
-      const VerificationMeta('groupName');
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _groupNameMeta = const VerificationMeta('groupName');
   @override
   late final GeneratedColumn<String> groupName = GeneratedColumn<String>(
-      'group_name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'group_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
   late final GeneratedColumn<String> tags = GeneratedColumn<String>(
-      'tags', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
-  static const VerificationMeta _tagRefreshTimeMeta =
-      const VerificationMeta('tagRefreshTime');
+    'tags',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _tagRefreshTimeMeta = const VerificationMeta('tagRefreshTime');
   @override
   late final GeneratedColumn<String> tagRefreshTime = GeneratedColumn<String>(
-      'tag_refresh_time', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _sanitizedTitleMeta =
-      const VerificationMeta('sanitizedTitle');
+    'tag_refresh_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sanitizedTitleMeta = const VerificationMeta('sanitizedTitle');
   @override
   late final GeneratedColumn<String> sanitizedTitle = GeneratedColumn<String>(
-      'sanitized_title', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'sanitized_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
         gid,
@@ -3151,7 +3521,7 @@ class $GalleryDownloadedTable extends GalleryDownloaded
         groupName,
         tags,
         tagRefreshTime,
-        sanitizedTitle
+        sanitizedTitle,
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3160,117 +3530,135 @@ class $GalleryDownloadedTable extends GalleryDownloaded
   static const String $name = 'gallery_downloaded_v2';
   @override
   VerificationContext validateIntegrity(
-      Insertable<GalleryDownloadedData> instance,
-      {bool isInserting = false}) {
+    Insertable<GalleryDownloadedData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     }
     if (data.containsKey('token')) {
-      context.handle(
-          _tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
+      context.handle(_tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
     } else if (isInserting) {
       context.missing(_tokenMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
     } else if (isInserting) {
       context.missing(_categoryMeta);
     }
     if (data.containsKey('page_count')) {
-      context.handle(_pageCountMeta,
-          pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta));
+      context.handle(
+        _pageCountMeta,
+        pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta),
+      );
     } else if (isInserting) {
       context.missing(_pageCountMeta);
     }
     if (data.containsKey('gallery_url')) {
       context.handle(
-          _galleryUrlMeta,
-          galleryUrl.isAcceptableOrUnknown(
-              data['gallery_url']!, _galleryUrlMeta));
+        _galleryUrlMeta,
+        galleryUrl.isAcceptableOrUnknown(data['gallery_url']!, _galleryUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_galleryUrlMeta);
     }
     if (data.containsKey('old_version_gallery_url')) {
       context.handle(
+        _oldVersionGalleryUrlMeta,
+        oldVersionGalleryUrl.isAcceptableOrUnknown(
+          data['old_version_gallery_url']!,
           _oldVersionGalleryUrlMeta,
-          oldVersionGalleryUrl.isAcceptableOrUnknown(
-              data['old_version_gallery_url']!, _oldVersionGalleryUrlMeta));
+        ),
+      );
     }
     if (data.containsKey('uploader')) {
-      context.handle(_uploaderMeta,
-          uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta));
+      context.handle(
+        _uploaderMeta,
+        uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta),
+      );
     }
     if (data.containsKey('publish_time')) {
       context.handle(
-          _publishTimeMeta,
-          publishTime.isAcceptableOrUnknown(
-              data['publish_time']!, _publishTimeMeta));
+        _publishTimeMeta,
+        publishTime.isAcceptableOrUnknown(data['publish_time']!, _publishTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_publishTimeMeta);
     }
     if (data.containsKey('download_status_index')) {
       context.handle(
+        _downloadStatusIndexMeta,
+        downloadStatusIndex.isAcceptableOrUnknown(
+          data['download_status_index']!,
           _downloadStatusIndexMeta,
-          downloadStatusIndex.isAcceptableOrUnknown(
-              data['download_status_index']!, _downloadStatusIndexMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_downloadStatusIndexMeta);
     }
     if (data.containsKey('insert_time')) {
       context.handle(
-          _insertTimeMeta,
-          insertTime.isAcceptableOrUnknown(
-              data['insert_time']!, _insertTimeMeta));
+        _insertTimeMeta,
+        insertTime.isAcceptableOrUnknown(data['insert_time']!, _insertTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_insertTimeMeta);
     }
     if (data.containsKey('download_original_image')) {
       context.handle(
+        _downloadOriginalImageMeta,
+        downloadOriginalImage.isAcceptableOrUnknown(
+          data['download_original_image']!,
           _downloadOriginalImageMeta,
-          downloadOriginalImage.isAcceptableOrUnknown(
-              data['download_original_image']!, _downloadOriginalImageMeta));
+        ),
+      );
     }
     if (data.containsKey('priority')) {
-      context.handle(_priorityMeta,
-          priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta));
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
     } else if (isInserting) {
       context.missing(_priorityMeta);
     }
     if (data.containsKey('sort_order')) {
-      context.handle(_sortOrderMeta,
-          sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
     }
     if (data.containsKey('group_name')) {
-      context.handle(_groupNameMeta,
-          groupName.isAcceptableOrUnknown(data['group_name']!, _groupNameMeta));
+      context.handle(
+        _groupNameMeta,
+        groupName.isAcceptableOrUnknown(data['group_name']!, _groupNameMeta),
+      );
     } else if (isInserting) {
       context.missing(_groupNameMeta);
     }
     if (data.containsKey('tags')) {
-      context.handle(
-          _tagsMeta, tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta));
+      context.handle(_tagsMeta, tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta));
     }
     if (data.containsKey('tag_refresh_time')) {
       context.handle(
-          _tagRefreshTimeMeta,
-          tagRefreshTime.isAcceptableOrUnknown(
-              data['tag_refresh_time']!, _tagRefreshTimeMeta));
+        _tagRefreshTimeMeta,
+        tagRefreshTime.isAcceptableOrUnknown(data['tag_refresh_time']!, _tagRefreshTimeMeta),
+      );
     }
     if (data.containsKey('sanitized_title')) {
       context.handle(
-          _sanitizedTitleMeta,
-          sanitizedTitle.isAcceptableOrUnknown(
-              data['sanitized_title']!, _sanitizedTitleMeta));
+        _sanitizedTitleMeta,
+        sanitizedTitle.isAcceptableOrUnknown(data['sanitized_title']!, _sanitizedTitleMeta),
+      );
     }
     return context;
   }
@@ -3281,44 +3669,75 @@ class $GalleryDownloadedTable extends GalleryDownloaded
   GalleryDownloadedData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GalleryDownloadedData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      token: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}token'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
-      pageCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}page_count'])!,
-      galleryUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}gallery_url'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      pageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}page_count'],
+      )!,
+      galleryUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gallery_url'],
+      )!,
       oldVersionGalleryUrl: attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}old_version_gallery_url']),
-      uploader: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uploader']),
-      publishTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}publish_time'])!,
+        DriftSqlType.string,
+        data['${effectivePrefix}old_version_gallery_url'],
+      ),
+      uploader: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uploader'],
+      ),
+      publishTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}publish_time'],
+      )!,
       downloadStatusIndex: attachedDatabase.typeMapping.read(
-          DriftSqlType.int, data['${effectivePrefix}download_status_index'])!,
-      insertTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}insert_time'])!,
+        DriftSqlType.int,
+        data['${effectivePrefix}download_status_index'],
+      )!,
+      insertTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}insert_time'],
+      )!,
       downloadOriginalImage: attachedDatabase.typeMapping.read(
-          DriftSqlType.bool,
-          data['${effectivePrefix}download_original_image'])!,
-      priority: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!,
-      sortOrder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
-      groupName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}group_name'])!,
-      tags: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}tags'])!,
+        DriftSqlType.bool,
+        data['${effectivePrefix}download_original_image'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      groupName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}group_name'],
+      )!,
+      tags: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tags'],
+      )!,
       tagRefreshTime: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}tag_refresh_time']),
-      sanitizedTitle: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sanitized_title']),
+        DriftSqlType.string,
+        data['${effectivePrefix}tag_refresh_time'],
+      ),
+      sanitizedTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sanitized_title'],
+      ),
     );
   }
 
@@ -3328,8 +3747,7 @@ class $GalleryDownloadedTable extends GalleryDownloaded
   }
 }
 
-class GalleryDownloadedData extends DataClass
-    implements Insertable<GalleryDownloadedData> {
+class GalleryDownloadedData extends DataClass implements Insertable<GalleryDownloadedData> {
   final int gid;
   final String token;
   final String title;
@@ -3352,25 +3770,26 @@ class GalleryDownloadedData extends DataClass
   /// Computed once when the download task is first created and stored here to
   /// ensure the path never changes even if the truncation algorithm is updated.
   final String? sanitizedTitle;
-  const GalleryDownloadedData(
-      {required this.gid,
-      required this.token,
-      required this.title,
-      required this.category,
-      required this.pageCount,
-      required this.galleryUrl,
-      this.oldVersionGalleryUrl,
-      this.uploader,
-      required this.publishTime,
-      required this.downloadStatusIndex,
-      required this.insertTime,
-      required this.downloadOriginalImage,
-      required this.priority,
-      required this.sortOrder,
-      required this.groupName,
-      required this.tags,
-      this.tagRefreshTime,
-      this.sanitizedTitle});
+  const GalleryDownloadedData({
+    required this.gid,
+    required this.token,
+    required this.title,
+    required this.category,
+    required this.pageCount,
+    required this.galleryUrl,
+    this.oldVersionGalleryUrl,
+    this.uploader,
+    required this.publishTime,
+    required this.downloadStatusIndex,
+    required this.insertTime,
+    required this.downloadOriginalImage,
+    required this.priority,
+    required this.sortOrder,
+    required this.groupName,
+    required this.tags,
+    this.tagRefreshTime,
+    this.sanitizedTitle,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3414,9 +3833,7 @@ class GalleryDownloadedData extends DataClass
       oldVersionGalleryUrl: oldVersionGalleryUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(oldVersionGalleryUrl),
-      uploader: uploader == null && nullToAbsent
-          ? const Value.absent()
-          : Value(uploader),
+      uploader: uploader == null && nullToAbsent ? const Value.absent() : Value(uploader),
       publishTime: Value(publishTime),
       downloadStatusIndex: Value(downloadStatusIndex),
       insertTime: Value(insertTime),
@@ -3434,8 +3851,10 @@ class GalleryDownloadedData extends DataClass
     );
   }
 
-  factory GalleryDownloadedData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory GalleryDownloadedData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GalleryDownloadedData(
       gid: serializer.fromJson<int>(json['gid']),
@@ -3444,15 +3863,12 @@ class GalleryDownloadedData extends DataClass
       category: serializer.fromJson<String>(json['category']),
       pageCount: serializer.fromJson<int>(json['pageCount']),
       galleryUrl: serializer.fromJson<String>(json['galleryUrl']),
-      oldVersionGalleryUrl:
-          serializer.fromJson<String?>(json['oldVersionGalleryUrl']),
+      oldVersionGalleryUrl: serializer.fromJson<String?>(json['oldVersionGalleryUrl']),
       uploader: serializer.fromJson<String?>(json['uploader']),
       publishTime: serializer.fromJson<String>(json['publishTime']),
-      downloadStatusIndex:
-          serializer.fromJson<int>(json['downloadStatusIndex']),
+      downloadStatusIndex: serializer.fromJson<int>(json['downloadStatusIndex']),
       insertTime: serializer.fromJson<String>(json['insertTime']),
-      downloadOriginalImage:
-          serializer.fromJson<bool>(json['downloadOriginalImage']),
+      downloadOriginalImage: serializer.fromJson<bool>(json['downloadOriginalImage']),
       priority: serializer.fromJson<int>(json['priority']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       groupName: serializer.fromJson<String>(json['groupName']),
@@ -3486,25 +3902,26 @@ class GalleryDownloadedData extends DataClass
     };
   }
 
-  GalleryDownloadedData copyWith(
-          {int? gid,
-          String? token,
-          String? title,
-          String? category,
-          int? pageCount,
-          String? galleryUrl,
-          Value<String?> oldVersionGalleryUrl = const Value.absent(),
-          Value<String?> uploader = const Value.absent(),
-          String? publishTime,
-          int? downloadStatusIndex,
-          String? insertTime,
-          bool? downloadOriginalImage,
-          int? priority,
-          int? sortOrder,
-          String? groupName,
-          String? tags,
-          Value<String?> tagRefreshTime = const Value.absent(),
-          Value<String?> sanitizedTitle = const Value.absent()}) =>
+  GalleryDownloadedData copyWith({
+    int? gid,
+    String? token,
+    String? title,
+    String? category,
+    int? pageCount,
+    String? galleryUrl,
+    Value<String?> oldVersionGalleryUrl = const Value.absent(),
+    Value<String?> uploader = const Value.absent(),
+    String? publishTime,
+    int? downloadStatusIndex,
+    String? insertTime,
+    bool? downloadOriginalImage,
+    int? priority,
+    int? sortOrder,
+    String? groupName,
+    String? tags,
+    Value<String?> tagRefreshTime = const Value.absent(),
+    Value<String?> sanitizedTitle = const Value.absent(),
+  }) =>
       GalleryDownloadedData(
         gid: gid ?? this.gid,
         token: token ?? this.token,
@@ -3519,16 +3936,13 @@ class GalleryDownloadedData extends DataClass
         publishTime: publishTime ?? this.publishTime,
         downloadStatusIndex: downloadStatusIndex ?? this.downloadStatusIndex,
         insertTime: insertTime ?? this.insertTime,
-        downloadOriginalImage:
-            downloadOriginalImage ?? this.downloadOriginalImage,
+        downloadOriginalImage: downloadOriginalImage ?? this.downloadOriginalImage,
         priority: priority ?? this.priority,
         sortOrder: sortOrder ?? this.sortOrder,
         groupName: groupName ?? this.groupName,
         tags: tags ?? this.tags,
-        tagRefreshTime:
-            tagRefreshTime.present ? tagRefreshTime.value : this.tagRefreshTime,
-        sanitizedTitle:
-            sanitizedTitle.present ? sanitizedTitle.value : this.sanitizedTitle,
+        tagRefreshTime: tagRefreshTime.present ? tagRefreshTime.value : this.tagRefreshTime,
+        sanitizedTitle: sanitizedTitle.present ? sanitizedTitle.value : this.sanitizedTitle,
       );
   GalleryDownloadedData copyWithCompanion(GalleryDownloadedCompanion data) {
     return GalleryDownloadedData(
@@ -3537,19 +3951,16 @@ class GalleryDownloadedData extends DataClass
       title: data.title.present ? data.title.value : this.title,
       category: data.category.present ? data.category.value : this.category,
       pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
-      galleryUrl:
-          data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
+      galleryUrl: data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
       oldVersionGalleryUrl: data.oldVersionGalleryUrl.present
           ? data.oldVersionGalleryUrl.value
           : this.oldVersionGalleryUrl,
       uploader: data.uploader.present ? data.uploader.value : this.uploader,
-      publishTime:
-          data.publishTime.present ? data.publishTime.value : this.publishTime,
+      publishTime: data.publishTime.present ? data.publishTime.value : this.publishTime,
       downloadStatusIndex: data.downloadStatusIndex.present
           ? data.downloadStatusIndex.value
           : this.downloadStatusIndex,
-      insertTime:
-          data.insertTime.present ? data.insertTime.value : this.insertTime,
+      insertTime: data.insertTime.present ? data.insertTime.value : this.insertTime,
       downloadOriginalImage: data.downloadOriginalImage.present
           ? data.downloadOriginalImage.value
           : this.downloadOriginalImage,
@@ -3557,12 +3968,10 @@ class GalleryDownloadedData extends DataClass
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       groupName: data.groupName.present ? data.groupName.value : this.groupName,
       tags: data.tags.present ? data.tags.value : this.tags,
-      tagRefreshTime: data.tagRefreshTime.present
-          ? data.tagRefreshTime.value
-          : this.tagRefreshTime,
-      sanitizedTitle: data.sanitizedTitle.present
-          ? data.sanitizedTitle.value
-          : this.sanitizedTitle,
+      tagRefreshTime:
+          data.tagRefreshTime.present ? data.tagRefreshTime.value : this.tagRefreshTime,
+      sanitizedTitle:
+          data.sanitizedTitle.present ? data.sanitizedTitle.value : this.sanitizedTitle,
     );
   }
 
@@ -3593,24 +4002,25 @@ class GalleryDownloadedData extends DataClass
 
   @override
   int get hashCode => Object.hash(
-      gid,
-      token,
-      title,
-      category,
-      pageCount,
-      galleryUrl,
-      oldVersionGalleryUrl,
-      uploader,
-      publishTime,
-      downloadStatusIndex,
-      insertTime,
-      downloadOriginalImage,
-      priority,
-      sortOrder,
-      groupName,
-      tags,
-      tagRefreshTime,
-      sanitizedTitle);
+        gid,
+        token,
+        title,
+        category,
+        pageCount,
+        galleryUrl,
+        oldVersionGalleryUrl,
+        uploader,
+        publishTime,
+        downloadStatusIndex,
+        insertTime,
+        downloadOriginalImage,
+        priority,
+        sortOrder,
+        groupName,
+        tags,
+        tagRefreshTime,
+        sanitizedTitle,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3635,8 +4045,7 @@ class GalleryDownloadedData extends DataClass
           other.sanitizedTitle == this.sanitizedTitle);
 }
 
-class GalleryDownloadedCompanion
-    extends UpdateCompanion<GalleryDownloadedData> {
+class GalleryDownloadedCompanion extends UpdateCompanion<GalleryDownloadedData> {
   final Value<int> gid;
   final Value<String> token;
   final Value<String> title;
@@ -3731,15 +4140,12 @@ class GalleryDownloadedCompanion
       if (category != null) 'category': category,
       if (pageCount != null) 'page_count': pageCount,
       if (galleryUrl != null) 'gallery_url': galleryUrl,
-      if (oldVersionGalleryUrl != null)
-        'old_version_gallery_url': oldVersionGalleryUrl,
+      if (oldVersionGalleryUrl != null) 'old_version_gallery_url': oldVersionGalleryUrl,
       if (uploader != null) 'uploader': uploader,
       if (publishTime != null) 'publish_time': publishTime,
-      if (downloadStatusIndex != null)
-        'download_status_index': downloadStatusIndex,
+      if (downloadStatusIndex != null) 'download_status_index': downloadStatusIndex,
       if (insertTime != null) 'insert_time': insertTime,
-      if (downloadOriginalImage != null)
-        'download_original_image': downloadOriginalImage,
+      if (downloadOriginalImage != null) 'download_original_image': downloadOriginalImage,
       if (priority != null) 'priority': priority,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (groupName != null) 'group_name': groupName,
@@ -3749,25 +4155,26 @@ class GalleryDownloadedCompanion
     });
   }
 
-  GalleryDownloadedCompanion copyWith(
-      {Value<int>? gid,
-      Value<String>? token,
-      Value<String>? title,
-      Value<String>? category,
-      Value<int>? pageCount,
-      Value<String>? galleryUrl,
-      Value<String?>? oldVersionGalleryUrl,
-      Value<String?>? uploader,
-      Value<String>? publishTime,
-      Value<int>? downloadStatusIndex,
-      Value<String>? insertTime,
-      Value<bool>? downloadOriginalImage,
-      Value<int>? priority,
-      Value<int>? sortOrder,
-      Value<String>? groupName,
-      Value<String>? tags,
-      Value<String?>? tagRefreshTime,
-      Value<String?>? sanitizedTitle}) {
+  GalleryDownloadedCompanion copyWith({
+    Value<int>? gid,
+    Value<String>? token,
+    Value<String>? title,
+    Value<String>? category,
+    Value<int>? pageCount,
+    Value<String>? galleryUrl,
+    Value<String?>? oldVersionGalleryUrl,
+    Value<String?>? uploader,
+    Value<String>? publishTime,
+    Value<int>? downloadStatusIndex,
+    Value<String>? insertTime,
+    Value<bool>? downloadOriginalImage,
+    Value<int>? priority,
+    Value<int>? sortOrder,
+    Value<String>? groupName,
+    Value<String>? tags,
+    Value<String?>? tagRefreshTime,
+    Value<String?>? sanitizedTitle,
+  }) {
     return GalleryDownloadedCompanion(
       gid: gid ?? this.gid,
       token: token ?? this.token,
@@ -3780,8 +4187,7 @@ class GalleryDownloadedCompanion
       publishTime: publishTime ?? this.publishTime,
       downloadStatusIndex: downloadStatusIndex ?? this.downloadStatusIndex,
       insertTime: insertTime ?? this.insertTime,
-      downloadOriginalImage:
-          downloadOriginalImage ?? this.downloadOriginalImage,
+      downloadOriginalImage: downloadOriginalImage ?? this.downloadOriginalImage,
       priority: priority ?? this.priority,
       sortOrder: sortOrder ?? this.sortOrder,
       groupName: groupName ?? this.groupName,
@@ -3813,8 +4219,7 @@ class GalleryDownloadedCompanion
       map['gallery_url'] = Variable<String>(galleryUrl.value);
     }
     if (oldVersionGalleryUrl.present) {
-      map['old_version_gallery_url'] =
-          Variable<String>(oldVersionGalleryUrl.value);
+      map['old_version_gallery_url'] = Variable<String>(oldVersionGalleryUrl.value);
     }
     if (uploader.present) {
       map['uploader'] = Variable<String>(uploader.value);
@@ -3829,8 +4234,7 @@ class GalleryDownloadedCompanion
       map['insert_time'] = Variable<String>(insertTime.value);
     }
     if (downloadOriginalImage.present) {
-      map['download_original_image'] =
-          Variable<bool>(downloadOriginalImage.value);
+      map['download_original_image'] = Variable<bool>(downloadOriginalImage.value);
     }
     if (priority.present) {
       map['priority'] = Variable<int>(priority.value);
@@ -3888,96 +4292,149 @@ class $GalleryDownloadedOldTable extends GalleryDownloadedOld
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tokenMeta = const VerificationMeta('token');
   @override
   late final GeneratedColumn<String> token = GeneratedColumn<String>(
-      'token', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _categoryMeta =
-      const VerificationMeta('category');
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
-      'category', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _pageCountMeta =
-      const VerificationMeta('pageCount');
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pageCountMeta = const VerificationMeta('pageCount');
   @override
   late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
-      'pageCount', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _galleryUrlMeta =
-      const VerificationMeta('galleryUrl');
+    'pageCount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _galleryUrlMeta = const VerificationMeta('galleryUrl');
   @override
   late final GeneratedColumn<String> galleryUrl = GeneratedColumn<String>(
-      'galleryUrl', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _oldVersionGalleryUrlMeta =
-      const VerificationMeta('oldVersionGalleryUrl');
+    'galleryUrl',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _oldVersionGalleryUrlMeta = const VerificationMeta(
+    'oldVersionGalleryUrl',
+  );
   @override
-  late final GeneratedColumn<String> oldVersionGalleryUrl =
-      GeneratedColumn<String>('oldVersionGalleryUrl', aliasedName, true,
-          type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _uploaderMeta =
-      const VerificationMeta('uploader');
+  late final GeneratedColumn<String> oldVersionGalleryUrl = GeneratedColumn<String>(
+    'oldVersionGalleryUrl',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _uploaderMeta = const VerificationMeta('uploader');
   @override
   late final GeneratedColumn<String> uploader = GeneratedColumn<String>(
-      'uploader', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _publishTimeMeta =
-      const VerificationMeta('publishTime');
+    'uploader',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _publishTimeMeta = const VerificationMeta('publishTime');
   @override
   late final GeneratedColumn<String> publishTime = GeneratedColumn<String>(
-      'publishTime', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _downloadStatusIndexMeta =
-      const VerificationMeta('downloadStatusIndex');
+    'publishTime',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _downloadStatusIndexMeta = const VerificationMeta(
+    'downloadStatusIndex',
+  );
   @override
   late final GeneratedColumn<int> downloadStatusIndex = GeneratedColumn<int>(
-      'downloadStatusIndex', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _insertTimeMeta =
-      const VerificationMeta('insertTime');
+    'downloadStatusIndex',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _insertTimeMeta = const VerificationMeta('insertTime');
   @override
   late final GeneratedColumn<String> insertTime = GeneratedColumn<String>(
-      'insertTime', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _downloadOriginalImageMeta =
-      const VerificationMeta('downloadOriginalImage');
+    'insertTime',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _downloadOriginalImageMeta = const VerificationMeta(
+    'downloadOriginalImage',
+  );
   @override
-  late final GeneratedColumn<bool> downloadOriginalImage =
-      GeneratedColumn<bool>('downloadOriginalImage', aliasedName, false,
-          type: DriftSqlType.bool,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintIsAlways(
-              'CHECK ("downloadOriginalImage" IN (0, 1))'),
-          defaultValue: const Constant(false));
-  static const VerificationMeta _priorityMeta =
-      const VerificationMeta('priority');
+  late final GeneratedColumn<bool> downloadOriginalImage = GeneratedColumn<bool>(
+    'downloadOriginalImage',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("downloadOriginalImage" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta('priority');
   @override
   late final GeneratedColumn<int> priority = GeneratedColumn<int>(
-      'priority', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _sortOrderMeta =
-      const VerificationMeta('sortOrder');
+    'priority',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta('sortOrder');
   @override
   late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
-      'sortOrder', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
-  static const VerificationMeta _groupNameMeta =
-      const VerificationMeta('groupName');
+    'sortOrder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _groupNameMeta = const VerificationMeta('groupName');
   @override
   late final GeneratedColumn<String> groupName = GeneratedColumn<String>(
-      'groupName', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+    'groupName',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
         gid,
@@ -3994,7 +4451,7 @@ class $GalleryDownloadedOldTable extends GalleryDownloadedOld
         downloadOriginalImage,
         priority,
         sortOrder,
-        groupName
+        groupName,
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4003,95 +4460,114 @@ class $GalleryDownloadedOldTable extends GalleryDownloadedOld
   static const String $name = 'gallery_downloaded';
   @override
   VerificationContext validateIntegrity(
-      Insertable<GalleryDownloadedOldData> instance,
-      {bool isInserting = false}) {
+    Insertable<GalleryDownloadedOldData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     }
     if (data.containsKey('token')) {
-      context.handle(
-          _tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
+      context.handle(_tokenMeta, token.isAcceptableOrUnknown(data['token']!, _tokenMeta));
     } else if (isInserting) {
       context.missing(_tokenMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
     } else if (isInserting) {
       context.missing(_categoryMeta);
     }
     if (data.containsKey('pageCount')) {
-      context.handle(_pageCountMeta,
-          pageCount.isAcceptableOrUnknown(data['pageCount']!, _pageCountMeta));
+      context.handle(
+        _pageCountMeta,
+        pageCount.isAcceptableOrUnknown(data['pageCount']!, _pageCountMeta),
+      );
     } else if (isInserting) {
       context.missing(_pageCountMeta);
     }
     if (data.containsKey('galleryUrl')) {
       context.handle(
-          _galleryUrlMeta,
-          galleryUrl.isAcceptableOrUnknown(
-              data['galleryUrl']!, _galleryUrlMeta));
+        _galleryUrlMeta,
+        galleryUrl.isAcceptableOrUnknown(data['galleryUrl']!, _galleryUrlMeta),
+      );
     } else if (isInserting) {
       context.missing(_galleryUrlMeta);
     }
     if (data.containsKey('oldVersionGalleryUrl')) {
       context.handle(
+        _oldVersionGalleryUrlMeta,
+        oldVersionGalleryUrl.isAcceptableOrUnknown(
+          data['oldVersionGalleryUrl']!,
           _oldVersionGalleryUrlMeta,
-          oldVersionGalleryUrl.isAcceptableOrUnknown(
-              data['oldVersionGalleryUrl']!, _oldVersionGalleryUrlMeta));
+        ),
+      );
     }
     if (data.containsKey('uploader')) {
-      context.handle(_uploaderMeta,
-          uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta));
+      context.handle(
+        _uploaderMeta,
+        uploader.isAcceptableOrUnknown(data['uploader']!, _uploaderMeta),
+      );
     }
     if (data.containsKey('publishTime')) {
       context.handle(
-          _publishTimeMeta,
-          publishTime.isAcceptableOrUnknown(
-              data['publishTime']!, _publishTimeMeta));
+        _publishTimeMeta,
+        publishTime.isAcceptableOrUnknown(data['publishTime']!, _publishTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_publishTimeMeta);
     }
     if (data.containsKey('downloadStatusIndex')) {
       context.handle(
+        _downloadStatusIndexMeta,
+        downloadStatusIndex.isAcceptableOrUnknown(
+          data['downloadStatusIndex']!,
           _downloadStatusIndexMeta,
-          downloadStatusIndex.isAcceptableOrUnknown(
-              data['downloadStatusIndex']!, _downloadStatusIndexMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_downloadStatusIndexMeta);
     }
     if (data.containsKey('insertTime')) {
       context.handle(
-          _insertTimeMeta,
-          insertTime.isAcceptableOrUnknown(
-              data['insertTime']!, _insertTimeMeta));
+        _insertTimeMeta,
+        insertTime.isAcceptableOrUnknown(data['insertTime']!, _insertTimeMeta),
+      );
     }
     if (data.containsKey('downloadOriginalImage')) {
       context.handle(
+        _downloadOriginalImageMeta,
+        downloadOriginalImage.isAcceptableOrUnknown(
+          data['downloadOriginalImage']!,
           _downloadOriginalImageMeta,
-          downloadOriginalImage.isAcceptableOrUnknown(
-              data['downloadOriginalImage']!, _downloadOriginalImageMeta));
+        ),
+      );
     }
     if (data.containsKey('priority')) {
-      context.handle(_priorityMeta,
-          priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta));
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
     }
     if (data.containsKey('sortOrder')) {
-      context.handle(_sortOrderMeta,
-          sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta));
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
+      );
     }
     if (data.containsKey('groupName')) {
-      context.handle(_groupNameMeta,
-          groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta));
+      context.handle(
+        _groupNameMeta,
+        groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta),
+      );
     }
     return context;
   }
@@ -4099,40 +4575,66 @@ class $GalleryDownloadedOldTable extends GalleryDownloadedOld
   @override
   Set<GeneratedColumn> get $primaryKey => {gid};
   @override
-  GalleryDownloadedOldData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  GalleryDownloadedOldData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GalleryDownloadedOldData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      token: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}token'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
-      pageCount: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}pageCount'])!,
-      galleryUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}galleryUrl'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      pageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pageCount'],
+      )!,
+      galleryUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}galleryUrl'],
+      )!,
       oldVersionGalleryUrl: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}oldVersionGalleryUrl']),
-      uploader: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uploader']),
-      publishTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}publishTime'])!,
+        DriftSqlType.string,
+        data['${effectivePrefix}oldVersionGalleryUrl'],
+      ),
+      uploader: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uploader'],
+      ),
+      publishTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}publishTime'],
+      )!,
       downloadStatusIndex: attachedDatabase.typeMapping.read(
-          DriftSqlType.int, data['${effectivePrefix}downloadStatusIndex'])!,
-      insertTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}insertTime']),
+        DriftSqlType.int,
+        data['${effectivePrefix}downloadStatusIndex'],
+      )!,
+      insertTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}insertTime'],
+      ),
       downloadOriginalImage: attachedDatabase.typeMapping.read(
-          DriftSqlType.bool, data['${effectivePrefix}downloadOriginalImage'])!,
-      priority: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}priority']),
-      sortOrder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}sortOrder'])!,
-      groupName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}groupName']),
+        DriftSqlType.bool,
+        data['${effectivePrefix}downloadOriginalImage'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sortOrder'],
+      )!,
+      groupName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}groupName'],
+      ),
     );
   }
 
@@ -4159,22 +4661,23 @@ class GalleryDownloadedOldData extends DataClass
   final int? priority;
   final int sortOrder;
   final String? groupName;
-  const GalleryDownloadedOldData(
-      {required this.gid,
-      required this.token,
-      required this.title,
-      required this.category,
-      required this.pageCount,
-      required this.galleryUrl,
-      this.oldVersionGalleryUrl,
-      this.uploader,
-      required this.publishTime,
-      required this.downloadStatusIndex,
-      this.insertTime,
-      required this.downloadOriginalImage,
-      this.priority,
-      required this.sortOrder,
-      this.groupName});
+  const GalleryDownloadedOldData({
+    required this.gid,
+    required this.token,
+    required this.title,
+    required this.category,
+    required this.pageCount,
+    required this.galleryUrl,
+    this.oldVersionGalleryUrl,
+    this.uploader,
+    required this.publishTime,
+    required this.downloadStatusIndex,
+    this.insertTime,
+    required this.downloadOriginalImage,
+    this.priority,
+    required this.sortOrder,
+    this.groupName,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -4217,27 +4720,22 @@ class GalleryDownloadedOldData extends DataClass
       oldVersionGalleryUrl: oldVersionGalleryUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(oldVersionGalleryUrl),
-      uploader: uploader == null && nullToAbsent
-          ? const Value.absent()
-          : Value(uploader),
+      uploader: uploader == null && nullToAbsent ? const Value.absent() : Value(uploader),
       publishTime: Value(publishTime),
       downloadStatusIndex: Value(downloadStatusIndex),
-      insertTime: insertTime == null && nullToAbsent
-          ? const Value.absent()
-          : Value(insertTime),
+      insertTime:
+          insertTime == null && nullToAbsent ? const Value.absent() : Value(insertTime),
       downloadOriginalImage: Value(downloadOriginalImage),
-      priority: priority == null && nullToAbsent
-          ? const Value.absent()
-          : Value(priority),
+      priority: priority == null && nullToAbsent ? const Value.absent() : Value(priority),
       sortOrder: Value(sortOrder),
-      groupName: groupName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(groupName),
+      groupName: groupName == null && nullToAbsent ? const Value.absent() : Value(groupName),
     );
   }
 
-  factory GalleryDownloadedOldData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory GalleryDownloadedOldData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GalleryDownloadedOldData(
       gid: serializer.fromJson<int>(json['gid']),
@@ -4246,15 +4744,12 @@ class GalleryDownloadedOldData extends DataClass
       category: serializer.fromJson<String>(json['category']),
       pageCount: serializer.fromJson<int>(json['pageCount']),
       galleryUrl: serializer.fromJson<String>(json['galleryUrl']),
-      oldVersionGalleryUrl:
-          serializer.fromJson<String?>(json['oldVersionGalleryUrl']),
+      oldVersionGalleryUrl: serializer.fromJson<String?>(json['oldVersionGalleryUrl']),
       uploader: serializer.fromJson<String?>(json['uploader']),
       publishTime: serializer.fromJson<String>(json['publishTime']),
-      downloadStatusIndex:
-          serializer.fromJson<int>(json['downloadStatusIndex']),
+      downloadStatusIndex: serializer.fromJson<int>(json['downloadStatusIndex']),
       insertTime: serializer.fromJson<String?>(json['insertTime']),
-      downloadOriginalImage:
-          serializer.fromJson<bool>(json['downloadOriginalImage']),
+      downloadOriginalImage: serializer.fromJson<bool>(json['downloadOriginalImage']),
       priority: serializer.fromJson<int?>(json['priority']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       groupName: serializer.fromJson<String?>(json['groupName']),
@@ -4282,22 +4777,23 @@ class GalleryDownloadedOldData extends DataClass
     };
   }
 
-  GalleryDownloadedOldData copyWith(
-          {int? gid,
-          String? token,
-          String? title,
-          String? category,
-          int? pageCount,
-          String? galleryUrl,
-          Value<String?> oldVersionGalleryUrl = const Value.absent(),
-          Value<String?> uploader = const Value.absent(),
-          String? publishTime,
-          int? downloadStatusIndex,
-          Value<String?> insertTime = const Value.absent(),
-          bool? downloadOriginalImage,
-          Value<int?> priority = const Value.absent(),
-          int? sortOrder,
-          Value<String?> groupName = const Value.absent()}) =>
+  GalleryDownloadedOldData copyWith({
+    int? gid,
+    String? token,
+    String? title,
+    String? category,
+    int? pageCount,
+    String? galleryUrl,
+    Value<String?> oldVersionGalleryUrl = const Value.absent(),
+    Value<String?> uploader = const Value.absent(),
+    String? publishTime,
+    int? downloadStatusIndex,
+    Value<String?> insertTime = const Value.absent(),
+    bool? downloadOriginalImage,
+    Value<int?> priority = const Value.absent(),
+    int? sortOrder,
+    Value<String?> groupName = const Value.absent(),
+  }) =>
       GalleryDownloadedOldData(
         gid: gid ?? this.gid,
         token: token ?? this.token,
@@ -4312,33 +4808,28 @@ class GalleryDownloadedOldData extends DataClass
         publishTime: publishTime ?? this.publishTime,
         downloadStatusIndex: downloadStatusIndex ?? this.downloadStatusIndex,
         insertTime: insertTime.present ? insertTime.value : this.insertTime,
-        downloadOriginalImage:
-            downloadOriginalImage ?? this.downloadOriginalImage,
+        downloadOriginalImage: downloadOriginalImage ?? this.downloadOriginalImage,
         priority: priority.present ? priority.value : this.priority,
         sortOrder: sortOrder ?? this.sortOrder,
         groupName: groupName.present ? groupName.value : this.groupName,
       );
-  GalleryDownloadedOldData copyWithCompanion(
-      GalleryDownloadedOldCompanion data) {
+  GalleryDownloadedOldData copyWithCompanion(GalleryDownloadedOldCompanion data) {
     return GalleryDownloadedOldData(
       gid: data.gid.present ? data.gid.value : this.gid,
       token: data.token.present ? data.token.value : this.token,
       title: data.title.present ? data.title.value : this.title,
       category: data.category.present ? data.category.value : this.category,
       pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
-      galleryUrl:
-          data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
+      galleryUrl: data.galleryUrl.present ? data.galleryUrl.value : this.galleryUrl,
       oldVersionGalleryUrl: data.oldVersionGalleryUrl.present
           ? data.oldVersionGalleryUrl.value
           : this.oldVersionGalleryUrl,
       uploader: data.uploader.present ? data.uploader.value : this.uploader,
-      publishTime:
-          data.publishTime.present ? data.publishTime.value : this.publishTime,
+      publishTime: data.publishTime.present ? data.publishTime.value : this.publishTime,
       downloadStatusIndex: data.downloadStatusIndex.present
           ? data.downloadStatusIndex.value
           : this.downloadStatusIndex,
-      insertTime:
-          data.insertTime.present ? data.insertTime.value : this.insertTime,
+      insertTime: data.insertTime.present ? data.insertTime.value : this.insertTime,
       downloadOriginalImage: data.downloadOriginalImage.present
           ? data.downloadOriginalImage.value
           : this.downloadOriginalImage,
@@ -4372,21 +4863,22 @@ class GalleryDownloadedOldData extends DataClass
 
   @override
   int get hashCode => Object.hash(
-      gid,
-      token,
-      title,
-      category,
-      pageCount,
-      galleryUrl,
-      oldVersionGalleryUrl,
-      uploader,
-      publishTime,
-      downloadStatusIndex,
-      insertTime,
-      downloadOriginalImage,
-      priority,
-      sortOrder,
-      groupName);
+        gid,
+        token,
+        title,
+        category,
+        pageCount,
+        galleryUrl,
+        oldVersionGalleryUrl,
+        uploader,
+        publishTime,
+        downloadStatusIndex,
+        insertTime,
+        downloadOriginalImage,
+        priority,
+        sortOrder,
+        groupName,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4408,8 +4900,7 @@ class GalleryDownloadedOldData extends DataClass
           other.groupName == this.groupName);
 }
 
-class GalleryDownloadedOldCompanion
-    extends UpdateCompanion<GalleryDownloadedOldData> {
+class GalleryDownloadedOldCompanion extends UpdateCompanion<GalleryDownloadedOldData> {
   final Value<int> gid;
   final Value<String> token;
   final Value<String> title;
@@ -4489,37 +4980,35 @@ class GalleryDownloadedOldCompanion
       if (category != null) 'category': category,
       if (pageCount != null) 'pageCount': pageCount,
       if (galleryUrl != null) 'galleryUrl': galleryUrl,
-      if (oldVersionGalleryUrl != null)
-        'oldVersionGalleryUrl': oldVersionGalleryUrl,
+      if (oldVersionGalleryUrl != null) 'oldVersionGalleryUrl': oldVersionGalleryUrl,
       if (uploader != null) 'uploader': uploader,
       if (publishTime != null) 'publishTime': publishTime,
-      if (downloadStatusIndex != null)
-        'downloadStatusIndex': downloadStatusIndex,
+      if (downloadStatusIndex != null) 'downloadStatusIndex': downloadStatusIndex,
       if (insertTime != null) 'insertTime': insertTime,
-      if (downloadOriginalImage != null)
-        'downloadOriginalImage': downloadOriginalImage,
+      if (downloadOriginalImage != null) 'downloadOriginalImage': downloadOriginalImage,
       if (priority != null) 'priority': priority,
       if (sortOrder != null) 'sortOrder': sortOrder,
       if (groupName != null) 'groupName': groupName,
     });
   }
 
-  GalleryDownloadedOldCompanion copyWith(
-      {Value<int>? gid,
-      Value<String>? token,
-      Value<String>? title,
-      Value<String>? category,
-      Value<int>? pageCount,
-      Value<String>? galleryUrl,
-      Value<String?>? oldVersionGalleryUrl,
-      Value<String?>? uploader,
-      Value<String>? publishTime,
-      Value<int>? downloadStatusIndex,
-      Value<String?>? insertTime,
-      Value<bool>? downloadOriginalImage,
-      Value<int?>? priority,
-      Value<int>? sortOrder,
-      Value<String?>? groupName}) {
+  GalleryDownloadedOldCompanion copyWith({
+    Value<int>? gid,
+    Value<String>? token,
+    Value<String>? title,
+    Value<String>? category,
+    Value<int>? pageCount,
+    Value<String>? galleryUrl,
+    Value<String?>? oldVersionGalleryUrl,
+    Value<String?>? uploader,
+    Value<String>? publishTime,
+    Value<int>? downloadStatusIndex,
+    Value<String?>? insertTime,
+    Value<bool>? downloadOriginalImage,
+    Value<int?>? priority,
+    Value<int>? sortOrder,
+    Value<String?>? groupName,
+  }) {
     return GalleryDownloadedOldCompanion(
       gid: gid ?? this.gid,
       token: token ?? this.token,
@@ -4532,8 +5021,7 @@ class GalleryDownloadedOldCompanion
       publishTime: publishTime ?? this.publishTime,
       downloadStatusIndex: downloadStatusIndex ?? this.downloadStatusIndex,
       insertTime: insertTime ?? this.insertTime,
-      downloadOriginalImage:
-          downloadOriginalImage ?? this.downloadOriginalImage,
+      downloadOriginalImage: downloadOriginalImage ?? this.downloadOriginalImage,
       priority: priority ?? this.priority,
       sortOrder: sortOrder ?? this.sortOrder,
       groupName: groupName ?? this.groupName,
@@ -4562,8 +5050,7 @@ class GalleryDownloadedOldCompanion
       map['galleryUrl'] = Variable<String>(galleryUrl.value);
     }
     if (oldVersionGalleryUrl.present) {
-      map['oldVersionGalleryUrl'] =
-          Variable<String>(oldVersionGalleryUrl.value);
+      map['oldVersionGalleryUrl'] = Variable<String>(oldVersionGalleryUrl.value);
     }
     if (uploader.present) {
       map['uploader'] = Variable<String>(uploader.value);
@@ -4578,8 +5065,7 @@ class GalleryDownloadedOldCompanion
       map['insertTime'] = Variable<String>(insertTime.value);
     }
     if (downloadOriginalImage.present) {
-      map['downloadOriginalImage'] =
-          Variable<bool>(downloadOriginalImage.value);
+      map['downloadOriginalImage'] = Variable<bool>(downloadOriginalImage.value);
     }
     if (priority.present) {
       map['priority'] = Variable<int>(priority.value);
@@ -4622,20 +5108,25 @@ class $GalleryGroupTable extends GalleryGroup
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $GalleryGroupTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _groupNameMeta =
-      const VerificationMeta('groupName');
+  static const VerificationMeta _groupNameMeta = const VerificationMeta('groupName');
   @override
   late final GeneratedColumn<String> groupName = GeneratedColumn<String>(
-      'groupName', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _sortOrderMeta =
-      const VerificationMeta('sortOrder');
+    'groupName',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta('sortOrder');
   @override
   late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
-      'sortOrder', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+    'sortOrder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [groupName, sortOrder];
   @override
@@ -4644,19 +5135,25 @@ class $GalleryGroupTable extends GalleryGroup
   String get actualTableName => $name;
   static const String $name = 'gallery_group';
   @override
-  VerificationContext validateIntegrity(Insertable<GalleryGroupData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<GalleryGroupData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('groupName')) {
-      context.handle(_groupNameMeta,
-          groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta));
+      context.handle(
+        _groupNameMeta,
+        groupName.isAcceptableOrUnknown(data['groupName']!, _groupNameMeta),
+      );
     } else if (isInserting) {
       context.missing(_groupNameMeta);
     }
     if (data.containsKey('sortOrder')) {
-      context.handle(_sortOrderMeta,
-          sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta));
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sortOrder']!, _sortOrderMeta),
+      );
     }
     return context;
   }
@@ -4667,10 +5164,14 @@ class $GalleryGroupTable extends GalleryGroup
   GalleryGroupData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GalleryGroupData(
-      groupName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}groupName'])!,
-      sortOrder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}sortOrder'])!,
+      groupName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}groupName'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sortOrder'],
+      )!,
     );
   }
 
@@ -4680,8 +5181,7 @@ class $GalleryGroupTable extends GalleryGroup
   }
 }
 
-class GalleryGroupData extends DataClass
-    implements Insertable<GalleryGroupData> {
+class GalleryGroupData extends DataClass implements Insertable<GalleryGroupData> {
   final String groupName;
   final int sortOrder;
   const GalleryGroupData({required this.groupName, required this.sortOrder});
@@ -4694,14 +5194,10 @@ class GalleryGroupData extends DataClass
   }
 
   GalleryGroupCompanion toCompanion(bool nullToAbsent) {
-    return GalleryGroupCompanion(
-      groupName: Value(groupName),
-      sortOrder: Value(sortOrder),
-    );
+    return GalleryGroupCompanion(groupName: Value(groupName), sortOrder: Value(sortOrder));
   }
 
-  factory GalleryGroupData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory GalleryGroupData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GalleryGroupData(
       groupName: serializer.fromJson<String>(json['groupName']),
@@ -4717,8 +5213,7 @@ class GalleryGroupData extends DataClass
     };
   }
 
-  GalleryGroupData copyWith({String? groupName, int? sortOrder}) =>
-      GalleryGroupData(
+  GalleryGroupData copyWith({String? groupName, int? sortOrder}) => GalleryGroupData(
         groupName: groupName ?? this.groupName,
         sortOrder: sortOrder ?? this.sortOrder,
       );
@@ -4774,8 +5269,11 @@ class GalleryGroupCompanion extends UpdateCompanion<GalleryGroupData> {
     });
   }
 
-  GalleryGroupCompanion copyWith(
-      {Value<String>? groupName, Value<int>? sortOrder, Value<int>? rowid}) {
+  GalleryGroupCompanion copyWith({
+    Value<String>? groupName,
+    Value<int>? sortOrder,
+    Value<int>? rowid,
+  }) {
     return GalleryGroupCompanion(
       groupName: groupName ?? this.groupName,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -4817,87 +5315,143 @@ class $ImageTable extends Image with TableInfo<$ImageTable, ImageData> {
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES gallery_downloaded_v2 (gid)'));
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES gallery_downloaded_v2 (gid)',
+    ),
+  );
   static const VerificationMeta _urlMeta = const VerificationMeta('url');
   @override
   late final GeneratedColumn<String> url = GeneratedColumn<String>(
-      'url', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _serialNoMeta =
-      const VerificationMeta('serialNo');
+    'url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _originalImageUrlMeta = const VerificationMeta(
+    'originalImageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> originalImageUrl = GeneratedColumn<String>(
+    'originalImageUrl',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serialNoMeta = const VerificationMeta('serialNo');
   @override
   late final GeneratedColumn<int> serialNo = GeneratedColumn<int>(
-      'serialNo', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'serialNo',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
-      'path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _imageHashMeta =
-      const VerificationMeta('imageHash');
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _imageHashMeta = const VerificationMeta('imageHash');
   @override
   late final GeneratedColumn<String> imageHash = GeneratedColumn<String>(
-      'imageHash', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _downloadStatusIndexMeta =
-      const VerificationMeta('downloadStatusIndex');
+    'imageHash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _downloadStatusIndexMeta = const VerificationMeta(
+    'downloadStatusIndex',
+  );
   @override
   late final GeneratedColumn<int> downloadStatusIndex = GeneratedColumn<int>(
-      'downloadStatusIndex', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'downloadStatusIndex',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [gid, url, serialNo, path, imageHash, downloadStatusIndex];
+  List<GeneratedColumn> get $columns => [
+        gid,
+        url,
+        originalImageUrl,
+        serialNo,
+        path,
+        imageHash,
+        downloadStatusIndex,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'image';
   @override
-  VerificationContext validateIntegrity(Insertable<ImageData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<ImageData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     } else if (isInserting) {
       context.missing(_gidMeta);
     }
     if (data.containsKey('url')) {
-      context.handle(
-          _urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
+      context.handle(_urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
     } else if (isInserting) {
       context.missing(_urlMeta);
     }
+    if (data.containsKey('originalImageUrl')) {
+      context.handle(
+        _originalImageUrlMeta,
+        originalImageUrl.isAcceptableOrUnknown(
+          data['originalImageUrl']!,
+          _originalImageUrlMeta,
+        ),
+      );
+    }
     if (data.containsKey('serialNo')) {
-      context.handle(_serialNoMeta,
-          serialNo.isAcceptableOrUnknown(data['serialNo']!, _serialNoMeta));
+      context.handle(
+        _serialNoMeta,
+        serialNo.isAcceptableOrUnknown(data['serialNo']!, _serialNoMeta),
+      );
     } else if (isInserting) {
       context.missing(_serialNoMeta);
     }
     if (data.containsKey('path')) {
-      context.handle(
-          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
+      context.handle(_pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     } else if (isInserting) {
       context.missing(_pathMeta);
     }
     if (data.containsKey('imageHash')) {
-      context.handle(_imageHashMeta,
-          imageHash.isAcceptableOrUnknown(data['imageHash']!, _imageHashMeta));
+      context.handle(
+        _imageHashMeta,
+        imageHash.isAcceptableOrUnknown(data['imageHash']!, _imageHashMeta),
+      );
     } else if (isInserting) {
       context.missing(_imageHashMeta);
     }
     if (data.containsKey('downloadStatusIndex')) {
       context.handle(
+        _downloadStatusIndexMeta,
+        downloadStatusIndex.isAcceptableOrUnknown(
+          data['downloadStatusIndex']!,
           _downloadStatusIndexMeta,
-          downloadStatusIndex.isAcceptableOrUnknown(
-              data['downloadStatusIndex']!, _downloadStatusIndexMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_downloadStatusIndexMeta);
     }
@@ -4910,18 +5464,31 @@ class $ImageTable extends Image with TableInfo<$ImageTable, ImageData> {
   ImageData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ImageData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      url: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}url'])!,
-      serialNo: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}serialNo'])!,
-      path: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
-      imageHash: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}imageHash'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      url: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}url'],
+      )!,
+      originalImageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}originalImageUrl'],
+      ),
+      serialNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}serialNo'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      imageHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}imageHash'],
+      )!,
       downloadStatusIndex: attachedDatabase.typeMapping.read(
-          DriftSqlType.int, data['${effectivePrefix}downloadStatusIndex'])!,
+        DriftSqlType.int,
+        data['${effectivePrefix}downloadStatusIndex'],
+      )!,
     );
   }
 
@@ -4934,22 +5501,33 @@ class $ImageTable extends Image with TableInfo<$ImageTable, ImageData> {
 class ImageData extends DataClass implements Insertable<ImageData> {
   final int gid;
   final String url;
+
+  /// Original (full-size) image URL. Null for gallerys downloaded without
+  /// `downloadOriginalImage`, or for legacy rows written before this column
+  /// existed — runtime falls back to `url` via
+  /// `GalleryImageIndex.downloadUrlFor`.
+  final String? originalImageUrl;
   final int serialNo;
   final String path;
   final String imageHash;
   final int downloadStatusIndex;
-  const ImageData(
-      {required this.gid,
-      required this.url,
-      required this.serialNo,
-      required this.path,
-      required this.imageHash,
-      required this.downloadStatusIndex});
+  const ImageData({
+    required this.gid,
+    required this.url,
+    this.originalImageUrl,
+    required this.serialNo,
+    required this.path,
+    required this.imageHash,
+    required this.downloadStatusIndex,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['gid'] = Variable<int>(gid);
     map['url'] = Variable<String>(url);
+    if (!nullToAbsent || originalImageUrl != null) {
+      map['originalImageUrl'] = Variable<String>(originalImageUrl);
+    }
     map['serialNo'] = Variable<int>(serialNo);
     map['path'] = Variable<String>(path);
     map['imageHash'] = Variable<String>(imageHash);
@@ -4961,6 +5539,9 @@ class ImageData extends DataClass implements Insertable<ImageData> {
     return ImageCompanion(
       gid: Value(gid),
       url: Value(url),
+      originalImageUrl: originalImageUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalImageUrl),
       serialNo: Value(serialNo),
       path: Value(path),
       imageHash: Value(imageHash),
@@ -4968,17 +5549,16 @@ class ImageData extends DataClass implements Insertable<ImageData> {
     );
   }
 
-  factory ImageData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory ImageData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ImageData(
       gid: serializer.fromJson<int>(json['gid']),
       url: serializer.fromJson<String>(json['url']),
+      originalImageUrl: serializer.fromJson<String?>(json['originalImageUrl']),
       serialNo: serializer.fromJson<int>(json['serialNo']),
       path: serializer.fromJson<String>(json['path']),
       imageHash: serializer.fromJson<String>(json['imageHash']),
-      downloadStatusIndex:
-          serializer.fromJson<int>(json['downloadStatusIndex']),
+      downloadStatusIndex: serializer.fromJson<int>(json['downloadStatusIndex']),
     );
   }
   @override
@@ -4987,6 +5567,7 @@ class ImageData extends DataClass implements Insertable<ImageData> {
     return <String, dynamic>{
       'gid': serializer.toJson<int>(gid),
       'url': serializer.toJson<String>(url),
+      'originalImageUrl': serializer.toJson<String?>(originalImageUrl),
       'serialNo': serializer.toJson<int>(serialNo),
       'path': serializer.toJson<String>(path),
       'imageHash': serializer.toJson<String>(imageHash),
@@ -4994,16 +5575,20 @@ class ImageData extends DataClass implements Insertable<ImageData> {
     };
   }
 
-  ImageData copyWith(
-          {int? gid,
-          String? url,
-          int? serialNo,
-          String? path,
-          String? imageHash,
-          int? downloadStatusIndex}) =>
+  ImageData copyWith({
+    int? gid,
+    String? url,
+    Value<String?> originalImageUrl = const Value.absent(),
+    int? serialNo,
+    String? path,
+    String? imageHash,
+    int? downloadStatusIndex,
+  }) =>
       ImageData(
         gid: gid ?? this.gid,
         url: url ?? this.url,
+        originalImageUrl:
+            originalImageUrl.present ? originalImageUrl.value : this.originalImageUrl,
         serialNo: serialNo ?? this.serialNo,
         path: path ?? this.path,
         imageHash: imageHash ?? this.imageHash,
@@ -5013,6 +5598,8 @@ class ImageData extends DataClass implements Insertable<ImageData> {
     return ImageData(
       gid: data.gid.present ? data.gid.value : this.gid,
       url: data.url.present ? data.url.value : this.url,
+      originalImageUrl:
+          data.originalImageUrl.present ? data.originalImageUrl.value : this.originalImageUrl,
       serialNo: data.serialNo.present ? data.serialNo.value : this.serialNo,
       path: data.path.present ? data.path.value : this.path,
       imageHash: data.imageHash.present ? data.imageHash.value : this.imageHash,
@@ -5027,6 +5614,7 @@ class ImageData extends DataClass implements Insertable<ImageData> {
     return (StringBuffer('ImageData(')
           ..write('gid: $gid, ')
           ..write('url: $url, ')
+          ..write('originalImageUrl: $originalImageUrl, ')
           ..write('serialNo: $serialNo, ')
           ..write('path: $path, ')
           ..write('imageHash: $imageHash, ')
@@ -5037,13 +5625,14 @@ class ImageData extends DataClass implements Insertable<ImageData> {
 
   @override
   int get hashCode =>
-      Object.hash(gid, url, serialNo, path, imageHash, downloadStatusIndex);
+      Object.hash(gid, url, originalImageUrl, serialNo, path, imageHash, downloadStatusIndex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ImageData &&
           other.gid == this.gid &&
           other.url == this.url &&
+          other.originalImageUrl == this.originalImageUrl &&
           other.serialNo == this.serialNo &&
           other.path == this.path &&
           other.imageHash == this.imageHash &&
@@ -5053,6 +5642,7 @@ class ImageData extends DataClass implements Insertable<ImageData> {
 class ImageCompanion extends UpdateCompanion<ImageData> {
   final Value<int> gid;
   final Value<String> url;
+  final Value<String?> originalImageUrl;
   final Value<int> serialNo;
   final Value<String> path;
   final Value<String> imageHash;
@@ -5061,6 +5651,7 @@ class ImageCompanion extends UpdateCompanion<ImageData> {
   const ImageCompanion({
     this.gid = const Value.absent(),
     this.url = const Value.absent(),
+    this.originalImageUrl = const Value.absent(),
     this.serialNo = const Value.absent(),
     this.path = const Value.absent(),
     this.imageHash = const Value.absent(),
@@ -5070,6 +5661,7 @@ class ImageCompanion extends UpdateCompanion<ImageData> {
   ImageCompanion.insert({
     required int gid,
     required String url,
+    this.originalImageUrl = const Value.absent(),
     required int serialNo,
     required String path,
     required String imageHash,
@@ -5084,6 +5676,7 @@ class ImageCompanion extends UpdateCompanion<ImageData> {
   static Insertable<ImageData> custom({
     Expression<int>? gid,
     Expression<String>? url,
+    Expression<String>? originalImageUrl,
     Expression<int>? serialNo,
     Expression<String>? path,
     Expression<String>? imageHash,
@@ -5093,26 +5686,29 @@ class ImageCompanion extends UpdateCompanion<ImageData> {
     return RawValuesInsertable({
       if (gid != null) 'gid': gid,
       if (url != null) 'url': url,
+      if (originalImageUrl != null) 'originalImageUrl': originalImageUrl,
       if (serialNo != null) 'serialNo': serialNo,
       if (path != null) 'path': path,
       if (imageHash != null) 'imageHash': imageHash,
-      if (downloadStatusIndex != null)
-        'downloadStatusIndex': downloadStatusIndex,
+      if (downloadStatusIndex != null) 'downloadStatusIndex': downloadStatusIndex,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  ImageCompanion copyWith(
-      {Value<int>? gid,
-      Value<String>? url,
-      Value<int>? serialNo,
-      Value<String>? path,
-      Value<String>? imageHash,
-      Value<int>? downloadStatusIndex,
-      Value<int>? rowid}) {
+  ImageCompanion copyWith({
+    Value<int>? gid,
+    Value<String>? url,
+    Value<String?>? originalImageUrl,
+    Value<int>? serialNo,
+    Value<String>? path,
+    Value<String>? imageHash,
+    Value<int>? downloadStatusIndex,
+    Value<int>? rowid,
+  }) {
     return ImageCompanion(
       gid: gid ?? this.gid,
       url: url ?? this.url,
+      originalImageUrl: originalImageUrl ?? this.originalImageUrl,
       serialNo: serialNo ?? this.serialNo,
       path: path ?? this.path,
       imageHash: imageHash ?? this.imageHash,
@@ -5129,6 +5725,9 @@ class ImageCompanion extends UpdateCompanion<ImageData> {
     }
     if (url.present) {
       map['url'] = Variable<String>(url.value);
+    }
+    if (originalImageUrl.present) {
+      map['originalImageUrl'] = Variable<String>(originalImageUrl.value);
     }
     if (serialNo.present) {
       map['serialNo'] = Variable<int>(serialNo.value);
@@ -5153,6 +5752,7 @@ class ImageCompanion extends UpdateCompanion<ImageData> {
     return (StringBuffer('ImageCompanion(')
           ..write('gid: $gid, ')
           ..write('url: $url, ')
+          ..write('originalImageUrl: $originalImageUrl, ')
           ..write('serialNo: $serialNo, ')
           ..write('path: $path, ')
           ..write('imageHash: $imageHash, ')
@@ -5172,20 +5772,30 @@ class $GalleryHistoryTable extends GalleryHistory
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _jsonBodyMeta =
-      const VerificationMeta('jsonBody');
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _jsonBodyMeta = const VerificationMeta('jsonBody');
   @override
   late final GeneratedColumn<String> jsonBody = GeneratedColumn<String>(
-      'jsonBody', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _lastReadTimeMeta =
-      const VerificationMeta('lastReadTime');
+    'jsonBody',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastReadTimeMeta = const VerificationMeta('lastReadTime');
   @override
   late final GeneratedColumn<String> lastReadTime = GeneratedColumn<String>(
-      'lastReadTime', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'lastReadTime',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [gid, jsonBody, lastReadTime];
   @override
@@ -5194,25 +5804,28 @@ class $GalleryHistoryTable extends GalleryHistory
   String get actualTableName => $name;
   static const String $name = 'gallery_history';
   @override
-  VerificationContext validateIntegrity(Insertable<GalleryHistoryData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<GalleryHistoryData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     }
     if (data.containsKey('jsonBody')) {
-      context.handle(_jsonBodyMeta,
-          jsonBody.isAcceptableOrUnknown(data['jsonBody']!, _jsonBodyMeta));
+      context.handle(
+        _jsonBodyMeta,
+        jsonBody.isAcceptableOrUnknown(data['jsonBody']!, _jsonBodyMeta),
+      );
     } else if (isInserting) {
       context.missing(_jsonBodyMeta);
     }
     if (data.containsKey('lastReadTime')) {
       context.handle(
-          _lastReadTimeMeta,
-          lastReadTime.isAcceptableOrUnknown(
-              data['lastReadTime']!, _lastReadTimeMeta));
+        _lastReadTimeMeta,
+        lastReadTime.isAcceptableOrUnknown(data['lastReadTime']!, _lastReadTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_lastReadTimeMeta);
     }
@@ -5225,12 +5838,15 @@ class $GalleryHistoryTable extends GalleryHistory
   GalleryHistoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GalleryHistoryData(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      jsonBody: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}jsonBody'])!,
-      lastReadTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}lastReadTime'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      jsonBody: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}jsonBody'],
+      )!,
+      lastReadTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lastReadTime'],
+      )!,
     );
   }
 
@@ -5240,13 +5856,15 @@ class $GalleryHistoryTable extends GalleryHistory
   }
 }
 
-class GalleryHistoryData extends DataClass
-    implements Insertable<GalleryHistoryData> {
+class GalleryHistoryData extends DataClass implements Insertable<GalleryHistoryData> {
   final int gid;
   final String jsonBody;
   final String lastReadTime;
-  const GalleryHistoryData(
-      {required this.gid, required this.jsonBody, required this.lastReadTime});
+  const GalleryHistoryData({
+    required this.gid,
+    required this.jsonBody,
+    required this.lastReadTime,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -5264,8 +5882,10 @@ class GalleryHistoryData extends DataClass
     );
   }
 
-  factory GalleryHistoryData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory GalleryHistoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GalleryHistoryData(
       gid: serializer.fromJson<int>(json['gid']),
@@ -5283,8 +5903,7 @@ class GalleryHistoryData extends DataClass
     };
   }
 
-  GalleryHistoryData copyWith(
-          {int? gid, String? jsonBody, String? lastReadTime}) =>
+  GalleryHistoryData copyWith({int? gid, String? jsonBody, String? lastReadTime}) =>
       GalleryHistoryData(
         gid: gid ?? this.gid,
         jsonBody: jsonBody ?? this.jsonBody,
@@ -5294,9 +5913,7 @@ class GalleryHistoryData extends DataClass
     return GalleryHistoryData(
       gid: data.gid.present ? data.gid.value : this.gid,
       jsonBody: data.jsonBody.present ? data.jsonBody.value : this.jsonBody,
-      lastReadTime: data.lastReadTime.present
-          ? data.lastReadTime.value
-          : this.lastReadTime,
+      lastReadTime: data.lastReadTime.present ? data.lastReadTime.value : this.lastReadTime,
     );
   }
 
@@ -5348,8 +5965,11 @@ class GalleryHistoryCompanion extends UpdateCompanion<GalleryHistoryData> {
     });
   }
 
-  GalleryHistoryCompanion copyWith(
-      {Value<int>? gid, Value<String>? jsonBody, Value<String>? lastReadTime}) {
+  GalleryHistoryCompanion copyWith({
+    Value<int>? gid,
+    Value<String>? jsonBody,
+    Value<String>? lastReadTime,
+  }) {
     return GalleryHistoryCompanion(
       gid: gid ?? this.gid,
       jsonBody: jsonBody ?? this.jsonBody,
@@ -5392,20 +6012,30 @@ class $GalleryHistoryV2Table extends GalleryHistoryV2
   static const VerificationMeta _gidMeta = const VerificationMeta('gid');
   @override
   late final GeneratedColumn<int> gid = GeneratedColumn<int>(
-      'gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _jsonBodyMeta =
-      const VerificationMeta('jsonBody');
+    'gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _jsonBodyMeta = const VerificationMeta('jsonBody');
   @override
   late final GeneratedColumn<String> jsonBody = GeneratedColumn<String>(
-      'jsonBody', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _lastReadTimeMeta =
-      const VerificationMeta('lastReadTime');
+    'jsonBody',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastReadTimeMeta = const VerificationMeta('lastReadTime');
   @override
   late final GeneratedColumn<String> lastReadTime = GeneratedColumn<String>(
-      'lastReadTime', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'lastReadTime',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [gid, jsonBody, lastReadTime];
   @override
@@ -5415,25 +6045,27 @@ class $GalleryHistoryV2Table extends GalleryHistoryV2
   static const String $name = 'gallery_history_v2';
   @override
   VerificationContext validateIntegrity(
-      Insertable<GalleryHistoryV2Data> instance,
-      {bool isInserting = false}) {
+    Insertable<GalleryHistoryV2Data> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('gid')) {
-      context.handle(
-          _gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
+      context.handle(_gidMeta, gid.isAcceptableOrUnknown(data['gid']!, _gidMeta));
     }
     if (data.containsKey('jsonBody')) {
-      context.handle(_jsonBodyMeta,
-          jsonBody.isAcceptableOrUnknown(data['jsonBody']!, _jsonBodyMeta));
+      context.handle(
+        _jsonBodyMeta,
+        jsonBody.isAcceptableOrUnknown(data['jsonBody']!, _jsonBodyMeta),
+      );
     } else if (isInserting) {
       context.missing(_jsonBodyMeta);
     }
     if (data.containsKey('lastReadTime')) {
       context.handle(
-          _lastReadTimeMeta,
-          lastReadTime.isAcceptableOrUnknown(
-              data['lastReadTime']!, _lastReadTimeMeta));
+        _lastReadTimeMeta,
+        lastReadTime.isAcceptableOrUnknown(data['lastReadTime']!, _lastReadTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_lastReadTimeMeta);
     }
@@ -5446,12 +6078,15 @@ class $GalleryHistoryV2Table extends GalleryHistoryV2
   GalleryHistoryV2Data map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GalleryHistoryV2Data(
-      gid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
-      jsonBody: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}jsonBody'])!,
-      lastReadTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}lastReadTime'])!,
+      gid: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}gid'])!,
+      jsonBody: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}jsonBody'],
+      )!,
+      lastReadTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lastReadTime'],
+      )!,
     );
   }
 
@@ -5461,13 +6096,15 @@ class $GalleryHistoryV2Table extends GalleryHistoryV2
   }
 }
 
-class GalleryHistoryV2Data extends DataClass
-    implements Insertable<GalleryHistoryV2Data> {
+class GalleryHistoryV2Data extends DataClass implements Insertable<GalleryHistoryV2Data> {
   final int gid;
   final String jsonBody;
   final String lastReadTime;
-  const GalleryHistoryV2Data(
-      {required this.gid, required this.jsonBody, required this.lastReadTime});
+  const GalleryHistoryV2Data({
+    required this.gid,
+    required this.jsonBody,
+    required this.lastReadTime,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -5485,8 +6122,10 @@ class GalleryHistoryV2Data extends DataClass
     );
   }
 
-  factory GalleryHistoryV2Data.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory GalleryHistoryV2Data.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GalleryHistoryV2Data(
       gid: serializer.fromJson<int>(json['gid']),
@@ -5504,8 +6143,7 @@ class GalleryHistoryV2Data extends DataClass
     };
   }
 
-  GalleryHistoryV2Data copyWith(
-          {int? gid, String? jsonBody, String? lastReadTime}) =>
+  GalleryHistoryV2Data copyWith({int? gid, String? jsonBody, String? lastReadTime}) =>
       GalleryHistoryV2Data(
         gid: gid ?? this.gid,
         jsonBody: jsonBody ?? this.jsonBody,
@@ -5515,9 +6153,7 @@ class GalleryHistoryV2Data extends DataClass
     return GalleryHistoryV2Data(
       gid: data.gid.present ? data.gid.value : this.gid,
       jsonBody: data.jsonBody.present ? data.jsonBody.value : this.jsonBody,
-      lastReadTime: data.lastReadTime.present
-          ? data.lastReadTime.value
-          : this.lastReadTime,
+      lastReadTime: data.lastReadTime.present ? data.lastReadTime.value : this.lastReadTime,
     );
   }
 
@@ -5569,8 +6205,11 @@ class GalleryHistoryV2Companion extends UpdateCompanion<GalleryHistoryV2Data> {
     });
   }
 
-  GalleryHistoryV2Companion copyWith(
-      {Value<int>? gid, Value<String>? jsonBody, Value<String>? lastReadTime}) {
+  GalleryHistoryV2Companion copyWith({
+    Value<int>? gid,
+    Value<String>? jsonBody,
+    Value<String>? lastReadTime,
+  }) {
     return GalleryHistoryV2Companion(
       gid: gid ?? this.gid,
       jsonBody: jsonBody ?? this.jsonBody,
@@ -5610,39 +6249,61 @@ class $GalleryParentCacheTable extends GalleryParentCache
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $GalleryParentCacheTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _childGidMeta =
-      const VerificationMeta('childGid');
+  static const VerificationMeta _childGidMeta = const VerificationMeta('childGid');
   @override
   late final GeneratedColumn<int> childGid = GeneratedColumn<int>(
-      'child_gid', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _parentGidMeta =
-      const VerificationMeta('parentGid');
+    'child_gid',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parentGidMeta = const VerificationMeta('parentGid');
   @override
   late final GeneratedColumn<int> parentGid = GeneratedColumn<int>(
-      'parent_gid', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
-  static const VerificationMeta _parentTokenMeta =
-      const VerificationMeta('parentToken');
+    'parent_gid',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parentTokenMeta = const VerificationMeta('parentToken');
   @override
   late final GeneratedColumn<String> parentToken = GeneratedColumn<String>(
-      'parent_token', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _parentGalleryUrlMeta =
-      const VerificationMeta('parentGalleryUrl');
+    'parent_token',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parentGalleryUrlMeta = const VerificationMeta(
+    'parentGalleryUrl',
+  );
   @override
   late final GeneratedColumn<String> parentGalleryUrl = GeneratedColumn<String>(
-      'parent_gallery_url', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _cacheTimeMeta =
-      const VerificationMeta('cacheTime');
+    'parent_gallery_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cacheTimeMeta = const VerificationMeta('cacheTime');
   @override
   late final GeneratedColumn<String> cacheTime = GeneratedColumn<String>(
-      'cache_time', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'cache_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [childGid, parentGid, parentToken, parentGalleryUrl, cacheTime];
+  List<GeneratedColumn> get $columns => [
+        childGid,
+        parentGid,
+        parentToken,
+        parentGalleryUrl,
+        cacheTime,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -5650,33 +6311,43 @@ class $GalleryParentCacheTable extends GalleryParentCache
   static const String $name = 'gallery_parent_cache';
   @override
   VerificationContext validateIntegrity(
-      Insertable<GalleryParentCacheData> instance,
-      {bool isInserting = false}) {
+    Insertable<GalleryParentCacheData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('child_gid')) {
-      context.handle(_childGidMeta,
-          childGid.isAcceptableOrUnknown(data['child_gid']!, _childGidMeta));
+      context.handle(
+        _childGidMeta,
+        childGid.isAcceptableOrUnknown(data['child_gid']!, _childGidMeta),
+      );
     }
     if (data.containsKey('parent_gid')) {
-      context.handle(_parentGidMeta,
-          parentGid.isAcceptableOrUnknown(data['parent_gid']!, _parentGidMeta));
+      context.handle(
+        _parentGidMeta,
+        parentGid.isAcceptableOrUnknown(data['parent_gid']!, _parentGidMeta),
+      );
     }
     if (data.containsKey('parent_token')) {
       context.handle(
-          _parentTokenMeta,
-          parentToken.isAcceptableOrUnknown(
-              data['parent_token']!, _parentTokenMeta));
+        _parentTokenMeta,
+        parentToken.isAcceptableOrUnknown(data['parent_token']!, _parentTokenMeta),
+      );
     }
     if (data.containsKey('parent_gallery_url')) {
       context.handle(
+        _parentGalleryUrlMeta,
+        parentGalleryUrl.isAcceptableOrUnknown(
+          data['parent_gallery_url']!,
           _parentGalleryUrlMeta,
-          parentGalleryUrl.isAcceptableOrUnknown(
-              data['parent_gallery_url']!, _parentGalleryUrlMeta));
+        ),
+      );
     }
     if (data.containsKey('cache_time')) {
-      context.handle(_cacheTimeMeta,
-          cacheTime.isAcceptableOrUnknown(data['cache_time']!, _cacheTimeMeta));
+      context.handle(
+        _cacheTimeMeta,
+        cacheTime.isAcceptableOrUnknown(data['cache_time']!, _cacheTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_cacheTimeMeta);
     }
@@ -5689,16 +6360,26 @@ class $GalleryParentCacheTable extends GalleryParentCache
   GalleryParentCacheData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GalleryParentCacheData(
-      childGid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}child_gid'])!,
-      parentGid: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}parent_gid']),
-      parentToken: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}parent_token']),
+      childGid: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}child_gid'],
+      )!,
+      parentGid: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}parent_gid'],
+      ),
+      parentToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_token'],
+      ),
       parentGalleryUrl: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}parent_gallery_url']),
-      cacheTime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}cache_time'])!,
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_gallery_url'],
+      ),
+      cacheTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cache_time'],
+      )!,
     );
   }
 
@@ -5708,19 +6389,19 @@ class $GalleryParentCacheTable extends GalleryParentCache
   }
 }
 
-class GalleryParentCacheData extends DataClass
-    implements Insertable<GalleryParentCacheData> {
+class GalleryParentCacheData extends DataClass implements Insertable<GalleryParentCacheData> {
   final int childGid;
   final int? parentGid;
   final String? parentToken;
   final String? parentGalleryUrl;
   final String cacheTime;
-  const GalleryParentCacheData(
-      {required this.childGid,
-      this.parentGid,
-      this.parentToken,
-      this.parentGalleryUrl,
-      required this.cacheTime});
+  const GalleryParentCacheData({
+    required this.childGid,
+    this.parentGid,
+    this.parentToken,
+    this.parentGalleryUrl,
+    required this.cacheTime,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -5741,12 +6422,9 @@ class GalleryParentCacheData extends DataClass
   GalleryParentCacheCompanion toCompanion(bool nullToAbsent) {
     return GalleryParentCacheCompanion(
       childGid: Value(childGid),
-      parentGid: parentGid == null && nullToAbsent
-          ? const Value.absent()
-          : Value(parentGid),
-      parentToken: parentToken == null && nullToAbsent
-          ? const Value.absent()
-          : Value(parentToken),
+      parentGid: parentGid == null && nullToAbsent ? const Value.absent() : Value(parentGid),
+      parentToken:
+          parentToken == null && nullToAbsent ? const Value.absent() : Value(parentToken),
       parentGalleryUrl: parentGalleryUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(parentGalleryUrl),
@@ -5754,8 +6432,10 @@ class GalleryParentCacheData extends DataClass
     );
   }
 
-  factory GalleryParentCacheData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory GalleryParentCacheData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GalleryParentCacheData(
       childGid: serializer.fromJson<int>(json['childGid']),
@@ -5777,30 +6457,28 @@ class GalleryParentCacheData extends DataClass
     };
   }
 
-  GalleryParentCacheData copyWith(
-          {int? childGid,
-          Value<int?> parentGid = const Value.absent(),
-          Value<String?> parentToken = const Value.absent(),
-          Value<String?> parentGalleryUrl = const Value.absent(),
-          String? cacheTime}) =>
+  GalleryParentCacheData copyWith({
+    int? childGid,
+    Value<int?> parentGid = const Value.absent(),
+    Value<String?> parentToken = const Value.absent(),
+    Value<String?> parentGalleryUrl = const Value.absent(),
+    String? cacheTime,
+  }) =>
       GalleryParentCacheData(
         childGid: childGid ?? this.childGid,
         parentGid: parentGid.present ? parentGid.value : this.parentGid,
         parentToken: parentToken.present ? parentToken.value : this.parentToken,
-        parentGalleryUrl: parentGalleryUrl.present
-            ? parentGalleryUrl.value
-            : this.parentGalleryUrl,
+        parentGalleryUrl:
+            parentGalleryUrl.present ? parentGalleryUrl.value : this.parentGalleryUrl,
         cacheTime: cacheTime ?? this.cacheTime,
       );
   GalleryParentCacheData copyWithCompanion(GalleryParentCacheCompanion data) {
     return GalleryParentCacheData(
       childGid: data.childGid.present ? data.childGid.value : this.childGid,
       parentGid: data.parentGid.present ? data.parentGid.value : this.parentGid,
-      parentToken:
-          data.parentToken.present ? data.parentToken.value : this.parentToken,
-      parentGalleryUrl: data.parentGalleryUrl.present
-          ? data.parentGalleryUrl.value
-          : this.parentGalleryUrl,
+      parentToken: data.parentToken.present ? data.parentToken.value : this.parentToken,
+      parentGalleryUrl:
+          data.parentGalleryUrl.present ? data.parentGalleryUrl.value : this.parentGalleryUrl,
       cacheTime: data.cacheTime.present ? data.cacheTime.value : this.cacheTime,
     );
   }
@@ -5818,8 +6496,8 @@ class GalleryParentCacheData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      childGid, parentGid, parentToken, parentGalleryUrl, cacheTime);
+  int get hashCode =>
+      Object.hash(childGid, parentGid, parentToken, parentGalleryUrl, cacheTime);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5831,8 +6509,7 @@ class GalleryParentCacheData extends DataClass
           other.cacheTime == this.cacheTime);
 }
 
-class GalleryParentCacheCompanion
-    extends UpdateCompanion<GalleryParentCacheData> {
+class GalleryParentCacheCompanion extends UpdateCompanion<GalleryParentCacheData> {
   final Value<int> childGid;
   final Value<int?> parentGid;
   final Value<String?> parentToken;
@@ -5868,12 +6545,13 @@ class GalleryParentCacheCompanion
     });
   }
 
-  GalleryParentCacheCompanion copyWith(
-      {Value<int>? childGid,
-      Value<int?>? parentGid,
-      Value<String?>? parentToken,
-      Value<String?>? parentGalleryUrl,
-      Value<String>? cacheTime}) {
+  GalleryParentCacheCompanion copyWith({
+    Value<int>? childGid,
+    Value<int?>? parentGid,
+    Value<String?>? parentToken,
+    Value<String?>? parentGalleryUrl,
+    Value<String>? cacheTime,
+  }) {
     return GalleryParentCacheCompanion(
       childGid: childGid ?? this.childGid,
       parentGid: parentGid ?? this.parentGid,
@@ -5917,23 +6595,31 @@ class GalleryParentCacheCompanion
   }
 }
 
-class $TagCountTable extends TagCount
-    with TableInfo<$TagCountTable, TagCountData> {
+class $TagCountTable extends TagCount with TableInfo<$TagCountTable, TagCountData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TagCountTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _namespaceWithKeyMeta =
-      const VerificationMeta('namespaceWithKey');
+  static const VerificationMeta _namespaceWithKeyMeta = const VerificationMeta(
+    'namespaceWithKey',
+  );
   @override
   late final GeneratedColumn<String> namespaceWithKey = GeneratedColumn<String>(
-      'namespaceWithKey', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'namespaceWithKey',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _countMeta = const VerificationMeta('count');
   @override
   late final GeneratedColumn<int> count = GeneratedColumn<int>(
-      'count', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+    'count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [namespaceWithKey, count];
   @override
@@ -5942,21 +6628,25 @@ class $TagCountTable extends TagCount
   String get actualTableName => $name;
   static const String $name = 'tag_count';
   @override
-  VerificationContext validateIntegrity(Insertable<TagCountData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<TagCountData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('namespaceWithKey')) {
       context.handle(
+        _namespaceWithKeyMeta,
+        namespaceWithKey.isAcceptableOrUnknown(
+          data['namespaceWithKey']!,
           _namespaceWithKeyMeta,
-          namespaceWithKey.isAcceptableOrUnknown(
-              data['namespaceWithKey']!, _namespaceWithKeyMeta));
+        ),
+      );
     } else if (isInserting) {
       context.missing(_namespaceWithKeyMeta);
     }
     if (data.containsKey('count')) {
-      context.handle(
-          _countMeta, count.isAcceptableOrUnknown(data['count']!, _countMeta));
+      context.handle(_countMeta, count.isAcceptableOrUnknown(data['count']!, _countMeta));
     } else if (isInserting) {
       context.missing(_countMeta);
     }
@@ -5970,9 +6660,13 @@ class $TagCountTable extends TagCount
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TagCountData(
       namespaceWithKey: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}namespaceWithKey'])!,
-      count: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}count'])!,
+        DriftSqlType.string,
+        data['${effectivePrefix}namespaceWithKey'],
+      )!,
+      count: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}count'],
+      )!,
     );
   }
 
@@ -5995,14 +6689,10 @@ class TagCountData extends DataClass implements Insertable<TagCountData> {
   }
 
   TagCountCompanion toCompanion(bool nullToAbsent) {
-    return TagCountCompanion(
-      namespaceWithKey: Value(namespaceWithKey),
-      count: Value(count),
-    );
+    return TagCountCompanion(namespaceWithKey: Value(namespaceWithKey), count: Value(count));
   }
 
-  factory TagCountData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TagCountData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TagCountData(
       namespaceWithKey: serializer.fromJson<String>(json['namespaceWithKey']),
@@ -6024,9 +6714,8 @@ class TagCountData extends DataClass implements Insertable<TagCountData> {
       );
   TagCountData copyWithCompanion(TagCountCompanion data) {
     return TagCountData(
-      namespaceWithKey: data.namespaceWithKey.present
-          ? data.namespaceWithKey.value
-          : this.namespaceWithKey,
+      namespaceWithKey:
+          data.namespaceWithKey.present ? data.namespaceWithKey.value : this.namespaceWithKey,
       count: data.count.present ? data.count.value : this.count,
     );
   }
@@ -6077,8 +6766,11 @@ class TagCountCompanion extends UpdateCompanion<TagCountData> {
     });
   }
 
-  TagCountCompanion copyWith(
-      {Value<String>? namespaceWithKey, Value<int>? count, Value<int>? rowid}) {
+  TagCountCompanion copyWith({
+    Value<String>? namespaceWithKey,
+    Value<int>? count,
+    Value<int>? rowid,
+  }) {
     return TagCountCompanion(
       namespaceWithKey: namespaceWithKey ?? this.namespaceWithKey,
       count: count ?? this.count,
@@ -6112,83 +6804,104 @@ class TagCountCompanion extends UpdateCompanion<TagCountData> {
   }
 }
 
-class $DioCacheTable extends DioCache
-    with TableInfo<$DioCacheTable, DioCacheData> {
+class $DioCacheTable extends DioCache with TableInfo<$DioCacheTable, DioCacheData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DioCacheTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _cacheKeyMeta =
-      const VerificationMeta('cacheKey');
+  static const VerificationMeta _cacheKeyMeta = const VerificationMeta('cacheKey');
   @override
   late final GeneratedColumn<String> cacheKey = GeneratedColumn<String>(
-      'cacheKey', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'cacheKey',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _urlMeta = const VerificationMeta('url');
   @override
   late final GeneratedColumn<String> url = GeneratedColumn<String>(
-      'url', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _expireDateMeta =
-      const VerificationMeta('expireDate');
+    'url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expireDateMeta = const VerificationMeta('expireDate');
   @override
   late final GeneratedColumn<DateTime> expireDate = GeneratedColumn<DateTime>(
-      'expireDate', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
+    'expireDate',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
   late final GeneratedColumn<Uint8List> content = GeneratedColumn<Uint8List>(
-      'content', aliasedName, false,
-      type: DriftSqlType.blob, requiredDuringInsert: true);
-  static const VerificationMeta _headersMeta =
-      const VerificationMeta('headers');
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _headersMeta = const VerificationMeta('headers');
   @override
   late final GeneratedColumn<Uint8List> headers = GeneratedColumn<Uint8List>(
-      'headers', aliasedName, false,
-      type: DriftSqlType.blob, requiredDuringInsert: true);
+    'headers',
+    aliasedName,
+    false,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: true,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [cacheKey, url, expireDate, content, headers];
+  List<GeneratedColumn> get $columns => [cacheKey, url, expireDate, content, headers];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'dio_cache';
   @override
-  VerificationContext validateIntegrity(Insertable<DioCacheData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<DioCacheData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('cacheKey')) {
-      context.handle(_cacheKeyMeta,
-          cacheKey.isAcceptableOrUnknown(data['cacheKey']!, _cacheKeyMeta));
+      context.handle(
+        _cacheKeyMeta,
+        cacheKey.isAcceptableOrUnknown(data['cacheKey']!, _cacheKeyMeta),
+      );
     } else if (isInserting) {
       context.missing(_cacheKeyMeta);
     }
     if (data.containsKey('url')) {
-      context.handle(
-          _urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
+      context.handle(_urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
     } else if (isInserting) {
       context.missing(_urlMeta);
     }
     if (data.containsKey('expireDate')) {
       context.handle(
-          _expireDateMeta,
-          expireDate.isAcceptableOrUnknown(
-              data['expireDate']!, _expireDateMeta));
+        _expireDateMeta,
+        expireDate.isAcceptableOrUnknown(data['expireDate']!, _expireDateMeta),
+      );
     } else if (isInserting) {
       context.missing(_expireDateMeta);
     }
     if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
     if (data.containsKey('headers')) {
-      context.handle(_headersMeta,
-          headers.isAcceptableOrUnknown(data['headers']!, _headersMeta));
+      context.handle(
+        _headersMeta,
+        headers.isAcceptableOrUnknown(data['headers']!, _headersMeta),
+      );
     } else if (isInserting) {
       context.missing(_headersMeta);
     }
@@ -6201,16 +6914,26 @@ class $DioCacheTable extends DioCache
   DioCacheData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DioCacheData(
-      cacheKey: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}cacheKey'])!,
-      url: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}url'])!,
-      expireDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}expireDate'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.blob, data['${effectivePrefix}content'])!,
-      headers: attachedDatabase.typeMapping
-          .read(DriftSqlType.blob, data['${effectivePrefix}headers'])!,
+      cacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cacheKey'],
+      )!,
+      url: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}url'],
+      )!,
+      expireDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expireDate'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}content'],
+      )!,
+      headers: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}headers'],
+      )!,
     );
   }
 
@@ -6226,12 +6949,13 @@ class DioCacheData extends DataClass implements Insertable<DioCacheData> {
   final DateTime expireDate;
   final Uint8List content;
   final Uint8List headers;
-  const DioCacheData(
-      {required this.cacheKey,
-      required this.url,
-      required this.expireDate,
-      required this.content,
-      required this.headers});
+  const DioCacheData({
+    required this.cacheKey,
+    required this.url,
+    required this.expireDate,
+    required this.content,
+    required this.headers,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -6253,8 +6977,7 @@ class DioCacheData extends DataClass implements Insertable<DioCacheData> {
     );
   }
 
-  factory DioCacheData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory DioCacheData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DioCacheData(
       cacheKey: serializer.fromJson<String>(json['cacheKey']),
@@ -6276,12 +6999,13 @@ class DioCacheData extends DataClass implements Insertable<DioCacheData> {
     };
   }
 
-  DioCacheData copyWith(
-          {String? cacheKey,
-          String? url,
-          DateTime? expireDate,
-          Uint8List? content,
-          Uint8List? headers}) =>
+  DioCacheData copyWith({
+    String? cacheKey,
+    String? url,
+    DateTime? expireDate,
+    Uint8List? content,
+    Uint8List? headers,
+  }) =>
       DioCacheData(
         cacheKey: cacheKey ?? this.cacheKey,
         url: url ?? this.url,
@@ -6293,8 +7017,7 @@ class DioCacheData extends DataClass implements Insertable<DioCacheData> {
     return DioCacheData(
       cacheKey: data.cacheKey.present ? data.cacheKey.value : this.cacheKey,
       url: data.url.present ? data.url.value : this.url,
-      expireDate:
-          data.expireDate.present ? data.expireDate.value : this.expireDate,
+      expireDate: data.expireDate.present ? data.expireDate.value : this.expireDate,
       content: data.content.present ? data.content.value : this.content,
       headers: data.headers.present ? data.headers.value : this.headers,
     );
@@ -6313,8 +7036,13 @@ class DioCacheData extends DataClass implements Insertable<DioCacheData> {
   }
 
   @override
-  int get hashCode => Object.hash(cacheKey, url, expireDate,
-      $driftBlobEquality.hash(content), $driftBlobEquality.hash(headers));
+  int get hashCode => Object.hash(
+        cacheKey,
+        url,
+        expireDate,
+        $driftBlobEquality.hash(content),
+        $driftBlobEquality.hash(headers),
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -6371,13 +7099,14 @@ class DioCacheCompanion extends UpdateCompanion<DioCacheData> {
     });
   }
 
-  DioCacheCompanion copyWith(
-      {Value<String>? cacheKey,
-      Value<String>? url,
-      Value<DateTime>? expireDate,
-      Value<Uint8List>? content,
-      Value<Uint8List>? headers,
-      Value<int>? rowid}) {
+  DioCacheCompanion copyWith({
+    Value<String>? cacheKey,
+    Value<String>? url,
+    Value<DateTime>? expireDate,
+    Value<Uint8List>? content,
+    Value<Uint8List>? headers,
+    Value<int>? rowid,
+  }) {
     return DioCacheCompanion(
       cacheKey: cacheKey ?? this.cacheKey,
       url: url ?? this.url,
@@ -6426,8 +7155,7 @@ class DioCacheCompanion extends UpdateCompanion<DioCacheData> {
   }
 }
 
-class $BlockRuleTable extends BlockRule
-    with TableInfo<$BlockRuleTable, BlockRuleData> {
+class $BlockRuleTable extends BlockRule with TableInfo<$BlockRuleTable, BlockRuleData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -6435,86 +7163,110 @@ class $BlockRuleTable extends BlockRule
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _groupIdMeta =
-      const VerificationMeta('groupId');
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+  );
+  static const VerificationMeta _groupIdMeta = const VerificationMeta('groupId');
   @override
   late final GeneratedColumn<String> groupId = GeneratedColumn<String>(
-      'group_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'group_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _targetMeta = const VerificationMeta('target');
   @override
   late final GeneratedColumn<int> target = GeneratedColumn<int>(
-      'target', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _attributeMeta =
-      const VerificationMeta('attribute');
+    'target',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _attributeMeta = const VerificationMeta('attribute');
   @override
   late final GeneratedColumn<int> attribute = GeneratedColumn<int>(
-      'attribute', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _patternMeta =
-      const VerificationMeta('pattern');
+    'attribute',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _patternMeta = const VerificationMeta('pattern');
   @override
   late final GeneratedColumn<int> pattern = GeneratedColumn<int>(
-      'pattern', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _expressionMeta =
-      const VerificationMeta('expression');
+    'pattern',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expressionMeta = const VerificationMeta('expression');
   @override
   late final GeneratedColumn<String> expression = GeneratedColumn<String>(
-      'expression', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'expression',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, groupId, target, attribute, pattern, expression];
+  List<GeneratedColumn> get $columns => [id, groupId, target, attribute, pattern, expression];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'block_rule';
   @override
-  VerificationContext validateIntegrity(Insertable<BlockRuleData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<BlockRuleData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('group_id')) {
-      context.handle(_groupIdMeta,
-          groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta));
+      context.handle(
+        _groupIdMeta,
+        groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_groupIdMeta);
     }
     if (data.containsKey('target')) {
-      context.handle(_targetMeta,
-          target.isAcceptableOrUnknown(data['target']!, _targetMeta));
+      context.handle(_targetMeta, target.isAcceptableOrUnknown(data['target']!, _targetMeta));
     } else if (isInserting) {
       context.missing(_targetMeta);
     }
     if (data.containsKey('attribute')) {
-      context.handle(_attributeMeta,
-          attribute.isAcceptableOrUnknown(data['attribute']!, _attributeMeta));
+      context.handle(
+        _attributeMeta,
+        attribute.isAcceptableOrUnknown(data['attribute']!, _attributeMeta),
+      );
     } else if (isInserting) {
       context.missing(_attributeMeta);
     }
     if (data.containsKey('pattern')) {
-      context.handle(_patternMeta,
-          pattern.isAcceptableOrUnknown(data['pattern']!, _patternMeta));
+      context.handle(
+        _patternMeta,
+        pattern.isAcceptableOrUnknown(data['pattern']!, _patternMeta),
+      );
     } else if (isInserting) {
       context.missing(_patternMeta);
     }
     if (data.containsKey('expression')) {
       context.handle(
-          _expressionMeta,
-          expression.isAcceptableOrUnknown(
-              data['expression']!, _expressionMeta));
+        _expressionMeta,
+        expression.isAcceptableOrUnknown(data['expression']!, _expressionMeta),
+      );
     } else if (isInserting) {
       context.missing(_expressionMeta);
     }
@@ -6527,18 +7279,27 @@ class $BlockRuleTable extends BlockRule
   BlockRuleData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return BlockRuleData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      groupId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}group_id'])!,
-      target: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}target'])!,
-      attribute: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}attribute'])!,
-      pattern: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}pattern'])!,
-      expression: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}expression'])!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      groupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}group_id'],
+      )!,
+      target: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target'],
+      )!,
+      attribute: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attribute'],
+      )!,
+      pattern: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pattern'],
+      )!,
+      expression: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expression'],
+      )!,
     );
   }
 
@@ -6555,13 +7316,14 @@ class BlockRuleData extends DataClass implements Insertable<BlockRuleData> {
   final int attribute;
   final int pattern;
   final String expression;
-  const BlockRuleData(
-      {required this.id,
-      required this.groupId,
-      required this.target,
-      required this.attribute,
-      required this.pattern,
-      required this.expression});
+  const BlockRuleData({
+    required this.id,
+    required this.groupId,
+    required this.target,
+    required this.attribute,
+    required this.pattern,
+    required this.expression,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -6585,8 +7347,7 @@ class BlockRuleData extends DataClass implements Insertable<BlockRuleData> {
     );
   }
 
-  factory BlockRuleData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory BlockRuleData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return BlockRuleData(
       id: serializer.fromJson<int>(json['id']),
@@ -6610,13 +7371,14 @@ class BlockRuleData extends DataClass implements Insertable<BlockRuleData> {
     };
   }
 
-  BlockRuleData copyWith(
-          {int? id,
-          String? groupId,
-          int? target,
-          int? attribute,
-          int? pattern,
-          String? expression}) =>
+  BlockRuleData copyWith({
+    int? id,
+    String? groupId,
+    int? target,
+    int? attribute,
+    int? pattern,
+    String? expression,
+  }) =>
       BlockRuleData(
         id: id ?? this.id,
         groupId: groupId ?? this.groupId,
@@ -6632,8 +7394,7 @@ class BlockRuleData extends DataClass implements Insertable<BlockRuleData> {
       target: data.target.present ? data.target.value : this.target,
       attribute: data.attribute.present ? data.attribute.value : this.attribute,
       pattern: data.pattern.present ? data.pattern.value : this.pattern,
-      expression:
-          data.expression.present ? data.expression.value : this.expression,
+      expression: data.expression.present ? data.expression.value : this.expression,
     );
   }
 
@@ -6651,8 +7412,7 @@ class BlockRuleData extends DataClass implements Insertable<BlockRuleData> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, groupId, target, attribute, pattern, expression);
+  int get hashCode => Object.hash(id, groupId, target, attribute, pattern, expression);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -6710,13 +7470,14 @@ class BlockRuleCompanion extends UpdateCompanion<BlockRuleData> {
     });
   }
 
-  BlockRuleCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? groupId,
-      Value<int>? target,
-      Value<int>? attribute,
-      Value<int>? pattern,
-      Value<String>? expression}) {
+  BlockRuleCompanion copyWith({
+    Value<int>? id,
+    Value<String>? groupId,
+    Value<int>? target,
+    Value<int>? attribute,
+    Value<int>? pattern,
+    Value<String>? expression,
+  }) {
     return BlockRuleCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
@@ -6771,28 +7532,42 @@ class $LocalConfigTable extends LocalConfig
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $LocalConfigTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _configKeyMeta =
-      const VerificationMeta('configKey');
+  static const VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   @override
   late final GeneratedColumn<String> configKey = GeneratedColumn<String>(
-      'config_key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _subConfigKeyMeta =
-      const VerificationMeta('subConfigKey');
+    'config_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _subConfigKeyMeta = const VerificationMeta('subConfigKey');
   @override
   late final GeneratedColumn<String> subConfigKey = GeneratedColumn<String>(
-      'sub_config_key', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'sub_config_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _valueMeta = const VerificationMeta('value');
   @override
   late final GeneratedColumn<String> value = GeneratedColumn<String>(
-      'value', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _utimeMeta = const VerificationMeta('utime');
   @override
   late final GeneratedColumn<String> utime = GeneratedColumn<String>(
-      'utime', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'utime',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [configKey, subConfigKey, value, utime];
   @override
@@ -6801,33 +7576,35 @@ class $LocalConfigTable extends LocalConfig
   String get actualTableName => $name;
   static const String $name = 'local_config';
   @override
-  VerificationContext validateIntegrity(Insertable<LocalConfigData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<LocalConfigData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('config_key')) {
-      context.handle(_configKeyMeta,
-          configKey.isAcceptableOrUnknown(data['config_key']!, _configKeyMeta));
+      context.handle(
+        _configKeyMeta,
+        configKey.isAcceptableOrUnknown(data['config_key']!, _configKeyMeta),
+      );
     } else if (isInserting) {
       context.missing(_configKeyMeta);
     }
     if (data.containsKey('sub_config_key')) {
       context.handle(
-          _subConfigKeyMeta,
-          subConfigKey.isAcceptableOrUnknown(
-              data['sub_config_key']!, _subConfigKeyMeta));
+        _subConfigKeyMeta,
+        subConfigKey.isAcceptableOrUnknown(data['sub_config_key']!, _subConfigKeyMeta),
+      );
     } else if (isInserting) {
       context.missing(_subConfigKeyMeta);
     }
     if (data.containsKey('value')) {
-      context.handle(
-          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
+      context.handle(_valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
     } else if (isInserting) {
       context.missing(_valueMeta);
     }
     if (data.containsKey('utime')) {
-      context.handle(
-          _utimeMeta, utime.isAcceptableOrUnknown(data['utime']!, _utimeMeta));
+      context.handle(_utimeMeta, utime.isAcceptableOrUnknown(data['utime']!, _utimeMeta));
     } else if (isInserting) {
       context.missing(_utimeMeta);
     }
@@ -6840,14 +7617,22 @@ class $LocalConfigTable extends LocalConfig
   LocalConfigData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return LocalConfigData(
-      configKey: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}config_key'])!,
-      subConfigKey: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sub_config_key'])!,
-      value: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}value'])!,
-      utime: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}utime'])!,
+      configKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}config_key'],
+      )!,
+      subConfigKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sub_config_key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+      utime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}utime'],
+      )!,
     );
   }
 
@@ -6862,11 +7647,12 @@ class LocalConfigData extends DataClass implements Insertable<LocalConfigData> {
   final String subConfigKey;
   final String value;
   final String utime;
-  const LocalConfigData(
-      {required this.configKey,
-      required this.subConfigKey,
-      required this.value,
-      required this.utime});
+  const LocalConfigData({
+    required this.configKey,
+    required this.subConfigKey,
+    required this.value,
+    required this.utime,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -6886,8 +7672,7 @@ class LocalConfigData extends DataClass implements Insertable<LocalConfigData> {
     );
   }
 
-  factory LocalConfigData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory LocalConfigData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return LocalConfigData(
       configKey: serializer.fromJson<String>(json['configKey']),
@@ -6907,11 +7692,12 @@ class LocalConfigData extends DataClass implements Insertable<LocalConfigData> {
     };
   }
 
-  LocalConfigData copyWith(
-          {String? configKey,
-          String? subConfigKey,
-          String? value,
-          String? utime}) =>
+  LocalConfigData copyWith({
+    String? configKey,
+    String? subConfigKey,
+    String? value,
+    String? utime,
+  }) =>
       LocalConfigData(
         configKey: configKey ?? this.configKey,
         subConfigKey: subConfigKey ?? this.subConfigKey,
@@ -6921,9 +7707,7 @@ class LocalConfigData extends DataClass implements Insertable<LocalConfigData> {
   LocalConfigData copyWithCompanion(LocalConfigCompanion data) {
     return LocalConfigData(
       configKey: data.configKey.present ? data.configKey.value : this.configKey,
-      subConfigKey: data.subConfigKey.present
-          ? data.subConfigKey.value
-          : this.subConfigKey,
+      subConfigKey: data.subConfigKey.present ? data.subConfigKey.value : this.subConfigKey,
       value: data.value.present ? data.value.value : this.value,
       utime: data.utime.present ? data.utime.value : this.utime,
     );
@@ -6991,12 +7775,13 @@ class LocalConfigCompanion extends UpdateCompanion<LocalConfigData> {
     });
   }
 
-  LocalConfigCompanion copyWith(
-      {Value<String>? configKey,
-      Value<String>? subConfigKey,
-      Value<String>? value,
-      Value<String>? utime,
-      Value<int>? rowid}) {
+  LocalConfigCompanion copyWith({
+    Value<String>? configKey,
+    Value<String>? subConfigKey,
+    Value<String>? value,
+    Value<String>? utime,
+    Value<int>? rowid,
+  }) {
     return LocalConfigCompanion(
       configKey: configKey ?? this.configKey,
       subConfigKey: subConfigKey ?? this.subConfigKey,
@@ -7045,65 +7830,92 @@ abstract class _$AppDb extends GeneratedDatabase {
   $AppDbManager get managers => $AppDbManager(this);
   late final $OldSuperResolutionInfoTable oldSuperResolutionInfo =
       $OldSuperResolutionInfoTable(this);
-  late final $SuperResolutionInfoTable superResolutionInfo =
-      $SuperResolutionInfoTable(this);
+  late final $SuperResolutionInfoTable superResolutionInfo = $SuperResolutionInfoTable(this);
   late final $TagTable tag = $TagTable(this);
-  late final $ArchiveDownloadedTable archiveDownloaded =
-      $ArchiveDownloadedTable(this);
-  late final $ArchiveDownloadedOldTable archiveDownloadedOld =
-      $ArchiveDownloadedOldTable(this);
+  late final $ArchiveDownloadedTable archiveDownloaded = $ArchiveDownloadedTable(this);
+  late final $ArchiveDownloadedOldTable archiveDownloadedOld = $ArchiveDownloadedOldTable(
+    this,
+  );
   late final $ArchiveGroupTable archiveGroup = $ArchiveGroupTable(this);
-  late final $GalleryDownloadedTable galleryDownloaded =
-      $GalleryDownloadedTable(this);
-  late final $GalleryDownloadedOldTable galleryDownloadedOld =
-      $GalleryDownloadedOldTable(this);
+  late final $GalleryDownloadedTable galleryDownloaded = $GalleryDownloadedTable(this);
+  late final $GalleryDownloadedOldTable galleryDownloadedOld = $GalleryDownloadedOldTable(
+    this,
+  );
   late final $GalleryGroupTable galleryGroup = $GalleryGroupTable(this);
   late final $ImageTable image = $ImageTable(this);
   late final $GalleryHistoryTable galleryHistory = $GalleryHistoryTable(this);
-  late final $GalleryHistoryV2Table galleryHistoryV2 =
-      $GalleryHistoryV2Table(this);
-  late final $GalleryParentCacheTable galleryParentCache =
-      $GalleryParentCacheTable(this);
+  late final $GalleryHistoryV2Table galleryHistoryV2 = $GalleryHistoryV2Table(this);
+  late final $GalleryParentCacheTable galleryParentCache = $GalleryParentCacheTable(this);
   late final $TagCountTable tagCount = $TagCountTable(this);
   late final $DioCacheTable dioCache = $DioCacheTable(this);
   late final $BlockRuleTable blockRule = $BlockRuleTable(this);
   late final $LocalConfigTable localConfig = $LocalConfigTable(this);
-  late final Index idxKey =
-      Index('idx_key', 'CREATE INDEX idx_key ON tag (_key)');
-  late final Index idxTagName =
-      Index('idx_tagName', 'CREATE INDEX idx_tagName ON tag (tagName)');
-  late final Index aIdxInsertTime = Index('a_idx_insert_time',
-      'CREATE INDEX a_idx_insert_time ON archive_downloaded_v2 (insert_time)');
-  late final Index aIdxSortOrder = Index('a_idx_sort_order',
-      'CREATE INDEX a_idx_sort_order ON archive_downloaded_v2 (sort_order)');
-  late final Index aIdxGroupName = Index('a_idx_group_name',
-      'CREATE INDEX a_idx_group_name ON archive_downloaded_v2 (group_name)');
-  late final Index aIdxTagRefreshTime = Index('a_idx_tag_refresh_time',
-      'CREATE INDEX a_idx_tag_refresh_time ON archive_downloaded_v2 (tag_refresh_time)');
-  late final Index gIdxInsertTime = Index('g_idx_insert_time',
-      'CREATE INDEX g_idx_insert_time ON gallery_downloaded_v2 (insert_time)');
-  late final Index gIdxSortOrder = Index('g_idx_sort_order',
-      'CREATE INDEX g_idx_sort_order ON gallery_downloaded_v2 (sort_order)');
-  late final Index gIdxGroupName = Index('g_idx_group_name',
-      'CREATE INDEX g_idx_group_name ON gallery_downloaded_v2 (group_name)');
-  late final Index gIdxTagRefreshTime = Index('g_idx_tag_refresh_time',
-      'CREATE INDEX g_idx_tag_refresh_time ON gallery_downloaded_v2 (tag_refresh_time)');
-  late final Index idxLastReadTime = Index('idx_last_read_time',
-      'CREATE INDEX idx_last_read_time ON gallery_history (lastReadTime)');
-  late final Index idxGh2LastReadTime = Index('idx_gh2_last_read_time',
-      'CREATE INDEX idx_gh2_last_read_time ON gallery_history_v2 (lastReadTime)');
-  late final Index gpcIdxCacheTime = Index('gpc_idx_cache_time',
-      'CREATE INDEX gpc_idx_cache_time ON gallery_parent_cache (cache_time)');
-  late final Index idxExpireDate = Index('idx_expire_date',
-      'CREATE INDEX idx_expire_date ON dio_cache (expireDate)');
-  late final Index idxUrl =
-      Index('idx_url', 'CREATE INDEX idx_url ON dio_cache (url)');
+  late final Index idxKey = Index('idx_key', 'CREATE INDEX idx_key ON tag (_key)');
+  late final Index idxTagName = Index(
+    'idx_tagName',
+    'CREATE INDEX idx_tagName ON tag (tagName)',
+  );
+  late final Index aIdxInsertTime = Index(
+    'a_idx_insert_time',
+    'CREATE INDEX a_idx_insert_time ON archive_downloaded_v2 (insert_time)',
+  );
+  late final Index aIdxSortOrder = Index(
+    'a_idx_sort_order',
+    'CREATE INDEX a_idx_sort_order ON archive_downloaded_v2 (sort_order)',
+  );
+  late final Index aIdxGroupName = Index(
+    'a_idx_group_name',
+    'CREATE INDEX a_idx_group_name ON archive_downloaded_v2 (group_name)',
+  );
+  late final Index aIdxTagRefreshTime = Index(
+    'a_idx_tag_refresh_time',
+    'CREATE INDEX a_idx_tag_refresh_time ON archive_downloaded_v2 (tag_refresh_time)',
+  );
+  late final Index gIdxInsertTime = Index(
+    'g_idx_insert_time',
+    'CREATE INDEX g_idx_insert_time ON gallery_downloaded_v2 (insert_time)',
+  );
+  late final Index gIdxSortOrder = Index(
+    'g_idx_sort_order',
+    'CREATE INDEX g_idx_sort_order ON gallery_downloaded_v2 (sort_order)',
+  );
+  late final Index gIdxGroupName = Index(
+    'g_idx_group_name',
+    'CREATE INDEX g_idx_group_name ON gallery_downloaded_v2 (group_name)',
+  );
+  late final Index gIdxTagRefreshTime = Index(
+    'g_idx_tag_refresh_time',
+    'CREATE INDEX g_idx_tag_refresh_time ON gallery_downloaded_v2 (tag_refresh_time)',
+  );
+  late final Index idxLastReadTime = Index(
+    'idx_last_read_time',
+    'CREATE INDEX idx_last_read_time ON gallery_history (lastReadTime)',
+  );
+  late final Index idxGh2LastReadTime = Index(
+    'idx_gh2_last_read_time',
+    'CREATE INDEX idx_gh2_last_read_time ON gallery_history_v2 (lastReadTime)',
+  );
+  late final Index gpcIdxCacheTime = Index(
+    'gpc_idx_cache_time',
+    'CREATE INDEX gpc_idx_cache_time ON gallery_parent_cache (cache_time)',
+  );
+  late final Index idxExpireDate = Index(
+    'idx_expire_date',
+    'CREATE INDEX idx_expire_date ON dio_cache (expireDate)',
+  );
+  late final Index idxUrl = Index('idx_url', 'CREATE INDEX idx_url ON dio_cache (url)');
   late final Index idxGroupId = Index(
-      'idx_group_id', 'CREATE INDEX idx_group_id ON block_rule (group_id)');
-  late final Index idxTarget =
-      Index('idx_target', 'CREATE INDEX idx_target ON block_rule (target)');
+    'idx_group_id',
+    'CREATE INDEX idx_group_id ON block_rule (group_id)',
+  );
+  late final Index idxTarget = Index(
+    'idx_target',
+    'CREATE INDEX idx_target ON block_rule (target)',
+  );
   late final Index lIdxUTime = Index(
-      'l_idx_u_time', 'CREATE INDEX l_idx_u_time ON local_config (utime)');
+    'l_idx_u_time',
+    'CREATE INDEX l_idx_u_time ON local_config (utime)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7143,19 +7955,19 @@ abstract class _$AppDb extends GeneratedDatabase {
         idxUrl,
         idxGroupId,
         idxTarget,
-        lIdxUTime
+        lIdxUTime,
       ];
 }
 
-typedef $$OldSuperResolutionInfoTableCreateCompanionBuilder
-    = OldSuperResolutionInfoCompanion Function({
+typedef $$OldSuperResolutionInfoTableCreateCompanionBuilder = OldSuperResolutionInfoCompanion
+    Function({
   Value<int> gid,
   required int type,
   required int status,
   required String imageStatuses,
 });
-typedef $$OldSuperResolutionInfoTableUpdateCompanionBuilder
-    = OldSuperResolutionInfoCompanion Function({
+typedef $$OldSuperResolutionInfoTableUpdateCompanionBuilder = OldSuperResolutionInfoCompanion
+    Function({
   Value<int> gid,
   Value<int> type,
   Value<int> status,
@@ -7171,17 +7983,19 @@ class $$OldSuperResolutionInfoTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get imageStatuses => $composableBuilder(
-      column: $table.imageStatuses, builder: (column) => ColumnFilters(column));
+        column: $table.imageStatuses,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$OldSuperResolutionInfoTableOrderingComposer
@@ -7193,18 +8007,19 @@ class $$OldSuperResolutionInfoTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get imageStatuses => $composableBuilder(
-      column: $table.imageStatuses,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.imageStatuses,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$OldSuperResolutionInfoTableAnnotationComposer
@@ -7225,8 +8040,8 @@ class $$OldSuperResolutionInfoTableAnnotationComposer
   GeneratedColumn<int> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
-  GeneratedColumn<String> get imageStatuses => $composableBuilder(
-      column: $table.imageStatuses, builder: (column) => column);
+  GeneratedColumn<String> get imageStatuses =>
+      $composableBuilder(column: $table.imageStatuses, builder: (column) => column);
 }
 
 class $$OldSuperResolutionInfoTableTableManager extends RootTableManager<
@@ -7240,83 +8055,77 @@ class $$OldSuperResolutionInfoTableTableManager extends RootTableManager<
     $$OldSuperResolutionInfoTableUpdateCompanionBuilder,
     (
       OldSuperResolutionInfoData,
-      BaseReferences<_$AppDb, $OldSuperResolutionInfoTable,
-          OldSuperResolutionInfoData>
+      BaseReferences<_$AppDb, $OldSuperResolutionInfoTable, OldSuperResolutionInfoData>,
     ),
     OldSuperResolutionInfoData,
     PrefetchHooks Function()> {
-  $$OldSuperResolutionInfoTableTableManager(
-      _$AppDb db, $OldSuperResolutionInfoTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$OldSuperResolutionInfoTableFilterComposer(
-                  $db: db, $table: table),
-          createOrderingComposer: () =>
-              $$OldSuperResolutionInfoTableOrderingComposer(
-                  $db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$OldSuperResolutionInfoTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<int> type = const Value.absent(),
-            Value<int> status = const Value.absent(),
-            Value<String> imageStatuses = const Value.absent(),
-          }) =>
-              OldSuperResolutionInfoCompanion(
-            gid: gid,
-            type: type,
-            status: status,
-            imageStatuses: imageStatuses,
+  $$OldSuperResolutionInfoTableTableManager(_$AppDb db, $OldSuperResolutionInfoTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$OldSuperResolutionInfoTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$OldSuperResolutionInfoTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$OldSuperResolutionInfoTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<int> type = const Value.absent(),
+              Value<int> status = const Value.absent(),
+              Value<String> imageStatuses = const Value.absent(),
+            }) =>
+                OldSuperResolutionInfoCompanion(
+              gid: gid,
+              type: type,
+              status: status,
+              imageStatuses: imageStatuses,
+            ),
+            createCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              required int type,
+              required int status,
+              required String imageStatuses,
+            }) =>
+                OldSuperResolutionInfoCompanion.insert(
+              gid: gid,
+              type: type,
+              status: status,
+              imageStatuses: imageStatuses,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            required int type,
-            required int status,
-            required String imageStatuses,
-          }) =>
-              OldSuperResolutionInfoCompanion.insert(
-            gid: gid,
-            type: type,
-            status: status,
-            imageStatuses: imageStatuses,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
-typedef $$OldSuperResolutionInfoTableProcessedTableManager
-    = ProcessedTableManager<
-        _$AppDb,
-        $OldSuperResolutionInfoTable,
-        OldSuperResolutionInfoData,
-        $$OldSuperResolutionInfoTableFilterComposer,
-        $$OldSuperResolutionInfoTableOrderingComposer,
-        $$OldSuperResolutionInfoTableAnnotationComposer,
-        $$OldSuperResolutionInfoTableCreateCompanionBuilder,
-        $$OldSuperResolutionInfoTableUpdateCompanionBuilder,
-        (
-          OldSuperResolutionInfoData,
-          BaseReferences<_$AppDb, $OldSuperResolutionInfoTable,
-              OldSuperResolutionInfoData>
-        ),
-        OldSuperResolutionInfoData,
-        PrefetchHooks Function()>;
-typedef $$SuperResolutionInfoTableCreateCompanionBuilder
-    = SuperResolutionInfoCompanion Function({
+typedef $$OldSuperResolutionInfoTableProcessedTableManager = ProcessedTableManager<
+    _$AppDb,
+    $OldSuperResolutionInfoTable,
+    OldSuperResolutionInfoData,
+    $$OldSuperResolutionInfoTableFilterComposer,
+    $$OldSuperResolutionInfoTableOrderingComposer,
+    $$OldSuperResolutionInfoTableAnnotationComposer,
+    $$OldSuperResolutionInfoTableCreateCompanionBuilder,
+    $$OldSuperResolutionInfoTableUpdateCompanionBuilder,
+    (
+      OldSuperResolutionInfoData,
+      BaseReferences<_$AppDb, $OldSuperResolutionInfoTable, OldSuperResolutionInfoData>,
+    ),
+    OldSuperResolutionInfoData,
+    PrefetchHooks Function()>;
+typedef $$SuperResolutionInfoTableCreateCompanionBuilder = SuperResolutionInfoCompanion
+    Function({
   required int gid,
   required int type,
   required int status,
   required String imageStatuses,
   Value<int> rowid,
 });
-typedef $$SuperResolutionInfoTableUpdateCompanionBuilder
-    = SuperResolutionInfoCompanion Function({
+typedef $$SuperResolutionInfoTableUpdateCompanionBuilder = SuperResolutionInfoCompanion
+    Function({
   Value<int> gid,
   Value<int> type,
   Value<int> status,
@@ -7333,17 +8142,19 @@ class $$SuperResolutionInfoTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get imageStatuses => $composableBuilder(
-      column: $table.imageStatuses, builder: (column) => ColumnFilters(column));
+        column: $table.imageStatuses,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$SuperResolutionInfoTableOrderingComposer
@@ -7355,18 +8166,19 @@ class $$SuperResolutionInfoTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get type => $composableBuilder(
-      column: $table.type, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get status => $composableBuilder(
-      column: $table.status, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get imageStatuses => $composableBuilder(
-      column: $table.imageStatuses,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.imageStatuses,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$SuperResolutionInfoTableAnnotationComposer
@@ -7387,8 +8199,8 @@ class $$SuperResolutionInfoTableAnnotationComposer
   GeneratedColumn<int> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
-  GeneratedColumn<String> get imageStatuses => $composableBuilder(
-      column: $table.imageStatuses, builder: (column) => column);
+  GeneratedColumn<String> get imageStatuses =>
+      $composableBuilder(column: $table.imageStatuses, builder: (column) => column);
 }
 
 class $$SuperResolutionInfoTableTableManager extends RootTableManager<
@@ -7402,57 +8214,54 @@ class $$SuperResolutionInfoTableTableManager extends RootTableManager<
     $$SuperResolutionInfoTableUpdateCompanionBuilder,
     (
       SuperResolutionInfoData,
-      BaseReferences<_$AppDb, $SuperResolutionInfoTable,
-          SuperResolutionInfoData>
+      BaseReferences<_$AppDb, $SuperResolutionInfoTable, SuperResolutionInfoData>,
     ),
     SuperResolutionInfoData,
     PrefetchHooks Function()> {
-  $$SuperResolutionInfoTableTableManager(
-      _$AppDb db, $SuperResolutionInfoTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$SuperResolutionInfoTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SuperResolutionInfoTableOrderingComposer(
-                  $db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SuperResolutionInfoTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<int> type = const Value.absent(),
-            Value<int> status = const Value.absent(),
-            Value<String> imageStatuses = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              SuperResolutionInfoCompanion(
-            gid: gid,
-            type: type,
-            status: status,
-            imageStatuses: imageStatuses,
-            rowid: rowid,
+  $$SuperResolutionInfoTableTableManager(_$AppDb db, $SuperResolutionInfoTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$SuperResolutionInfoTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$SuperResolutionInfoTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$SuperResolutionInfoTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<int> type = const Value.absent(),
+              Value<int> status = const Value.absent(),
+              Value<String> imageStatuses = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                SuperResolutionInfoCompanion(
+              gid: gid,
+              type: type,
+              status: status,
+              imageStatuses: imageStatuses,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required int gid,
+              required int type,
+              required int status,
+              required String imageStatuses,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                SuperResolutionInfoCompanion.insert(
+              gid: gid,
+              type: type,
+              status: status,
+              imageStatuses: imageStatuses,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required int gid,
-            required int type,
-            required int status,
-            required String imageStatuses,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              SuperResolutionInfoCompanion.insert(
-            gid: gid,
-            type: type,
-            status: status,
-            imageStatuses: imageStatuses,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$SuperResolutionInfoTableProcessedTableManager = ProcessedTableManager<
@@ -7466,8 +8275,7 @@ typedef $$SuperResolutionInfoTableProcessedTableManager = ProcessedTableManager<
     $$SuperResolutionInfoTableUpdateCompanionBuilder,
     (
       SuperResolutionInfoData,
-      BaseReferences<_$AppDb, $SuperResolutionInfoTable,
-          SuperResolutionInfoData>
+      BaseReferences<_$AppDb, $SuperResolutionInfoTable, SuperResolutionInfoData>,
     ),
     SuperResolutionInfoData,
     PrefetchHooks Function()>;
@@ -7500,27 +8308,30 @@ class $$TagTableFilterComposer extends Composer<_$AppDb, $TagTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get namespace => $composableBuilder(
-      column: $table.namespace, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get namespace =>
+      $composableBuilder(column: $table.namespace, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get key => $composableBuilder(
-      column: $table.key, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get translatedNamespace => $composableBuilder(
-      column: $table.translatedNamespace,
-      builder: (column) => ColumnFilters(column));
+        column: $table.translatedNamespace,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get tagName => $composableBuilder(
-      column: $table.tagName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get tagName =>
+      $composableBuilder(column: $table.tagName, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get fullTagName => $composableBuilder(
-      column: $table.fullTagName, builder: (column) => ColumnFilters(column));
+        column: $table.fullTagName,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get intro => $composableBuilder(
-      column: $table.intro, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get intro =>
+      $composableBuilder(column: $table.intro, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get links => $composableBuilder(
-      column: $table.links, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get links =>
+      $composableBuilder(column: $table.links, builder: (column) => ColumnFilters(column));
 }
 
 class $$TagTableOrderingComposer extends Composer<_$AppDb, $TagTable> {
@@ -7532,26 +8343,31 @@ class $$TagTableOrderingComposer extends Composer<_$AppDb, $TagTable> {
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get namespace => $composableBuilder(
-      column: $table.namespace, builder: (column) => ColumnOrderings(column));
+        column: $table.namespace,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get key => $composableBuilder(
-      column: $table.key, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get translatedNamespace => $composableBuilder(
-      column: $table.translatedNamespace,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.translatedNamespace,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get tagName => $composableBuilder(
-      column: $table.tagName, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get tagName =>
+      $composableBuilder(column: $table.tagName, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get fullTagName => $composableBuilder(
-      column: $table.fullTagName, builder: (column) => ColumnOrderings(column));
+        column: $table.fullTagName,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get intro => $composableBuilder(
-      column: $table.intro, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get intro =>
+      $composableBuilder(column: $table.intro, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get links => $composableBuilder(
-      column: $table.links, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get links =>
+      $composableBuilder(column: $table.links, builder: (column) => ColumnOrderings(column));
 }
 
 class $$TagTableAnnotationComposer extends Composer<_$AppDb, $TagTable> {
@@ -7568,14 +8384,14 @@ class $$TagTableAnnotationComposer extends Composer<_$AppDb, $TagTable> {
   GeneratedColumn<String> get key =>
       $composableBuilder(column: $table.key, builder: (column) => column);
 
-  GeneratedColumn<String> get translatedNamespace => $composableBuilder(
-      column: $table.translatedNamespace, builder: (column) => column);
+  GeneratedColumn<String> get translatedNamespace =>
+      $composableBuilder(column: $table.translatedNamespace, builder: (column) => column);
 
   GeneratedColumn<String> get tagName =>
       $composableBuilder(column: $table.tagName, builder: (column) => column);
 
-  GeneratedColumn<String> get fullTagName => $composableBuilder(
-      column: $table.fullTagName, builder: (column) => column);
+  GeneratedColumn<String> get fullTagName =>
+      $composableBuilder(column: $table.fullTagName, builder: (column) => column);
 
   GeneratedColumn<String> get intro =>
       $composableBuilder(column: $table.intro, builder: (column) => column);
@@ -7597,60 +8413,59 @@ class $$TagTableTableManager extends RootTableManager<
     TagData,
     PrefetchHooks Function()> {
   $$TagTableTableManager(_$AppDb db, $TagTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TagTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TagTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TagTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> namespace = const Value.absent(),
-            Value<String> key = const Value.absent(),
-            Value<String?> translatedNamespace = const Value.absent(),
-            Value<String?> tagName = const Value.absent(),
-            Value<String?> fullTagName = const Value.absent(),
-            Value<String?> intro = const Value.absent(),
-            Value<String?> links = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              TagCompanion(
-            namespace: namespace,
-            key: key,
-            translatedNamespace: translatedNamespace,
-            tagName: tagName,
-            fullTagName: fullTagName,
-            intro: intro,
-            links: links,
-            rowid: rowid,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () => $$TagTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () => $$TagTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$TagTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> namespace = const Value.absent(),
+              Value<String> key = const Value.absent(),
+              Value<String?> translatedNamespace = const Value.absent(),
+              Value<String?> tagName = const Value.absent(),
+              Value<String?> fullTagName = const Value.absent(),
+              Value<String?> intro = const Value.absent(),
+              Value<String?> links = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                TagCompanion(
+              namespace: namespace,
+              key: key,
+              translatedNamespace: translatedNamespace,
+              tagName: tagName,
+              fullTagName: fullTagName,
+              intro: intro,
+              links: links,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String namespace,
+              required String key,
+              Value<String?> translatedNamespace = const Value.absent(),
+              Value<String?> tagName = const Value.absent(),
+              Value<String?> fullTagName = const Value.absent(),
+              Value<String?> intro = const Value.absent(),
+              Value<String?> links = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                TagCompanion.insert(
+              namespace: namespace,
+              key: key,
+              translatedNamespace: translatedNamespace,
+              tagName: tagName,
+              fullTagName: fullTagName,
+              intro: intro,
+              links: links,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required String namespace,
-            required String key,
-            Value<String?> translatedNamespace = const Value.absent(),
-            Value<String?> tagName = const Value.absent(),
-            Value<String?> fullTagName = const Value.absent(),
-            Value<String?> intro = const Value.absent(),
-            Value<String?> links = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              TagCompanion.insert(
-            namespace: namespace,
-            key: key,
-            translatedNamespace: translatedNamespace,
-            tagName: tagName,
-            fullTagName: fullTagName,
-            intro: intro,
-            links: links,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$TagTableProcessedTableManager = ProcessedTableManager<
@@ -7665,8 +8480,7 @@ typedef $$TagTableProcessedTableManager = ProcessedTableManager<
     (TagData, BaseReferences<_$AppDb, $TagTable, TagData>),
     TagData,
     PrefetchHooks Function()>;
-typedef $$ArchiveDownloadedTableCreateCompanionBuilder
-    = ArchiveDownloadedCompanion Function({
+typedef $$ArchiveDownloadedTableCreateCompanionBuilder = ArchiveDownloadedCompanion Function({
   Value<int> gid,
   required String token,
   required String title,
@@ -7690,8 +8504,7 @@ typedef $$ArchiveDownloadedTableCreateCompanionBuilder
   Value<int> parseSource,
   Value<String?> sanitizedTitle,
 });
-typedef $$ArchiveDownloadedTableUpdateCompanionBuilder
-    = ArchiveDownloadedCompanion Function({
+typedef $$ArchiveDownloadedTableUpdateCompanionBuilder = ArchiveDownloadedCompanion Function({
   Value<int> gid,
   Value<String> token,
   Value<String> title,
@@ -7725,76 +8538,93 @@ class $$ArchiveDownloadedTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get pageCount =>
+      $composableBuilder(column: $table.pageCount, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnFilters(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get coverUrl => $composableBuilder(
-      column: $table.coverUrl, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get coverUrl =>
+      $composableBuilder(column: $table.coverUrl, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get uploader =>
+      $composableBuilder(column: $table.uploader, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get size => $composableBuilder(
-      column: $table.size, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get size =>
+      $composableBuilder(column: $table.size, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnFilters(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get archiveStatusCode => $composableBuilder(
-      column: $table.archiveStatusCode,
-      builder: (column) => ColumnFilters(column));
+        column: $table.archiveStatusCode,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get archivePageUrl => $composableBuilder(
-      column: $table.archivePageUrl,
-      builder: (column) => ColumnFilters(column));
+        column: $table.archivePageUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get downloadPageUrl => $composableBuilder(
-      column: $table.downloadPageUrl,
-      builder: (column) => ColumnFilters(column));
+        column: $table.downloadPageUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get downloadUrl => $composableBuilder(
-      column: $table.downloadUrl, builder: (column) => ColumnFilters(column));
+        column: $table.downloadUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get isOriginal => $composableBuilder(
-      column: $table.isOriginal, builder: (column) => ColumnFilters(column));
+        column: $table.isOriginal,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnFilters(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get groupName =>
+      $composableBuilder(column: $table.groupName, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get tags => $composableBuilder(
-      column: $table.tags, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get tags =>
+      $composableBuilder(column: $table.tags, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get tagRefreshTime => $composableBuilder(
-      column: $table.tagRefreshTime,
-      builder: (column) => ColumnFilters(column));
+        column: $table.tagRefreshTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get parseSource => $composableBuilder(
-      column: $table.parseSource, builder: (column) => ColumnFilters(column));
+        column: $table.parseSource,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get sanitizedTitle => $composableBuilder(
-      column: $table.sanitizedTitle,
-      builder: (column) => ColumnFilters(column));
+        column: $table.sanitizedTitle,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$ArchiveDownloadedTableOrderingComposer
@@ -7806,76 +8636,105 @@ class $$ArchiveDownloadedTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnOrderings(column));
+        column: $table.category,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnOrderings(column));
+        column: $table.pageCount,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get coverUrl => $composableBuilder(
-      column: $table.coverUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.coverUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnOrderings(column));
+        column: $table.uploader,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<int> get size => $composableBuilder(
-      column: $table.size, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get size =>
+      $composableBuilder(column: $table.size, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnOrderings(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get archiveStatusCode => $composableBuilder(
-      column: $table.archiveStatusCode,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.archiveStatusCode,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get archivePageUrl => $composableBuilder(
-      column: $table.archivePageUrl,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.archivePageUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get downloadPageUrl => $composableBuilder(
-      column: $table.downloadPageUrl,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.downloadPageUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get downloadUrl => $composableBuilder(
-      column: $table.downloadUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.downloadUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get isOriginal => $composableBuilder(
-      column: $table.isOriginal, builder: (column) => ColumnOrderings(column));
+        column: $table.isOriginal,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnOrderings(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+        column: $table.sortOrder,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnOrderings(column));
+        column: $table.groupName,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get tags => $composableBuilder(
-      column: $table.tags, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get tags =>
+      $composableBuilder(column: $table.tags, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get tagRefreshTime => $composableBuilder(
-      column: $table.tagRefreshTime,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.tagRefreshTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get parseSource => $composableBuilder(
-      column: $table.parseSource, builder: (column) => ColumnOrderings(column));
+        column: $table.parseSource,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get sanitizedTitle => $composableBuilder(
-      column: $table.sanitizedTitle,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.sanitizedTitle,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$ArchiveDownloadedTableAnnotationComposer
@@ -7902,8 +8761,8 @@ class $$ArchiveDownloadedTableAnnotationComposer
   GeneratedColumn<int> get pageCount =>
       $composableBuilder(column: $table.pageCount, builder: (column) => column);
 
-  GeneratedColumn<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => column);
+  GeneratedColumn<String> get galleryUrl =>
+      $composableBuilder(column: $table.galleryUrl, builder: (column) => column);
 
   GeneratedColumn<String> get coverUrl =>
       $composableBuilder(column: $table.coverUrl, builder: (column) => column);
@@ -7914,26 +8773,26 @@ class $$ArchiveDownloadedTableAnnotationComposer
   GeneratedColumn<int> get size =>
       $composableBuilder(column: $table.size, builder: (column) => column);
 
-  GeneratedColumn<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => column);
+  GeneratedColumn<String> get publishTime =>
+      $composableBuilder(column: $table.publishTime, builder: (column) => column);
 
-  GeneratedColumn<int> get archiveStatusCode => $composableBuilder(
-      column: $table.archiveStatusCode, builder: (column) => column);
+  GeneratedColumn<int> get archiveStatusCode =>
+      $composableBuilder(column: $table.archiveStatusCode, builder: (column) => column);
 
-  GeneratedColumn<String> get archivePageUrl => $composableBuilder(
-      column: $table.archivePageUrl, builder: (column) => column);
+  GeneratedColumn<String> get archivePageUrl =>
+      $composableBuilder(column: $table.archivePageUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get downloadPageUrl => $composableBuilder(
-      column: $table.downloadPageUrl, builder: (column) => column);
+  GeneratedColumn<String> get downloadPageUrl =>
+      $composableBuilder(column: $table.downloadPageUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get downloadUrl => $composableBuilder(
-      column: $table.downloadUrl, builder: (column) => column);
+  GeneratedColumn<String> get downloadUrl =>
+      $composableBuilder(column: $table.downloadUrl, builder: (column) => column);
 
-  GeneratedColumn<bool> get isOriginal => $composableBuilder(
-      column: $table.isOriginal, builder: (column) => column);
+  GeneratedColumn<bool> get isOriginal =>
+      $composableBuilder(column: $table.isOriginal, builder: (column) => column);
 
-  GeneratedColumn<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => column);
+  GeneratedColumn<String> get insertTime =>
+      $composableBuilder(column: $table.insertTime, builder: (column) => column);
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
@@ -7944,14 +8803,14 @@ class $$ArchiveDownloadedTableAnnotationComposer
   GeneratedColumn<String> get tags =>
       $composableBuilder(column: $table.tags, builder: (column) => column);
 
-  GeneratedColumn<String> get tagRefreshTime => $composableBuilder(
-      column: $table.tagRefreshTime, builder: (column) => column);
+  GeneratedColumn<String> get tagRefreshTime =>
+      $composableBuilder(column: $table.tagRefreshTime, builder: (column) => column);
 
-  GeneratedColumn<int> get parseSource => $composableBuilder(
-      column: $table.parseSource, builder: (column) => column);
+  GeneratedColumn<int> get parseSource =>
+      $composableBuilder(column: $table.parseSource, builder: (column) => column);
 
-  GeneratedColumn<String> get sanitizedTitle => $composableBuilder(
-      column: $table.sanitizedTitle, builder: (column) => column);
+  GeneratedColumn<String> get sanitizedTitle =>
+      $composableBuilder(column: $table.sanitizedTitle, builder: (column) => column);
 }
 
 class $$ArchiveDownloadedTableTableManager extends RootTableManager<
@@ -7965,123 +8824,122 @@ class $$ArchiveDownloadedTableTableManager extends RootTableManager<
     $$ArchiveDownloadedTableUpdateCompanionBuilder,
     (
       ArchiveDownloadedData,
-      BaseReferences<_$AppDb, $ArchiveDownloadedTable, ArchiveDownloadedData>
+      BaseReferences<_$AppDb, $ArchiveDownloadedTable, ArchiveDownloadedData>,
     ),
     ArchiveDownloadedData,
     PrefetchHooks Function()> {
-  $$ArchiveDownloadedTableTableManager(
-      _$AppDb db, $ArchiveDownloadedTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ArchiveDownloadedTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ArchiveDownloadedTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ArchiveDownloadedTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<String> token = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String> category = const Value.absent(),
-            Value<int> pageCount = const Value.absent(),
-            Value<String> galleryUrl = const Value.absent(),
-            Value<String> coverUrl = const Value.absent(),
-            Value<String?> uploader = const Value.absent(),
-            Value<int> size = const Value.absent(),
-            Value<String> publishTime = const Value.absent(),
-            Value<int> archiveStatusCode = const Value.absent(),
-            Value<String> archivePageUrl = const Value.absent(),
-            Value<String?> downloadPageUrl = const Value.absent(),
-            Value<String?> downloadUrl = const Value.absent(),
-            Value<bool> isOriginal = const Value.absent(),
-            Value<String> insertTime = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<String> groupName = const Value.absent(),
-            Value<String> tags = const Value.absent(),
-            Value<String?> tagRefreshTime = const Value.absent(),
-            Value<int> parseSource = const Value.absent(),
-            Value<String?> sanitizedTitle = const Value.absent(),
-          }) =>
-              ArchiveDownloadedCompanion(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            coverUrl: coverUrl,
-            uploader: uploader,
-            size: size,
-            publishTime: publishTime,
-            archiveStatusCode: archiveStatusCode,
-            archivePageUrl: archivePageUrl,
-            downloadPageUrl: downloadPageUrl,
-            downloadUrl: downloadUrl,
-            isOriginal: isOriginal,
-            insertTime: insertTime,
-            sortOrder: sortOrder,
-            groupName: groupName,
-            tags: tags,
-            tagRefreshTime: tagRefreshTime,
-            parseSource: parseSource,
-            sanitizedTitle: sanitizedTitle,
+  $$ArchiveDownloadedTableTableManager(_$AppDb db, $ArchiveDownloadedTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$ArchiveDownloadedTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$ArchiveDownloadedTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$ArchiveDownloadedTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<String> token = const Value.absent(),
+              Value<String> title = const Value.absent(),
+              Value<String> category = const Value.absent(),
+              Value<int> pageCount = const Value.absent(),
+              Value<String> galleryUrl = const Value.absent(),
+              Value<String> coverUrl = const Value.absent(),
+              Value<String?> uploader = const Value.absent(),
+              Value<int> size = const Value.absent(),
+              Value<String> publishTime = const Value.absent(),
+              Value<int> archiveStatusCode = const Value.absent(),
+              Value<String> archivePageUrl = const Value.absent(),
+              Value<String?> downloadPageUrl = const Value.absent(),
+              Value<String?> downloadUrl = const Value.absent(),
+              Value<bool> isOriginal = const Value.absent(),
+              Value<String> insertTime = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<String> groupName = const Value.absent(),
+              Value<String> tags = const Value.absent(),
+              Value<String?> tagRefreshTime = const Value.absent(),
+              Value<int> parseSource = const Value.absent(),
+              Value<String?> sanitizedTitle = const Value.absent(),
+            }) =>
+                ArchiveDownloadedCompanion(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              coverUrl: coverUrl,
+              uploader: uploader,
+              size: size,
+              publishTime: publishTime,
+              archiveStatusCode: archiveStatusCode,
+              archivePageUrl: archivePageUrl,
+              downloadPageUrl: downloadPageUrl,
+              downloadUrl: downloadUrl,
+              isOriginal: isOriginal,
+              insertTime: insertTime,
+              sortOrder: sortOrder,
+              groupName: groupName,
+              tags: tags,
+              tagRefreshTime: tagRefreshTime,
+              parseSource: parseSource,
+              sanitizedTitle: sanitizedTitle,
+            ),
+            createCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              required String token,
+              required String title,
+              required String category,
+              required int pageCount,
+              required String galleryUrl,
+              required String coverUrl,
+              Value<String?> uploader = const Value.absent(),
+              required int size,
+              required String publishTime,
+              required int archiveStatusCode,
+              required String archivePageUrl,
+              Value<String?> downloadPageUrl = const Value.absent(),
+              Value<String?> downloadUrl = const Value.absent(),
+              required bool isOriginal,
+              required String insertTime,
+              Value<int> sortOrder = const Value.absent(),
+              required String groupName,
+              Value<String> tags = const Value.absent(),
+              Value<String?> tagRefreshTime = const Value.absent(),
+              Value<int> parseSource = const Value.absent(),
+              Value<String?> sanitizedTitle = const Value.absent(),
+            }) =>
+                ArchiveDownloadedCompanion.insert(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              coverUrl: coverUrl,
+              uploader: uploader,
+              size: size,
+              publishTime: publishTime,
+              archiveStatusCode: archiveStatusCode,
+              archivePageUrl: archivePageUrl,
+              downloadPageUrl: downloadPageUrl,
+              downloadUrl: downloadUrl,
+              isOriginal: isOriginal,
+              insertTime: insertTime,
+              sortOrder: sortOrder,
+              groupName: groupName,
+              tags: tags,
+              tagRefreshTime: tagRefreshTime,
+              parseSource: parseSource,
+              sanitizedTitle: sanitizedTitle,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            required String token,
-            required String title,
-            required String category,
-            required int pageCount,
-            required String galleryUrl,
-            required String coverUrl,
-            Value<String?> uploader = const Value.absent(),
-            required int size,
-            required String publishTime,
-            required int archiveStatusCode,
-            required String archivePageUrl,
-            Value<String?> downloadPageUrl = const Value.absent(),
-            Value<String?> downloadUrl = const Value.absent(),
-            required bool isOriginal,
-            required String insertTime,
-            Value<int> sortOrder = const Value.absent(),
-            required String groupName,
-            Value<String> tags = const Value.absent(),
-            Value<String?> tagRefreshTime = const Value.absent(),
-            Value<int> parseSource = const Value.absent(),
-            Value<String?> sanitizedTitle = const Value.absent(),
-          }) =>
-              ArchiveDownloadedCompanion.insert(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            coverUrl: coverUrl,
-            uploader: uploader,
-            size: size,
-            publishTime: publishTime,
-            archiveStatusCode: archiveStatusCode,
-            archivePageUrl: archivePageUrl,
-            downloadPageUrl: downloadPageUrl,
-            downloadUrl: downloadUrl,
-            isOriginal: isOriginal,
-            insertTime: insertTime,
-            sortOrder: sortOrder,
-            groupName: groupName,
-            tags: tags,
-            tagRefreshTime: tagRefreshTime,
-            parseSource: parseSource,
-            sanitizedTitle: sanitizedTitle,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$ArchiveDownloadedTableProcessedTableManager = ProcessedTableManager<
@@ -8095,12 +8953,12 @@ typedef $$ArchiveDownloadedTableProcessedTableManager = ProcessedTableManager<
     $$ArchiveDownloadedTableUpdateCompanionBuilder,
     (
       ArchiveDownloadedData,
-      BaseReferences<_$AppDb, $ArchiveDownloadedTable, ArchiveDownloadedData>
+      BaseReferences<_$AppDb, $ArchiveDownloadedTable, ArchiveDownloadedData>,
     ),
     ArchiveDownloadedData,
     PrefetchHooks Function()>;
-typedef $$ArchiveDownloadedOldTableCreateCompanionBuilder
-    = ArchiveDownloadedOldCompanion Function({
+typedef $$ArchiveDownloadedOldTableCreateCompanionBuilder = ArchiveDownloadedOldCompanion
+    Function({
   required int gid,
   required String token,
   required String title,
@@ -8121,8 +8979,8 @@ typedef $$ArchiveDownloadedOldTableCreateCompanionBuilder
   Value<String?> groupName,
   Value<int> rowid,
 });
-typedef $$ArchiveDownloadedOldTableUpdateCompanionBuilder
-    = ArchiveDownloadedOldCompanion Function({
+typedef $$ArchiveDownloadedOldTableUpdateCompanionBuilder = ArchiveDownloadedOldCompanion
+    Function({
   Value<int> gid,
   Value<String> token,
   Value<String> title,
@@ -8153,62 +9011,75 @@ class $$ArchiveDownloadedOldTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get pageCount =>
+      $composableBuilder(column: $table.pageCount, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnFilters(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get coverUrl => $composableBuilder(
-      column: $table.coverUrl, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get coverUrl =>
+      $composableBuilder(column: $table.coverUrl, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get uploader =>
+      $composableBuilder(column: $table.uploader, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get size => $composableBuilder(
-      column: $table.size, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get size =>
+      $composableBuilder(column: $table.size, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnFilters(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get archiveStatusIndex => $composableBuilder(
-      column: $table.archiveStatusIndex,
-      builder: (column) => ColumnFilters(column));
+        column: $table.archiveStatusIndex,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get archivePageUrl => $composableBuilder(
-      column: $table.archivePageUrl,
-      builder: (column) => ColumnFilters(column));
+        column: $table.archivePageUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get downloadPageUrl => $composableBuilder(
-      column: $table.downloadPageUrl,
-      builder: (column) => ColumnFilters(column));
+        column: $table.downloadPageUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get downloadUrl => $composableBuilder(
-      column: $table.downloadUrl, builder: (column) => ColumnFilters(column));
+        column: $table.downloadUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get isOriginal => $composableBuilder(
-      column: $table.isOriginal, builder: (column) => ColumnFilters(column));
+        column: $table.isOriginal,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnFilters(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get groupName =>
+      $composableBuilder(column: $table.groupName, builder: (column) => ColumnFilters(column));
 }
 
 class $$ArchiveDownloadedOldTableOrderingComposer
@@ -8220,62 +9091,87 @@ class $$ArchiveDownloadedOldTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnOrderings(column));
+        column: $table.category,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnOrderings(column));
+        column: $table.pageCount,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get coverUrl => $composableBuilder(
-      column: $table.coverUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.coverUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnOrderings(column));
+        column: $table.uploader,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<int> get size => $composableBuilder(
-      column: $table.size, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get size =>
+      $composableBuilder(column: $table.size, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnOrderings(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get archiveStatusIndex => $composableBuilder(
-      column: $table.archiveStatusIndex,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.archiveStatusIndex,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get archivePageUrl => $composableBuilder(
-      column: $table.archivePageUrl,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.archivePageUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get downloadPageUrl => $composableBuilder(
-      column: $table.downloadPageUrl,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.downloadPageUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get downloadUrl => $composableBuilder(
-      column: $table.downloadUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.downloadUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get isOriginal => $composableBuilder(
-      column: $table.isOriginal, builder: (column) => ColumnOrderings(column));
+        column: $table.isOriginal,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnOrderings(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+        column: $table.sortOrder,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnOrderings(column));
+        column: $table.groupName,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$ArchiveDownloadedOldTableAnnotationComposer
@@ -8302,8 +9198,8 @@ class $$ArchiveDownloadedOldTableAnnotationComposer
   GeneratedColumn<int> get pageCount =>
       $composableBuilder(column: $table.pageCount, builder: (column) => column);
 
-  GeneratedColumn<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => column);
+  GeneratedColumn<String> get galleryUrl =>
+      $composableBuilder(column: $table.galleryUrl, builder: (column) => column);
 
   GeneratedColumn<String> get coverUrl =>
       $composableBuilder(column: $table.coverUrl, builder: (column) => column);
@@ -8314,26 +9210,26 @@ class $$ArchiveDownloadedOldTableAnnotationComposer
   GeneratedColumn<int> get size =>
       $composableBuilder(column: $table.size, builder: (column) => column);
 
-  GeneratedColumn<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => column);
+  GeneratedColumn<String> get publishTime =>
+      $composableBuilder(column: $table.publishTime, builder: (column) => column);
 
-  GeneratedColumn<int> get archiveStatusIndex => $composableBuilder(
-      column: $table.archiveStatusIndex, builder: (column) => column);
+  GeneratedColumn<int> get archiveStatusIndex =>
+      $composableBuilder(column: $table.archiveStatusIndex, builder: (column) => column);
 
-  GeneratedColumn<String> get archivePageUrl => $composableBuilder(
-      column: $table.archivePageUrl, builder: (column) => column);
+  GeneratedColumn<String> get archivePageUrl =>
+      $composableBuilder(column: $table.archivePageUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get downloadPageUrl => $composableBuilder(
-      column: $table.downloadPageUrl, builder: (column) => column);
+  GeneratedColumn<String> get downloadPageUrl =>
+      $composableBuilder(column: $table.downloadPageUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get downloadUrl => $composableBuilder(
-      column: $table.downloadUrl, builder: (column) => column);
+  GeneratedColumn<String> get downloadUrl =>
+      $composableBuilder(column: $table.downloadUrl, builder: (column) => column);
 
-  GeneratedColumn<bool> get isOriginal => $composableBuilder(
-      column: $table.isOriginal, builder: (column) => column);
+  GeneratedColumn<bool> get isOriginal =>
+      $composableBuilder(column: $table.isOriginal, builder: (column) => column);
 
-  GeneratedColumn<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => column);
+  GeneratedColumn<String> get insertTime =>
+      $composableBuilder(column: $table.insertTime, builder: (column) => column);
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
@@ -8353,147 +9249,139 @@ class $$ArchiveDownloadedOldTableTableManager extends RootTableManager<
     $$ArchiveDownloadedOldTableUpdateCompanionBuilder,
     (
       ArchiveDownloadedOldData,
-      BaseReferences<_$AppDb, $ArchiveDownloadedOldTable,
-          ArchiveDownloadedOldData>
+      BaseReferences<_$AppDb, $ArchiveDownloadedOldTable, ArchiveDownloadedOldData>,
     ),
     ArchiveDownloadedOldData,
     PrefetchHooks Function()> {
-  $$ArchiveDownloadedOldTableTableManager(
-      _$AppDb db, $ArchiveDownloadedOldTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ArchiveDownloadedOldTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ArchiveDownloadedOldTableOrderingComposer(
-                  $db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ArchiveDownloadedOldTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<String> token = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String> category = const Value.absent(),
-            Value<int> pageCount = const Value.absent(),
-            Value<String> galleryUrl = const Value.absent(),
-            Value<String> coverUrl = const Value.absent(),
-            Value<String?> uploader = const Value.absent(),
-            Value<int> size = const Value.absent(),
-            Value<String> publishTime = const Value.absent(),
-            Value<int> archiveStatusIndex = const Value.absent(),
-            Value<String> archivePageUrl = const Value.absent(),
-            Value<String?> downloadPageUrl = const Value.absent(),
-            Value<String?> downloadUrl = const Value.absent(),
-            Value<bool> isOriginal = const Value.absent(),
-            Value<String?> insertTime = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<String?> groupName = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ArchiveDownloadedOldCompanion(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            coverUrl: coverUrl,
-            uploader: uploader,
-            size: size,
-            publishTime: publishTime,
-            archiveStatusIndex: archiveStatusIndex,
-            archivePageUrl: archivePageUrl,
-            downloadPageUrl: downloadPageUrl,
-            downloadUrl: downloadUrl,
-            isOriginal: isOriginal,
-            insertTime: insertTime,
-            sortOrder: sortOrder,
-            groupName: groupName,
-            rowid: rowid,
+  $$ArchiveDownloadedOldTableTableManager(_$AppDb db, $ArchiveDownloadedOldTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$ArchiveDownloadedOldTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$ArchiveDownloadedOldTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$ArchiveDownloadedOldTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<String> token = const Value.absent(),
+              Value<String> title = const Value.absent(),
+              Value<String> category = const Value.absent(),
+              Value<int> pageCount = const Value.absent(),
+              Value<String> galleryUrl = const Value.absent(),
+              Value<String> coverUrl = const Value.absent(),
+              Value<String?> uploader = const Value.absent(),
+              Value<int> size = const Value.absent(),
+              Value<String> publishTime = const Value.absent(),
+              Value<int> archiveStatusIndex = const Value.absent(),
+              Value<String> archivePageUrl = const Value.absent(),
+              Value<String?> downloadPageUrl = const Value.absent(),
+              Value<String?> downloadUrl = const Value.absent(),
+              Value<bool> isOriginal = const Value.absent(),
+              Value<String?> insertTime = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<String?> groupName = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                ArchiveDownloadedOldCompanion(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              coverUrl: coverUrl,
+              uploader: uploader,
+              size: size,
+              publishTime: publishTime,
+              archiveStatusIndex: archiveStatusIndex,
+              archivePageUrl: archivePageUrl,
+              downloadPageUrl: downloadPageUrl,
+              downloadUrl: downloadUrl,
+              isOriginal: isOriginal,
+              insertTime: insertTime,
+              sortOrder: sortOrder,
+              groupName: groupName,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required int gid,
+              required String token,
+              required String title,
+              required String category,
+              required int pageCount,
+              required String galleryUrl,
+              required String coverUrl,
+              Value<String?> uploader = const Value.absent(),
+              required int size,
+              required String publishTime,
+              required int archiveStatusIndex,
+              required String archivePageUrl,
+              Value<String?> downloadPageUrl = const Value.absent(),
+              Value<String?> downloadUrl = const Value.absent(),
+              required bool isOriginal,
+              Value<String?> insertTime = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<String?> groupName = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                ArchiveDownloadedOldCompanion.insert(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              coverUrl: coverUrl,
+              uploader: uploader,
+              size: size,
+              publishTime: publishTime,
+              archiveStatusIndex: archiveStatusIndex,
+              archivePageUrl: archivePageUrl,
+              downloadPageUrl: downloadPageUrl,
+              downloadUrl: downloadUrl,
+              isOriginal: isOriginal,
+              insertTime: insertTime,
+              sortOrder: sortOrder,
+              groupName: groupName,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required int gid,
-            required String token,
-            required String title,
-            required String category,
-            required int pageCount,
-            required String galleryUrl,
-            required String coverUrl,
-            Value<String?> uploader = const Value.absent(),
-            required int size,
-            required String publishTime,
-            required int archiveStatusIndex,
-            required String archivePageUrl,
-            Value<String?> downloadPageUrl = const Value.absent(),
-            Value<String?> downloadUrl = const Value.absent(),
-            required bool isOriginal,
-            Value<String?> insertTime = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<String?> groupName = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ArchiveDownloadedOldCompanion.insert(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            coverUrl: coverUrl,
-            uploader: uploader,
-            size: size,
-            publishTime: publishTime,
-            archiveStatusIndex: archiveStatusIndex,
-            archivePageUrl: archivePageUrl,
-            downloadPageUrl: downloadPageUrl,
-            downloadUrl: downloadUrl,
-            isOriginal: isOriginal,
-            insertTime: insertTime,
-            sortOrder: sortOrder,
-            groupName: groupName,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
-typedef $$ArchiveDownloadedOldTableProcessedTableManager
-    = ProcessedTableManager<
-        _$AppDb,
-        $ArchiveDownloadedOldTable,
-        ArchiveDownloadedOldData,
-        $$ArchiveDownloadedOldTableFilterComposer,
-        $$ArchiveDownloadedOldTableOrderingComposer,
-        $$ArchiveDownloadedOldTableAnnotationComposer,
-        $$ArchiveDownloadedOldTableCreateCompanionBuilder,
-        $$ArchiveDownloadedOldTableUpdateCompanionBuilder,
-        (
-          ArchiveDownloadedOldData,
-          BaseReferences<_$AppDb, $ArchiveDownloadedOldTable,
-              ArchiveDownloadedOldData>
-        ),
-        ArchiveDownloadedOldData,
-        PrefetchHooks Function()>;
-typedef $$ArchiveGroupTableCreateCompanionBuilder = ArchiveGroupCompanion
-    Function({
+typedef $$ArchiveDownloadedOldTableProcessedTableManager = ProcessedTableManager<
+    _$AppDb,
+    $ArchiveDownloadedOldTable,
+    ArchiveDownloadedOldData,
+    $$ArchiveDownloadedOldTableFilterComposer,
+    $$ArchiveDownloadedOldTableOrderingComposer,
+    $$ArchiveDownloadedOldTableAnnotationComposer,
+    $$ArchiveDownloadedOldTableCreateCompanionBuilder,
+    $$ArchiveDownloadedOldTableUpdateCompanionBuilder,
+    (
+      ArchiveDownloadedOldData,
+      BaseReferences<_$AppDb, $ArchiveDownloadedOldTable, ArchiveDownloadedOldData>,
+    ),
+    ArchiveDownloadedOldData,
+    PrefetchHooks Function()>;
+typedef $$ArchiveGroupTableCreateCompanionBuilder = ArchiveGroupCompanion Function({
   required String groupName,
   Value<int> sortOrder,
   Value<int> rowid,
 });
-typedef $$ArchiveGroupTableUpdateCompanionBuilder = ArchiveGroupCompanion
-    Function({
+typedef $$ArchiveGroupTableUpdateCompanionBuilder = ArchiveGroupCompanion Function({
   Value<String> groupName,
   Value<int> sortOrder,
   Value<int> rowid,
 });
 
-class $$ArchiveGroupTableFilterComposer
-    extends Composer<_$AppDb, $ArchiveGroupTable> {
+class $$ArchiveGroupTableFilterComposer extends Composer<_$AppDb, $ArchiveGroupTable> {
   $$ArchiveGroupTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -8501,15 +9389,14 @@ class $$ArchiveGroupTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get groupName =>
+      $composableBuilder(column: $table.groupName, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => ColumnFilters(column));
 }
 
-class $$ArchiveGroupTableOrderingComposer
-    extends Composer<_$AppDb, $ArchiveGroupTable> {
+class $$ArchiveGroupTableOrderingComposer extends Composer<_$AppDb, $ArchiveGroupTable> {
   $$ArchiveGroupTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -8518,14 +9405,17 @@ class $$ArchiveGroupTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnOrderings(column));
+        column: $table.groupName,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+        column: $table.sortOrder,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
-class $$ArchiveGroupTableAnnotationComposer
-    extends Composer<_$AppDb, $ArchiveGroupTable> {
+class $$ArchiveGroupTableAnnotationComposer extends Composer<_$AppDb, $ArchiveGroupTable> {
   $$ArchiveGroupTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -8549,47 +9439,45 @@ class $$ArchiveGroupTableTableManager extends RootTableManager<
     $$ArchiveGroupTableAnnotationComposer,
     $$ArchiveGroupTableCreateCompanionBuilder,
     $$ArchiveGroupTableUpdateCompanionBuilder,
-    (
-      ArchiveGroupData,
-      BaseReferences<_$AppDb, $ArchiveGroupTable, ArchiveGroupData>
-    ),
+    (ArchiveGroupData, BaseReferences<_$AppDb, $ArchiveGroupTable, ArchiveGroupData>),
     ArchiveGroupData,
     PrefetchHooks Function()> {
   $$ArchiveGroupTableTableManager(_$AppDb db, $ArchiveGroupTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ArchiveGroupTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ArchiveGroupTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ArchiveGroupTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> groupName = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ArchiveGroupCompanion(
-            groupName: groupName,
-            sortOrder: sortOrder,
-            rowid: rowid,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$ArchiveGroupTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$ArchiveGroupTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$ArchiveGroupTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> groupName = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                ArchiveGroupCompanion(
+              groupName: groupName,
+              sortOrder: sortOrder,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String groupName,
+              Value<int> sortOrder = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                ArchiveGroupCompanion.insert(
+              groupName: groupName,
+              sortOrder: sortOrder,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required String groupName,
-            Value<int> sortOrder = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ArchiveGroupCompanion.insert(
-            groupName: groupName,
-            sortOrder: sortOrder,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$ArchiveGroupTableProcessedTableManager = ProcessedTableManager<
@@ -8601,14 +9489,10 @@ typedef $$ArchiveGroupTableProcessedTableManager = ProcessedTableManager<
     $$ArchiveGroupTableAnnotationComposer,
     $$ArchiveGroupTableCreateCompanionBuilder,
     $$ArchiveGroupTableUpdateCompanionBuilder,
-    (
-      ArchiveGroupData,
-      BaseReferences<_$AppDb, $ArchiveGroupTable, ArchiveGroupData>
-    ),
+    (ArchiveGroupData, BaseReferences<_$AppDb, $ArchiveGroupTable, ArchiveGroupData>),
     ArchiveGroupData,
     PrefetchHooks Function()>;
-typedef $$GalleryDownloadedTableCreateCompanionBuilder
-    = GalleryDownloadedCompanion Function({
+typedef $$GalleryDownloadedTableCreateCompanionBuilder = GalleryDownloadedCompanion Function({
   Value<int> gid,
   required String token,
   required String title,
@@ -8628,8 +9512,7 @@ typedef $$GalleryDownloadedTableCreateCompanionBuilder
   Value<String?> tagRefreshTime,
   Value<String?> sanitizedTitle,
 });
-typedef $$GalleryDownloadedTableUpdateCompanionBuilder
-    = GalleryDownloadedCompanion Function({
+typedef $$GalleryDownloadedTableUpdateCompanionBuilder = GalleryDownloadedCompanion Function({
   Value<int> gid,
   Value<String> token,
   Value<String> title,
@@ -8650,24 +9533,24 @@ typedef $$GalleryDownloadedTableUpdateCompanionBuilder
   Value<String?> sanitizedTitle,
 });
 
-final class $$GalleryDownloadedTableReferences extends BaseReferences<_$AppDb,
-    $GalleryDownloadedTable, GalleryDownloadedData> {
-  $$GalleryDownloadedTableReferences(
-      super.$_db, super.$_table, super.$_typedResult);
+final class $$GalleryDownloadedTableReferences
+    extends BaseReferences<_$AppDb, $GalleryDownloadedTable, GalleryDownloadedData> {
+  $$GalleryDownloadedTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$ImageTable, List<ImageData>> _imageRefsTable(
-          _$AppDb db) =>
-      MultiTypedResultKey.fromTable(db.image,
-          aliasName:
-              $_aliasNameGenerator(db.galleryDownloaded.gid, db.image.gid));
+  static MultiTypedResultKey<$ImageTable, List<ImageData>> _imageRefsTable(_$AppDb db) =>
+      MultiTypedResultKey.fromTable(
+        db.image,
+        aliasName: $_aliasNameGenerator(db.galleryDownloaded.gid, db.image.gid),
+      );
 
   $$ImageTableProcessedTableManager get imageRefs {
-    final manager = $$ImageTableTableManager($_db, $_db.image)
-        .filter((f) => f.gid.gid.sqlEquals($_itemColumn<int>('gid')!));
+    final manager = $$ImageTableTableManager(
+      $_db,
+      $_db.image,
+    ).filter((f) => f.gid.gid.sqlEquals($_itemColumn<int>('gid')!));
 
     final cache = $_typedResult.readTableOrNull(_imageRefsTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
+    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: cache));
   }
 }
 
@@ -8680,83 +9563,92 @@ class $$GalleryDownloadedTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get pageCount =>
+      $composableBuilder(column: $table.pageCount, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnFilters(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get oldVersionGalleryUrl => $composableBuilder(
-      column: $table.oldVersionGalleryUrl,
-      builder: (column) => ColumnFilters(column));
+        column: $table.oldVersionGalleryUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get uploader =>
+      $composableBuilder(column: $table.uploader, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnFilters(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex,
-      builder: (column) => ColumnFilters(column));
+        column: $table.downloadStatusIndex,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnFilters(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get downloadOriginalImage => $composableBuilder(
-      column: $table.downloadOriginalImage,
-      builder: (column) => ColumnFilters(column));
+        column: $table.downloadOriginalImage,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<int> get priority => $composableBuilder(
-      column: $table.priority, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get groupName =>
+      $composableBuilder(column: $table.groupName, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get tags => $composableBuilder(
-      column: $table.tags, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get tags =>
+      $composableBuilder(column: $table.tags, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get tagRefreshTime => $composableBuilder(
-      column: $table.tagRefreshTime,
-      builder: (column) => ColumnFilters(column));
+        column: $table.tagRefreshTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get sanitizedTitle => $composableBuilder(
-      column: $table.sanitizedTitle,
-      builder: (column) => ColumnFilters(column));
+        column: $table.sanitizedTitle,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  Expression<bool> imageRefs(
-      Expression<bool> Function($$ImageTableFilterComposer f) f) {
+  Expression<bool> imageRefs(Expression<bool> Function($$ImageTableFilterComposer f) f) {
     final $$ImageTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.gid,
-        referencedTable: $db.image,
-        getReferencedColumn: (t) => t.gid,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ImageTableFilterComposer(
-              $db: $db,
-              $table: $db.image,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.gid,
+      referencedTable: $db.image,
+      getReferencedColumn: (t) => t.gid,
+      builder: (joinBuilder,
+              {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$ImageTableFilterComposer(
+        $db: $db,
+        $table: $db.image,
+        $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+        joinBuilder: joinBuilder,
+        $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+      ),
+    );
     return f(composer);
   }
 }
@@ -8770,64 +9662,87 @@ class $$GalleryDownloadedTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnOrderings(column));
+        column: $table.category,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnOrderings(column));
+        column: $table.pageCount,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get oldVersionGalleryUrl => $composableBuilder(
-      column: $table.oldVersionGalleryUrl,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.oldVersionGalleryUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnOrderings(column));
+        column: $table.uploader,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnOrderings(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.downloadStatusIndex,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnOrderings(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get downloadOriginalImage => $composableBuilder(
-      column: $table.downloadOriginalImage,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.downloadOriginalImage,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get priority => $composableBuilder(
-      column: $table.priority, builder: (column) => ColumnOrderings(column));
+        column: $table.priority,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+        column: $table.sortOrder,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnOrderings(column));
+        column: $table.groupName,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get tags => $composableBuilder(
-      column: $table.tags, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get tags =>
+      $composableBuilder(column: $table.tags, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get tagRefreshTime => $composableBuilder(
-      column: $table.tagRefreshTime,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.tagRefreshTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get sanitizedTitle => $composableBuilder(
-      column: $table.sanitizedTitle,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.sanitizedTitle,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$GalleryDownloadedTableAnnotationComposer
@@ -8854,26 +9769,26 @@ class $$GalleryDownloadedTableAnnotationComposer
   GeneratedColumn<int> get pageCount =>
       $composableBuilder(column: $table.pageCount, builder: (column) => column);
 
-  GeneratedColumn<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => column);
+  GeneratedColumn<String> get galleryUrl =>
+      $composableBuilder(column: $table.galleryUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get oldVersionGalleryUrl => $composableBuilder(
-      column: $table.oldVersionGalleryUrl, builder: (column) => column);
+  GeneratedColumn<String> get oldVersionGalleryUrl =>
+      $composableBuilder(column: $table.oldVersionGalleryUrl, builder: (column) => column);
 
   GeneratedColumn<String> get uploader =>
       $composableBuilder(column: $table.uploader, builder: (column) => column);
 
-  GeneratedColumn<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => column);
+  GeneratedColumn<String> get publishTime =>
+      $composableBuilder(column: $table.publishTime, builder: (column) => column);
 
-  GeneratedColumn<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex, builder: (column) => column);
+  GeneratedColumn<int> get downloadStatusIndex =>
+      $composableBuilder(column: $table.downloadStatusIndex, builder: (column) => column);
 
-  GeneratedColumn<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => column);
+  GeneratedColumn<String> get insertTime =>
+      $composableBuilder(column: $table.insertTime, builder: (column) => column);
 
-  GeneratedColumn<bool> get downloadOriginalImage => $composableBuilder(
-      column: $table.downloadOriginalImage, builder: (column) => column);
+  GeneratedColumn<bool> get downloadOriginalImage =>
+      $composableBuilder(column: $table.downloadOriginalImage, builder: (column) => column);
 
   GeneratedColumn<int> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => column);
@@ -8887,30 +9802,30 @@ class $$GalleryDownloadedTableAnnotationComposer
   GeneratedColumn<String> get tags =>
       $composableBuilder(column: $table.tags, builder: (column) => column);
 
-  GeneratedColumn<String> get tagRefreshTime => $composableBuilder(
-      column: $table.tagRefreshTime, builder: (column) => column);
+  GeneratedColumn<String> get tagRefreshTime =>
+      $composableBuilder(column: $table.tagRefreshTime, builder: (column) => column);
 
-  GeneratedColumn<String> get sanitizedTitle => $composableBuilder(
-      column: $table.sanitizedTitle, builder: (column) => column);
+  GeneratedColumn<String> get sanitizedTitle =>
+      $composableBuilder(column: $table.sanitizedTitle, builder: (column) => column);
 
   Expression<T> imageRefs<T extends Object>(
-      Expression<T> Function($$ImageTableAnnotationComposer a) f) {
+    Expression<T> Function($$ImageTableAnnotationComposer a) f,
+  ) {
     final $$ImageTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.gid,
-        referencedTable: $db.image,
-        getReferencedColumn: (t) => t.gid,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$ImageTableAnnotationComposer(
-              $db: $db,
-              $table: $db.image,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.gid,
+      referencedTable: $db.image,
+      getReferencedColumn: (t) => t.gid,
+      builder: (joinBuilder,
+              {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$ImageTableAnnotationComposer(
+        $db: $db,
+        $table: $db.image,
+        $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+        joinBuilder: joinBuilder,
+        $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+      ),
+    );
     return f(composer);
   }
 }
@@ -8927,129 +9842,128 @@ class $$GalleryDownloadedTableTableManager extends RootTableManager<
     (GalleryDownloadedData, $$GalleryDownloadedTableReferences),
     GalleryDownloadedData,
     PrefetchHooks Function({bool imageRefs})> {
-  $$GalleryDownloadedTableTableManager(
-      _$AppDb db, $GalleryDownloadedTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$GalleryDownloadedTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$GalleryDownloadedTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$GalleryDownloadedTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<String> token = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String> category = const Value.absent(),
-            Value<int> pageCount = const Value.absent(),
-            Value<String> galleryUrl = const Value.absent(),
-            Value<String?> oldVersionGalleryUrl = const Value.absent(),
-            Value<String?> uploader = const Value.absent(),
-            Value<String> publishTime = const Value.absent(),
-            Value<int> downloadStatusIndex = const Value.absent(),
-            Value<String> insertTime = const Value.absent(),
-            Value<bool> downloadOriginalImage = const Value.absent(),
-            Value<int> priority = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<String> groupName = const Value.absent(),
-            Value<String> tags = const Value.absent(),
-            Value<String?> tagRefreshTime = const Value.absent(),
-            Value<String?> sanitizedTitle = const Value.absent(),
-          }) =>
-              GalleryDownloadedCompanion(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            oldVersionGalleryUrl: oldVersionGalleryUrl,
-            uploader: uploader,
-            publishTime: publishTime,
-            downloadStatusIndex: downloadStatusIndex,
-            insertTime: insertTime,
-            downloadOriginalImage: downloadOriginalImage,
-            priority: priority,
-            sortOrder: sortOrder,
-            groupName: groupName,
-            tags: tags,
-            tagRefreshTime: tagRefreshTime,
-            sanitizedTitle: sanitizedTitle,
-          ),
-          createCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            required String token,
-            required String title,
-            required String category,
-            required int pageCount,
-            required String galleryUrl,
-            Value<String?> oldVersionGalleryUrl = const Value.absent(),
-            Value<String?> uploader = const Value.absent(),
-            required String publishTime,
-            required int downloadStatusIndex,
-            required String insertTime,
-            Value<bool> downloadOriginalImage = const Value.absent(),
-            required int priority,
-            Value<int> sortOrder = const Value.absent(),
-            required String groupName,
-            Value<String> tags = const Value.absent(),
-            Value<String?> tagRefreshTime = const Value.absent(),
-            Value<String?> sanitizedTitle = const Value.absent(),
-          }) =>
-              GalleryDownloadedCompanion.insert(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            oldVersionGalleryUrl: oldVersionGalleryUrl,
-            uploader: uploader,
-            publishTime: publishTime,
-            downloadStatusIndex: downloadStatusIndex,
-            insertTime: insertTime,
-            downloadOriginalImage: downloadOriginalImage,
-            priority: priority,
-            sortOrder: sortOrder,
-            groupName: groupName,
-            tags: tags,
-            tagRefreshTime: tagRefreshTime,
-            sanitizedTitle: sanitizedTitle,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    $$GalleryDownloadedTableReferences(db, table, e)
-                  ))
-              .toList(),
-          prefetchHooksCallback: ({imageRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (imageRefs) db.image],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (imageRefs)
-                    await $_getPrefetchedData<GalleryDownloadedData,
-                            $GalleryDownloadedTable, ImageData>(
+  $$GalleryDownloadedTableTableManager(_$AppDb db, $GalleryDownloadedTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$GalleryDownloadedTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$GalleryDownloadedTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$GalleryDownloadedTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<String> token = const Value.absent(),
+              Value<String> title = const Value.absent(),
+              Value<String> category = const Value.absent(),
+              Value<int> pageCount = const Value.absent(),
+              Value<String> galleryUrl = const Value.absent(),
+              Value<String?> oldVersionGalleryUrl = const Value.absent(),
+              Value<String?> uploader = const Value.absent(),
+              Value<String> publishTime = const Value.absent(),
+              Value<int> downloadStatusIndex = const Value.absent(),
+              Value<String> insertTime = const Value.absent(),
+              Value<bool> downloadOriginalImage = const Value.absent(),
+              Value<int> priority = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<String> groupName = const Value.absent(),
+              Value<String> tags = const Value.absent(),
+              Value<String?> tagRefreshTime = const Value.absent(),
+              Value<String?> sanitizedTitle = const Value.absent(),
+            }) =>
+                GalleryDownloadedCompanion(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              oldVersionGalleryUrl: oldVersionGalleryUrl,
+              uploader: uploader,
+              publishTime: publishTime,
+              downloadStatusIndex: downloadStatusIndex,
+              insertTime: insertTime,
+              downloadOriginalImage: downloadOriginalImage,
+              priority: priority,
+              sortOrder: sortOrder,
+              groupName: groupName,
+              tags: tags,
+              tagRefreshTime: tagRefreshTime,
+              sanitizedTitle: sanitizedTitle,
+            ),
+            createCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              required String token,
+              required String title,
+              required String category,
+              required int pageCount,
+              required String galleryUrl,
+              Value<String?> oldVersionGalleryUrl = const Value.absent(),
+              Value<String?> uploader = const Value.absent(),
+              required String publishTime,
+              required int downloadStatusIndex,
+              required String insertTime,
+              Value<bool> downloadOriginalImage = const Value.absent(),
+              required int priority,
+              Value<int> sortOrder = const Value.absent(),
+              required String groupName,
+              Value<String> tags = const Value.absent(),
+              Value<String?> tagRefreshTime = const Value.absent(),
+              Value<String?> sanitizedTitle = const Value.absent(),
+            }) =>
+                GalleryDownloadedCompanion.insert(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              oldVersionGalleryUrl: oldVersionGalleryUrl,
+              uploader: uploader,
+              publishTime: publishTime,
+              downloadStatusIndex: downloadStatusIndex,
+              insertTime: insertTime,
+              downloadOriginalImage: downloadOriginalImage,
+              priority: priority,
+              sortOrder: sortOrder,
+              groupName: groupName,
+              tags: tags,
+              tagRefreshTime: tagRefreshTime,
+              sanitizedTitle: sanitizedTitle,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map(
+                  (e) =>
+                      (e.readTable(table), $$GalleryDownloadedTableReferences(db, table, e)),
+                )
+                .toList(),
+            prefetchHooksCallback: ({imageRefs = false}) {
+              return PrefetchHooks(
+                db: db,
+                explicitlyWatchedTables: [if (imageRefs) db.image],
+                addJoins: null,
+                getPrefetchedDataCallback: (items) async {
+                  return [
+                    if (imageRefs)
+                      await $_getPrefetchedData<GalleryDownloadedData, $GalleryDownloadedTable,
+                          ImageData>(
                         currentTable: table,
-                        referencedTable: $$GalleryDownloadedTableReferences
-                            ._imageRefsTable(db),
+                        referencedTable:
+                            $$GalleryDownloadedTableReferences._imageRefsTable(db),
                         managerFromTypedResult: (p0) =>
-                            $$GalleryDownloadedTableReferences(db, table, p0)
-                                .imageRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) =>
-                                referencedItems.where((e) => e.gid == item.gid),
-                        typedResults: items)
-                ];
-              },
-            );
-          },
-        ));
+                            $$GalleryDownloadedTableReferences(db, table, p0).imageRefs,
+                        referencedItemsForCurrentItem: (item, referencedItems) =>
+                            referencedItems.where((e) => e.gid == item.gid),
+                        typedResults: items,
+                      ),
+                  ];
+                },
+              );
+            },
+          ),
+        );
 }
 
 typedef $$GalleryDownloadedTableProcessedTableManager = ProcessedTableManager<
@@ -9064,8 +9978,8 @@ typedef $$GalleryDownloadedTableProcessedTableManager = ProcessedTableManager<
     (GalleryDownloadedData, $$GalleryDownloadedTableReferences),
     GalleryDownloadedData,
     PrefetchHooks Function({bool imageRefs})>;
-typedef $$GalleryDownloadedOldTableCreateCompanionBuilder
-    = GalleryDownloadedOldCompanion Function({
+typedef $$GalleryDownloadedOldTableCreateCompanionBuilder = GalleryDownloadedOldCompanion
+    Function({
   Value<int> gid,
   required String token,
   required String title,
@@ -9082,8 +9996,8 @@ typedef $$GalleryDownloadedOldTableCreateCompanionBuilder
   Value<int> sortOrder,
   Value<String?> groupName,
 });
-typedef $$GalleryDownloadedOldTableUpdateCompanionBuilder
-    = GalleryDownloadedOldCompanion Function({
+typedef $$GalleryDownloadedOldTableUpdateCompanionBuilder = GalleryDownloadedOldCompanion
+    Function({
   Value<int> gid,
   Value<String> token,
   Value<String> title,
@@ -9110,53 +10024,62 @@ class $$GalleryDownloadedOldTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get pageCount =>
+      $composableBuilder(column: $table.pageCount, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnFilters(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get oldVersionGalleryUrl => $composableBuilder(
-      column: $table.oldVersionGalleryUrl,
-      builder: (column) => ColumnFilters(column));
+        column: $table.oldVersionGalleryUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get uploader =>
+      $composableBuilder(column: $table.uploader, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnFilters(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex,
-      builder: (column) => ColumnFilters(column));
+        column: $table.downloadStatusIndex,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnFilters(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get downloadOriginalImage => $composableBuilder(
-      column: $table.downloadOriginalImage,
-      builder: (column) => ColumnFilters(column));
+        column: $table.downloadOriginalImage,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<int> get priority => $composableBuilder(
-      column: $table.priority, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get groupName =>
+      $composableBuilder(column: $table.groupName, builder: (column) => ColumnFilters(column));
 }
 
 class $$GalleryDownloadedOldTableOrderingComposer
@@ -9168,53 +10091,74 @@ class $$GalleryDownloadedOldTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get token => $composableBuilder(
-      column: $table.token, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get category => $composableBuilder(
-      column: $table.category, builder: (column) => ColumnOrderings(column));
+        column: $table.category,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get pageCount => $composableBuilder(
-      column: $table.pageCount, builder: (column) => ColumnOrderings(column));
+        column: $table.pageCount,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => ColumnOrderings(column));
+        column: $table.galleryUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get oldVersionGalleryUrl => $composableBuilder(
-      column: $table.oldVersionGalleryUrl,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.oldVersionGalleryUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get uploader => $composableBuilder(
-      column: $table.uploader, builder: (column) => ColumnOrderings(column));
+        column: $table.uploader,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => ColumnOrderings(column));
+        column: $table.publishTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.downloadStatusIndex,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => ColumnOrderings(column));
+        column: $table.insertTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get downloadOriginalImage => $composableBuilder(
-      column: $table.downloadOriginalImage,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.downloadOriginalImage,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get priority => $composableBuilder(
-      column: $table.priority, builder: (column) => ColumnOrderings(column));
+        column: $table.priority,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+        column: $table.sortOrder,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnOrderings(column));
+        column: $table.groupName,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$GalleryDownloadedOldTableAnnotationComposer
@@ -9241,26 +10185,26 @@ class $$GalleryDownloadedOldTableAnnotationComposer
   GeneratedColumn<int> get pageCount =>
       $composableBuilder(column: $table.pageCount, builder: (column) => column);
 
-  GeneratedColumn<String> get galleryUrl => $composableBuilder(
-      column: $table.galleryUrl, builder: (column) => column);
+  GeneratedColumn<String> get galleryUrl =>
+      $composableBuilder(column: $table.galleryUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get oldVersionGalleryUrl => $composableBuilder(
-      column: $table.oldVersionGalleryUrl, builder: (column) => column);
+  GeneratedColumn<String> get oldVersionGalleryUrl =>
+      $composableBuilder(column: $table.oldVersionGalleryUrl, builder: (column) => column);
 
   GeneratedColumn<String> get uploader =>
       $composableBuilder(column: $table.uploader, builder: (column) => column);
 
-  GeneratedColumn<String> get publishTime => $composableBuilder(
-      column: $table.publishTime, builder: (column) => column);
+  GeneratedColumn<String> get publishTime =>
+      $composableBuilder(column: $table.publishTime, builder: (column) => column);
 
-  GeneratedColumn<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex, builder: (column) => column);
+  GeneratedColumn<int> get downloadStatusIndex =>
+      $composableBuilder(column: $table.downloadStatusIndex, builder: (column) => column);
 
-  GeneratedColumn<String> get insertTime => $composableBuilder(
-      column: $table.insertTime, builder: (column) => column);
+  GeneratedColumn<String> get insertTime =>
+      $composableBuilder(column: $table.insertTime, builder: (column) => column);
 
-  GeneratedColumn<bool> get downloadOriginalImage => $composableBuilder(
-      column: $table.downloadOriginalImage, builder: (column) => column);
+  GeneratedColumn<bool> get downloadOriginalImage =>
+      $composableBuilder(column: $table.downloadOriginalImage, builder: (column) => column);
 
   GeneratedColumn<int> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => column);
@@ -9283,131 +10227,123 @@ class $$GalleryDownloadedOldTableTableManager extends RootTableManager<
     $$GalleryDownloadedOldTableUpdateCompanionBuilder,
     (
       GalleryDownloadedOldData,
-      BaseReferences<_$AppDb, $GalleryDownloadedOldTable,
-          GalleryDownloadedOldData>
+      BaseReferences<_$AppDb, $GalleryDownloadedOldTable, GalleryDownloadedOldData>,
     ),
     GalleryDownloadedOldData,
     PrefetchHooks Function()> {
-  $$GalleryDownloadedOldTableTableManager(
-      _$AppDb db, $GalleryDownloadedOldTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$GalleryDownloadedOldTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$GalleryDownloadedOldTableOrderingComposer(
-                  $db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$GalleryDownloadedOldTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<String> token = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String> category = const Value.absent(),
-            Value<int> pageCount = const Value.absent(),
-            Value<String> galleryUrl = const Value.absent(),
-            Value<String?> oldVersionGalleryUrl = const Value.absent(),
-            Value<String?> uploader = const Value.absent(),
-            Value<String> publishTime = const Value.absent(),
-            Value<int> downloadStatusIndex = const Value.absent(),
-            Value<String?> insertTime = const Value.absent(),
-            Value<bool> downloadOriginalImage = const Value.absent(),
-            Value<int?> priority = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<String?> groupName = const Value.absent(),
-          }) =>
-              GalleryDownloadedOldCompanion(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            oldVersionGalleryUrl: oldVersionGalleryUrl,
-            uploader: uploader,
-            publishTime: publishTime,
-            downloadStatusIndex: downloadStatusIndex,
-            insertTime: insertTime,
-            downloadOriginalImage: downloadOriginalImage,
-            priority: priority,
-            sortOrder: sortOrder,
-            groupName: groupName,
+  $$GalleryDownloadedOldTableTableManager(_$AppDb db, $GalleryDownloadedOldTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$GalleryDownloadedOldTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$GalleryDownloadedOldTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$GalleryDownloadedOldTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<String> token = const Value.absent(),
+              Value<String> title = const Value.absent(),
+              Value<String> category = const Value.absent(),
+              Value<int> pageCount = const Value.absent(),
+              Value<String> galleryUrl = const Value.absent(),
+              Value<String?> oldVersionGalleryUrl = const Value.absent(),
+              Value<String?> uploader = const Value.absent(),
+              Value<String> publishTime = const Value.absent(),
+              Value<int> downloadStatusIndex = const Value.absent(),
+              Value<String?> insertTime = const Value.absent(),
+              Value<bool> downloadOriginalImage = const Value.absent(),
+              Value<int?> priority = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<String?> groupName = const Value.absent(),
+            }) =>
+                GalleryDownloadedOldCompanion(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              oldVersionGalleryUrl: oldVersionGalleryUrl,
+              uploader: uploader,
+              publishTime: publishTime,
+              downloadStatusIndex: downloadStatusIndex,
+              insertTime: insertTime,
+              downloadOriginalImage: downloadOriginalImage,
+              priority: priority,
+              sortOrder: sortOrder,
+              groupName: groupName,
+            ),
+            createCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              required String token,
+              required String title,
+              required String category,
+              required int pageCount,
+              required String galleryUrl,
+              Value<String?> oldVersionGalleryUrl = const Value.absent(),
+              Value<String?> uploader = const Value.absent(),
+              required String publishTime,
+              required int downloadStatusIndex,
+              Value<String?> insertTime = const Value.absent(),
+              Value<bool> downloadOriginalImage = const Value.absent(),
+              Value<int?> priority = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<String?> groupName = const Value.absent(),
+            }) =>
+                GalleryDownloadedOldCompanion.insert(
+              gid: gid,
+              token: token,
+              title: title,
+              category: category,
+              pageCount: pageCount,
+              galleryUrl: galleryUrl,
+              oldVersionGalleryUrl: oldVersionGalleryUrl,
+              uploader: uploader,
+              publishTime: publishTime,
+              downloadStatusIndex: downloadStatusIndex,
+              insertTime: insertTime,
+              downloadOriginalImage: downloadOriginalImage,
+              priority: priority,
+              sortOrder: sortOrder,
+              groupName: groupName,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            required String token,
-            required String title,
-            required String category,
-            required int pageCount,
-            required String galleryUrl,
-            Value<String?> oldVersionGalleryUrl = const Value.absent(),
-            Value<String?> uploader = const Value.absent(),
-            required String publishTime,
-            required int downloadStatusIndex,
-            Value<String?> insertTime = const Value.absent(),
-            Value<bool> downloadOriginalImage = const Value.absent(),
-            Value<int?> priority = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<String?> groupName = const Value.absent(),
-          }) =>
-              GalleryDownloadedOldCompanion.insert(
-            gid: gid,
-            token: token,
-            title: title,
-            category: category,
-            pageCount: pageCount,
-            galleryUrl: galleryUrl,
-            oldVersionGalleryUrl: oldVersionGalleryUrl,
-            uploader: uploader,
-            publishTime: publishTime,
-            downloadStatusIndex: downloadStatusIndex,
-            insertTime: insertTime,
-            downloadOriginalImage: downloadOriginalImage,
-            priority: priority,
-            sortOrder: sortOrder,
-            groupName: groupName,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
-typedef $$GalleryDownloadedOldTableProcessedTableManager
-    = ProcessedTableManager<
-        _$AppDb,
-        $GalleryDownloadedOldTable,
-        GalleryDownloadedOldData,
-        $$GalleryDownloadedOldTableFilterComposer,
-        $$GalleryDownloadedOldTableOrderingComposer,
-        $$GalleryDownloadedOldTableAnnotationComposer,
-        $$GalleryDownloadedOldTableCreateCompanionBuilder,
-        $$GalleryDownloadedOldTableUpdateCompanionBuilder,
-        (
-          GalleryDownloadedOldData,
-          BaseReferences<_$AppDb, $GalleryDownloadedOldTable,
-              GalleryDownloadedOldData>
-        ),
-        GalleryDownloadedOldData,
-        PrefetchHooks Function()>;
-typedef $$GalleryGroupTableCreateCompanionBuilder = GalleryGroupCompanion
-    Function({
+typedef $$GalleryDownloadedOldTableProcessedTableManager = ProcessedTableManager<
+    _$AppDb,
+    $GalleryDownloadedOldTable,
+    GalleryDownloadedOldData,
+    $$GalleryDownloadedOldTableFilterComposer,
+    $$GalleryDownloadedOldTableOrderingComposer,
+    $$GalleryDownloadedOldTableAnnotationComposer,
+    $$GalleryDownloadedOldTableCreateCompanionBuilder,
+    $$GalleryDownloadedOldTableUpdateCompanionBuilder,
+    (
+      GalleryDownloadedOldData,
+      BaseReferences<_$AppDb, $GalleryDownloadedOldTable, GalleryDownloadedOldData>,
+    ),
+    GalleryDownloadedOldData,
+    PrefetchHooks Function()>;
+typedef $$GalleryGroupTableCreateCompanionBuilder = GalleryGroupCompanion Function({
   required String groupName,
   Value<int> sortOrder,
   Value<int> rowid,
 });
-typedef $$GalleryGroupTableUpdateCompanionBuilder = GalleryGroupCompanion
-    Function({
+typedef $$GalleryGroupTableUpdateCompanionBuilder = GalleryGroupCompanion Function({
   Value<String> groupName,
   Value<int> sortOrder,
   Value<int> rowid,
 });
 
-class $$GalleryGroupTableFilterComposer
-    extends Composer<_$AppDb, $GalleryGroupTable> {
+class $$GalleryGroupTableFilterComposer extends Composer<_$AppDb, $GalleryGroupTable> {
   $$GalleryGroupTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -9415,15 +10351,14 @@ class $$GalleryGroupTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get groupName =>
+      $composableBuilder(column: $table.groupName, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => ColumnFilters(column));
 }
 
-class $$GalleryGroupTableOrderingComposer
-    extends Composer<_$AppDb, $GalleryGroupTable> {
+class $$GalleryGroupTableOrderingComposer extends Composer<_$AppDb, $GalleryGroupTable> {
   $$GalleryGroupTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -9432,14 +10367,17 @@ class $$GalleryGroupTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get groupName => $composableBuilder(
-      column: $table.groupName, builder: (column) => ColumnOrderings(column));
+        column: $table.groupName,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get sortOrder => $composableBuilder(
-      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+        column: $table.sortOrder,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
-class $$GalleryGroupTableAnnotationComposer
-    extends Composer<_$AppDb, $GalleryGroupTable> {
+class $$GalleryGroupTableAnnotationComposer extends Composer<_$AppDb, $GalleryGroupTable> {
   $$GalleryGroupTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -9463,47 +10401,45 @@ class $$GalleryGroupTableTableManager extends RootTableManager<
     $$GalleryGroupTableAnnotationComposer,
     $$GalleryGroupTableCreateCompanionBuilder,
     $$GalleryGroupTableUpdateCompanionBuilder,
-    (
-      GalleryGroupData,
-      BaseReferences<_$AppDb, $GalleryGroupTable, GalleryGroupData>
-    ),
+    (GalleryGroupData, BaseReferences<_$AppDb, $GalleryGroupTable, GalleryGroupData>),
     GalleryGroupData,
     PrefetchHooks Function()> {
   $$GalleryGroupTableTableManager(_$AppDb db, $GalleryGroupTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$GalleryGroupTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$GalleryGroupTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$GalleryGroupTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> groupName = const Value.absent(),
-            Value<int> sortOrder = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GalleryGroupCompanion(
-            groupName: groupName,
-            sortOrder: sortOrder,
-            rowid: rowid,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$GalleryGroupTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$GalleryGroupTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$GalleryGroupTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> groupName = const Value.absent(),
+              Value<int> sortOrder = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                GalleryGroupCompanion(
+              groupName: groupName,
+              sortOrder: sortOrder,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String groupName,
+              Value<int> sortOrder = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                GalleryGroupCompanion.insert(
+              groupName: groupName,
+              sortOrder: sortOrder,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required String groupName,
-            Value<int> sortOrder = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GalleryGroupCompanion.insert(
-            groupName: groupName,
-            sortOrder: sortOrder,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$GalleryGroupTableProcessedTableManager = ProcessedTableManager<
@@ -9515,15 +10451,13 @@ typedef $$GalleryGroupTableProcessedTableManager = ProcessedTableManager<
     $$GalleryGroupTableAnnotationComposer,
     $$GalleryGroupTableCreateCompanionBuilder,
     $$GalleryGroupTableUpdateCompanionBuilder,
-    (
-      GalleryGroupData,
-      BaseReferences<_$AppDb, $GalleryGroupTable, GalleryGroupData>
-    ),
+    (GalleryGroupData, BaseReferences<_$AppDb, $GalleryGroupTable, GalleryGroupData>),
     GalleryGroupData,
     PrefetchHooks Function()>;
 typedef $$ImageTableCreateCompanionBuilder = ImageCompanion Function({
   required int gid,
   required String url,
+  Value<String?> originalImageUrl,
   required int serialNo,
   required String path,
   required String imageHash,
@@ -9533,6 +10467,7 @@ typedef $$ImageTableCreateCompanionBuilder = ImageCompanion Function({
 typedef $$ImageTableUpdateCompanionBuilder = ImageCompanion Function({
   Value<int> gid,
   Value<String> url,
+  Value<String?> originalImageUrl,
   Value<int> serialNo,
   Value<String> path,
   Value<String> imageHash,
@@ -9540,24 +10475,23 @@ typedef $$ImageTableUpdateCompanionBuilder = ImageCompanion Function({
   Value<int> rowid,
 });
 
-final class $$ImageTableReferences
-    extends BaseReferences<_$AppDb, $ImageTable, ImageData> {
+final class $$ImageTableReferences extends BaseReferences<_$AppDb, $ImageTable, ImageData> {
   $$ImageTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $GalleryDownloadedTable _gidTable(_$AppDb db) =>
-      db.galleryDownloaded.createAlias(
-          $_aliasNameGenerator(db.image.gid, db.galleryDownloaded.gid));
+  static $GalleryDownloadedTable _gidTable(_$AppDb db) => db.galleryDownloaded.createAlias(
+        $_aliasNameGenerator(db.image.gid, db.galleryDownloaded.gid),
+      );
 
   $$GalleryDownloadedTableProcessedTableManager get gid {
     final $_column = $_itemColumn<int>('gid')!;
 
-    final manager =
-        $$GalleryDownloadedTableTableManager($_db, $_db.galleryDownloaded)
-            .filter((f) => f.gid.sqlEquals($_column));
+    final manager = $$GalleryDownloadedTableTableManager(
+      $_db,
+      $_db.galleryDownloaded,
+    ).filter((f) => f.gid.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_gidTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
+    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: [item]));
   }
 }
 
@@ -9569,39 +10503,44 @@ class $$ImageTableFilterComposer extends Composer<_$AppDb, $ImageTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get url => $composableBuilder(
-      column: $table.url, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get serialNo => $composableBuilder(
-      column: $table.serialNo, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get originalImageUrl => $composableBuilder(
+        column: $table.originalImageUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get path => $composableBuilder(
-      column: $table.path, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get serialNo =>
+      $composableBuilder(column: $table.serialNo, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get imageHash => $composableBuilder(
-      column: $table.imageHash, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get imageHash =>
+      $composableBuilder(column: $table.imageHash, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex,
-      builder: (column) => ColumnFilters(column));
+        column: $table.downloadStatusIndex,
+        builder: (column) => ColumnFilters(column),
+      );
 
   $$GalleryDownloadedTableFilterComposer get gid {
     final $$GalleryDownloadedTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.gid,
-        referencedTable: $db.galleryDownloaded,
-        getReferencedColumn: (t) => t.gid,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$GalleryDownloadedTableFilterComposer(
-              $db: $db,
-              $table: $db.galleryDownloaded,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.gid,
+      referencedTable: $db.galleryDownloaded,
+      getReferencedColumn: (t) => t.gid,
+      builder: (joinBuilder,
+              {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$GalleryDownloadedTableFilterComposer(
+        $db: $db,
+        $table: $db.galleryDownloaded,
+        $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+        joinBuilder: joinBuilder,
+        $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+      ),
+    );
     return composer;
   }
 }
@@ -9614,39 +10553,48 @@ class $$ImageTableOrderingComposer extends Composer<_$AppDb, $ImageTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get url => $composableBuilder(
-      column: $table.url, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get originalImageUrl => $composableBuilder(
+        column: $table.originalImageUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get serialNo => $composableBuilder(
-      column: $table.serialNo, builder: (column) => ColumnOrderings(column));
+        column: $table.serialNo,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get path => $composableBuilder(
-      column: $table.path, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get imageHash => $composableBuilder(
-      column: $table.imageHash, builder: (column) => ColumnOrderings(column));
+        column: $table.imageHash,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.downloadStatusIndex,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   $$GalleryDownloadedTableOrderingComposer get gid {
     final $$GalleryDownloadedTableOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.gid,
-        referencedTable: $db.galleryDownloaded,
-        getReferencedColumn: (t) => t.gid,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$GalleryDownloadedTableOrderingComposer(
-              $db: $db,
-              $table: $db.galleryDownloaded,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.gid,
+      referencedTable: $db.galleryDownloaded,
+      getReferencedColumn: (t) => t.gid,
+      builder: (joinBuilder,
+              {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$GalleryDownloadedTableOrderingComposer(
+        $db: $db,
+        $table: $db.galleryDownloaded,
+        $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+        joinBuilder: joinBuilder,
+        $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+      ),
+    );
     return composer;
   }
 }
@@ -9662,6 +10610,9 @@ class $$ImageTableAnnotationComposer extends Composer<_$AppDb, $ImageTable> {
   GeneratedColumn<String> get url =>
       $composableBuilder(column: $table.url, builder: (column) => column);
 
+  GeneratedColumn<String> get originalImageUrl =>
+      $composableBuilder(column: $table.originalImageUrl, builder: (column) => column);
+
   GeneratedColumn<int> get serialNo =>
       $composableBuilder(column: $table.serialNo, builder: (column) => column);
 
@@ -9671,27 +10622,25 @@ class $$ImageTableAnnotationComposer extends Composer<_$AppDb, $ImageTable> {
   GeneratedColumn<String> get imageHash =>
       $composableBuilder(column: $table.imageHash, builder: (column) => column);
 
-  GeneratedColumn<int> get downloadStatusIndex => $composableBuilder(
-      column: $table.downloadStatusIndex, builder: (column) => column);
+  GeneratedColumn<int> get downloadStatusIndex =>
+      $composableBuilder(column: $table.downloadStatusIndex, builder: (column) => column);
 
   $$GalleryDownloadedTableAnnotationComposer get gid {
-    final $$GalleryDownloadedTableAnnotationComposer composer =
-        $composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.gid,
-            referencedTable: $db.galleryDownloaded,
-            getReferencedColumn: (t) => t.gid,
-            builder: (joinBuilder,
-                    {$addJoinBuilderToRootComposer,
-                    $removeJoinBuilderFromRootComposer}) =>
-                $$GalleryDownloadedTableAnnotationComposer(
-                  $db: $db,
-                  $table: $db.galleryDownloaded,
-                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                  joinBuilder: joinBuilder,
-                  $removeJoinBuilderFromRootComposer:
-                      $removeJoinBuilderFromRootComposer,
-                ));
+    final $$GalleryDownloadedTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gid,
+      referencedTable: $db.galleryDownloaded,
+      getReferencedColumn: (t) => t.gid,
+      builder: (joinBuilder,
+              {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$GalleryDownloadedTableAnnotationComposer(
+        $db: $db,
+        $table: $db.galleryDownloaded,
+        $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+        joinBuilder: joinBuilder,
+        $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+      ),
+    );
     return composer;
   }
 }
@@ -9709,89 +10658,82 @@ class $$ImageTableTableManager extends RootTableManager<
     ImageData,
     PrefetchHooks Function({bool gid})> {
   $$ImageTableTableManager(_$AppDb db, $ImageTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ImageTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ImageTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ImageTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<String> url = const Value.absent(),
-            Value<int> serialNo = const Value.absent(),
-            Value<String> path = const Value.absent(),
-            Value<String> imageHash = const Value.absent(),
-            Value<int> downloadStatusIndex = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ImageCompanion(
-            gid: gid,
-            url: url,
-            serialNo: serialNo,
-            path: path,
-            imageHash: imageHash,
-            downloadStatusIndex: downloadStatusIndex,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int gid,
-            required String url,
-            required int serialNo,
-            required String path,
-            required String imageHash,
-            required int downloadStatusIndex,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ImageCompanion.insert(
-            gid: gid,
-            url: url,
-            serialNo: serialNo,
-            path: path,
-            imageHash: imageHash,
-            downloadStatusIndex: downloadStatusIndex,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), $$ImageTableReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: ({gid = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (gid) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.gid,
-                    referencedTable: $$ImageTableReferences._gidTable(db),
-                    referencedColumn: $$ImageTableReferences._gidTable(db).gid,
-                  ) as T;
-                }
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () => $$ImageTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () => $$ImageTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$ImageTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<String> url = const Value.absent(),
+              Value<String?> originalImageUrl = const Value.absent(),
+              Value<int> serialNo = const Value.absent(),
+              Value<String> path = const Value.absent(),
+              Value<String> imageHash = const Value.absent(),
+              Value<int> downloadStatusIndex = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                ImageCompanion(
+              gid: gid,
+              url: url,
+              originalImageUrl: originalImageUrl,
+              serialNo: serialNo,
+              path: path,
+              imageHash: imageHash,
+              downloadStatusIndex: downloadStatusIndex,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required int gid,
+              required String url,
+              Value<String?> originalImageUrl = const Value.absent(),
+              required int serialNo,
+              required String path,
+              required String imageHash,
+              required int downloadStatusIndex,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                ImageCompanion.insert(
+              gid: gid,
+              url: url,
+              originalImageUrl: originalImageUrl,
+              serialNo: serialNo,
+              path: path,
+              imageHash: imageHash,
+              downloadStatusIndex: downloadStatusIndex,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), $$ImageTableReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: ({gid = false}) {
+              return PrefetchHooks(
+                db: db,
+                explicitlyWatchedTables: [],
+                addJoins: <
+                    T extends TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic,
+                        dynamic, dynamic, dynamic, dynamic, dynamic, dynamic>>(state) {
+                  if (gid) {
+                    state = state.withJoin(
+                      currentTable: table,
+                      currentColumn: table.gid,
+                      referencedTable: $$ImageTableReferences._gidTable(db),
+                      referencedColumn: $$ImageTableReferences._gidTable(db).gid,
+                    ) as T;
+                  }
 
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ));
+                  return state;
+                },
+                getPrefetchedDataCallback: (items) async {
+                  return [];
+                },
+              );
+            },
+          ),
+        );
 }
 
 typedef $$ImageTableProcessedTableManager = ProcessedTableManager<
@@ -9806,21 +10748,18 @@ typedef $$ImageTableProcessedTableManager = ProcessedTableManager<
     (ImageData, $$ImageTableReferences),
     ImageData,
     PrefetchHooks Function({bool gid})>;
-typedef $$GalleryHistoryTableCreateCompanionBuilder = GalleryHistoryCompanion
-    Function({
+typedef $$GalleryHistoryTableCreateCompanionBuilder = GalleryHistoryCompanion Function({
   Value<int> gid,
   required String jsonBody,
   required String lastReadTime,
 });
-typedef $$GalleryHistoryTableUpdateCompanionBuilder = GalleryHistoryCompanion
-    Function({
+typedef $$GalleryHistoryTableUpdateCompanionBuilder = GalleryHistoryCompanion Function({
   Value<int> gid,
   Value<String> jsonBody,
   Value<String> lastReadTime,
 });
 
-class $$GalleryHistoryTableFilterComposer
-    extends Composer<_$AppDb, $GalleryHistoryTable> {
+class $$GalleryHistoryTableFilterComposer extends Composer<_$AppDb, $GalleryHistoryTable> {
   $$GalleryHistoryTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -9828,18 +10767,19 @@ class $$GalleryHistoryTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get jsonBody => $composableBuilder(
-      column: $table.jsonBody, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get jsonBody =>
+      $composableBuilder(column: $table.jsonBody, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get lastReadTime => $composableBuilder(
-      column: $table.lastReadTime, builder: (column) => ColumnFilters(column));
+        column: $table.lastReadTime,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
-class $$GalleryHistoryTableOrderingComposer
-    extends Composer<_$AppDb, $GalleryHistoryTable> {
+class $$GalleryHistoryTableOrderingComposer extends Composer<_$AppDb, $GalleryHistoryTable> {
   $$GalleryHistoryTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -9847,19 +10787,21 @@ class $$GalleryHistoryTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get jsonBody => $composableBuilder(
-      column: $table.jsonBody, builder: (column) => ColumnOrderings(column));
+        column: $table.jsonBody,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get lastReadTime => $composableBuilder(
-      column: $table.lastReadTime,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.lastReadTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
-class $$GalleryHistoryTableAnnotationComposer
-    extends Composer<_$AppDb, $GalleryHistoryTable> {
+class $$GalleryHistoryTableAnnotationComposer extends Composer<_$AppDb, $GalleryHistoryTable> {
   $$GalleryHistoryTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -9873,8 +10815,8 @@ class $$GalleryHistoryTableAnnotationComposer
   GeneratedColumn<String> get jsonBody =>
       $composableBuilder(column: $table.jsonBody, builder: (column) => column);
 
-  GeneratedColumn<String> get lastReadTime => $composableBuilder(
-      column: $table.lastReadTime, builder: (column) => column);
+  GeneratedColumn<String> get lastReadTime =>
+      $composableBuilder(column: $table.lastReadTime, builder: (column) => column);
 }
 
 class $$GalleryHistoryTableTableManager extends RootTableManager<
@@ -9888,45 +10830,46 @@ class $$GalleryHistoryTableTableManager extends RootTableManager<
     $$GalleryHistoryTableUpdateCompanionBuilder,
     (
       GalleryHistoryData,
-      BaseReferences<_$AppDb, $GalleryHistoryTable, GalleryHistoryData>
+      BaseReferences<_$AppDb, $GalleryHistoryTable, GalleryHistoryData>,
     ),
     GalleryHistoryData,
     PrefetchHooks Function()> {
   $$GalleryHistoryTableTableManager(_$AppDb db, $GalleryHistoryTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$GalleryHistoryTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$GalleryHistoryTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$GalleryHistoryTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<String> jsonBody = const Value.absent(),
-            Value<String> lastReadTime = const Value.absent(),
-          }) =>
-              GalleryHistoryCompanion(
-            gid: gid,
-            jsonBody: jsonBody,
-            lastReadTime: lastReadTime,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$GalleryHistoryTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$GalleryHistoryTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$GalleryHistoryTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<String> jsonBody = const Value.absent(),
+              Value<String> lastReadTime = const Value.absent(),
+            }) =>
+                GalleryHistoryCompanion(
+              gid: gid,
+              jsonBody: jsonBody,
+              lastReadTime: lastReadTime,
+            ),
+            createCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              required String jsonBody,
+              required String lastReadTime,
+            }) =>
+                GalleryHistoryCompanion.insert(
+              gid: gid,
+              jsonBody: jsonBody,
+              lastReadTime: lastReadTime,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            required String jsonBody,
-            required String lastReadTime,
-          }) =>
-              GalleryHistoryCompanion.insert(
-            gid: gid,
-            jsonBody: jsonBody,
-            lastReadTime: lastReadTime,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$GalleryHistoryTableProcessedTableManager = ProcessedTableManager<
@@ -9938,27 +10881,21 @@ typedef $$GalleryHistoryTableProcessedTableManager = ProcessedTableManager<
     $$GalleryHistoryTableAnnotationComposer,
     $$GalleryHistoryTableCreateCompanionBuilder,
     $$GalleryHistoryTableUpdateCompanionBuilder,
-    (
-      GalleryHistoryData,
-      BaseReferences<_$AppDb, $GalleryHistoryTable, GalleryHistoryData>
-    ),
+    (GalleryHistoryData, BaseReferences<_$AppDb, $GalleryHistoryTable, GalleryHistoryData>),
     GalleryHistoryData,
     PrefetchHooks Function()>;
-typedef $$GalleryHistoryV2TableCreateCompanionBuilder
-    = GalleryHistoryV2Companion Function({
+typedef $$GalleryHistoryV2TableCreateCompanionBuilder = GalleryHistoryV2Companion Function({
   Value<int> gid,
   required String jsonBody,
   required String lastReadTime,
 });
-typedef $$GalleryHistoryV2TableUpdateCompanionBuilder
-    = GalleryHistoryV2Companion Function({
+typedef $$GalleryHistoryV2TableUpdateCompanionBuilder = GalleryHistoryV2Companion Function({
   Value<int> gid,
   Value<String> jsonBody,
   Value<String> lastReadTime,
 });
 
-class $$GalleryHistoryV2TableFilterComposer
-    extends Composer<_$AppDb, $GalleryHistoryV2Table> {
+class $$GalleryHistoryV2TableFilterComposer extends Composer<_$AppDb, $GalleryHistoryV2Table> {
   $$GalleryHistoryV2TableFilterComposer({
     required super.$db,
     required super.$table,
@@ -9966,14 +10903,16 @@ class $$GalleryHistoryV2TableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get jsonBody => $composableBuilder(
-      column: $table.jsonBody, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get jsonBody =>
+      $composableBuilder(column: $table.jsonBody, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get lastReadTime => $composableBuilder(
-      column: $table.lastReadTime, builder: (column) => ColumnFilters(column));
+        column: $table.lastReadTime,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$GalleryHistoryV2TableOrderingComposer
@@ -9985,15 +10924,18 @@ class $$GalleryHistoryV2TableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get gid => $composableBuilder(
-      column: $table.gid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get gid =>
+      $composableBuilder(column: $table.gid, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get jsonBody => $composableBuilder(
-      column: $table.jsonBody, builder: (column) => ColumnOrderings(column));
+        column: $table.jsonBody,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get lastReadTime => $composableBuilder(
-      column: $table.lastReadTime,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.lastReadTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$GalleryHistoryV2TableAnnotationComposer
@@ -10011,8 +10953,8 @@ class $$GalleryHistoryV2TableAnnotationComposer
   GeneratedColumn<String> get jsonBody =>
       $composableBuilder(column: $table.jsonBody, builder: (column) => column);
 
-  GeneratedColumn<String> get lastReadTime => $composableBuilder(
-      column: $table.lastReadTime, builder: (column) => column);
+  GeneratedColumn<String> get lastReadTime =>
+      $composableBuilder(column: $table.lastReadTime, builder: (column) => column);
 }
 
 class $$GalleryHistoryV2TableTableManager extends RootTableManager<
@@ -10026,45 +10968,46 @@ class $$GalleryHistoryV2TableTableManager extends RootTableManager<
     $$GalleryHistoryV2TableUpdateCompanionBuilder,
     (
       GalleryHistoryV2Data,
-      BaseReferences<_$AppDb, $GalleryHistoryV2Table, GalleryHistoryV2Data>
+      BaseReferences<_$AppDb, $GalleryHistoryV2Table, GalleryHistoryV2Data>,
     ),
     GalleryHistoryV2Data,
     PrefetchHooks Function()> {
   $$GalleryHistoryV2TableTableManager(_$AppDb db, $GalleryHistoryV2Table table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$GalleryHistoryV2TableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$GalleryHistoryV2TableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$GalleryHistoryV2TableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            Value<String> jsonBody = const Value.absent(),
-            Value<String> lastReadTime = const Value.absent(),
-          }) =>
-              GalleryHistoryV2Companion(
-            gid: gid,
-            jsonBody: jsonBody,
-            lastReadTime: lastReadTime,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$GalleryHistoryV2TableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$GalleryHistoryV2TableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$GalleryHistoryV2TableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              Value<String> jsonBody = const Value.absent(),
+              Value<String> lastReadTime = const Value.absent(),
+            }) =>
+                GalleryHistoryV2Companion(
+              gid: gid,
+              jsonBody: jsonBody,
+              lastReadTime: lastReadTime,
+            ),
+            createCompanionCallback: ({
+              Value<int> gid = const Value.absent(),
+              required String jsonBody,
+              required String lastReadTime,
+            }) =>
+                GalleryHistoryV2Companion.insert(
+              gid: gid,
+              jsonBody: jsonBody,
+              lastReadTime: lastReadTime,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            Value<int> gid = const Value.absent(),
-            required String jsonBody,
-            required String lastReadTime,
-          }) =>
-              GalleryHistoryV2Companion.insert(
-            gid: gid,
-            jsonBody: jsonBody,
-            lastReadTime: lastReadTime,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$GalleryHistoryV2TableProcessedTableManager = ProcessedTableManager<
@@ -10078,20 +11021,20 @@ typedef $$GalleryHistoryV2TableProcessedTableManager = ProcessedTableManager<
     $$GalleryHistoryV2TableUpdateCompanionBuilder,
     (
       GalleryHistoryV2Data,
-      BaseReferences<_$AppDb, $GalleryHistoryV2Table, GalleryHistoryV2Data>
+      BaseReferences<_$AppDb, $GalleryHistoryV2Table, GalleryHistoryV2Data>,
     ),
     GalleryHistoryV2Data,
     PrefetchHooks Function()>;
-typedef $$GalleryParentCacheTableCreateCompanionBuilder
-    = GalleryParentCacheCompanion Function({
+typedef $$GalleryParentCacheTableCreateCompanionBuilder = GalleryParentCacheCompanion
+    Function({
   Value<int> childGid,
   Value<int?> parentGid,
   Value<String?> parentToken,
   Value<String?> parentGalleryUrl,
   required String cacheTime,
 });
-typedef $$GalleryParentCacheTableUpdateCompanionBuilder
-    = GalleryParentCacheCompanion Function({
+typedef $$GalleryParentCacheTableUpdateCompanionBuilder = GalleryParentCacheCompanion
+    Function({
   Value<int> childGid,
   Value<int?> parentGid,
   Value<String?> parentToken,
@@ -10108,21 +11051,24 @@ class $$GalleryParentCacheTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get childGid => $composableBuilder(
-      column: $table.childGid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get childGid =>
+      $composableBuilder(column: $table.childGid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get parentGid => $composableBuilder(
-      column: $table.parentGid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get parentGid =>
+      $composableBuilder(column: $table.parentGid, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get parentToken => $composableBuilder(
-      column: $table.parentToken, builder: (column) => ColumnFilters(column));
+        column: $table.parentToken,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get parentGalleryUrl => $composableBuilder(
-      column: $table.parentGalleryUrl,
-      builder: (column) => ColumnFilters(column));
+        column: $table.parentGalleryUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get cacheTime => $composableBuilder(
-      column: $table.cacheTime, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get cacheTime =>
+      $composableBuilder(column: $table.cacheTime, builder: (column) => ColumnFilters(column));
 }
 
 class $$GalleryParentCacheTableOrderingComposer
@@ -10135,20 +11081,29 @@ class $$GalleryParentCacheTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get childGid => $composableBuilder(
-      column: $table.childGid, builder: (column) => ColumnOrderings(column));
+        column: $table.childGid,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get parentGid => $composableBuilder(
-      column: $table.parentGid, builder: (column) => ColumnOrderings(column));
+        column: $table.parentGid,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get parentToken => $composableBuilder(
-      column: $table.parentToken, builder: (column) => ColumnOrderings(column));
+        column: $table.parentToken,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get parentGalleryUrl => $composableBuilder(
-      column: $table.parentGalleryUrl,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.parentGalleryUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get cacheTime => $composableBuilder(
-      column: $table.cacheTime, builder: (column) => ColumnOrderings(column));
+        column: $table.cacheTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$GalleryParentCacheTableAnnotationComposer
@@ -10166,11 +11121,11 @@ class $$GalleryParentCacheTableAnnotationComposer
   GeneratedColumn<int> get parentGid =>
       $composableBuilder(column: $table.parentGid, builder: (column) => column);
 
-  GeneratedColumn<String> get parentToken => $composableBuilder(
-      column: $table.parentToken, builder: (column) => column);
+  GeneratedColumn<String> get parentToken =>
+      $composableBuilder(column: $table.parentToken, builder: (column) => column);
 
-  GeneratedColumn<String> get parentGalleryUrl => $composableBuilder(
-      column: $table.parentGalleryUrl, builder: (column) => column);
+  GeneratedColumn<String> get parentGalleryUrl =>
+      $composableBuilder(column: $table.parentGalleryUrl, builder: (column) => column);
 
   GeneratedColumn<String> get cacheTime =>
       $composableBuilder(column: $table.cacheTime, builder: (column) => column);
@@ -10187,55 +11142,54 @@ class $$GalleryParentCacheTableTableManager extends RootTableManager<
     $$GalleryParentCacheTableUpdateCompanionBuilder,
     (
       GalleryParentCacheData,
-      BaseReferences<_$AppDb, $GalleryParentCacheTable, GalleryParentCacheData>
+      BaseReferences<_$AppDb, $GalleryParentCacheTable, GalleryParentCacheData>,
     ),
     GalleryParentCacheData,
     PrefetchHooks Function()> {
-  $$GalleryParentCacheTableTableManager(
-      _$AppDb db, $GalleryParentCacheTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$GalleryParentCacheTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$GalleryParentCacheTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$GalleryParentCacheTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> childGid = const Value.absent(),
-            Value<int?> parentGid = const Value.absent(),
-            Value<String?> parentToken = const Value.absent(),
-            Value<String?> parentGalleryUrl = const Value.absent(),
-            Value<String> cacheTime = const Value.absent(),
-          }) =>
-              GalleryParentCacheCompanion(
-            childGid: childGid,
-            parentGid: parentGid,
-            parentToken: parentToken,
-            parentGalleryUrl: parentGalleryUrl,
-            cacheTime: cacheTime,
+  $$GalleryParentCacheTableTableManager(_$AppDb db, $GalleryParentCacheTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$GalleryParentCacheTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$GalleryParentCacheTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$GalleryParentCacheTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> childGid = const Value.absent(),
+              Value<int?> parentGid = const Value.absent(),
+              Value<String?> parentToken = const Value.absent(),
+              Value<String?> parentGalleryUrl = const Value.absent(),
+              Value<String> cacheTime = const Value.absent(),
+            }) =>
+                GalleryParentCacheCompanion(
+              childGid: childGid,
+              parentGid: parentGid,
+              parentToken: parentToken,
+              parentGalleryUrl: parentGalleryUrl,
+              cacheTime: cacheTime,
+            ),
+            createCompanionCallback: ({
+              Value<int> childGid = const Value.absent(),
+              Value<int?> parentGid = const Value.absent(),
+              Value<String?> parentToken = const Value.absent(),
+              Value<String?> parentGalleryUrl = const Value.absent(),
+              required String cacheTime,
+            }) =>
+                GalleryParentCacheCompanion.insert(
+              childGid: childGid,
+              parentGid: parentGid,
+              parentToken: parentToken,
+              parentGalleryUrl: parentGalleryUrl,
+              cacheTime: cacheTime,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            Value<int> childGid = const Value.absent(),
-            Value<int?> parentGid = const Value.absent(),
-            Value<String?> parentToken = const Value.absent(),
-            Value<String?> parentGalleryUrl = const Value.absent(),
-            required String cacheTime,
-          }) =>
-              GalleryParentCacheCompanion.insert(
-            childGid: childGid,
-            parentGid: parentGid,
-            parentToken: parentToken,
-            parentGalleryUrl: parentGalleryUrl,
-            cacheTime: cacheTime,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$GalleryParentCacheTableProcessedTableManager = ProcessedTableManager<
@@ -10249,7 +11203,7 @@ typedef $$GalleryParentCacheTableProcessedTableManager = ProcessedTableManager<
     $$GalleryParentCacheTableUpdateCompanionBuilder,
     (
       GalleryParentCacheData,
-      BaseReferences<_$AppDb, $GalleryParentCacheTable, GalleryParentCacheData>
+      BaseReferences<_$AppDb, $GalleryParentCacheTable, GalleryParentCacheData>,
     ),
     GalleryParentCacheData,
     PrefetchHooks Function()>;
@@ -10273,15 +11227,15 @@ class $$TagCountTableFilterComposer extends Composer<_$AppDb, $TagCountTable> {
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get namespaceWithKey => $composableBuilder(
-      column: $table.namespaceWithKey,
-      builder: (column) => ColumnFilters(column));
+        column: $table.namespaceWithKey,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<int> get count => $composableBuilder(
-      column: $table.count, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get count =>
+      $composableBuilder(column: $table.count, builder: (column) => ColumnFilters(column));
 }
 
-class $$TagCountTableOrderingComposer
-    extends Composer<_$AppDb, $TagCountTable> {
+class $$TagCountTableOrderingComposer extends Composer<_$AppDb, $TagCountTable> {
   $$TagCountTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -10290,15 +11244,15 @@ class $$TagCountTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get namespaceWithKey => $composableBuilder(
-      column: $table.namespaceWithKey,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.namespaceWithKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<int> get count => $composableBuilder(
-      column: $table.count, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get count =>
+      $composableBuilder(column: $table.count, builder: (column) => ColumnOrderings(column));
 }
 
-class $$TagCountTableAnnotationComposer
-    extends Composer<_$AppDb, $TagCountTable> {
+class $$TagCountTableAnnotationComposer extends Composer<_$AppDb, $TagCountTable> {
   $$TagCountTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -10306,8 +11260,8 @@ class $$TagCountTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get namespaceWithKey => $composableBuilder(
-      column: $table.namespaceWithKey, builder: (column) => column);
+  GeneratedColumn<String> get namespaceWithKey =>
+      $composableBuilder(column: $table.namespaceWithKey, builder: (column) => column);
 
   GeneratedColumn<int> get count =>
       $composableBuilder(column: $table.count, builder: (column) => column);
@@ -10326,40 +11280,41 @@ class $$TagCountTableTableManager extends RootTableManager<
     TagCountData,
     PrefetchHooks Function()> {
   $$TagCountTableTableManager(_$AppDb db, $TagCountTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TagCountTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TagCountTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TagCountTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> namespaceWithKey = const Value.absent(),
-            Value<int> count = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              TagCountCompanion(
-            namespaceWithKey: namespaceWithKey,
-            count: count,
-            rowid: rowid,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$TagCountTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$TagCountTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$TagCountTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> namespaceWithKey = const Value.absent(),
+              Value<int> count = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                TagCountCompanion(
+              namespaceWithKey: namespaceWithKey,
+              count: count,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String namespaceWithKey,
+              required int count,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                TagCountCompanion.insert(
+              namespaceWithKey: namespaceWithKey,
+              count: count,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required String namespaceWithKey,
-            required int count,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              TagCountCompanion.insert(
-            namespaceWithKey: namespaceWithKey,
-            count: count,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$TagCountTableProcessedTableManager = ProcessedTableManager<
@@ -10399,24 +11354,25 @@ class $$DioCacheTableFilterComposer extends Composer<_$AppDb, $DioCacheTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get cacheKey => $composableBuilder(
-      column: $table.cacheKey, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get cacheKey =>
+      $composableBuilder(column: $table.cacheKey, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get url => $composableBuilder(
-      column: $table.url, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get expireDate => $composableBuilder(
-      column: $table.expireDate, builder: (column) => ColumnFilters(column));
+        column: $table.expireDate,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<Uint8List> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnFilters(column));
+  ColumnFilters<Uint8List> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<Uint8List> get headers => $composableBuilder(
-      column: $table.headers, builder: (column) => ColumnFilters(column));
+  ColumnFilters<Uint8List> get headers =>
+      $composableBuilder(column: $table.headers, builder: (column) => ColumnFilters(column));
 }
 
-class $$DioCacheTableOrderingComposer
-    extends Composer<_$AppDb, $DioCacheTable> {
+class $$DioCacheTableOrderingComposer extends Composer<_$AppDb, $DioCacheTable> {
   $$DioCacheTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -10425,23 +11381,26 @@ class $$DioCacheTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get cacheKey => $composableBuilder(
-      column: $table.cacheKey, builder: (column) => ColumnOrderings(column));
+        column: $table.cacheKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get url => $composableBuilder(
-      column: $table.url, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get expireDate => $composableBuilder(
-      column: $table.expireDate, builder: (column) => ColumnOrderings(column));
+        column: $table.expireDate,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<Uint8List> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<Uint8List> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<Uint8List> get headers => $composableBuilder(
-      column: $table.headers, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<Uint8List> get headers =>
+      $composableBuilder(column: $table.headers, builder: (column) => ColumnOrderings(column));
 }
 
-class $$DioCacheTableAnnotationComposer
-    extends Composer<_$AppDb, $DioCacheTable> {
+class $$DioCacheTableAnnotationComposer extends Composer<_$AppDb, $DioCacheTable> {
   $$DioCacheTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -10455,8 +11414,8 @@ class $$DioCacheTableAnnotationComposer
   GeneratedColumn<String> get url =>
       $composableBuilder(column: $table.url, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get expireDate => $composableBuilder(
-      column: $table.expireDate, builder: (column) => column);
+  GeneratedColumn<DateTime> get expireDate =>
+      $composableBuilder(column: $table.expireDate, builder: (column) => column);
 
   GeneratedColumn<Uint8List> get content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
@@ -10478,52 +11437,53 @@ class $$DioCacheTableTableManager extends RootTableManager<
     DioCacheData,
     PrefetchHooks Function()> {
   $$DioCacheTableTableManager(_$AppDb db, $DioCacheTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$DioCacheTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$DioCacheTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$DioCacheTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> cacheKey = const Value.absent(),
-            Value<String> url = const Value.absent(),
-            Value<DateTime> expireDate = const Value.absent(),
-            Value<Uint8List> content = const Value.absent(),
-            Value<Uint8List> headers = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              DioCacheCompanion(
-            cacheKey: cacheKey,
-            url: url,
-            expireDate: expireDate,
-            content: content,
-            headers: headers,
-            rowid: rowid,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$DioCacheTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$DioCacheTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$DioCacheTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> cacheKey = const Value.absent(),
+              Value<String> url = const Value.absent(),
+              Value<DateTime> expireDate = const Value.absent(),
+              Value<Uint8List> content = const Value.absent(),
+              Value<Uint8List> headers = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                DioCacheCompanion(
+              cacheKey: cacheKey,
+              url: url,
+              expireDate: expireDate,
+              content: content,
+              headers: headers,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String cacheKey,
+              required String url,
+              required DateTime expireDate,
+              required Uint8List content,
+              required Uint8List headers,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                DioCacheCompanion.insert(
+              cacheKey: cacheKey,
+              url: url,
+              expireDate: expireDate,
+              content: content,
+              headers: headers,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required String cacheKey,
-            required String url,
-            required DateTime expireDate,
-            required Uint8List content,
-            required Uint8List headers,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              DioCacheCompanion.insert(
-            cacheKey: cacheKey,
-            url: url,
-            expireDate: expireDate,
-            content: content,
-            headers: headers,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$DioCacheTableProcessedTableManager = ProcessedTableManager<
@@ -10555,8 +11515,7 @@ typedef $$BlockRuleTableUpdateCompanionBuilder = BlockRuleCompanion Function({
   Value<String> expression,
 });
 
-class $$BlockRuleTableFilterComposer
-    extends Composer<_$AppDb, $BlockRuleTable> {
+class $$BlockRuleTableFilterComposer extends Composer<_$AppDb, $BlockRuleTable> {
   $$BlockRuleTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -10564,27 +11523,28 @@ class $$BlockRuleTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get groupId => $composableBuilder(
-      column: $table.groupId, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get groupId =>
+      $composableBuilder(column: $table.groupId, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get target => $composableBuilder(
-      column: $table.target, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get target =>
+      $composableBuilder(column: $table.target, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get attribute => $composableBuilder(
-      column: $table.attribute, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get attribute =>
+      $composableBuilder(column: $table.attribute, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get pattern => $composableBuilder(
-      column: $table.pattern, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get pattern =>
+      $composableBuilder(column: $table.pattern, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get expression => $composableBuilder(
-      column: $table.expression, builder: (column) => ColumnFilters(column));
+        column: $table.expression,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
-class $$BlockRuleTableOrderingComposer
-    extends Composer<_$AppDb, $BlockRuleTable> {
+class $$BlockRuleTableOrderingComposer extends Composer<_$AppDb, $BlockRuleTable> {
   $$BlockRuleTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -10592,27 +11552,30 @@ class $$BlockRuleTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get groupId => $composableBuilder(
-      column: $table.groupId, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get groupId =>
+      $composableBuilder(column: $table.groupId, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get target => $composableBuilder(
-      column: $table.target, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get target =>
+      $composableBuilder(column: $table.target, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<int> get attribute => $composableBuilder(
-      column: $table.attribute, builder: (column) => ColumnOrderings(column));
+        column: $table.attribute,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<int> get pattern => $composableBuilder(
-      column: $table.pattern, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get pattern =>
+      $composableBuilder(column: $table.pattern, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get expression => $composableBuilder(
-      column: $table.expression, builder: (column) => ColumnOrderings(column));
+        column: $table.expression,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
-class $$BlockRuleTableAnnotationComposer
-    extends Composer<_$AppDb, $BlockRuleTable> {
+class $$BlockRuleTableAnnotationComposer extends Composer<_$AppDb, $BlockRuleTable> {
   $$BlockRuleTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -10635,8 +11598,8 @@ class $$BlockRuleTableAnnotationComposer
   GeneratedColumn<int> get pattern =>
       $composableBuilder(column: $table.pattern, builder: (column) => column);
 
-  GeneratedColumn<String> get expression => $composableBuilder(
-      column: $table.expression, builder: (column) => column);
+  GeneratedColumn<String> get expression =>
+      $composableBuilder(column: $table.expression, builder: (column) => column);
 }
 
 class $$BlockRuleTableTableManager extends RootTableManager<
@@ -10652,52 +11615,53 @@ class $$BlockRuleTableTableManager extends RootTableManager<
     BlockRuleData,
     PrefetchHooks Function()> {
   $$BlockRuleTableTableManager(_$AppDb db, $BlockRuleTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$BlockRuleTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$BlockRuleTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$BlockRuleTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> groupId = const Value.absent(),
-            Value<int> target = const Value.absent(),
-            Value<int> attribute = const Value.absent(),
-            Value<int> pattern = const Value.absent(),
-            Value<String> expression = const Value.absent(),
-          }) =>
-              BlockRuleCompanion(
-            id: id,
-            groupId: groupId,
-            target: target,
-            attribute: attribute,
-            pattern: pattern,
-            expression: expression,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$BlockRuleTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$BlockRuleTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$BlockRuleTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<int> id = const Value.absent(),
+              Value<String> groupId = const Value.absent(),
+              Value<int> target = const Value.absent(),
+              Value<int> attribute = const Value.absent(),
+              Value<int> pattern = const Value.absent(),
+              Value<String> expression = const Value.absent(),
+            }) =>
+                BlockRuleCompanion(
+              id: id,
+              groupId: groupId,
+              target: target,
+              attribute: attribute,
+              pattern: pattern,
+              expression: expression,
+            ),
+            createCompanionCallback: ({
+              Value<int> id = const Value.absent(),
+              required String groupId,
+              required int target,
+              required int attribute,
+              required int pattern,
+              required String expression,
+            }) =>
+                BlockRuleCompanion.insert(
+              id: id,
+              groupId: groupId,
+              target: target,
+              attribute: attribute,
+              pattern: pattern,
+              expression: expression,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String groupId,
-            required int target,
-            required int attribute,
-            required int pattern,
-            required String expression,
-          }) =>
-              BlockRuleCompanion.insert(
-            id: id,
-            groupId: groupId,
-            target: target,
-            attribute: attribute,
-            pattern: pattern,
-            expression: expression,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$BlockRuleTableProcessedTableManager = ProcessedTableManager<
@@ -10712,16 +11676,14 @@ typedef $$BlockRuleTableProcessedTableManager = ProcessedTableManager<
     (BlockRuleData, BaseReferences<_$AppDb, $BlockRuleTable, BlockRuleData>),
     BlockRuleData,
     PrefetchHooks Function()>;
-typedef $$LocalConfigTableCreateCompanionBuilder = LocalConfigCompanion
-    Function({
+typedef $$LocalConfigTableCreateCompanionBuilder = LocalConfigCompanion Function({
   required String configKey,
   required String subConfigKey,
   required String value,
   required String utime,
   Value<int> rowid,
 });
-typedef $$LocalConfigTableUpdateCompanionBuilder = LocalConfigCompanion
-    Function({
+typedef $$LocalConfigTableUpdateCompanionBuilder = LocalConfigCompanion Function({
   Value<String> configKey,
   Value<String> subConfigKey,
   Value<String> value,
@@ -10729,8 +11691,7 @@ typedef $$LocalConfigTableUpdateCompanionBuilder = LocalConfigCompanion
   Value<int> rowid,
 });
 
-class $$LocalConfigTableFilterComposer
-    extends Composer<_$AppDb, $LocalConfigTable> {
+class $$LocalConfigTableFilterComposer extends Composer<_$AppDb, $LocalConfigTable> {
   $$LocalConfigTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -10738,21 +11699,22 @@ class $$LocalConfigTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get configKey => $composableBuilder(
-      column: $table.configKey, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get configKey =>
+      $composableBuilder(column: $table.configKey, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get subConfigKey => $composableBuilder(
-      column: $table.subConfigKey, builder: (column) => ColumnFilters(column));
+        column: $table.subConfigKey,
+        builder: (column) => ColumnFilters(column),
+      );
 
-  ColumnFilters<String> get value => $composableBuilder(
-      column: $table.value, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get utime => $composableBuilder(
-      column: $table.utime, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get utime =>
+      $composableBuilder(column: $table.utime, builder: (column) => ColumnFilters(column));
 }
 
-class $$LocalConfigTableOrderingComposer
-    extends Composer<_$AppDb, $LocalConfigTable> {
+class $$LocalConfigTableOrderingComposer extends Composer<_$AppDb, $LocalConfigTable> {
   $$LocalConfigTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -10761,21 +11723,23 @@ class $$LocalConfigTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get configKey => $composableBuilder(
-      column: $table.configKey, builder: (column) => ColumnOrderings(column));
+        column: $table.configKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get subConfigKey => $composableBuilder(
-      column: $table.subConfigKey,
-      builder: (column) => ColumnOrderings(column));
+        column: $table.subConfigKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
-  ColumnOrderings<String> get value => $composableBuilder(
-      column: $table.value, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get utime => $composableBuilder(
-      column: $table.utime, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get utime =>
+      $composableBuilder(column: $table.utime, builder: (column) => ColumnOrderings(column));
 }
 
-class $$LocalConfigTableAnnotationComposer
-    extends Composer<_$AppDb, $LocalConfigTable> {
+class $$LocalConfigTableAnnotationComposer extends Composer<_$AppDb, $LocalConfigTable> {
   $$LocalConfigTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -10786,8 +11750,8 @@ class $$LocalConfigTableAnnotationComposer
   GeneratedColumn<String> get configKey =>
       $composableBuilder(column: $table.configKey, builder: (column) => column);
 
-  GeneratedColumn<String> get subConfigKey => $composableBuilder(
-      column: $table.subConfigKey, builder: (column) => column);
+  GeneratedColumn<String> get subConfigKey =>
+      $composableBuilder(column: $table.subConfigKey, builder: (column) => column);
 
   GeneratedColumn<String> get value =>
       $composableBuilder(column: $table.value, builder: (column) => column);
@@ -10805,55 +11769,53 @@ class $$LocalConfigTableTableManager extends RootTableManager<
     $$LocalConfigTableAnnotationComposer,
     $$LocalConfigTableCreateCompanionBuilder,
     $$LocalConfigTableUpdateCompanionBuilder,
-    (
-      LocalConfigData,
-      BaseReferences<_$AppDb, $LocalConfigTable, LocalConfigData>
-    ),
+    (LocalConfigData, BaseReferences<_$AppDb, $LocalConfigTable, LocalConfigData>),
     LocalConfigData,
     PrefetchHooks Function()> {
   $$LocalConfigTableTableManager(_$AppDb db, $LocalConfigTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$LocalConfigTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$LocalConfigTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$LocalConfigTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> configKey = const Value.absent(),
-            Value<String> subConfigKey = const Value.absent(),
-            Value<String> value = const Value.absent(),
-            Value<String> utime = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              LocalConfigCompanion(
-            configKey: configKey,
-            subConfigKey: subConfigKey,
-            value: value,
-            utime: utime,
-            rowid: rowid,
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$LocalConfigTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$LocalConfigTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$LocalConfigTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> configKey = const Value.absent(),
+              Value<String> subConfigKey = const Value.absent(),
+              Value<String> value = const Value.absent(),
+              Value<String> utime = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                LocalConfigCompanion(
+              configKey: configKey,
+              subConfigKey: subConfigKey,
+              value: value,
+              utime: utime,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String configKey,
+              required String subConfigKey,
+              required String value,
+              required String utime,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                LocalConfigCompanion.insert(
+              configKey: configKey,
+              subConfigKey: subConfigKey,
+              value: value,
+              utime: utime,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) =>
+                p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+            prefetchHooksCallback: null,
           ),
-          createCompanionCallback: ({
-            required String configKey,
-            required String subConfigKey,
-            required String value,
-            required String utime,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              LocalConfigCompanion.insert(
-            configKey: configKey,
-            subConfigKey: subConfigKey,
-            value: value,
-            utime: utime,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
+        );
 }
 
 typedef $$LocalConfigTableProcessedTableManager = ProcessedTableManager<
@@ -10865,10 +11827,7 @@ typedef $$LocalConfigTableProcessedTableManager = ProcessedTableManager<
     $$LocalConfigTableAnnotationComposer,
     $$LocalConfigTableCreateCompanionBuilder,
     $$LocalConfigTableUpdateCompanionBuilder,
-    (
-      LocalConfigData,
-      BaseReferences<_$AppDb, $LocalConfigTable, LocalConfigData>
-    ),
+    (LocalConfigData, BaseReferences<_$AppDb, $LocalConfigTable, LocalConfigData>),
     LocalConfigData,
     PrefetchHooks Function()>;
 
@@ -10876,8 +11835,7 @@ class $AppDbManager {
   final _$AppDb _db;
   $AppDbManager(this._db);
   $$OldSuperResolutionInfoTableTableManager get oldSuperResolutionInfo =>
-      $$OldSuperResolutionInfoTableTableManager(
-          _db, _db.oldSuperResolutionInfo);
+      $$OldSuperResolutionInfoTableTableManager(_db, _db.oldSuperResolutionInfo);
   $$SuperResolutionInfoTableTableManager get superResolutionInfo =>
       $$SuperResolutionInfoTableTableManager(_db, _db.superResolutionInfo);
   $$TagTableTableManager get tag => $$TagTableTableManager(_db, _db.tag);
@@ -10893,18 +11851,15 @@ class $AppDbManager {
       $$GalleryDownloadedOldTableTableManager(_db, _db.galleryDownloadedOld);
   $$GalleryGroupTableTableManager get galleryGroup =>
       $$GalleryGroupTableTableManager(_db, _db.galleryGroup);
-  $$ImageTableTableManager get image =>
-      $$ImageTableTableManager(_db, _db.image);
+  $$ImageTableTableManager get image => $$ImageTableTableManager(_db, _db.image);
   $$GalleryHistoryTableTableManager get galleryHistory =>
       $$GalleryHistoryTableTableManager(_db, _db.galleryHistory);
   $$GalleryHistoryV2TableTableManager get galleryHistoryV2 =>
       $$GalleryHistoryV2TableTableManager(_db, _db.galleryHistoryV2);
   $$GalleryParentCacheTableTableManager get galleryParentCache =>
       $$GalleryParentCacheTableTableManager(_db, _db.galleryParentCache);
-  $$TagCountTableTableManager get tagCount =>
-      $$TagCountTableTableManager(_db, _db.tagCount);
-  $$DioCacheTableTableManager get dioCache =>
-      $$DioCacheTableTableManager(_db, _db.dioCache);
+  $$TagCountTableTableManager get tagCount => $$TagCountTableTableManager(_db, _db.tagCount);
+  $$DioCacheTableTableManager get dioCache => $$DioCacheTableTableManager(_db, _db.dioCache);
   $$BlockRuleTableTableManager get blockRule =>
       $$BlockRuleTableTableManager(_db, _db.blockRule);
   $$LocalConfigTableTableManager get localConfig =>

@@ -76,8 +76,10 @@ class DashboardPageLogic extends BasePageLogic {
       return;
     }
 
-    state.ranklistGallerys =
-        await super.postHandleNewGallerys(gallerysAndPageInfo[0], cleanDuplicate: false);
+    state.ranklistGallerys = await super.postHandleNewGallerys(
+      gallerysAndPageInfo[0],
+      cleanDuplicate: false,
+    );
 
     state.ranklistLoadingState = LoadingState.success;
     update([ranklistId]);
@@ -116,8 +118,10 @@ class DashboardPageLogic extends BasePageLogic {
       return;
     }
 
-    state.popularGallerys =
-        await super.postHandleNewGallerys(gallerysPage.gallerys, cleanDuplicate: false);
+    state.popularGallerys = await super.postHandleNewGallerys(
+      gallerysPage.gallerys,
+      cleanDuplicate: false,
+    );
 
     state.popularLoadingState = LoadingState.success;
     update([popularListId]);

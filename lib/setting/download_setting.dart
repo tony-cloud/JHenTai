@@ -14,9 +14,7 @@ import 'package:jhentai/utils/toast_util.dart';
 
 DownloadSetting downloadSetting = DownloadSetting();
 
-class DownloadSetting
-    with JHLifeCircleBeanWithConfigStorage
-    implements JHLifeCircleBean {
+class DownloadSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
   late String defaultDownloadPath;
   late RxString downloadPath;
   RxBool downloadOriginalImageByDefault = false.obs;
@@ -48,47 +46,41 @@ class DownloadSetting
 
     if (!GetPlatform.isIOS) {
       downloadPath.value = map['downloadPath'] ?? downloadPath.value;
-      singleImageSavePath.value =
-          map['singleImageSavePath'] ?? singleImageSavePath.value;
+      singleImageSavePath.value = map['singleImageSavePath'] ?? singleImageSavePath.value;
     }
     if (map['extraGalleryScanPath'] != null) {
       extraGalleryScanPath.addAll(map['extraGalleryScanPath'].cast<String>());
       extraGalleryScanPath.assignAll(extraGalleryScanPath.toSet().toList());
     }
     downloadOriginalImageByDefault.value =
-        map['downloadOriginalImageByDefault'] ??
-            downloadOriginalImageByDefault.value;
+        map['downloadOriginalImageByDefault'] ?? downloadOriginalImageByDefault.value;
     defaultGalleryGroup.value = map['defaultGalleryGroup'];
     defaultArchiveGroup.value = map['defaultArchiveGroup'];
     prioritizeRecentGalleryGroups.value =
-        map['prioritizeRecentGalleryGroups'] ??
-            prioritizeRecentGalleryGroups.value;
+        map['prioritizeRecentGalleryGroups'] ?? prioritizeRecentGalleryGroups.value;
     if (map['recentGalleryGroups'] != null) {
       recentGalleryGroups = map['recentGalleryGroups'].cast<String>();
     }
     downloadTaskConcurrency.value = map['downloadTaskConcurrency'];
     maximum.value = map['maximum'];
     period.value = Duration(milliseconds: map['period']);
-    downloadAllGallerysOfSamePriority.value =
+    downloadAllGallerysOfSamePriority.value = map['downloadAllGallerysOfSamePriority'] ??
         map['downloadAllGallerysOfSamePriority'] ??
-            downloadAllGallerysOfSamePriority.value;
-    useJH2UpdateGallery.value =
-        map['useJH2UpdateGallery'] ?? useJH2UpdateGallery.value;
+        downloadAllGallerysOfSamePriority.value;
+    useJH2UpdateGallery.value = map['useJH2UpdateGallery'] ?? useJH2UpdateGallery.value;
     archiveDownloadIsolateCount.value =
         map['archiveDownloadIsolateCount'] ?? archiveDownloadIsolateCount.value;
     if (archiveDownloadIsolateCount.value > 10) {
       archiveDownloadIsolateCount.value = 10;
     }
     manageArchiveDownloadConcurrency.value =
-        map['manageArchiveDownloadConcurrency'] ??
-            manageArchiveDownloadConcurrency.value;
+        map['manageArchiveDownloadConcurrency'] ?? manageArchiveDownloadConcurrency.value;
     deleteArchiveFileAfterDownload.value =
-        map['deleteArchiveFileAfterDownload'] ??
-            deleteArchiveFileAfterDownload.value;
+        map['deleteArchiveFileAfterDownload'] ?? deleteArchiveFileAfterDownload.value;
     restoreTasksAutomatically.value =
         map['restoreTasksAutomatically'] ?? restoreTasksAutomatically.value;
-    keepScreenOnWhileDownloading.value = map['keepScreenOnWhileDownloading'] ??
-        keepScreenOnWhileDownloading.value;
+    keepScreenOnWhileDownloading.value =
+        map['keepScreenOnWhileDownloading'] ?? keepScreenOnWhileDownloading.value;
   }
 
   @override
@@ -105,12 +97,10 @@ class DownloadSetting
       'downloadTaskConcurrency': downloadTaskConcurrency.value,
       'maximum': maximum.value,
       'period': period.value.inMilliseconds,
-      'downloadAllGallerysOfSamePriority':
-          downloadAllGallerysOfSamePriority.value,
+      'downloadAllGallerysOfSamePriority': downloadAllGallerysOfSamePriority.value,
       'useJH2UpdateGallery': useJH2UpdateGallery.value,
       'archiveDownloadIsolateCount': archiveDownloadIsolateCount.value,
-      'manageArchiveDownloadConcurrency':
-          manageArchiveDownloadConcurrency.value,
+      'manageArchiveDownloadConcurrency': manageArchiveDownloadConcurrency.value,
       'deleteArchiveFileAfterDownload': deleteArchiveFileAfterDownload.value,
       'restoreTasksAutomatically': restoreTasksAutomatically.value,
       'keepScreenOnWhileDownloading': keepScreenOnWhileDownloading.value,
@@ -131,8 +121,7 @@ class DownloadSetting
 
     defaultDownloadPath = join(pathService.getVisibleDir().path, 'download');
     downloadPath = defaultDownloadPath.obs;
-    defaultExtraGalleryScanPath =
-        join(pathService.getVisibleDir().path, 'local_gallery');
+    defaultExtraGalleryScanPath = join(pathService.getVisibleDir().path, 'local_gallery');
     extraGalleryScanPath = <String>[defaultExtraGalleryScanPath].obs;
     singleImageSavePath = join(pathService.getVisibleDir().path, 'save').obs;
     tempDownloadPath = join(pathService.tempDir.path, EHConsts.appName).obs;

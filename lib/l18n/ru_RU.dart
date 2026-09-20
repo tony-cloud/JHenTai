@@ -97,14 +97,16 @@ class ru_RU {
       'qrScanTailCountHint': 'Only scan the last N images (0 scans all)',
       'qrScanTailAll': 'All',
       'qrContentWhitelist': 'Белый список содержимого QR',
-      'qrContentWhitelistHint': 'Не блокировать QR, если в тексте есть разрешённые слова (@count)',
-      'qrContentWhitelistDialogHint': 'По одному ключевому слову на строку, без учета регистра',
+      'qrContentWhitelistHint':
+          'Не блокировать QR, если в тексте есть разрешённые слова (@count)',
+      'qrContentWhitelistDialogHint':
+          'По одному ключевому слову на строку, без учета регистра',
       'qrContentWhitelistNote': 'Для пропуска QR от wavebox и '
           'marshmallow, которые чаще всего про обратную связь, а не про рекламу.',
       'restoreDefaults': 'Восстановить по умолчанию',
       'qrBlockAdvancedTool': 'Advanced QR block tool',
       'qrBlockTagLabel': 'Tag or keyword',
-      'qrBlockTagHint': 'Tag to search galleries',
+      'qrBlockTagHint': 'Tag to search gallerys',
       'qrBlockGalleryCount': 'Gallery count',
       'qrBlockTailImageCount': 'Images from the end',
       'qrBlockSortLabel': 'Sort',
@@ -194,6 +196,24 @@ class ru_RU {
       'logout': 'Выйти',
       'passwordLogin': 'Вход по паролю',
       'cookieLogin': 'Вход по Cookie',
+      'passwordTab': 'Аккаунт',
+      'cookieTab': 'Cookie',
+      'webTab': 'Web',
+      'webTabHint':
+          'Нажмите кнопку ниже, чтобы открыть браузер. После входа вы вернётесь автоматически.',
+      'launchWebLogin': 'Открыть браузер для входа',
+      'onlineVerification': 'Онлайн-проверка',
+      'webviewVerification': 'Проверка через WebView',
+      'skipVerification': 'Пропустить проверку',
+      'assist': 'ассист.',
+      'onlineVerificationHint': 'Проверка через HTTP-запрос',
+      'webviewVerificationHint':
+          'Проверка через WebView (используйте при сбое онлайн-проверки)',
+      'skipVerificationHint': 'Сохранить напрямую без проверки',
+      'igneousFieldHint': 'Только для сайта EX; для EH можно оставить пустым',
+      'clipboardCookieDetected': 'Cookie найден в буфере обмена и заполнен',
+      'verifyAndLogin': 'Проверить и войти',
+      'recommended': 'Рекомендуется',
       'youHaveLoggedInAs': 'Здравствуйте:   ',
       'cookieIsBlack': 'Cookie недействителен',
       'cookieFormatError': 'Ошибка формата Cookie',
@@ -270,7 +290,8 @@ class ru_RU {
       'batchAddFavorite': 'Добавить выбранное в избранное',
       'removeFavoriteSuccess': "Успешно удалено из избранного",
       'removeFavoriteFailed': "Не удалось удалить из избранного",
-      'getGalleryFavoriteInfoFailed': 'Не удалось получить информацию об избранном для галереи',
+      'getGalleryFavoriteInfoFailed':
+          'Не удалось получить информацию об избранном для галереи',
       'favoriteNoteSlotFullHint':
           'Слоты заметок избранного заполнены, пожалуйста, сначала удалите некоторые заметки',
       'ratingSuccess': 'Рейтинг успешно выставлен',
@@ -281,7 +302,8 @@ class ru_RU {
       'downloadAndUpdateBusy': 'Операция загрузки и обновления уже выполняется',
       'downloadAndUpdateQueued': 'Добавлено в очередь',
       'downloadAndUpdateNoTask': 'Нет галерей для загрузки или обновления',
-      'downloadAndUpdateAllCurrentFavcat': 'Скачать и обновить все в текущей категории избранного',
+      'downloadAndUpdateAllCurrentFavcat':
+          'Скачать и обновить все в текущей категории избранного',
       'downloadAndUpdateSelected': 'Скачать и обновить выбранное',
       'useArchiveDownloadForNewGalleryOnly':
           'Использовать архивную загрузку только для ранее не загруженных галерей',
@@ -341,6 +363,11 @@ class ru_RU {
       'batchAddTag': 'Добавить тег к выбранному',
       'parentGallery': 'Родительская галерея',
       'blockUploaderLocally': 'Заблокировать пользователя локально',
+      'blockTitleLocally': 'Заблокировать выбранное название локально',
+      'blockRuleAlreadyExists': 'Это правило уже существует',
+      'blockThisGallery': 'Заблокировать эту галерею',
+      'blockGallerySuccess':
+          'Галерея заблокирована. Изменить можно в Настройках — Правила блокировки',
 
       /// detail dialog
       'galleryUrl': 'URL Галереи',
@@ -358,7 +385,8 @@ class ru_RU {
       'commentTooShort': 'Комментарий слишком короткий',
       'sendCommentFailed': 'Не удалось отправить комментарий',
       'voteCommentFailed': 'Не удалось проголосовать за комментарий',
-      'voteCommentFailedHint': 'Попробуйте сначала потянуть вниз для обновления страницы деталей',
+      'voteCommentFailedHint':
+          'Попробуйте сначала потянуть вниз для обновления страницы деталей',
       'unknownUser': 'Неизвестный пользователь',
       'atLeast3Characters': 'Минимум 3 символа',
       'noJHenTaiHints': 'Пожалуйста, не упоминайте JHenTai, спасибо',
@@ -402,6 +430,11 @@ class ru_RU {
       'accountSetting': 'Настройка аккаунта',
       'styleSetting': 'Настройка стиля',
       'advancedSetting': 'Расширенные настройки',
+      'refreshRate': 'Частота обновления',
+      'refreshRateCurrent': 'Текущая',
+      'refreshRateHint': 'Применяется сразу. Может не сработать из-за ограничений системы.',
+      'refreshRateSecurityHint':
+          'Не меняйте без необходимости. При проблемах сбросьте данные приложения.',
       'securitySetting': 'Настройки безопасности',
       'ehSetting': 'Настройки сайта EH',
       'readSetting': 'Настройки чтения',
@@ -442,6 +475,10 @@ class ru_RU {
       'addLocalTags': 'Добавить теги',
       'hidden': 'Скрытый',
       'nope': 'Нет',
+      'status': 'Статус',
+      'tagSetDefaultColor': 'Стандартный цвет набора тегов',
+      'weight': 'Вес',
+      'color': 'Цвет',
       'getTagSetFailed': 'Не удалось получить набор тегов',
       'updateTagSetFailed': 'Не удалось обновить набор тегов',
       'updateTagFailed': 'Не удалось обновить тег',
@@ -492,7 +529,8 @@ class ru_RU {
       'crossAxisCountInWaterFallFlow': 'Количество колонок в плитке',
       'pageListStyle': 'Стиль списка галерей (Страница)',
       'crossAxisCountInGridDownloadPageForGroup': 'Кол-во колонок на стр. загрузок (Группа)',
-      'crossAxisCountInGridDownloadPageForGallery': 'Кол-во колонок на стр. загрузок (Галерея)',
+      'crossAxisCountInGridDownloadPageForGallery':
+          'Кол-во колонок на стр. загрузок (Галерея)',
       'crossAxisCountInDetailPage': 'Кол-во колонок миниатюр на стр. деталей',
       'global': 'Глобально',
       'auto': 'Авто',
@@ -507,7 +545,8 @@ class ru_RU {
       'whenScrollUp': 'При прокрутке вверх',
       'whenScrollDown': 'При прокрутке вниз',
       'preloadGalleryCover': 'Предзагружать обложки галерей',
-      'preloadGalleryCoverHint': 'Предзагружать обложки галерей, еще не отображенных на странице',
+      'preloadGalleryCoverHint':
+          'Предзагружать обложки галерей, еще не отображенных на странице',
       'enableSwipeBackGesture': 'Включить жест "Назад" свайпом',
       'enableLeftMenuDrawerGesture': 'Включить жест открытия левого меню',
       'enableQuickSearchDrawerGesture': 'Включить жест открытия быстрого поиска',
@@ -516,7 +555,7 @@ class ru_RU {
       'enableDefaultFavorite': 'Включить избранное по умолчанию',
       'enableDefaultFavoriteHint': 'Долгий тап для перевыбора',
       'enableDefaultTagSet': 'Включить набор тегов по умолчанию',
-      'enableDefaultTagSetHint': 'Долгий тап для перевыбора',
+      'enableDefaultTagSetHint': 'Добавлять в набор тегов по умолчанию напрямую',
       'disableDefaultTagSetHint': 'Выбирать вручную',
       'launchInFullScreen': 'Запускать в полноэкранном режиме',
       'launchInFullScreenHint': 'Переключение вручную по F11',
@@ -611,7 +650,8 @@ class ru_RU {
       'timeoutRetryTimesHint':
           'Сколько раз повторять при ошибках соединения/получения. 0 — без повторов',
       'serverErrorRetryTimes': 'Количество повторов при ошибке сервера',
-      'serverErrorRetryTimesHint': 'Повторы для ошибок 5xx или сетевых ошибок; 403 не повторяется',
+      'serverErrorRetryTimesHint':
+          'Повторы для ошибок 5xx или сетевых ошибок; 403 не повторяется',
       'pageCacheMaxAge': 'Время жизни кэша страниц',
       'pageCacheMaxAgeHint': 'Вы можете обновить кэш, обновив страницу',
       'cacheImageExpireDuration': 'Время жизни кэша изображений',
@@ -643,13 +683,15 @@ class ru_RU {
       'noMissingImagesDetected': 'Отсутствующие изображения не найдены',
       'repairMissingImagesResult': 'Исправлено @count изображений (переименовано @renamed).',
       'cleanupDuplicatedGallery': 'Очистить дублирующиеся галереи',
-      'cleanupDuplicatedGalleryHint': 'Долгий тап для удаления старых галерей в цепочке истории',
+      'cleanupDuplicatedGalleryHint':
+          'Долгий тап для удаления старых галерей в цепочке истории',
       'cleanupDuplicatedGalleryResult':
           'Проверено @checked галерей, удалено @deleted, пропущено @skipped, ошибок @failed.',
       'cleanupDuplicatedGalleryUnavailableInRpcMode':
           'Текущий RPC-бэкенд не поддерживает эту задачу обслуживания',
       'duplicateGalleryReview': 'Review Different-Language Downloads',
-      'duplicateGalleryReviewSettingHint': 'Compare downloads with the same English title before deleting them',
+      'duplicateGalleryReviewSettingHint':
+          'Compare downloads with the same English title before deleting them',
       'duplicateGalleryReviewUnavailableInRpcMode':
           'Update the RPC backend before using duplicate gallery review',
       'duplicateGalleryReviewLoadFailed': 'Unable to load duplicate gallery groups.',
@@ -668,10 +710,12 @@ class ru_RU {
       'duplicateGalleryConfirmTitle': 'Delete selected downloads?',
       'duplicateGalleryConfirmMessage':
           'Delete @delete downloads. @unfavorite of them will also be removed from favorites.',
-      'duplicateGalleryCleanupResult': 'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
+      'duplicateGalleryCleanupResult':
+          'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
       'clearParentGalleryCache': 'Очистить кэш родительских галерей',
       'clearParentGalleryCacheHint': 'Долгий тап для очистки кэша связей родительских галерей',
-      'clearParentGalleryCacheResult': 'Очищено @count кэшированных связей родительских галерей.',
+      'clearParentGalleryCacheResult':
+          'Очищено @count кэшированных связей родительских галерей.',
       'clearSuccess': 'Успешно очищено',
       'superResolution': 'Супер-разрешение изображений',
       'stopSuperResolution': 'Остановить супер-разрешение',
@@ -728,11 +772,44 @@ class ru_RU {
       'landscape': 'Альбомная',
       'portrait': 'Портретная',
       'readDirection': 'Направление чтения',
+      'enableOrientationSpecificReadDirection': 'Направление чтения по ориентации',
+      'enableOrientationSpecificReadDirectionHint':
+          'Установить разное направление чтения для портретной и альбомной ориентации',
+      'autoDetectWebtoon': 'Автоопределение вебтунов',
+      'autoDetectWebtoonHint':
+          'Автоматически использовать режим непрерывного чтения сверху вниз для галерей с тегом webtoon',
+      'portraitReadDirection': 'Направление чтения (портрет)',
+      'landscapeReadDirection': 'Направление чтения (альбом)',
+      'autoSwitchedReadDirection': 'Авто-смена направления чтения',
       'notchOptimization': 'Оптимизация под вырез',
       'notchOptimizationHint':
           'Добавить отступ перед первым изображением, чтобы избежать выреза и строки состояния',
       'imageRegionWidthRatio': 'Соотношение ширины области изображения',
       'gestureRegionWidthRatio': 'Соотношение ширины области жестов',
+      'portraitImageRegionWidthRatio': 'Ширина изображения (портрет)',
+      'landscapeImageRegionWidthRatio': 'Ширина изображения (ландшафт)',
+      'tapZoneStyle': 'Стиль зон нажатия',
+      'tapZoneStyleHint': 'Настройка зон нажатия на странице чтения',
+      'tapZonePreset': 'Пресет',
+      'tapZonePresetClassic': 'Классический',
+      'tapZonePresetVertical': 'Вертикальный',
+      'tapZoneRatio': 'Размер зон',
+      'tapZoneAction': 'Действие зоны нажатия',
+      'tapZoneActionNone': 'Нет',
+      'tapZoneActionPrevPage': 'Предыдущая страница',
+      'tapZoneActionNextPage': 'Следующая страница',
+      'tapZoneActionToggleMenu': 'Показать/скрыть меню',
+      'tapZoneActionFlipLeft': 'Листать влево',
+      'tapZoneActionFlipRight': 'Листать вправо',
+      'tapZoneLeftColumnRatio': 'Ширина левого столбца',
+      'tapZoneMiddleColumnRatio': 'Ширина среднего столбца',
+      'tapZoneRightColumnRatio': 'Ширина правого столбца',
+      'tapZoneTopRowRatio': 'Высота верхнего ряда',
+      'tapZoneMiddleRowRatio': 'Высота среднего ряда',
+      'tapZoneBottomRowRatio': 'Высота нижнего ряда',
+      'tapZonePreview': 'Предпросмотр',
+      'tapZoneGuideHint':
+          'Нажмите в любом месте, чтобы закрыть. Зоны настраиваются в Настройки → Чтение.',
       'useThirdPartyViewer': 'Использовать сторонний просмотрщик',
       'thirdPartyViewerPath': 'Путь к стороннему просмотрщику (исп. файл)',
       'showThumbnails': 'Показывать миниатюры',
@@ -756,11 +833,11 @@ class ru_RU {
       'enableDoubleTapToScaleUp': 'Включить двойной тап для увеличения',
       'enableTapDragToScaleUp': 'Включить тап с перетаскиванием для увеличения',
       'enableBottomMenu': 'Включить нижнее меню',
-      'reverseTurnPageDirection': 'Обратное направление перелистывания',
       'disableGestureWhenScrolling': 'Отключить жесты при прокрутке',
       'disablePageTurningOnTap': 'Отключить перелистывание по тапу',
       'smartScaling': 'Умное масштабирование',
-      'smartScalingHint': 'Уменьшать изображения, немного превышающие экран, чтобы показать их целиком',
+      'smartScalingHint':
+          'Уменьшать изображения, немного превышающие экран, чтобы показать их целиком',
       'smartScalingThreshold': 'Порог вписывания в экран',
       'smartScalingThresholdHint': 'Максимальный лишний размер для масштабирования по экрану',
       'turnPageMode': 'Режим перелистывания',
@@ -819,7 +896,8 @@ class ru_RU {
       'waitingIsolate': 'Ожидание',
       'downloaded': 'Загружено',
       'downloadFailed': 'Ошибка загрузки',
-      'downloadStorageFull': 'Storage is full. Downloads were paused; free some space and resume.',
+      'downloadStorageFull':
+          'Storage is full. Downloads were paused; free some space and resume.',
       'downloadStorageWriteFailed': 'The image could not be stored. This gallery was paused.',
       'unpacking': 'Распаковка',
       'completed': 'Завершено',
@@ -862,7 +940,8 @@ class ru_RU {
       'peakHoursHint':
           'Загрузка оригинальных файлов в часы пик требует GP, у вас недостаточно. Загрузка приостановлена.',
       // GP - термин EH
-      'oldGalleryHint': 'Загрузка оригинальных файлов этой галереи требует GP, у вас недостаточно.',
+      'oldGalleryHint':
+          'Загрузка оригинальных файлов этой галереи требует GP, у вас недостаточно.',
       // GP - термин EH
       'exceedLimitHint':
           'Вы достигли лимита изображений и не имеете достаточно GP для покупки квоты.',
@@ -1028,7 +1107,11 @@ class ru_RU {
       'checkInFailed': 'Check-in failed',
       'checkInSuccess': 'Check-in success',
       'checkInSuccessHint': 'Got GP: %s, current total GP: %s.',
-      'pauseDownloadByInvalidArchiveBotKey': 'Archive bot settings is invalid, download paused',
+      'pauseDownloadByInvalidArchiveBotKey':
+          'Archive bot settings is invalid, download paused',
+      'archiveBotNotConfigured': 'Архивный бот не настроен, перейти к настройкам?',
+      'getBotCostFailed': 'Не удалось получить стоимость бота',
+      'archiveBotShort': 'Bot',
       'chooseArchiveParseSource': 'Change Parse Source',
       'official': 'Official',
       'archiveBot': 'Archive Bot',
@@ -1073,7 +1156,8 @@ class ru_RU {
       'inputNumberHint': 'Пожалуйста, введите корректное число',
       'inputRegexHint': 'Пожалуйста, введите корректное регулярное выражение',
       'useBuiltInBlockedUsers': 'Включить встроенный список заблокированных пользователей',
-      'useBuiltInBlockedUsersHint': 'Фильтровать комментарии от пользователей из списка блокировки',
+      'useBuiltInBlockedUsersHint':
+          'Фильтровать комментарии от пользователей из списка блокировки',
       'blockingRules': 'Правила блокировки',
       'blockingRulesHint': 'Дополнительные правила блокировки для галерей и комментариев',
       'blockingTarget': 'Цель блокировки',
@@ -1089,7 +1173,8 @@ class ru_RU {
       'content': 'Содержимое',
       'incompleteInformation': 'Неполная информация',
       'noBlockingRuleHint': 'Добавьте хотя бы 1 правило',
-      'notSameBlockingRuleTargetHint': 'Все подправила должны иметь одну и ту же цель блокировки',
+      'notSameBlockingRuleTargetHint':
+          'Все подправила должны иметь одну и ту же цель блокировки',
       'blockingRuleHelp': '''
 Цель блокировки: Фильтровать галереи в списке или комментарии на странице деталей. Все подправила в одном правиле должны иметь одну цель.
 Атрибут блокировки: Указывает атрибут цели, по которому пишется правило.
@@ -1106,7 +1191,6 @@ class ru_RU {
     ''',
 
       /// quick search page
-      'quickSearch': 'Быстрый поиск',
 
       /// dashboard page
       'seeAll': 'Все',
@@ -1121,6 +1205,19 @@ class ru_RU {
       /// tagSet dialog
       'chooseTagSet': 'Выбрать набор тегов',
 
+      /// tag dialog actions
+      'tagActionAccurate': 'Точно',
+      'tagActionInaccurate': 'Неточно',
+      'tagActionFollow': 'Отслеживать тег',
+      'tagActionHide': 'Скрыть тег',
+      'tagActionTagSets': 'Управление наборами тегов',
+      'tagActionVoteUpTooltip': 'Проголосовать, что этот тег подходит для этой галереи',
+      'tagActionVoteDownTooltip': 'Проголосовать, что этот тег не подходит для этой галереи',
+      'tagActionFollowHint': 'Добавить этот тег в отслеживаемый набор',
+      'tagActionHideHint': 'Добавить этот тег в скрытый набор',
+      'tagActionTagSetsHint': 'Открыть управление наборами тегов',
+      'currentTagSet': 'Текущий',
+
       /// tag namespace
       'language': 'Язык',
       'artist': 'Художник',
@@ -1134,6 +1231,10 @@ class ru_RU {
       'cosplayer': 'Косплеер',
       'reclass': 'Переклассификация',
       'temp': 'Временный',
+      'permissionPermanentlyDenied': 'Разрешение навсегда отклонено',
+      'permissionPermanentlyDeniedHint':
+          'Для сохранения в галерею требуется разрешение. Предоставьте приложению полный доступ в настройках системы',
+      'goToSetting': 'Перейти в настройки',
       'other': 'Другое',
     };
   }

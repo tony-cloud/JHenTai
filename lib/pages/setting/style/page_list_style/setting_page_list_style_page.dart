@@ -8,10 +8,26 @@ class SettingPageListStylePage extends StatelessWidget {
   SettingPageListStylePage({super.key});
 
   final List<PageListStyleItem> items = [
-    PageListStyleItem(name: 'home'.tr, route: Routes.gallerys, show: () => styleSetting.isInDesktopLayout),
-    PageListStyleItem(name: 'home'.tr, route: Routes.dashboard, show: () => styleSetting.isInMobileLayout || styleSetting.isInTabletLayout),
-    PageListStyleItem(name: 'search'.tr, route: Routes.desktopSearch, show: () => styleSetting.isInDesktopLayout),
-    PageListStyleItem(name: 'search'.tr, route: Routes.mobileV2Search, show: () => styleSetting.isInMobileLayout || styleSetting.isInTabletLayout),
+    PageListStyleItem(
+      name: 'home'.tr,
+      route: Routes.gallery,
+      show: () => styleSetting.isInDesktopLayout,
+    ),
+    PageListStyleItem(
+      name: 'home'.tr,
+      route: Routes.dashboard,
+      show: () => styleSetting.isInMobileLayout || styleSetting.isInTabletLayout,
+    ),
+    PageListStyleItem(
+      name: 'search'.tr,
+      route: Routes.desktopSearch,
+      show: () => styleSetting.isInDesktopLayout,
+    ),
+    PageListStyleItem(
+      name: 'search'.tr,
+      route: Routes.mobileV2Search,
+      show: () => styleSetting.isInMobileLayout || styleSetting.isInTabletLayout,
+    ),
     PageListStyleItem(name: 'popular'.tr, route: Routes.popular, show: () => true),
     PageListStyleItem(name: 'ranklist'.tr, route: Routes.ranklist, show: () => true),
     PageListStyleItem(name: 'favorite'.tr, route: Routes.favorite, show: () => true),
@@ -39,12 +55,30 @@ class SettingPageListStylePage extends StatelessWidget {
                     items: [
                       DropdownMenuItem(value: null, child: Text('global'.tr)),
                       DropdownMenuItem(value: ListMode.flat, child: Text('flat'.tr)),
-                      DropdownMenuItem(value: ListMode.flatWithoutTags, child: Text('flatWithoutTags'.tr)),
-                      DropdownMenuItem(value: ListMode.listWithTags, child: Text('listWithTags'.tr)),
-                      DropdownMenuItem(value: ListMode.listWithoutTags, child: Text('listWithoutTags'.tr)),
-                      DropdownMenuItem(value: ListMode.waterfallFlowSmall, child: Text('waterfallFlowSmall'.tr)),
-                      DropdownMenuItem(value: ListMode.waterfallFlowMedium, child: Text('waterfallFlowMedium'.tr)),
-                      DropdownMenuItem(value: ListMode.waterfallFlowBig, child: Text('waterfallFlowBig'.tr)),
+                      DropdownMenuItem(
+                        value: ListMode.flatWithoutTags,
+                        child: Text('flatWithoutTags'.tr),
+                      ),
+                      DropdownMenuItem(
+                        value: ListMode.listWithTags,
+                        child: Text('listWithTags'.tr),
+                      ),
+                      DropdownMenuItem(
+                        value: ListMode.listWithoutTags,
+                        child: Text('listWithoutTags'.tr),
+                      ),
+                      DropdownMenuItem(
+                        value: ListMode.waterfallFlowSmall,
+                        child: Text('waterfallFlowSmall'.tr),
+                      ),
+                      DropdownMenuItem(
+                        value: ListMode.waterfallFlowMedium,
+                        child: Text('waterfallFlowMedium'.tr),
+                      ),
+                      DropdownMenuItem(
+                        value: ListMode.waterfallFlowBig,
+                        child: Text('waterfallFlowBig'.tr),
+                      ),
                     ],
                   ),
                 ),

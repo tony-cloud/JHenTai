@@ -3,15 +3,11 @@ class EHImageException implements Exception {
   String message;
   EHImageExceptionAfterOperation operation;
 
-  EHImageException({
-    required this.type,
-    required this.message,
-    required this.operation,
-  });
+  EHImageException({required this.type, required this.message, required this.operation});
 
   @override
   String toString() {
-    return message;
+    return 'EHImageException(type: $type, message: $message, operation: $operation)';
   }
 }
 
@@ -24,8 +20,4 @@ enum EHImageExceptionType {
   serverError,
 }
 
-enum EHImageExceptionAfterOperation {
-  reParse,
-  pause,
-  pauseAll,
-}
+enum EHImageExceptionAfterOperation { reParse, pause, pauseAll }

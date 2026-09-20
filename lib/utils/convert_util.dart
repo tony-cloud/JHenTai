@@ -72,7 +72,9 @@ Gallery galleryHistoryModel2Gallery(GalleryHistoryModel model) {
     tags: LinkedHashMap.from(
       model.tags.map<GalleryTag>((str) {
         List<String> tagDataSplit = str.split(':');
-        return GalleryTag(tagData: TagData(namespace: tagDataSplit[0], key: tagDataSplit[1]));
+        return GalleryTag(
+          tagData: TagData(namespace: tagDataSplit[0], key: tagDataSplit[1]),
+        );
       }).groupListsBy((tag) => tag.tagData.namespace),
     ),
   );
@@ -96,4 +98,25 @@ GalleryHistoryModel galleryDetail2GalleryHistoryModel(GalleryDetail galleryDetai
         .map((tag) => '${tag.tagData.namespace}:${tag.tagData.key}')
         .toList(),
   );
+}
+
+bool isWebtoonGallery(Map<String, List<GalleryTag>> tags) {
+  return tags.values.any(
+    (tagList) =>
+        tagList.any((tag) => tag.tagData.namespace == 'other' && tag.tagData.key == 'webtoon'),
+  );
+}
+
+bool isWebtoonGalleryFromTagString(String tagString) {
+  if (tagString.isEmpty) {
+    return false;
+  }
+  return tagString.split(',').any((tag) {
+    final parts = tag.split(':');
+    return parts.length == 2 && parts[0] == 'other' && parts[1].trim() == 'webtoon';
+  });
+}
+
+bool isWebtoonGalleryFromTagDataList(List<TagData> tags) {
+  return tags.any((tag) => tag.namespace == 'other' && tag.key == 'webtoon');
 }

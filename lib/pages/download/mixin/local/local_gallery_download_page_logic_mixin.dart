@@ -83,11 +83,14 @@ mixin LocalGalleryDownloadPageLogicMixin on GetxController {
   }
 
   Future<void> goToReadPage(LocalGallery gallery) async {
-    if (readSetting.useThirdPartyViewer.isTrue && readSetting.thirdPartyViewerPath.value != null) {
+    if (readSetting.useThirdPartyViewer.isTrue &&
+        readSetting.thirdPartyViewerPath.value != null) {
       openThirdPartyViewer(gallery.path);
     } else {
       String? string = await localConfigService.read(
-          configKey: ConfigEnum.readIndexRecord, subConfigKey: gallery.cover.path!);
+        configKey: ConfigEnum.readIndexRecord,
+        subConfigKey: gallery.cover.path!,
+      );
       int readIndexRecord = (string == null ? 0 : (int.tryParse(string) ?? 0));
 
       List<GalleryImage> images = localGalleryService.getGalleryImages(gallery);

@@ -12,12 +12,10 @@ import 'package:jhentai/setting/performance_setting.dart';
 
 class UIConfig {
   /// common
-  static ScrollBehavior scrollBehaviourWithScrollBar = EHScrollBehaviourWithScrollBar().copyWith(
-    scrollbars: true,
-  );
-  static ScrollBehavior scrollBehaviourWithoutScrollBar = const MaterialScrollBehavior().copyWith(
-    scrollbars: false,
-  );
+  static ScrollBehavior scrollBehaviourWithScrollBar =
+      EHScrollBehaviourWithScrollBar().copyWith(scrollbars: true);
+  static ScrollBehavior scrollBehaviourWithoutScrollBar =
+      const MaterialScrollBehavior().copyWith(scrollbars: false);
   static ScrollBehavior scrollBehaviourWithScrollBarWithMouse =
       EHScrollBehaviourWithScrollBar().copyWith(
     dragDevices: {
@@ -130,7 +128,8 @@ class UIConfig {
     Color(0xfffe93ff),
   ];
 
-  static Widget loadingAnimation(BuildContext context, {double size = 32, Color? color}) => Obx(() {
+  static Widget loadingAnimation(BuildContext context, {double size = 32, Color? color}) =>
+      Obx(() {
         final Color resolvedColor = color ?? Theme.of(context).colorScheme.onSurfaceVariant;
 
         if (performanceSetting.disableAllLoadingAnimations.isTrue) {
@@ -140,10 +139,7 @@ class UIConfig {
         return LoadingAnimationWidget.horizontalRotatingDots(color: resolvedColor, size: size);
       });
 
-  static Widget _staticLoadingImage({
-    required double size,
-    required Color color,
-  }) {
+  static Widget _staticLoadingImage({required double size, required Color color}) {
     return SizedBox(
       width: size,
       height: size,
@@ -161,7 +157,8 @@ class UIConfig {
 
   static Color backGroundColor(BuildContext context) => Theme.of(context).colorScheme.surface;
 
-  static Color onBackGroundColor(BuildContext context) => Theme.of(context).colorScheme.onSurface;
+  static Color onBackGroundColor(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurface;
 
   /// snack
   static Color get snackBackGroundColor => Colors.black.withValues(alpha: 0.7);
@@ -230,7 +227,8 @@ class UIConfig {
   static Color galleryCardShadowColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2);
 
-  static Color galleryCardTextColor(BuildContext context) => Theme.of(context).colorScheme.outline;
+  static Color galleryCardTextColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outline;
   static const double galleryCardTagsHeight = 70;
 
   static const double dashboardCardSize = 210;
@@ -297,7 +295,8 @@ class UIConfig {
   static Color detailsPageUploaderTextColor(BuildContext context) =>
       Theme.of(context).colorScheme.outline;
 
-  static Color detailsPageIconColor(BuildContext context) => Theme.of(context).colorScheme.outline;
+  static Color detailsPageIconColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outline;
   static const double detailsPageInfoIconSize = 12;
   static const double detailsPageInfoTextSize = 10;
   static const double detailsPageRatingTextSize = 12;
@@ -534,7 +533,8 @@ class UIConfig {
   static const double commentTimeTextSizeInDetailPage = 9;
   static const double commentTimeTextSizeInCommentPage = 10;
 
-  static Color commentTimeTextColor(BuildContext context) => Theme.of(context).colorScheme.outline;
+  static Color commentTimeTextColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outline;
   static const double commentBodyTextSizeInDetailPage = 12;
   static const double commentBodyTextSizeInCommentPage = 12;
 
@@ -544,9 +544,11 @@ class UIConfig {
   static const double commentButtonSizeInDetailPage = 12;
   static const double commentButtonSizeInCommentPage = 14;
 
-  static Color commentButtonVotedColor(BuildContext context) => Theme.of(context).colorScheme.error;
+  static Color commentButtonVotedColor(BuildContext context) =>
+      Theme.of(context).colorScheme.error;
 
-  static Color commentButtonColor(BuildContext context) => Theme.of(context).colorScheme.outline;
+  static Color commentButtonColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outline;
   static const double commentScoreSizeInDetailPage = 10;
   static const double commentScoreSizeInCommentPage = 10;
 
@@ -604,13 +606,20 @@ class UIConfig {
 
   /// EH Tag
   static Color ehWatchedTagDefaultBackGroundColor = const Color(0xFF3377FF);
+  static Color ehHiddenTagDefaultBackGroundColor = const Color.from(
+    alpha: 1,
+    red: 1,
+    green: 0.4,
+    blue: 0.4,
+  );
 
   static Color ehTagBackGroundColor(BuildContext context) =>
       Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15);
 
   static Color ehTagTextColor(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 
-  static Color ehTagUnderLineColor(BuildContext context) => Theme.of(context).colorScheme.secondary;
+  static Color ehTagUnderLineColor(BuildContext context) =>
+      Theme.of(context).colorScheme.secondary;
 
   static Color ehTagDeleteButtonBackGroundColor(BuildContext context) =>
       Theme.of(context).colorScheme.secondary.withValues(alpha: 0.25);
@@ -640,7 +649,8 @@ class UIConfig {
       Theme.of(context).colorScheme.primary;
 
   /// Archive dialog
-  static const double archiveDialogBodyHeight = 240;
+  static const double archiveDialogBalanceHeight = 24;
+  static const double archiveDialogBodyHeight = 300;
   static const double archiveDialogCostTextSize = 10;
   static const double archiveDialogDownloadTextSize = 14;
   static const double archiveDialogDownloadIconSize = 16;
@@ -660,7 +670,8 @@ class UIConfig {
   static const double hhDialogTextSize = 9;
   static const double hhDialogTextButtonWidth = 60;
 
-  static Color hhDialogCostTextColor(BuildContext context) => Theme.of(context).colorScheme.outline;
+  static Color hhDialogCostTextColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outline;
 
   /// Favorite dialog
   static const double favoriteDialogHeight = 400;
@@ -698,7 +709,8 @@ class UIConfig {
   static double get statisticsDialogGraphWidth => max(300, fullScreenWidth * 2 / 3);
 
   /// Tag dialog
-  static Color tagDialogButtonColor(BuildContext context) => Theme.of(context).colorScheme.primary;
+  static Color tagDialogButtonColor(BuildContext context) =>
+      Theme.of(context).colorScheme.primary;
 
   static Color tagDialogLikedButtonColor(BuildContext context) =>
       Theme.of(context).colorScheme.error;
@@ -781,15 +793,13 @@ class EHScrollBehaviourWithScrollBar extends MaterialScrollBehavior {
                   ? CupertinoScrollbar.defaultRadius
                   : const Radius.circular(8),
               thickness: WidgetStateProperty.all(
-                  styleSetting.isInMobileLayout ? CupertinoScrollbar.defaultThickness : 8),
+                styleSetting.isInMobileLayout ? CupertinoScrollbar.defaultThickness : 8,
+              ),
             ),
             child: Scrollbar(
               controller: canUseInteractiveScrollbar ? controller : null,
               interactive: canUseInteractiveScrollbar,
-              child: ScrollConfiguration(
-                behavior: contentScrollBehavior,
-                child: child,
-              ),
+              child: ScrollConfiguration(behavior: contentScrollBehavior, child: child),
             ),
           ),
         );

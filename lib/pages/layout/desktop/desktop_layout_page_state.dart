@@ -41,7 +41,7 @@ class DesktopLayoutPageState with DoubleTapToRefreshStateMixin {
     icons = [
       TabBarIcon(
         name: TabBarIconNameEnum.home,
-        routeName: Routes.gallerys,
+        routeName: Routes.gallery,
         selectedIcon: const Icon(Icons.home),
         unselectedIcon: const Icon(Icons.home_outlined),
         page: () => const GallerysPage(),
@@ -124,8 +124,10 @@ class DesktopLayoutPageState with DoubleTapToRefreshStateMixin {
       ),
     ];
 
-    selectedTabIndex =
-        icons.firstIndexWhereOrNull((icon) => icon.name == preferenceSetting.defaultTab.value) ?? 0;
+    selectedTabIndex = icons.firstIndexWhereOrNull(
+          (icon) => icon.name == preferenceSetting.defaultTab.value,
+        ) ??
+        0;
     icons[selectedTabIndex].shouldRender = true;
   }
 }

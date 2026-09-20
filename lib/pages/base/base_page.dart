@@ -17,8 +17,8 @@ import 'package:jhentai/pages/base/base_page_logic.dart';
 import 'package:jhentai/pages/base/base_page_state.dart';
 import 'package:jhentai/pages/base/multi_select/multi_select_gallery_logic_mixin.dart';
 
-abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extends StatelessWidget
-    with Scroll2TopPageMixin {
+abstract class BasePage<L extends BasePageLogic, S extends BasePageState>
+    extends StatelessWidget with Scroll2TopPageMixin {
   /// For mobile layout v2
   final bool showMenuButton;
   final bool showJumpButton;
@@ -84,12 +84,14 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
     return [
       if (showJumpButton && state.gallerys.isNotEmpty)
         IconButton(
-            icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 20),
-            onPressed: logic.handleTapJumpButton),
+          icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 20),
+          onPressed: logic.handleTapJumpButton,
+        ),
       if (showFilterButton)
         IconButton(
-            icon: const Icon(Icons.filter_alt_outlined, size: 28),
-            onPressed: logic.handleTapFilterButton),
+          icon: const Icon(Icons.filter_alt_outlined, size: 28),
+          onPressed: logic.handleTapFilterButton,
+        ),
     ];
   }
 
@@ -113,7 +115,9 @@ abstract class BasePage<L extends BasePageLogic, S extends BasePageState> extend
                 child: CustomScrollView(
                   key: state.pageStorageKey,
                   controller: state.scrollController,
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
                   scrollBehavior: UIConfig.scrollBehaviourWithScrollBarWithMouse,
                   slivers: <Widget>[
                     buildPullDownIndicator(),

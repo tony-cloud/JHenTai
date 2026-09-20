@@ -58,8 +58,9 @@ mixin SearchPageLogicMixin on BasePageLogic {
   Future<void> onInit() async {
     await super.onInit();
 
-    String? configString =
-        await localConfigService.read(configKey: ConfigEnum.enableSearchHistoryTranslation);
+    String? configString = await localConfigService.read(
+      configKey: ConfigEnum.enableSearchHistoryTranslation,
+    );
     if (configString != null) {
       state.enableSearchHistoryTranslation = configString == 'true';
     }
@@ -207,31 +208,35 @@ mixin SearchPageLogicMixin on BasePageLogic {
     } else {
       String lastPart = keyword.split(' ').last;
       try {
-        List<EHRawTag> tags =
-            await ehRequest.requestTagSuggestion(lastPart, EHSpiderParser.tagSuggestion2TagList);
+        List<EHRawTag> tags = await ehRequest.requestTagSuggestion(
+          lastPart,
+          EHSpiderParser.tagSuggestion2TagList,
+        );
         state.suggestions = tags
-            .map((t) => (
-                  searchText: keyword,
-                  matchStart: keyword.length - lastPart.length,
-                  matchEnd: keyword.length,
-                  tagData: TagData(namespace: t.namespace, key: t.key),
-                  operator: null,
-                  score: 0.0,
-                  namespaceMatch: t.namespace.contains(lastPart)
-                      ? (
-                          start: t.namespace.indexOf(lastPart),
-                          end: t.namespace.indexOf(lastPart) + lastPart.length
-                        )
-                      : null,
-                  translatedNamespaceMatch: null,
-                  keyMatch: t.key.contains(lastPart)
-                      ? (
-                          start: t.key.indexOf(lastPart),
-                          end: t.key.indexOf(lastPart) + lastPart.length
-                        )
-                      : null,
-                  tagNameMatch: null,
-                ))
+            .map(
+              (t) => (
+                searchText: keyword,
+                matchStart: keyword.length - lastPart.length,
+                matchEnd: keyword.length,
+                tagData: TagData(namespace: t.namespace, key: t.key),
+                operator: null,
+                score: 0.0,
+                namespaceMatch: t.namespace.contains(lastPart)
+                    ? (
+                        start: t.namespace.indexOf(lastPart),
+                        end: t.namespace.indexOf(lastPart) + lastPart.length,
+                      )
+                    : null,
+                translatedNamespaceMatch: null,
+                keyMatch: t.key.contains(lastPart)
+                    ? (
+                        start: t.key.indexOf(lastPart),
+                        end: t.key.indexOf(lastPart) + lastPart.length,
+                      )
+                    : null,
+                tagNameMatch: null,
+              ),
+            )
             .toList();
       } on DioException catch (e) {
         log.error('Request tag suggestion failed', e);
@@ -350,8 +355,9 @@ mixin SearchPageLogicMixin on BasePageLogic {
 
     state.enableSearchHistoryTranslation = !state.enableSearchHistoryTranslation;
     await localConfigService.write(
-        configKey: ConfigEnum.enableSearchHistoryTranslation,
-        value: state.enableSearchHistoryTranslation.toString());
+      configKey: ConfigEnum.enableSearchHistoryTranslation,
+      value: state.enableSearchHistoryTranslation.toString(),
+    );
     update([suggestionBodyId]);
   }
 }

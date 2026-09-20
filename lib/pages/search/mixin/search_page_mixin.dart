@@ -21,21 +21,23 @@ import 'package:jhentai/widget/eh_search_config_dialog.dart';
 import 'package:jhentai/widget/eh_tag.dart';
 import 'package:jhentai/widget/eh_wheel_speed_controller.dart';
 
-mixin SearchPageMixin<L extends SearchPageLogicMixin,
-    S extends SearchPageStateMixin> on BasePage<L, S> {
+mixin SearchPageMixin<L extends SearchPageLogicMixin, S extends SearchPageStateMixin>
+    on BasePage<L, S> {
   @override
   L get logic;
 
   @override
   S get state;
 
-  List<Widget> buildActionButtons(
-      {VisualDensity? visualDensity, double? compactSize, double? spacing}) {
+  List<Widget> buildActionButtons({
+    VisualDensity? visualDensity,
+    double? compactSize,
+    double? spacing,
+  }) {
     final BoxConstraints? buttonConstraints = compactSize == null
         ? null
         : BoxConstraints.tightFor(width: compactSize, height: compactSize);
-    final EdgeInsetsGeometry? buttonPadding =
-        compactSize == null ? null : EdgeInsets.zero;
+    final EdgeInsetsGeometry? buttonPadding = compactSize == null ? null : EdgeInsets.zero;
 
     final List<Widget> buttons = [
       IconButton(
@@ -53,9 +55,9 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
         padding: buttonPadding,
       ),
       IconButton(
-        icon: Icon(state.bodyType == SearchPageBodyType.gallerys
-            ? Icons.search
-            : Icons.image_outlined),
+        icon: Icon(
+          state.bodyType == SearchPageBodyType.gallerys ? Icons.search : Icons.image_outlined,
+        ),
         onPressed: logic.toggleBodyType,
         visualDensity: visualDensity,
         constraints: buttonConstraints,
@@ -63,8 +65,7 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
       ),
       IconButton(
         icon: const Icon(Icons.filter_alt_outlined),
-        onPressed: () =>
-            logic.handleTapFilterButton(EHSearchConfigDialogType.filter),
+        onPressed: () => logic.handleTapFilterButton(EHSearchConfigDialogType.filter),
         visualDensity: visualDensity,
         constraints: buttonConstraints,
         padding: buttonPadding,
@@ -109,8 +110,9 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
                 text: state.searchConfig.keyword ?? '',
 
                 /// make cursor stay at last letter
-                selection: TextSelection.fromPosition(TextPosition(
-                    offset: state.searchConfig.keyword?.length ?? 0)),
+                selection: TextSelection.fromPosition(
+                  TextPosition(offset: state.searchConfig.keyword?.length ?? 0),
+                ),
               ),
             ),
             style: const TextStyle(fontSize: 15),
@@ -124,12 +126,15 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
               labelText: state.searchConfig.tags?.isEmpty ?? true
                   ? null
                   : state.searchConfig.computeTagKeywords(
-                      withTranslation: false, separator: ' / '),
+                      withTranslation: false,
+                      separator: ' / ',
+                    ),
               prefixIcon: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
-                    onTap: logic.handleClearAndRefresh,
-                    child: const Icon(Icons.search)),
+                  onTap: logic.handleClearAndRefresh,
+                  child: const Icon(Icons.search),
+                ),
               ),
               prefixIconConstraints: BoxConstraints(
                 minHeight: styleSetting.isInDesktopLayout
@@ -140,8 +145,9 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
               suffixIcon: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
-                    onTap: logic.handleTapClearButton,
-                    child: const Icon(Icons.cancel)),
+                  onTap: logic.handleTapClearButton,
+                  child: const Icon(Icons.cancel),
+                ),
               ),
               suffixIconConstraints: BoxConstraints(
                 minHeight: styleSetting.isInDesktopLayout
@@ -165,8 +171,7 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
   }
 
   Widget buildOpenGalleryArea() {
-    if (state.inputGalleryUrl == null &&
-        state.inputGalleryImagePageUrl == null) {
+    if (state.inputGalleryUrl == null && state.inputGalleryImagePageUrl == null) {
       return const SizedBox();
     }
 
@@ -175,21 +180,26 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
       child: ListTile(
         title: Text('openGallery'.tr),
         subtitle: Text(
-            state.inputGalleryUrl?.url ?? state.inputGalleryImagePageUrl!.url,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
+          state.inputGalleryUrl?.url ?? state.inputGalleryImagePageUrl!.url,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         leading: const Icon(Icons.open_in_new),
         onTap: () {
           state.searchFieldFocusNode.unfocus();
 
           if (state.inputGalleryUrl != null) {
-            toRoute(Routes.details,
-                arguments:
-                    DetailsPageArgument(galleryUrl: state.inputGalleryUrl!));
+            toRoute(
+              Routes.details,
+              arguments: DetailsPageArgument(galleryUrl: state.inputGalleryUrl!),
+            );
           } else if (state.inputGalleryImagePageUrl != null) {
-            toRoute(Routes.imagePage,
-                arguments: GalleryImagePageArgument(
-                    galleryImagePageUrl: state.inputGalleryImagePageUrl!));
+            toRoute(
+              Routes.imagePage,
+              arguments: GalleryImagePageArgument(
+                galleryImagePageUrl: state.inputGalleryImagePageUrl!,
+              ),
+            );
           }
         },
       ),
@@ -217,15 +227,14 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
       sliver: SliverToBoxAdapter(
         child: AnimatedSwitcher(
-          duration: const Duration(
-              milliseconds: UIConfig.searchPageAnimationDuration),
+          duration: const Duration(milliseconds: UIConfig.searchPageAnimationDuration),
           switchInCurve: Curves.easeIn,
           switchOutCurve: Curves.easeOut,
           transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: SizeTransition(sizeFactor: animation, child: child)),
-          child:
-              state.hideSearchHistory ? const SizedBox() : buildHistoryChips(),
+            opacity: animation,
+            child: SizeTransition(sizeFactor: animation, child: child),
+          ),
+          child: state.hideSearchHistory ? const SizedBox() : buildHistoryChips(),
         ),
       ),
     );
@@ -239,8 +248,7 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
           child: Wrap(
             spacing: 8,
             runSpacing: 7,
-            children:
-                searchHistoryService.histories.map(buildHistoryChip).toList(),
+            children: searchHistoryService.histories.map(buildHistoryChip).toList(),
           ),
         ),
       ],
@@ -288,23 +296,23 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           AnimatedSwitcher(
-            duration: const Duration(
-                milliseconds: UIConfig.searchPageAnimationDuration),
+            duration: const Duration(milliseconds: UIConfig.searchPageAnimationDuration),
             child: state.hideSearchHistory || !tagTranslationService.isReady
                 ? null
                 : IconButton(
                     onPressed: logic.toggleEnableSearchHistoryTranslation,
-                    icon: Icon(Icons.translate,
-                        size: 20, color: UIConfig.primaryColor((context))),
+                    icon: Icon(
+                      Icons.translate,
+                      size: 20,
+                      color: UIConfig.primaryColor((context)),
+                    ),
                   ),
           ),
           AnimatedSwitcher(
-            duration: const Duration(
-                milliseconds: UIConfig.searchPageAnimationDuration),
+            duration: const Duration(milliseconds: UIConfig.searchPageAnimationDuration),
             child: GestureDetector(
-              onLongPress: state.hideSearchHistory
-                  ? null
-                  : logic.handleClearAllSearchHistories,
+              onLongPress:
+                  state.hideSearchHistory ? null : logic.handleClearAllSearchHistories,
               child: IconButton(
                 key: ValueKey(state.hideSearchHistory),
                 onPressed: state.hideSearchHistory
@@ -314,8 +322,7 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
                     ? const Icon(Icons.visibility, size: 20)
                     : state.inDeleteSearchHistoryMode
                         ? const Icon(Icons.close, size: 20)
-                        : Icon(Icons.delete,
-                            size: 20, color: UIConfig.alertColor(context)),
+                        : Icon(Icons.delete, size: 20, color: UIConfig.alertColor(context)),
               ),
             ),
           ),
@@ -335,11 +342,13 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
               context,
               state.suggestions[index],
               TextStyle(
-                  fontSize: UIConfig.searchPageSuggestionTitleTextSize,
-                  color: UIConfig.searchPageSuggestionTitleColor(context)),
+                fontSize: UIConfig.searchPageSuggestionTitleTextSize,
+                color: UIConfig.searchPageSuggestionTitleColor(context),
+              ),
               const TextStyle(
-                  fontSize: UIConfig.searchPageSuggestionTitleTextSize,
-                  color: UIConfig.searchPageSuggestionHighlightColor),
+                fontSize: UIConfig.searchPageSuggestionTitleTextSize,
+                color: UIConfig.searchPageSuggestionHighlightColor,
+              ),
             ),
             subtitle: state.suggestions[index].tagData.tagName == null
                 ? null
@@ -347,15 +356,18 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
                     context,
                     state.suggestions[index],
                     TextStyle(
-                        fontSize: UIConfig.searchPageSuggestionSubTitleTextSize,
-                        color: UIConfig.searchPageSuggestionSubTitleColor(
-                            context)),
+                      fontSize: UIConfig.searchPageSuggestionSubTitleTextSize,
+                      color: UIConfig.searchPageSuggestionSubTitleColor(context),
+                    ),
                     const TextStyle(
-                        fontSize: UIConfig.searchPageSuggestionSubTitleTextSize,
-                        color: UIConfig.searchPageSuggestionHighlightColor),
+                      fontSize: UIConfig.searchPageSuggestionSubTitleTextSize,
+                      color: UIConfig.searchPageSuggestionHighlightColor,
+                    ),
                   ),
-            leading: Icon(Icons.search,
-                color: UIConfig.searchPageSuggestionTitleColor(context)),
+            leading: Icon(
+              Icons.search,
+              color: UIConfig.searchPageSuggestionTitleColor(context),
+            ),
             dense: true,
             minLeadingWidth: 20,
             visualDensity: const VisualDensity(vertical: -1),
@@ -375,54 +387,53 @@ mixin SearchPageMixin<L extends SearchPageLogicMixin,
   }
 }
 
-RichText highlightRawTag(BuildContext context, TagAutoCompletionMatch match,
-    TextStyle? style, TextStyle? highlightStyle,
-    {bool singleLine = false}) {
+RichText highlightRawTag(
+  BuildContext context,
+  TagAutoCompletionMatch match,
+  TextStyle? style,
+  TextStyle? highlightStyle, {
+  bool singleLine = false,
+}) {
   List<TextSpan> children = <TextSpan>[];
 
   if (match.namespaceMatch == null) {
     children.add(TextSpan(text: match.tagData.namespace, style: style));
   } else {
-    children.addAll(
-      [
-        TextSpan(
-            text: match.tagData.namespace
-                .substring(0, match.namespaceMatch!.start),
-            style: style),
-        TextSpan(
-            text: match.tagData.namespace.substring(
-                match.namespaceMatch!.start, match.namespaceMatch!.end),
-            style: highlightStyle),
-        TextSpan(
-            text: match.tagData.namespace.substring(match.namespaceMatch!.end),
-            style: style),
-      ],
-    );
+    children.addAll([
+      TextSpan(
+        text: match.tagData.namespace.substring(0, match.namespaceMatch!.start),
+        style: style,
+      ),
+      TextSpan(
+        text: match.tagData.namespace.substring(
+          match.namespaceMatch!.start,
+          match.namespaceMatch!.end,
+        ),
+        style: highlightStyle,
+      ),
+      TextSpan(
+        text: match.tagData.namespace.substring(match.namespaceMatch!.end),
+        style: style,
+      ),
+    ]);
   }
 
   bool namespaceTotalMatch = match.namespaceMatch != null &&
       match.namespaceMatch!.start == 0 &&
       match.namespaceMatch!.end == match.tagData.namespace.length;
-  children.add(TextSpan(
-      text: ' : ', style: namespaceTotalMatch ? highlightStyle : style));
+  children.add(TextSpan(text: ' : ', style: namespaceTotalMatch ? highlightStyle : style));
 
   if (match.keyMatch == null) {
     children.add(TextSpan(text: match.tagData.key, style: style));
   } else {
-    children.addAll(
-      [
-        TextSpan(
-            text: match.tagData.key.substring(0, match.keyMatch!.start),
-            style: style),
-        TextSpan(
-            text: match.tagData.key
-                .substring(match.keyMatch!.start, match.keyMatch!.end),
-            style: highlightStyle),
-        TextSpan(
-            text: match.tagData.key.substring(match.keyMatch!.end),
-            style: style),
-      ],
-    );
+    children.addAll([
+      TextSpan(text: match.tagData.key.substring(0, match.keyMatch!.start), style: style),
+      TextSpan(
+        text: match.tagData.key.substring(match.keyMatch!.start, match.keyMatch!.end),
+        style: highlightStyle,
+      ),
+      TextSpan(text: match.tagData.key.substring(match.keyMatch!.end), style: style),
+    ]);
   }
 
   return RichText(
@@ -432,64 +443,69 @@ RichText highlightRawTag(BuildContext context, TagAutoCompletionMatch match,
   );
 }
 
-RichText highlightTranslatedTag(BuildContext context,
-    TagAutoCompletionMatch match, TextStyle? style, TextStyle? highlightStyle,
-    {bool singleLine = false}) {
+RichText highlightTranslatedTag(
+  BuildContext context,
+  TagAutoCompletionMatch match,
+  TextStyle? style,
+  TextStyle? highlightStyle, {
+  bool singleLine = false,
+}) {
   List<TextSpan> children = <TextSpan>[];
-  if (match.tagData.translatedNamespace == null ||
-      match.tagData.tagName == null) {
+  if (match.tagData.translatedNamespace == null || match.tagData.tagName == null) {
     return RichText(text: TextSpan(children: children));
   }
 
   if (match.translatedNamespaceMatch == null) {
-    children
-        .add(TextSpan(text: match.tagData.translatedNamespace, style: style));
+    children.add(TextSpan(text: match.tagData.translatedNamespace, style: style));
   } else {
-    children.addAll(
-      [
-        TextSpan(
-            text: match.tagData.translatedNamespace!
-                .substring(0, match.translatedNamespaceMatch!.start),
-            style: style),
-        TextSpan(
-            text: match.tagData.translatedNamespace!.substring(
-                match.translatedNamespaceMatch!.start,
-                match.translatedNamespaceMatch!.end),
-            style: highlightStyle),
-        TextSpan(
-            text: match.tagData.translatedNamespace!
-                .substring(match.translatedNamespaceMatch!.end),
-            style: style),
-      ],
-    );
+    children.addAll([
+      TextSpan(
+        text: match.tagData.translatedNamespace!.substring(
+          0,
+          match.translatedNamespaceMatch!.start,
+        ),
+        style: style,
+      ),
+      TextSpan(
+        text: match.tagData.translatedNamespace!.substring(
+          match.translatedNamespaceMatch!.start,
+          match.translatedNamespaceMatch!.end,
+        ),
+        style: highlightStyle,
+      ),
+      TextSpan(
+        text: match.tagData.translatedNamespace!.substring(
+          match.translatedNamespaceMatch!.end,
+        ),
+        style: style,
+      ),
+    ]);
   }
 
   bool translatedNamespaceTotalMatch = match.translatedNamespaceMatch != null &&
       match.translatedNamespaceMatch!.start == 0 &&
-      match.translatedNamespaceMatch!.end ==
-          match.tagData.translatedNamespace!.length;
-  children.add(TextSpan(
-      text: ' : ',
-      style: translatedNamespaceTotalMatch ? highlightStyle : style));
+      match.translatedNamespaceMatch!.end == match.tagData.translatedNamespace!.length;
+  children.add(
+    TextSpan(text: ' : ', style: translatedNamespaceTotalMatch ? highlightStyle : style),
+  );
 
   if (match.tagNameMatch == null) {
     children.add(TextSpan(text: match.tagData.tagName!, style: style));
   } else {
-    children.addAll(
-      [
-        TextSpan(
-            text:
-                match.tagData.tagName!.substring(0, match.tagNameMatch!.start),
-            style: style),
-        TextSpan(
-            text: match.tagData.tagName!
-                .substring(match.tagNameMatch!.start, match.tagNameMatch!.end),
-            style: highlightStyle),
-        TextSpan(
-            text: match.tagData.tagName!.substring(match.tagNameMatch!.end),
-            style: style),
-      ],
-    );
+    children.addAll([
+      TextSpan(
+        text: match.tagData.tagName!.substring(0, match.tagNameMatch!.start),
+        style: style,
+      ),
+      TextSpan(
+        text: match.tagData.tagName!.substring(
+          match.tagNameMatch!.start,
+          match.tagNameMatch!.end,
+        ),
+        style: highlightStyle,
+      ),
+      TextSpan(text: match.tagData.tagName!.substring(match.tagNameMatch!.end), style: style),
+    ]);
   }
 
   return RichText(

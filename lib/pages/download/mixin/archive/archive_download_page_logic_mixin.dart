@@ -23,6 +23,7 @@ import 'package:jhentai/setting/super_resolution_setting.dart';
 import 'package:jhentai/utils/process_util.dart';
 import 'package:jhentai/utils/route_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
+import 'package:jhentai/utils/convert_util.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/eh_download_dialog.dart';
 import 'package:jhentai/widget/re_unlock_dialog.dart';
@@ -40,7 +41,8 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
   ArchiveDownloadPageStateMixin get archiveDownloadPageState;
 
   @override
-  MultiSelectDownloadPageStateMixin get multiSelectDownloadPageState => archiveDownloadPageState;
+  MultiSelectDownloadPageStateMixin get multiSelectDownloadPageState =>
+      archiveDownloadPageState;
 
   Future<void> handleChangeArchiveGroup(ArchiveDownloadedData archive) async {
     String oldGroup = archiveDownloadService.archiveDownloadInfos[archive.gid]!.group;
@@ -85,7 +87,9 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
   }
 
   Future<void> handleLongPressGroup(String groupName) {
-    if (archiveDownloadService.archiveDownloadInfos.values.every((a) => a.group != groupName)) {
+    if (archiveDownloadService.archiveDownloadInfos.values.every(
+      (a) => a.group != groupName,
+    )) {
       return handleDeleteGroup(groupName);
     }
     return handleRenameGroup(groupName);
@@ -146,15 +150,22 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
       return;
     }
 
-    if (readSetting.useThirdPartyViewer.isTrue && readSetting.thirdPartyViewerPath.value != null) {
+    if (readSetting.useThirdPartyViewer.isTrue &&
+        readSetting.thirdPartyViewerPath.value != null) {
       openThirdPartyViewer(
-          archiveDownloadService.computeArchiveUnpackingPath(archive.title, archive.gid));
+        archiveDownloadService.computeArchiveUnpackingPath(archive.title, archive.gid),
+      );
     } else {
       String? string = await localConfigService.read(
-          configKey: ConfigEnum.readIndexRecord, subConfigKey: archive.gid.toString());
+        configKey: ConfigEnum.readIndexRecord,
+        subConfigKey: archive.gid.toString(),
+      );
       int readIndexRecord = (string == null ? 0 : (int.tryParse(string) ?? 0));
 
       List<GalleryImage> images = await archiveDownloadService.getUnpackedImages(archive.gid);
+
+      ReadDirection? readDirection =
+          isWebtoonGalleryFromTagString(archive.tags) ? ReadDirection.top2bottomList : null;
 
       toRoute(
         Routes.read,
@@ -170,6 +181,7 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
           images: images,
           useSuperResolution:
               superResolutionService.get(archive.gid, SuperResolutionType.archive) != null,
+          readDirection: readDirection,
         ),
       );
     }
@@ -185,17 +197,24 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
         actions: <CupertinoActionSheetAction>[
           if (superResolutionSetting.modelDirectoryPath.value != null &&
               (superResolutionService.get(archive.gid, SuperResolutionType.archive) == null ||
-                  superResolutionService.get(archive.gid, SuperResolutionType.archive)?.status ==
+                  superResolutionService
+                          .get(archive.gid, SuperResolutionType.archive)
+                          ?.status ==
                       SuperResolutionStatus.paused))
             CupertinoActionSheetAction(
               child: Text('superResolution'.tr),
               onPressed: () async {
                 backRoute();
 
-                if (superResolutionService.get(archive.gid, SuperResolutionType.archive) == null &&
+                if (superResolutionService.get(archive.gid, SuperResolutionType.archive) ==
+                        null &&
                     archive.isOriginal) {
-                  bool? result = await Get.dialog(EHDialog(
-                      title: '${'attention'.tr}!', content: 'superResolveOriginalImageHint'.tr));
+                  bool? result = await Get.dialog(
+                    EHDialog(
+                      title: '${'attention'.tr}!',
+                      content: 'superResolveOriginalImageHint'.tr,
+                    ),
+                  );
                   if (result == false) {
                     return;
                   }
@@ -309,10 +328,7 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
 
   Future<void> handleMultiChangeGroup() async {
     ({String group, bool downloadOriginalImage})? result = await Get.dialog(
-      EHDownloadDialog(
-        title: 'changeGroup'.tr,
-        candidates: archiveDownloadService.allGroups,
-      ),
+      EHDownloadDialog(title: 'changeGroup'.tr, candidates: archiveDownloadService.allGroups),
     );
 
     if (result == null) {
@@ -426,16 +442,14 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
       failed += report.failed;
     }
 
-    _toastMitigationResult(
-      (
-        checked: checked,
-        migrated: migrated,
-        replaced: replaced,
-        keptOriginal: keptOriginal,
-        skipped: skipped,
-        failed: failed,
-      ),
-    );
+    _toastMitigationResult((
+      checked: checked,
+      migrated: migrated,
+      replaced: replaced,
+      keptOriginal: keptOriginal,
+      skipped: skipped,
+      failed: failed,
+    ));
 
     exitSelectMode();
     updateGlobalGalleryStatus();
@@ -443,16 +457,14 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
 
   void _toastMitigationResult(ArchiveMitigationReport report) {
     toast(
-      'mitigateArchiveToDownloadResult'.trParams(
-        {
-          'checked': '${report.checked}',
-          'migrated': '${report.migrated}',
-          'replaced': '${report.replaced}',
-          'kept': '${report.keptOriginal}',
-          'skipped': '${report.skipped}',
-          'failed': '${report.failed}',
-        },
-      ),
+      'mitigateArchiveToDownloadResult'.trParams({
+        'checked': '${report.checked}',
+        'migrated': '${report.migrated}',
+        'replaced': '${report.replaced}',
+        'kept': '${report.keptOriginal}',
+        'skipped': '${report.skipped}',
+        'failed': '${report.failed}',
+      }),
       isCenter: false,
     );
   }

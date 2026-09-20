@@ -76,8 +76,10 @@ abstract class OldBasePageLogic extends BasePageLogic {
       return;
     }
 
-    List<Gallery> gallerys =
-        await super.postHandleNewGallerys(gallerysAndPageInfo[0], cleanDuplicate: false);
+    List<Gallery> gallerys = await super.postHandleNewGallerys(
+      gallerysAndPageInfo[0],
+      cleanDuplicate: false,
+    );
 
     state.gallerys = gallerys;
     state.pageCount = gallerysAndPageInfo[1];

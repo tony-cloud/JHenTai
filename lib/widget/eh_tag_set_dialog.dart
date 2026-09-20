@@ -17,7 +17,11 @@ import 'package:jhentai/utils/snack_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
 class EHTagSetDialog extends StatefulWidget {
-  const EHTagSetDialog({super.key});
+  /// Tag set the tag currently belongs to, if any. Shown as a marker in the list;
+  /// picking it again removes the tag from that set.
+  final int? currentTagSetNo;
+
+  const EHTagSetDialog({super.key, this.currentTagSetNo});
 
   @override
   State<EHTagSetDialog> createState() => _EHTagSetDialogState();
@@ -46,18 +50,28 @@ class _EHTagSetDialogState extends State<EHTagSetDialog> {
         if (_loadingState == LoadingState.error)
           GestureDetector(
             onTap: _getTagSet,
-            child: FaIcon(FontAwesomeIcons.rotateRight,
-                size: 24, color: UIConfig.loadingStateIndicatorButtonColor(context)),
+            child: FaIcon(
+              FontAwesomeIcons.rotateRight,
+              size: 24,
+              color: UIConfig.loadingStateIndicatorButtonColor(context),
+            ),
           ),
         if (_loadingState == LoadingState.success)
           ..._tagSets.map(
             (tagSet) => ListTile(
               title: Text(tagSet.name),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              trailing: tagSet.number == widget.currentTagSetNo
+                  ? Text(
+                      'currentTagSet'.tr,
+                      style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
+                    )
+                  : null,
               onTap: () => backRoute(result: (tagSetNo: tagSet.number, remember: remember)),
             ),
           ),
-        if (_loadingState == LoadingState.success && preferenceSetting.enableDefaultTagSet.isTrue)
+        if (_loadingState == LoadingState.success &&
+            preferenceSetting.enableDefaultTagSet.isTrue)
           ListTile(
             dense: true,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -66,10 +80,13 @@ class _EHTagSetDialogState extends State<EHTagSetDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('asYourDefault'.tr),
-                Checkbox(value: remember, onChanged: (value) => setState(() => remember = value!))
+                Checkbox(
+                  value: remember,
+                  onChanged: (value) => setState(() => remember = value!),
+                ),
               ],
             ),
-          )
+          ),
       ],
     );
   }
@@ -84,7 +101,7 @@ class _EHTagSetDialogState extends State<EHTagSetDialog> {
       bool tagSetEnable,
       Color? tagSetBackgroundColor,
       List<WatchedTag> tags,
-      String apikey
+      String apikey,
     }) pageInfo;
     try {
       pageInfo = await ehRequest.requestMyTagsPage(

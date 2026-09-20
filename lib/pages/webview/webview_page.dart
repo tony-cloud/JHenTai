@@ -62,8 +62,7 @@ class _WebviewPageState extends State<WebviewPage> {
             setStateSafely(() => loadingState = LoadingState.success);
             pageFinishedCallback?.call(url, controller);
           },
-          onWebResourceError: (_) =>
-              setStateSafely(() => loadingState = LoadingState.success),
+          onWebResourceError: (_) => setStateSafely(() => loadingState = LoadingState.success),
         ),
       )
       ..loadRequest(Uri.parse(Get.arguments['url']));
@@ -77,7 +76,7 @@ class _WebviewPageState extends State<WebviewPage> {
         title: LoadingStateIndicator(
           loadingState: loadingState,
           successWidgetBuilder: () => Text(title),
-        ).paddingOnly(right: 40),
+        ),
       ),
       body: WebViewWidget(controller: controller),
     );

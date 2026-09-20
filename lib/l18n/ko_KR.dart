@@ -99,7 +99,7 @@ class ko_KR {
       'qrScanTailAll': 'All',
       'qrBlockAdvancedTool': 'Advanced QR block tool',
       'qrBlockTagLabel': 'Tag or keyword',
-      'qrBlockTagHint': 'Tag to search galleries',
+      'qrBlockTagHint': 'Tag to search gallerys',
       'qrBlockGalleryCount': 'Gallery count',
       'qrBlockTailImageCount': 'Images from the end',
       'qrBlockSortLabel': 'Sort',
@@ -186,6 +186,22 @@ class ko_KR {
       'logout': '로그아웃',
       'passwordLogin': '비밀번호 로그인',
       'cookieLogin': '쿠키 로그인',
+      'passwordTab': '계정',
+      'cookieTab': 'Cookie',
+      'webTab': 'Web',
+      'webTabHint': '아래 버튼을 눌러 브라우저를 실행하세요. 브라우저에서 로그인 완료 시 자동으로 돌아옵니다.',
+      'launchWebLogin': '브라우저 로그인 실행',
+      'onlineVerification': '온라인 검증',
+      'webviewVerification': 'WebView 검증',
+      'skipVerification': '검증 건너뛰기',
+      'assist': '보조',
+      'onlineVerificationHint': 'HTTP 요청으로 검증',
+      'webviewVerificationHint': 'WebView로 검증 (온라인 검증 실패 시 사용)',
+      'skipVerificationHint': '검증 없이 바로 저장',
+      'igneousFieldHint': 'EX 사이트에만 필요, EH 사이트는 비워두세요',
+      'clipboardCookieDetected': '클립보드에서 cookie를 감지해 채웠습니다',
+      'verifyAndLogin': '검증 후 로그인',
+      'recommended': '권장',
       'youHaveLoggedInAs': '환영합니다:   ',
       'cookieIsBlack': '쿠키가 비었습니다',
       'cookieFormatError': '쿠키 형식이 잘못됐습니다.',
@@ -326,6 +342,10 @@ class ko_KR {
       'batchAddTag': '선택한 항목에 태그 추가',
       'parentGallery': 'Parent',
       'blockUploaderLocally': 'Block user locally',
+      'blockTitleLocally': '선택한 제목을 로컬에서 차단',
+      'blockRuleAlreadyExists': '이 규칙은 이미 존재합니다',
+      'blockThisGallery': 'Block this gallery',
+      'blockGallerySuccess': 'Gallery blocked. You can modify it in Preference - Block Rules',
 
       /// detail dialog
       'galleryUrl': '갤러리 주소',
@@ -386,6 +406,10 @@ class ko_KR {
       'accountSetting': '계정 설정',
       'styleSetting': '스타일 설정',
       'advancedSetting': '고급 설정',
+      'refreshRate': 'Refresh Rate',
+      'refreshRateCurrent': 'Current',
+      'refreshRateHint': '즉시 적용됩니다. 시스템 제한으로 적용되지 않을 수 있습니다.',
+      'refreshRateSecurityHint': '문제가 없다면 변경하지 마세요. 문제가 발생하면 앱 데이터를 초기화하세요.',
       'securitySetting': '보안 설정',
       'ehSetting': 'EH 사이트 설정',
       'readSetting': '뷰어 설정',
@@ -426,6 +450,10 @@ class ko_KR {
       'addLocalTags': 'Add Tags',
       'hidden': '숨김',
       'nope': '없음',
+      'status': '상태',
+      'tagSetDefaultColor': '태그 세트 기본 색상',
+      'weight': '가중치',
+      'color': '색상',
       'getTagSetFailed': '태그 목록 불러오기 실패',
       'updateTagSetFailed': '태그 목록 수정 실패',
       'updateTagFailed': '태그 목록 수정 실패',
@@ -492,7 +520,7 @@ class ko_KR {
       'whenScrollDown': 'When Scroll Down',
       'preloadGalleryCover': 'Preload gallery cover',
       'preloadGalleryCoverHint':
-          'Preload the covers of galleries that are not yet displayed on the page',
+          'Preload the covers of gallerys that are not yet displayed on the page',
       'enableSwipeBackGesture': '스와이프 제스처로 뒤로 가기 활성화',
       'enableLeftMenuDrawerGesture': '좌측 서랍 메뉴 제스처로 열기 활성화',
       'enableQuickSearchDrawerGesture': '우측 빠른 검색 메뉴 제스처로 열기 활성화',
@@ -501,7 +529,7 @@ class ko_KR {
       'enableDefaultFavorite': 'Enable Default Favorite',
       'enableDefaultFavoriteHint': 'Long press to re-select',
       'enableDefaultTagSet': 'Enable Default Tag Set',
-      'enableDefaultTagSetHint': 'Long press to re-select',
+      'enableDefaultTagSetHint': 'Add to your default tag set directly',
       'disableDefaultTagSetHint': 'Select manually',
       'launchInFullScreen': 'Launch In Full Screen',
       'launchInFullScreenHint': 'Switch manually by F11',
@@ -631,10 +659,12 @@ class ko_KR {
       'repairMissingImagesResult': '@count개의 이미지를 복구했습니다(이 중 @renamed개는 이름을 변경).',
       'cleanupDuplicatedGallery': '중복 갤러리 정리',
       'cleanupDuplicatedGalleryHint': '길게 눌러 히스토리 체인의 구버전 갤러리를 정리합니다',
-      'cleanupDuplicatedGalleryResult': '@checked개를 검사하여 @deleted개 삭제, @skipped개 건너뜀, @failed개 실패',
+      'cleanupDuplicatedGalleryResult':
+          '@checked개를 검사하여 @deleted개 삭제, @skipped개 건너뜀, @failed개 실패',
       'cleanupDuplicatedGalleryUnavailableInRpcMode': '현재 RPC 백엔드는 이 유지 관리 작업을 지원하지 않습니다',
       'duplicateGalleryReview': 'Review Different-Language Downloads',
-      'duplicateGalleryReviewSettingHint': 'Compare downloads with the same English title before deleting them',
+      'duplicateGalleryReviewSettingHint':
+          'Compare downloads with the same English title before deleting them',
       'duplicateGalleryReviewUnavailableInRpcMode':
           'Update the RPC backend before using duplicate gallery review',
       'duplicateGalleryReviewLoadFailed': 'Unable to load duplicate gallery groups.',
@@ -653,7 +683,8 @@ class ko_KR {
       'duplicateGalleryConfirmTitle': 'Delete selected downloads?',
       'duplicateGalleryConfirmMessage':
           'Delete @delete downloads. @unfavorite of them will also be removed from favorites.',
-      'duplicateGalleryCleanupResult': 'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
+      'duplicateGalleryCleanupResult':
+          'Deleted @deleted, unfavorited @unfavorited, failed @failed.',
       'clearParentGalleryCache': '부모 갤러리 캐시 삭제',
       'clearParentGalleryCacheHint': '길게 눌러 부모 갤러리 관계 캐시를 삭제합니다',
       'clearParentGalleryCacheResult': '부모 갤러리 캐시 @count개를 삭제했습니다.',
@@ -709,11 +740,42 @@ class ko_KR {
       'landscape': 'Landscape',
       'portrait': 'Portrait',
       'readDirection': '읽는 방향',
+      'enableOrientationSpecificReadDirection': '화면 방향별 읽기 방향',
+      'enableOrientationSpecificReadDirectionHint': '세로 및 가로 화면에 대해 서로 다른 읽기 방향을 설정합니다',
+      'autoDetectWebtoon': '웹툰 자동 감지',
+      'autoDetectWebtoonHint': '웹툰 태그가 있는 갤러리에 대해 위에서 아래로 연속 읽기 모드를 자동으로 사용합니다',
+      'portraitReadDirection': '세로 화면 읽기 방향',
+      'landscapeReadDirection': '가로 화면 읽기 방향',
+      'autoSwitchedReadDirection': '읽기 방향 자동 전환됨',
       'notchOptimization': 'Notch Optimization',
       'notchOptimizationHint':
           'Add padding before the first image to avoid the notch and status bar',
       'imageRegionWidthRatio': 'Image Region Width Ratio',
       'gestureRegionWidthRatio': 'Gesture Region Width Ratio',
+      'portraitImageRegionWidthRatio': 'Portrait Image Width Ratio',
+      'landscapeImageRegionWidthRatio': 'Landscape Image Width Ratio',
+      'tapZoneStyle': 'Tap Zone Style',
+      'tapZoneStyleHint': 'Customize the tap zones on the reading page',
+      'tapZonePreset': 'Preset',
+      'tapZonePresetClassic': 'Classic',
+      'tapZonePresetVertical': 'Vertical',
+      'tapZoneRatio': 'Zone Size',
+      'tapZoneAction': 'Tap Zone Action',
+      'tapZoneActionNone': 'None',
+      'tapZoneActionPrevPage': 'Previous Page',
+      'tapZoneActionNextPage': 'Next Page',
+      'tapZoneActionToggleMenu': 'Toggle Menu',
+      'tapZoneActionFlipLeft': '왼쪽으로 넘기기',
+      'tapZoneActionFlipRight': '오른쪽으로 넘기기',
+      'tapZoneLeftColumnRatio': 'Left Column Width',
+      'tapZoneMiddleColumnRatio': 'Middle Column Width',
+      'tapZoneRightColumnRatio': 'Right Column Width',
+      'tapZoneTopRowRatio': 'Top Row Height',
+      'tapZoneMiddleRowRatio': 'Middle Row Height',
+      'tapZoneBottomRowRatio': 'Bottom Row Height',
+      'tapZonePreview': 'Preview',
+      'tapZoneGuideHint':
+          'Tap anywhere to dismiss. Zones can be configured in Settings - Read.',
       'useThirdPartyViewer': '커스텀 뷰어 사용',
       'thirdPartyViewerPath': '커스텀 뷰어 경로(실행 파일)',
       'showThumbnails': '섬네일 보기',
@@ -737,7 +799,6 @@ class ko_KR {
       'enableDoubleTapToScaleUp': '두 번 터치해 확대 사용',
       'enableTapDragToScaleUp': 'Enable Tap Drag to Scale up',
       'enableBottomMenu': 'Enable Bottom Menu',
-      'reverseTurnPageDirection': 'Reverse Page Turning Direction',
       'disableGestureWhenScrolling': 'Disable Gesture When Scrolling',
       'disablePageTurningOnTap': 'Disable Page Turning On Tap',
       'smartScaling': '스마트 크기 조절',
@@ -800,7 +861,8 @@ class ko_KR {
       'waitingIsolate': 'Waiting',
       'downloaded': '다운로드 완료',
       'downloadFailed': '다운로드 실패',
-      'downloadStorageFull': 'Storage is full. Downloads were paused; free some space and resume.',
+      'downloadStorageFull':
+          'Storage is full. Downloads were paused; free some space and resume.',
       'downloadStorageWriteFailed': 'The image could not be stored. This gallery was paused.',
       'unpacking': '압축 푸는 중',
       'completed': '완료',
@@ -1001,7 +1063,11 @@ class ko_KR {
       'checkInFailed': 'Check-in failed',
       'checkInSuccess': 'Check-in success',
       'checkInSuccessHint': 'Got GP: %s, current total GP: %s.',
-      'pauseDownloadByInvalidArchiveBotKey': 'Archive bot settings is invalid, download paused',
+      'pauseDownloadByInvalidArchiveBotKey':
+          'Archive bot settings is invalid, download paused',
+      'archiveBotNotConfigured': '아카이브 봇이 설정되지 않았습니다. 설정으로 이동할까요?',
+      'getBotCostFailed': '봇 비용 조회 실패',
+      'archiveBotShort': 'Bot',
       'chooseArchiveParseSource': 'Change Parse Source',
       'official': 'Official',
       'archiveBot': 'Archive Bot',
@@ -1030,7 +1096,8 @@ class ko_KR {
       'upload2cloud': 'Upload to Cloud',
       'upload2cloudHint': 'Upload your current local configuration',
       'tap2upload': 'Tap to upload',
-      'copyIdentificationCodeSuccess': 'Upload successfully. Identification code has been copied',
+      'copyIdentificationCodeSuccess':
+          'Upload successfully. Identification code has been copied',
       'copyShareCode': 'Copy Share Code',
       'import': 'Import',
       'save2Local': 'Save to Local',
@@ -1064,7 +1131,7 @@ class ko_KR {
       'noBlockingRuleHint': 'Add at least 1 rule',
       'notSameBlockingRuleTargetHint': 'All sub-rules should have the same blocking target',
       'blockingRuleHelp': '''
-Blocking Target: Filter galleries on the list page or filter comments on the details page. All sub-rules under the same rule must have the same blocking target.
+Blocking Target: Filter gallerys on the list page or filter comments on the details page. All sub-rules under the same rule must have the same blocking target.
 Blocking Attribute: Specify the attribute of the target based on which the rule is written to block.
 Blocking Pattern: Use regular expressions for complex scenarios.
 Blocking Expression: Simple strings or regular expressions.
@@ -1072,14 +1139,13 @@ Blocking Expression: Simple strings or regular expressions.
 Note1: Different rules have an OR (||) relationship, while all sub-rules under the same rule have an AND (&&) relationship.
 Note2: When blocking tag, the rule will check each tag in the gallery, the expression should be written for a single tag.
 Note3: When blocking tag, you need specify full tag with namespace if you use '=' rule.
-Note4: You need to use a gallery layout that can display all tags in E-Hentai, such as "Extended," otherwise some galleries may not be filtered correctly.
+Note4: You need to use a gallery layout that can display all tags in E-Hentai, such as "Extended," otherwise some gallerys may not be filtered correctly.
 
-Example 1: Block galleries that have the "yaoi" tag and do not have the "tomgirl" tag————Gallery Tag Contain male:yaoi && Gallery Tag NotContain male:tomgirl
+Example 1: Block gallerys that have the "yaoi" tag and do not have the "tomgirl" tag————Gallery Tag Contain male:yaoi && Gallery Tag NotContain male:tomgirl
 Example 2: Block comments with a score not exceeding 10————Comment Score <= 10
     ''',
 
       /// quick search page
-      'quickSearch': '빠른 검색',
 
       /// dashboard page
       'seeAll': '전부',
@@ -1094,6 +1160,19 @@ Example 2: Block comments with a score not exceeding 10————Comment Score
       /// tagSet dialog
       'chooseTagSet': 'Choose Tag Set',
 
+      /// tag dialog actions
+      'tagActionAccurate': 'Accurate',
+      'tagActionInaccurate': 'Inaccurate',
+      'tagActionFollow': 'Follow Tag',
+      'tagActionHide': 'Hide Tag',
+      'tagActionTagSets': 'Manage Tag Sets',
+      'tagActionVoteUpTooltip': 'Vote that this tag is correct for this gallery',
+      'tagActionVoteDownTooltip': 'Vote that this tag is wrong for this gallery',
+      'tagActionFollowHint': 'Add this tag to a watched tag set',
+      'tagActionHideHint': 'Add this tag to a hidden tag set',
+      'tagActionTagSetsHint': 'Open tag set management',
+      'currentTagSet': 'Current',
+
       /// tag namespace
       'language': '언어',
       'artist': '작가',
@@ -1107,6 +1186,9 @@ Example 2: Block comments with a score not exceeding 10————Comment Score
       'cosplayer': '코스플레이어',
       'reclass': '재분류',
       'temp': '임시',
+      'permissionPermanentlyDenied': '권한이 영구적으로 거부됨',
+      'permissionPermanentlyDeniedHint': '앨범에 저장하려면 권한이 필요합니다. 시스템 설정에서 앱에 전체 액세스 권한을 부여해 주세요',
+      'goToSetting': '설정으로 이동',
       'other': '기타',
     };
   }

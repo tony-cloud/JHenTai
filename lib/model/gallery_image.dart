@@ -1,3 +1,4 @@
+import 'package:jhentai/database/database.dart';
 import 'package:jhentai/service/gallery_download_service.dart';
 
 class GalleryImage {
@@ -28,6 +29,16 @@ class GalleryImage {
     this.path,
     this.downloadStatus = DownloadStatus.none,
   });
+
+  factory GalleryImage.fromImageData(ImageData d) {
+    return GalleryImage(
+      url: d.url,
+      originalImageUrl: d.originalImageUrl,
+      path: d.path,
+      imageHash: d.imageHash.isEmpty ? null : d.imageHash,
+      downloadStatus: DownloadStatus.values[d.downloadStatusIndex],
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {

@@ -22,8 +22,12 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
   static const int pageSize = 100;
 
   @override
-  List<JHLifeCircleBean> get initDependencies =>
-      [storageService, rpcSetting, rpcService, rpcRequest];
+  List<JHLifeCircleBean> get initDependencies => [
+        storageService,
+        rpcSetting,
+        rpcService,
+        rpcRequest,
+      ];
 
   @override
   Future<void> doInitBean() async {}
@@ -84,15 +88,20 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
         return <GalleryHistoryModel>[];
       }
 
-      final int end = (start + pageSize) > histories.length ? histories.length : start + pageSize;
+      final int end =
+          (start + pageSize) > histories.length ? histories.length : start + pageSize;
       return histories
           .sublist(start, end)
-          .map<GalleryHistoryModel>((h) => GalleryHistoryModel.fromJson(jsonDecode(h.jsonBody)))
+          .map<GalleryHistoryModel>(
+            (h) => GalleryHistoryModel.fromJson(jsonDecode(h.jsonBody)),
+          )
           .toList();
     }
 
-    List<GalleryHistoryV2Data> historys =
-        await GalleryHistoryDao.selectByPageIndex(pageIndex, pageSize);
+    List<GalleryHistoryV2Data> historys = await GalleryHistoryDao.selectByPageIndex(
+      pageIndex,
+      pageSize,
+    );
     return historys
         .map<GalleryHistoryModel>((h) => GalleryHistoryModel.fromJson(jsonDecode(h.jsonBody)))
         .toList();
@@ -257,7 +266,9 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
   }
 
   Future<List<GalleryHistoryV2Data>> _readWebHistories() async {
-    final List<dynamic>? rawHistories = storageService.read<List<dynamic>>(_webHistoryStorageKey);
+    final List<dynamic>? rawHistories = storageService.read<List<dynamic>>(
+      _webHistoryStorageKey,
+    );
     if (rawHistories == null) {
       return <GalleryHistoryV2Data>[];
     }
@@ -291,11 +302,13 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
     await storageService.write(
       _webHistoryStorageKey,
       histories
-          .map((history) => {
-                'gid': history.gid,
-                'jsonBody': history.jsonBody,
-                'lastReadTime': history.lastReadTime,
-              })
+          .map(
+            (history) => {
+              'gid': history.gid,
+              'jsonBody': history.jsonBody,
+              'lastReadTime': history.lastReadTime,
+            },
+          )
           .toList(),
     );
   }
@@ -350,7 +363,8 @@ class HistoryService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean
   Future<void> _batchRecordLocal(List<GalleryHistoryV2Data> gallerys) async {
     if (kIsWeb) {
       final Map<int, GalleryHistoryV2Data> merged = {
-        for (final GalleryHistoryV2Data history in await _readWebHistories()) history.gid: history,
+        for (final GalleryHistoryV2Data history in await _readWebHistories())
+          history.gid: history,
       };
       for (final GalleryHistoryV2Data history in gallerys) {
         merged[history.gid] = history;

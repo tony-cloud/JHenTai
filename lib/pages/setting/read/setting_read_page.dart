@@ -1,3 +1,4 @@
+import 'package:jhentai/pages/setting/read/tap_zone/setting_tap_zone_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +35,8 @@ class SettingReadPage extends StatelessWidget {
               if (GetPlatform.isMobile || GetPlatform.isWindows)
                 _buildEnableImmersiveMode().center(),
               _buildKeepScreenAwake().center(),
-              if (readSetting.keepScreenAwakeWhenReading.isTrue) _buildWakelockTimeLimit().center(),
+              if (readSetting.keepScreenAwakeWhenReading.isTrue)
+                _buildWakelockTimeLimit().center(),
               if (GetPlatform.isMobile) _buildEnableCustomReadBrightness().center(),
               if (GetPlatform.isMobile) _buildCustomReadBrightness().center(),
               _buildShowThumbnails().center(),
@@ -58,6 +60,12 @@ class SettingReadPage extends StatelessWidget {
                     .fadeInWidget(const Key('imageMaxKilobytes'))
                     .center(),
               _buildGestureRegionWidthRatio(context).center(),
+              ListTile(
+                      title: Text('tapZoneStyle'.tr),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(builder: (_) => const SettingTapZonePage())))
+                  .center(),
               if (GetPlatform.isDesktop) _buildUseThirdPartyViewer().center(),
               if (GetPlatform.isDesktop) _buildThirdPartyViewerPath().center(),
               if (GetPlatform.isMobile) _buildDeviceDirection().center(),
@@ -342,7 +350,8 @@ class SettingReadPage extends StatelessWidget {
             width: 50,
             child: TextField(
               controller: imageMaxKilobytesController,
-              decoration: const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
+              decoration:
+                  const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
               textAlign: TextAlign.center,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -375,7 +384,8 @@ class SettingReadPage extends StatelessWidget {
         elevation: 4,
         onChanged: (DeviceDirection? newValue) => readSetting.saveDeviceDirection(newValue!),
         items: [
-          DropdownMenuItem(value: DeviceDirection.followSystem, child: Text('followSystem'.tr)),
+          DropdownMenuItem(
+              value: DeviceDirection.followSystem, child: Text('followSystem'.tr)),
           DropdownMenuItem(value: DeviceDirection.landscape, child: Text('landscape'.tr)),
           DropdownMenuItem(value: DeviceDirection.portrait, child: Text('portrait'.tr)),
         ],
@@ -402,7 +412,8 @@ class SettingReadPage extends StatelessWidget {
       title: Text('notchOptimization'.tr),
       subtitle: Text('notchOptimizationHint'.tr),
       trailing: Switch(
-          value: readSetting.notchOptimization.value, onChanged: readSetting.saveNotchOptimization),
+          value: readSetting.notchOptimization.value,
+          onChanged: readSetting.saveNotchOptimization),
     );
   }
 
@@ -417,7 +428,8 @@ class SettingReadPage extends StatelessWidget {
             child: TextField(
               controller: imageRegionWidthRatioController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
+              decoration:
+                  const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
               textAlign: TextAlign.center,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -458,7 +470,8 @@ class SettingReadPage extends StatelessWidget {
             child: TextField(
               controller: gestureRegionWidthRatioController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
+              decoration:
+                  const InputDecoration(isDense: true, labelStyle: TextStyle(fontSize: 12)),
               textAlign: TextAlign.center,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -549,7 +562,8 @@ class SettingReadPage extends StatelessWidget {
               DropdownMenuItem(value: 10, child: Text('10')),
             ],
           ),
-          Text('ScreenHeight'.tr, style: UIConfig.settingPageListTileTrailingTextStyle(context))
+          Text('ScreenHeight'.tr,
+                  style: UIConfig.settingPageListTileTrailingTextStyle(context))
               .marginSymmetric(horizontal: 12),
         ],
       ),
@@ -578,7 +592,8 @@ class SettingReadPage extends StatelessWidget {
               DropdownMenuItem(value: 10, child: Text('10')),
             ],
           ),
-          Text('ScreenHeight'.tr, style: UIConfig.settingPageListTileTrailingTextStyle(context))
+          Text('ScreenHeight'.tr,
+                  style: UIConfig.settingPageListTileTrailingTextStyle(context))
               .marginSymmetric(horizontal: 12),
         ],
       ),

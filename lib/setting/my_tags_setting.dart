@@ -16,17 +16,14 @@ import 'package:jhentai/service/log.dart';
 
 MyTagsSetting myTagsSetting = MyTagsSetting();
 
-class MyTagsSetting
-    with JHLifeCircleBeanErrorCatch
-    implements JHLifeCircleBean {
-  Map<int, ({bool enable, Color? tagSetBackGroundColor, List<WatchedTag> tags})>
-      onlineTags = {};
+class MyTagsSetting with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
+  Map<int, ({bool enable, Color? tagSetBackGroundColor, List<WatchedTag> tags})> onlineTags =
+      {};
 
   static const int defaultTagSetNo = 1;
 
   @override
-  List<JHLifeCircleBean> get initDependencies =>
-      super.initDependencies..add(userSetting);
+  List<JHLifeCircleBean> get initDependencies => super.initDependencies..add(userSetting);
 
   @override
   Future<void> doInitBean() async {
@@ -57,13 +54,14 @@ class MyTagsSetting
       bool tagSetEnable,
       Color? tagSetBackgroundColor,
       List<WatchedTag> tags,
-      String apikey
+      String apikey,
     }) defaultTagSetPageInfo;
     try {
       defaultTagSetPageInfo = await retry(
         () => ehRequest.requestMyTagsPage(
-            tagSetNo: defaultTagSetNo,
-            parser: EHSpiderParser.myTagsPage2TagSetNamesAndTagSetsAndApikey),
+          tagSetNo: defaultTagSetNo,
+          parser: EHSpiderParser.myTagsPage2TagSetNamesAndTagSetsAndApikey,
+        ),
         retryIf: (e) => e is DioException,
         maxAttempts: 3,
       );
@@ -84,7 +82,8 @@ class MyTagsSetting
       tags: defaultTagSetPageInfo.tags,
     );
     log.info(
-        'refresh default tag set success, length: ${onlineTags[defaultTagSetNo]!.tags.length}');
+      'refresh default tag set success, length: ${onlineTags[defaultTagSetNo]!.tags.length}',
+    );
 
     /// fetch all tag sets
     for (({int number, String name}) tagSet in defaultTagSetPageInfo.tagSets) {
@@ -107,13 +106,14 @@ class MyTagsSetting
       bool tagSetEnable,
       Color? tagSetBackgroundColor,
       List<WatchedTag> tags,
-      String apikey
+      String apikey,
     }) pageInfo;
     try {
       pageInfo = await retry(
         () => ehRequest.requestMyTagsPage(
-            tagSetNo: tagSetNo,
-            parser: EHSpiderParser.myTagsPage2TagSetNamesAndTagSetsAndApikey),
+          tagSetNo: tagSetNo,
+          parser: EHSpiderParser.myTagsPage2TagSetNamesAndTagSetsAndApikey,
+        ),
         retryIf: (e) => e is DioException,
         maxAttempts: 3,
       );
@@ -134,40 +134,23 @@ class MyTagsSetting
       tags: pageInfo.tags,
     );
     log.info(
-        'refresh tag set: $tagSetNo success, length: ${onlineTags[tagSetNo]!.tags.length}');
+      'refresh tag set: $tagSetNo success, length: ${onlineTags[tagSetNo]!.tags.length}',
+    );
   }
 
-  ({Color? tagSetBackGroundColor, WatchedTag tag})? getOnlineTagSetByTagData(
-      TagData tagData) {
-    for (({
-      bool enable,
-      Color? tagSetBackGroundColor,
-      List<WatchedTag> tags
-    }) tagSetInfo in onlineTags.values) {
-      WatchedTag? tagSet = tagSetInfo.tags.firstWhereOrNull((tagSet) =>
-          tagSet.tagData.namespace == tagData.namespace &&
-          tagSet.tagData.key == tagData.key);
+  ({Color? tagSetBackGroundColor, WatchedTag tag})? getOnlineTagSetByTagData(TagData tagData) {
+    for (({bool enable, Color? tagSetBackGroundColor, List<WatchedTag> tags}) tagSetInfo
+        in onlineTags.values) {
+      WatchedTag? tagSet = tagSetInfo.tags.firstWhereOrNull(
+        (tagSet) =>
+            tagSet.tagData.namespace == tagData.namespace && tagSet.tagData.key == tagData.key,
+      );
       if (tagSet != null) {
-        return (
-          tagSetBackGroundColor: tagSetInfo.tagSetBackGroundColor,
-          tag: tagSet
-        );
+        return (tagSetBackGroundColor: tagSetInfo.tagSetBackGroundColor, tag: tagSet);
       }
     }
 
     return null;
-  }
-
-  bool containWatchedOnlineTag(TagData tagData) {
-    ({Color? tagSetBackGroundColor, WatchedTag tag})? tagInfo =
-        getOnlineTagSetByTagData(tagData);
-    return tagInfo?.tag.watched == true;
-  }
-
-  bool containHiddenOnlineTag(TagData tagData) {
-    ({Color? tagSetBackGroundColor, WatchedTag tag})? tagInfo =
-        getOnlineTagSetByTagData(tagData);
-    return tagInfo?.tag.hidden == true;
   }
 
   Future<void> _clearOnlineTagSets() async {

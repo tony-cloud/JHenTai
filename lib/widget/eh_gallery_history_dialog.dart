@@ -68,9 +68,7 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
     _searchLimit = advancedSetting.historySearchLimit.value;
     _unlimited = _searchLimit <= 0;
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _startRecursiveSearch(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startRecursiveSearch());
   }
 
   @override
@@ -105,10 +103,7 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
       return;
     }
 
-    await Future.wait(<Future<void>>[
-      _searchAncestors(),
-      _searchDescendants(),
-    ]);
+    await Future.wait(<Future<void>>[_searchAncestors(), _searchDescendants()]);
 
     if (!_running || !mounted) {
       return;
@@ -141,7 +136,8 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
 
     bool canAdd() => _unlimited || addedCount < _searchLimit;
 
-    for (final GalleryHistoryEntry entry in historyChain.entriesAfterGid(currentGid).reversed) {
+    for (final GalleryHistoryEntry entry
+        in historyChain.entriesAfterGid(currentGid).reversed) {
       if (!canAdd()) {
         break;
       }
@@ -316,11 +312,7 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
     }
 
     final GalleryHistoryEntry entry = _parentEntry ??
-        (
-          galleryUrl: widget.parentUrl!,
-          title: 'parentGallery'.tr,
-          updateTime: '',
-        );
+        (galleryUrl: widget.parentUrl!, title: 'parentGallery'.tr, updateTime: '');
 
     return <Widget>[
       _buildTile(
@@ -432,9 +424,7 @@ class _EHGalleryHistoryDialogState extends State<EHGalleryHistoryDialog>
         children: [
           ConstrainedBox(
             constraints: BoxConstraints(maxHeight: maxHeight),
-            child: SingleChildScrollView(
-              child: Column(children: children),
-            ),
+            child: SingleChildScrollView(child: Column(children: children)),
           ),
         ],
       ),
@@ -535,9 +525,7 @@ class _MarqueeTitleState extends State<_MarqueeTitle> {
 
     if (overflow != _isOverflow) {
       _isOverflow = overflow;
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => widget.onOverflowChanged(overflow),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) => widget.onOverflowChanged(overflow));
     }
 
     if (!overflow || _textWidth == null) {

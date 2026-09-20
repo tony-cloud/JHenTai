@@ -133,8 +133,10 @@ abstract class BasePageLogic extends GetxController with Scroll2TopLogicMixin {
       return;
     }
 
-    List<Gallery> gallerys =
-        await postHandleNewGallerys(galleryPage.gallerys, cleanDuplicate: false);
+    List<Gallery> gallerys = await postHandleNewGallerys(
+      galleryPage.gallerys,
+      cleanDuplicate: false,
+    );
 
     state.gallerys = gallerys;
     state.totalCount = galleryPage.totalCount;
@@ -306,8 +308,11 @@ abstract class BasePageLogic extends GetxController with Scroll2TopLogicMixin {
 
     GalleryPageInfo galleryPage;
     try {
-      galleryPage =
-          await getGalleryPage(nextGid: state.nextGid, prevGid: state.prevGid, seek: dateTime);
+      galleryPage = await getGalleryPage(
+        nextGid: state.nextGid,
+        prevGid: state.prevGid,
+        seek: dateTime,
+      );
     } on DioException catch (e) {
       log.error('getGallerysFailed'.tr, e.errorMsg);
       snack('getGallerysFailed'.tr, e.errorMsg ?? '', isShort: true);
@@ -371,8 +376,9 @@ abstract class BasePageLogic extends GetxController with Scroll2TopLogicMixin {
     }
   }
 
-  Future<void> handleTapFilterButton(
-      [EHSearchConfigDialogType searchConfigDialogType = EHSearchConfigDialogType.filter]) async {
+  Future<void> handleTapFilterButton([
+    EHSearchConfigDialogType searchConfigDialogType = EHSearchConfigDialogType.filter,
+  ]) async {
     await state.searchConfigInitCompleter.future;
 
     Map<String, dynamic>? result = await Get.dialog(
@@ -405,7 +411,11 @@ abstract class BasePageLogic extends GetxController with Scroll2TopLogicMixin {
 
   void handleSecondaryTapCard(BuildContext context, Gallery gallery) async {}
 
-  Future<GalleryPageInfo> getGalleryPage({String? prevGid, String? nextGid, DateTime? seek}) async {
+  Future<GalleryPageInfo> getGalleryPage({
+    String? prevGid,
+    String? nextGid,
+    DateTime? seek,
+  }) async {
     log.info('$runtimeType get data, prevGid:$prevGid, nextGid:$nextGid');
 
     await state.searchConfigInitCompleter.future;
@@ -427,8 +437,10 @@ abstract class BasePageLogic extends GetxController with Scroll2TopLogicMixin {
     );
   }
 
-  Future<List<Gallery>> postHandleNewGallerys(List<Gallery> gallerys,
-      {bool cleanDuplicate = true}) async {
+  Future<List<Gallery>> postHandleNewGallerys(
+    List<Gallery> gallerys, {
+    bool cleanDuplicate = true,
+  }) async {
     if (cleanDuplicate) {
       _cleanDuplicateGallery(gallerys);
     }
@@ -448,8 +460,11 @@ abstract class BasePageLogic extends GetxController with Scroll2TopLogicMixin {
 
   /// deal with the first and last page
   void _cleanDuplicateGallery(List<Gallery> newGallerys) {
-    newGallerys.removeWhere((newGallery) =>
-        state.gallerys.firstWhereOrNull((e) => e.galleryUrl == newGallery.galleryUrl) != null);
+    newGallerys.removeWhere(
+      (newGallery) =>
+          state.gallerys.firstWhereOrNull((e) => e.galleryUrl == newGallery.galleryUrl) !=
+          null,
+    );
   }
 
   Future<List<Gallery>> _filterByBlockingRules(List<Gallery> newGallerys) async {
@@ -467,8 +482,10 @@ abstract class BasePageLogic extends GetxController with Scroll2TopLogicMixin {
   }
 
   Future<void> _translateGalleryTagsIfNeeded(List<Gallery> gallerys) async {
-    await Future.wait(gallerys.map((gallery) {
-      return tagTranslationService.translateTagsIfNeeded(gallery.tags);
-    }).toList());
+    await Future.wait(
+      gallerys.map((gallery) {
+        return tagTranslationService.translateTagsIfNeeded(gallery.tags);
+      }).toList(),
+    );
   }
 }

@@ -271,7 +271,8 @@ class DetailsPageLogic extends GetxController
     );
   }
 
-  Future<void> _handleGalleryDeleted(bool refreshPageImmediately, EHSiteException exception) async {
+  Future<void> _handleGalleryDeleted(
+      bool refreshPageImmediately, EHSiteException exception) async {
     log.trace('Gallery deleted: ${state.galleryUrl.url}, try to get metadata');
 
     try {
@@ -367,15 +368,14 @@ class DetailsPageLogic extends GetxController
   }
 
   Future<void> handleTapDownload() async {
-    GalleryDownloadedData? galleryDownloadedData =
-        galleryDownloadService.gallerys.singleWhereOrNull((g) => g.gid == state.galleryUrl.gid);
+    GalleryDownloadedData? galleryDownloadedData = galleryDownloadService.gallerys
+        .singleWhereOrNull((g) => g.gid == state.galleryUrl.gid);
     GalleryDownloadProgress? downloadProgress =
         galleryDownloadService.galleryDownloadInfos[state.galleryUrl.gid]?.downloadProgress;
 
     /// new download
     if (galleryDownloadedData == null || downloadProgress == null) {
-      ({String group, bool downloadOriginalImage})? result =
-          await waitForGetDialogDismissal(
+      ({String group, bool downloadOriginalImage})? result = await waitForGetDialogDismissal(
         Get.dialog(
           EHDownloadDialog(
             title: 'chooseGroup'.tr,
@@ -464,7 +464,8 @@ class DetailsPageLogic extends GetxController
 
       /// need to get current favorite note if we have favorite this gallery and we are not unfavoriting it.
       GalleryNote? galleryNote;
-      if (currentFavIndex != null && currentFavIndex != userSetting.defaultFavoriteIndex.value) {
+      if (currentFavIndex != null &&
+          currentFavIndex != userSetting.defaultFavoriteIndex.value) {
         log.info('Get gallery favorite info: ${state.galleryUrl.gid}');
         try {
           galleryNote = await ehRequest.requestPopupPage<GalleryNote>(
@@ -553,8 +554,8 @@ class DetailsPageLogic extends GetxController
           ..favoriteTagName = favoriteSetting.favoriteTagNames[operation.favIndex];
       }
     } on DioException catch (e) {
-      log.error(
-          operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr, e.errorMsg);
+      log.error(operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr,
+          e.errorMsg);
       snack(operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr,
           e.errorMsg ?? '',
           isShort: true);
@@ -562,17 +563,19 @@ class DetailsPageLogic extends GetxController
       updateSafely([favoriteId]);
       return;
     } on EHSiteException catch (e) {
-      log.error(
-          operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr, e.message);
-      snack(operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr, e.message,
+      log.error(operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr,
+          e.message);
+      snack(operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr,
+          e.message,
           isShort: true);
       state.favoriteState = LoadingState.error;
       updateSafely([favoriteId]);
       return;
     } catch (e, s) {
-      log.error(operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr, e, s);
-      snack(
-          operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr, e.toString(),
+      log.error(
+          operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr, e, s);
+      snack(operation.isDelete ? 'removeFavoriteFailed'.tr : 'favoriteGalleryFailed'.tr,
+          e.toString(),
           isShort: true);
       state.favoriteState = LoadingState.error;
       updateSafely([favoriteId]);
@@ -683,6 +686,8 @@ class DetailsPageLogic extends GetxController
 
       ({bool useBot, bool isOriginal, int size, String group})? result = await Get.dialog(
         EHArchiveDialog(
+          gid: state.galleryDetails!.galleryUrl.gid,
+          token: state.galleryDetails!.galleryUrl.token,
           title: 'chooseArchive'.tr,
           archivePageUrl: state.galleryDetails!.archivePageUrl,
           currentGroup: downloadSetting.defaultArchiveGroup.value,
@@ -714,7 +719,8 @@ class DetailsPageLogic extends GetxController
             ? tagMap2TagString(state.galleryDetails!.tags)
             : tagMap2TagString(state.gallery!.tags),
         tagRefreshTime: DateTime.now().toString(),
-        parseSource: result.useBot ? ArchiveParseSource.bot.code : ArchiveParseSource.official.code,
+        parseSource:
+            result.useBot ? ArchiveParseSource.bot.code : ArchiveParseSource.official.code,
       );
       archiveDownloadService.downloadArchive(archive);
 
@@ -775,8 +781,8 @@ class DetailsPageLogic extends GetxController
       return;
     }
 
-    String? resolution =
-        await Get.dialog(EHDownloadHHDialog(archivePageUrl: state.galleryDetails!.archivePageUrl));
+    String? resolution = await Get.dialog(
+        EHDownloadHHDialog(archivePageUrl: state.galleryDetails!.archivePageUrl));
     if (resolution == null) {
       return;
     }
@@ -829,7 +835,8 @@ class DetailsPageLogic extends GetxController
   }
 
   Future<void> handleTapTorrent() async {
-    Get.dialog(EHGalleryTorrentsDialog(gid: state.galleryUrl.gid, token: state.galleryUrl.token));
+    Get.dialog(
+        EHGalleryTorrentsDialog(gid: state.galleryUrl.gid, token: state.galleryUrl.token));
   }
 
   Future<void> handleTapStatistic() async {
@@ -943,15 +950,15 @@ class DetailsPageLogic extends GetxController
 
       toast('updateGallerySearchingHistory'.tr, isCenter: false);
 
-      final historyResult = await _collectDownloadedGalleriesFromHistory();
+      final historyResult = await _collectDownloadedGallerysFromHistory();
       if (historyResult == null) {
         return;
       }
 
-      GalleryDownloadedData? downloadedGallery = historyResult.downloadedGalleries
+      GalleryDownloadedData? downloadedGallery = historyResult.downloadedGallerys
           .firstWhereOrNull((g) => g.gid != state.galleryDetails!.galleryUrl.gid);
 
-      downloadedGallery ??= historyResult.downloadedGalleries.firstWhereOrNull((_) => true);
+      downloadedGallery ??= historyResult.downloadedGallerys.firstWhereOrNull((_) => true);
 
       if (downloadedGallery == null) {
         toast('updateGalleryHistoryDownloadNotFound'.tr, isCenter: false);
@@ -982,8 +989,8 @@ class DetailsPageLogic extends GetxController
     }
   }
 
-  Future<({GalleryDetail latestDetail, List<GalleryDownloadedData> downloadedGalleries})?>
-      _collectDownloadedGalleriesFromHistory() async {
+  Future<({GalleryDetail latestDetail, List<GalleryDownloadedData> downloadedGallerys})?>
+      _collectDownloadedGallerysFromHistory() async {
     final GalleryHistoryChain? historyChain =
         await galleryHistoryLineageService.getHistoryChainFromFirstGallery(
       baseDetail: state.galleryDetails!,
@@ -992,7 +999,8 @@ class DetailsPageLogic extends GetxController
     );
 
     if (historyChain != null) {
-      final GalleryDetail? latestDetail = await _resolveLatestDetailFromHistoryChain(historyChain);
+      final GalleryDetail? latestDetail =
+          await _resolveLatestDetailFromHistoryChain(historyChain);
       if (latestDetail == null) {
         return null;
       }
@@ -1002,7 +1010,7 @@ class DetailsPageLogic extends GetxController
 
       return (
         latestDetail: latestDetail,
-        downloadedGalleries: downloadedGallery == null
+        downloadedGallerys: downloadedGallery == null
             ? <GalleryDownloadedData>[]
             : <GalleryDownloadedData>[downloadedGallery],
       );
@@ -1017,13 +1025,13 @@ class DetailsPageLogic extends GetxController
     }
 
     GalleryDetail currentDetail = latestDetail;
-    List<GalleryDownloadedData> downloadedGalleries = [];
+    List<GalleryDownloadedData> downloadedGallerys = [];
 
     while (true) {
       GalleryDownloadedData? downloadedGallery = galleryDownloadService.gallerys
           .firstWhereOrNull((g) => g.gid == currentDetail.galleryUrl.gid);
       if (downloadedGallery != null) {
-        downloadedGalleries.add(downloadedGallery);
+        downloadedGallerys.add(downloadedGallery);
         break;
       }
 
@@ -1044,7 +1052,7 @@ class DetailsPageLogic extends GetxController
       currentDetail = parentDetail;
     }
 
-    return (latestDetail: latestDetail, downloadedGalleries: downloadedGalleries);
+    return (latestDetail: latestDetail, downloadedGallerys: downloadedGallerys);
   }
 
   Future<GalleryDetail?> _resolveLatestDetailFromHistoryChain(
@@ -1212,10 +1220,12 @@ class DetailsPageLogic extends GetxController
   void showTagDialog(GalleryTag tag) {
     Get.dialog(EHTagDialog(
       tagData: tag.tagData,
+      voteStatus: tag.voteStatus,
       gid: state.galleryDetails!.galleryUrl.gid,
       token: state.galleryDetails!.galleryUrl.token,
       apikey: state.apikey!,
-      onTagVoted: (bool isVoted) => onTagVoted(tag, isVoted),
+      onTagVoted: (bool isVoted, bool isCancel) =>
+          onTagVoted(tag, isCancel ? !isVoted : isVoted),
     ));
   }
 
@@ -1364,8 +1374,8 @@ class DetailsPageLogic extends GetxController
     if (!galleryDownloadService.usesRemoteRpcData &&
         readSetting.useThirdPartyViewer.isTrue &&
         readSetting.thirdPartyViewerPath.value != null) {
-      openThirdPartyViewer(
-          galleryDownloadService.computeGalleryDownloadAbsolutePath(gallery.title, gallery.gid));
+      openThirdPartyViewer(galleryDownloadService.computeGalleryDownloadAbsolutePath(
+          gallery.title, gallery.gid));
       return;
     }
 
@@ -1386,7 +1396,8 @@ class DetailsPageLogic extends GetxController
         pageCount: gallery.pageCount,
         images: images,
         useSuperResolution:
-            superResolutionService.get(state.galleryUrl.gid, SuperResolutionType.gallery) != null,
+            superResolutionService.get(state.galleryUrl.gid, SuperResolutionType.gallery) !=
+                null,
       ),
     )
         ?.whenComplete(() => Future.delayed(const Duration(milliseconds: 800)))
@@ -1421,8 +1432,9 @@ class DetailsPageLogic extends GetxController
     } else {
       /// fallback to EX site only if user has logged in
       firstLink = userSetting.hasLoggedIn() ? state.galleryUrl : null;
-      secondLink =
-          userSetting.hasLoggedIn() ? state.galleryUrl.copyWith(isEH: false) : state.galleryUrl;
+      secondLink = userSetting.hasLoggedIn()
+          ? state.galleryUrl.copyWith(isEH: false)
+          : state.galleryUrl;
     }
 
     /// if we can't find gallery via firstLink, try second link

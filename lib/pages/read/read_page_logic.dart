@@ -1,3 +1,4 @@
+import 'package:jhentai/model/tap_zone_config.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -60,13 +61,14 @@ class ReadPageLogic extends GetxController {
 
   ReadPageState state = ReadPageState();
 
-  BaseLayoutLogic get layoutLogic => readSetting.readDirection.value == ReadDirection.top2bottomList
-      ? Get.find<VerticalListLayoutLogic>()
-      : readSetting.isInListReadDirection
-          ? Get.find<HorizontalListLayoutLogic>()
-          : readSetting.isInDoubleColumnReadDirection
-              ? Get.find<HorizontalDoubleColumnLayoutLogic>()
-              : Get.find<HorizontalPageLayoutLogic>();
+  BaseLayoutLogic get layoutLogic =>
+      readSetting.readDirection.value == ReadDirection.top2bottomList
+          ? Get.find<VerticalListLayoutLogic>()
+          : readSetting.isInListReadDirection
+              ? Get.find<HorizontalListLayoutLogic>()
+              : readSetting.isInDoubleColumnReadDirection
+                  ? Get.find<HorizontalDoubleColumnLayoutLogic>()
+                  : Get.find<HorizontalPageLayoutLogic>();
 
   late Timer refreshCurrentTimeAndBatteryLevelTimer;
   late Timer flushReadProgressTimer;
@@ -278,7 +280,8 @@ class ReadPageLogic extends GetxController {
   }
 
   Future<void> parseImageHref(int index) async {
-    log.trace('Begin to load Thumbnail $index with page size: ${state.thumbnailsCountPerPage}');
+    log.trace(
+        'Begin to load Thumbnail $index with page size: ${state.thumbnailsCountPerPage}');
 
     int requestPageIndex = index ~/ state.thumbnailsCountPerPage;
 
@@ -350,8 +353,8 @@ class ReadPageLogic extends GetxController {
         () => requestImage(index, reParse, reloadKey),
         maxAttempts: 3,
         retryIf: (e) => e is DioException,
-        onRetry: (e) => log.error(
-            'Parse gallery image failed, index: ${index.toString()}', (e as DioException).errorMsg),
+        onRetry: (e) => log.error('Parse gallery image failed, index: ${index.toString()}',
+            (e as DioException).errorMsg),
       );
     } on DioException catch (_) {
       state.parseImageUrlStates[index] = LoadingState.error;
@@ -498,6 +501,32 @@ class ReadPageLogic extends GetxController {
     state.autoMode = false;
     update([autoModeId]);
     layoutLogic.closeAutoMode();
+  }
+
+  void handleTapZone(TapZoneAction action) {
+    if (!inited || state.isScrolling) {
+      return;
+    }
+    if (action == TapZoneAction.toggleMenu) {
+      tapCenterRegion();
+      return;
+    }
+    if (readSetting.disablePageTurningOnTap.isTrue) {
+      return;
+    }
+    switch (action) {
+      case TapZoneAction.none:
+      case TapZoneAction.toggleMenu:
+        break;
+      case TapZoneAction.flipLeft:
+        tapLeftRegion();
+      case TapZoneAction.flipRight:
+        tapRightRegion();
+      case TapZoneAction.prevPage:
+        toPrev();
+      case TapZoneAction.nextPage:
+        toNext();
+    }
   }
 
   void tapLeftRegion() {
@@ -688,7 +717,8 @@ class ReadPageLogic extends GetxController {
   }
 
   bool shouldKeepLocalMemoryCache(int index) {
-    return state.readPageInfo.mode == ReadMode.local && _localImageMemoryTargets.contains(index);
+    return state.readPageInfo.mode == ReadMode.local &&
+        _localImageMemoryTargets.contains(index);
   }
 
   void _scheduleLocalMemoryCache(int centerIndex) {
@@ -716,7 +746,8 @@ class ReadPageLogic extends GetxController {
   }
 
   Future<void> _updateLocalMemoryCache(Set<int> target) async {
-    List<int> toRemove = _localImageMemoryCache.keys.where((key) => !target.contains(key)).toList();
+    List<int> toRemove =
+        _localImageMemoryCache.keys.where((key) => !target.contains(key)).toList();
     for (int index in toRemove) {
       _localImageMemoryCache.remove(index);
     }
@@ -732,7 +763,8 @@ class ReadPageLogic extends GetxController {
       }
 
       String filePath =
-          GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(image!.path!);
+          GalleryDownloadService.computeImageDownloadAbsolutePathFromRelativePath(
+              image!.path!);
       try {
         _localImageMemoryCache[index] = await File(filePath).readAsBytes();
       } on FileSystemException catch (e, stack) {
