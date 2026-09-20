@@ -33,6 +33,7 @@ class MainIsolateManager {
   ValueCallback<JDownloadException>? _onError;
 
   Completer<void>? _closeCompleter;
+  bool _closing = false;
 
   MainIsolateManager({
     ProxyConfig? proxyConfig,
@@ -47,6 +48,7 @@ class MainIsolateManager {
       return;
     }
 
+    _closing = false;
     _mainReceivePort = ReceivePort();
 
     try {
@@ -59,6 +61,10 @@ class MainIsolateManager {
     _isolate!.addOnExitListener(_mainReceivePort!.sendPort);
 
     _mainReceivePort!.listen((message) {
+      if (message == null && !_closing) {
+        _onError?.call(JDownloadException(JDownloadExceptionType.downloadFailed,
+            error: StateError('Download worker exited unexpectedly')));
+      }
       message ??= SubIsolateMessage<Null>(SubIsolateMessageType.closed, null);
 
       if (message.type != SubIsolateMessageType.log) {
@@ -112,7 +118,9 @@ class MainIsolateManager {
           _subSendPort = null;
           _ready = false;
           _free = true;
-          _closeCompleter?.complete();
+          if (_closeCompleter?.isCompleted == false) {
+            _closeCompleter!.complete();
+          }
           _closeCompleter = null;
           break;
         case SubIsolateMessageType.log:
@@ -131,8 +139,8 @@ class MainIsolateManager {
     });
   }
 
-  void beginDownload(
-      String url, String downloadPath, ({int start, int end}) downloadRange, int fileWriteOffset) {
+  void beginDownload(String url, String downloadPath, ({int start, int end}) downloadRange,
+      int fileWriteOffset) {
     assert(_isolate != null && _mainReceivePort != null && _subSendPort != null && _ready);
 
     if (!_free) {
@@ -154,13 +162,22 @@ class MainIsolateManager {
   }
 
   Future<void> killIsolate() async {
-    if (_isolate == null || _mainReceivePort == null || !_ready || free) {
+    if (_isolate == null || _mainReceivePort == null) {
       return;
     }
-
-    _closeCompleter ??= Completer();
-    _subSendPort!.send(MainIsolateMessage(MainIsolateMessageType.close, null));
-    return _closeCompleter!.future;
+    if (_closing) {
+      return _closeCompleter?.future;
+    }
+    _closing = true;
+    _closeCompleter = Completer<void>();
+    final Future<void> closed = _closeCompleter!.future;
+    if (_subSendPort == null) {
+      _isolate!.kill(priority: Isolate.immediate);
+    } else {
+      // Idle and failed workers still own ports and HTTP clients.
+      _subSendPort!.send(MainIsolateMessage(MainIsolateMessageType.close, null));
+    }
+    await closed;
   }
 
   void registerOnReady(VoidCallback onReady) {

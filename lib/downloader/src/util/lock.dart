@@ -2,43 +2,23 @@ import 'dart:async';
 
 import 'package:jhentai/downloader/src/file/file_manager.dart';
 
+/// Serializes operations and drains every accepted operation before disposal.
 class Lock {
-  late StreamController<({AsyncValueCallback func, Completer completer})> _sc;
-  late StreamSubscription<({AsyncValueCallback func, Completer completer})> _ss;
+  Future<void> _tail = Future<void>.value();
+  bool _disposed = false;
 
-  Future? _currentOperation;
-
-  Lock() {
-    _sc = StreamController<({AsyncValueCallback func, Completer completer})>();
-
-    _ss = _sc.stream.listen((item) async {
-      _ss.pause();
-      try {
-        _currentOperation = item.func.call();
-        item.completer.complete(await _currentOperation);
-        _currentOperation = null;
-      } catch (e) {
-        _currentOperation = null;
-        item.completer.completeError(e);
-      } finally {
-        _ss.resume();
-      }
-    });
-  }
-
-  Future<T> lock<T>(AsyncValueCallback<T> operation) async {
-    if (_sc.isClosed) {
-      throw StateError('Lock is disposed');
+  Future<T> lock<T>(AsyncValueCallback<T> operation) {
+    if (_disposed) {
+      return Future<T>.error(StateError('Lock is disposed'));
     }
-
-    Completer<T> completer = Completer<T>();
-    _sc.add((func: operation, completer: completer));
-    return completer.future;
+    final Future<T> result = _tail.then((_) => operation());
+    // One failed operation must not poison subsequent cleanup operations.
+    _tail = result.then<void>((_) {}, onError: (Object error, StackTrace stack) {});
+    return result;
   }
 
-  Future<void> dispose() async {
-    await _ss.cancel();
-    await _sc.close();
-    await _currentOperation;
+  Future<void> dispose() {
+    _disposed = true;
+    return _tail;
   }
 }

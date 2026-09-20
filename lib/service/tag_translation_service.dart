@@ -1,6 +1,6 @@
 import 'dart:io' as io;
 import 'dart:collection';
-import 'dart:convert';
+import 'package:jhentai/utils/tag_translation_source.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/database/dao/tag_count_dao.dart';
@@ -39,8 +39,7 @@ typedef TagAutoCompletionMatch = ({
 TagTranslationService tagTranslationService = TagTranslationService();
 
 class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
-  final String downloadUrl =
-      'https://fastly.jsdelivr.net/gh/EhTagTranslation/DatabaseReleases/db.html.json';
+  final String downloadUrl = TagTranslationSource.fallbackUrls.first;
   late final String savePath;
 
   Rx<LoadingState> loadingState = LoadingState.idle.obs;
@@ -52,14 +51,16 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
       (loadingState.value == LoadingState.success || timeStamp.value != null);
 
   @override
-  List<JHLifeCircleBean> get initDependencies => super.initDependencies..add(localConfigService);
+  List<JHLifeCircleBean> get initDependencies =>
+      super.initDependencies..add(localConfigService);
 
   @override
   Future<void> doInitBean() async {
     savePath = join(pathService.getVisibleDir().path, 'tag_translation.json');
 
     localConfigService.read(configKey: ConfigEnum.tagTranslationServiceLoadingState).then(
-        (value) => loadingState.value = LoadingState.values[value != null ? int.parse(value) : 0]);
+        (value) =>
+            loadingState.value = LoadingState.values[value != null ? int.parse(value) : 0]);
 
     localConfigService
         .read(configKey: ConfigEnum.tagTranslationServiceTimestamp)
@@ -86,113 +87,68 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
     loadingState.value = LoadingState.loading;
     downloadProgress.value = '0 MB';
 
-    /// download translation metadata
     try {
-      await retry(
-        () async {
-          if (rpcSetting.enableRpcMode.isTrue) {
-            final Map<String, dynamic> result = await rpcRequest.requestSystemFetchUrl(
-              url: downloadUrl,
-              expectBinary: true,
-            );
-            final List<int> bytes = _parseRpcBinary(result['data']);
-            if (bytes.isEmpty) {
-              throw Exception('RPC returned empty translation payload');
-            }
-            await io.File(savePath).writeAsBytes(bytes, flush: true);
-            downloadProgress.value = '${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB';
-            return;
-          }
-
-          await ehRequest.download(
-            url: downloadUrl,
-            path: savePath,
-            receiveTimeout: 10 * 60 * 1000,
-            onReceiveProgress: (count, total) =>
-                downloadProgress.value = '${(count / 1024 / 1024).toStringAsFixed(2)} MB',
-          );
-        },
-        maxAttempts: 5,
-        onRetry: (error) => log.warning('Download tag translation data failed, retry.'),
+      final TranslationDatabase database = await retry(
+        () => TagTranslationSource.fetch(_fetchTranslationBytes),
+        maxAttempts: 3,
+        onRetry: (error) => log.warning('Download tag translation data failed, retry.', error),
       );
-    } on Exception catch (e) {
-      log.error('Download tag translation data failed after 5 times', e.toString());
+      if (database.timestamp != timeStamp.value) {
+        await appDb.transaction(() async {
+          await TagDao.deleteAllTags();
+          for (final TranslationTag tag in database.tags) {
+            await TagDao.insertTag(TagData(
+              namespace: tag.namespace,
+              key: tag.key,
+              translatedNamespace:
+                  EHNamespace.findNameSpaceFromDescOrAbbr(tag.namespace)?.chineseDesc,
+              tagName: tag.name,
+              fullTagName: tag.fullName,
+              intro: tag.intro,
+              links: tag.links,
+            ));
+          }
+        });
+        timeStamp.value = database.timestamp;
+        await localConfigService.write(
+            configKey: ConfigEnum.tagTranslationServiceTimestamp, value: database.timestamp);
+      }
+      loadingState.value = LoadingState.success;
+      log.info('Tag translation database ready, timestamp: $timeStamp');
+    } catch (error, stack) {
+      // A malformed release must not leave the updater stuck in loading or
+      // discard the previously usable database/timestamp.
+      log.error('Update tag translation data failed', error, stack);
       loadingState.value = LoadingState.error;
+    } finally {
       await localConfigService.write(
           configKey: ConfigEnum.tagTranslationServiceLoadingState,
           value: loadingState.value.index.toString());
-      return;
-    }
-
-    log.info('Tag translation data downloaded');
-
-    /// format
-    String json = io.File(savePath).readAsStringSync();
-    Map dataMap = jsonDecode(json);
-    Map head = dataMap['head'] as Map;
-    Map committer = head['committer'] as Map;
-    String newTimeStamp = committer['when'] as String;
-    List dataList = dataMap['data'] as List;
-
-    if (newTimeStamp == timeStamp.value) {
-      log.info('Tag translation data is up to date, timestamp: $timeStamp');
-      loadingState.value = LoadingState.success;
-      io.File(savePath).delete();
-      return;
-    }
-
-    List<TagData> tagList = [];
-    for (final data in dataList) {
-      String namespace = data['namespace'];
-      Map tags = data['data'] as Map;
-      tags.forEach((key, value) {
-        String addKey = key as String;
-        String tagName = RegExp(r'.*>(.+)<.*').firstMatch((value['name']))!.group(1)!;
-        String fullTagName = value['name'];
-        String intro = value['intro'];
-        String links = value['links'];
-        tagList.add(TagData(
-          namespace: namespace,
-          key: addKey,
-          translatedNamespace: EHNamespace.findNameSpaceFromDescOrAbbr(namespace)?.chineseDesc,
-          tagName: tagName,
-          fullTagName: fullTagName,
-          intro: intro,
-          links: links,
-        ));
-      });
-    }
-
-    /// save
-    timeStamp.value = null;
-    await appDb.transaction(() async {
-      await TagDao.deleteAllTags();
-      for (TagData tag in tagList) {
-        await TagDao.insertTag(
-          TagData(
-            namespace: tag.namespace,
-            key: tag.key,
-            translatedNamespace: tag.translatedNamespace,
-            tagName: tag.tagName,
-            fullTagName: tag.fullTagName,
-            intro: tag.intro,
-            links: tag.links,
-          ),
-        );
+      final io.File file = io.File(savePath);
+      if (await file.exists()) {
+        await file.delete();
       }
-    });
+    }
+  }
 
-    timeStamp.value = newTimeStamp;
-    loadingState.value = LoadingState.success;
-
-    await localConfigService.write(
-        configKey: ConfigEnum.tagTranslationServiceLoadingState,
-        value: loadingState.value.index.toString());
-    await localConfigService.write(
-        configKey: ConfigEnum.tagTranslationServiceTimestamp, value: newTimeStamp);
-
-    io.File(savePath).delete();
-    log.info('Update tag translation database success, timestamp: $timeStamp');
+  Future<List<int>> _fetchTranslationBytes(String url) async {
+    if (rpcSetting.enableRpcMode.isTrue) {
+      final Map<String, dynamic> result = await rpcRequest.requestSystemFetchUrl(
+        url: url,
+        expectBinary: true,
+      );
+      final List<int> bytes = _parseRpcBinary(result['data']);
+      downloadProgress.value = '${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB';
+      return bytes;
+    }
+    await ehRequest.download(
+      url: url,
+      path: savePath,
+      receiveTimeout: 10 * 60 * 1000,
+      onReceiveProgress: (count, total) =>
+          downloadProgress.value = '${(count / 1024 / 1024).toStringAsFixed(2)} MB',
+    );
+    return io.File(savePath).readAsBytes();
   }
 
   List<int> _parseRpcBinary(dynamic data) {
@@ -310,10 +266,17 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
     return limit == null ? results : results.take(limit).toList();
   }
 
-  Future<List<TagAutoCompletionMatch>> _markTagDatasByFrequency(String searchText, int matchStart,
-      int matchEnd, String? sNamespace, String sKey, List<TagData> tagDatas) async {
-    List<String> namespaceWithKeys = tagDatas.map((tag) => '${tag.namespace}:${tag.key}').toList();
-    List<TagCountData> tagCountDatas = await TagCountDao.batchSelectTagCount(namespaceWithKeys);
+  Future<List<TagAutoCompletionMatch>> _markTagDatasByFrequency(
+      String searchText,
+      int matchStart,
+      int matchEnd,
+      String? sNamespace,
+      String sKey,
+      List<TagData> tagDatas) async {
+    List<String> namespaceWithKeys =
+        tagDatas.map((tag) => '${tag.namespace}:${tag.key}').toList();
+    List<TagCountData> tagCountDatas =
+        await TagCountDao.batchSelectTagCount(namespaceWithKeys);
 
     Map<TagData, int> tagCountMap = tagDatas.fold({}, (Map<TagData, int> map, tag) {
       map[tag] = tagCountDatas
@@ -371,14 +334,16 @@ class TagTranslationService with JHLifeCircleBeanErrorCatch implements JHLifeCir
     String? operator = firstChar == '-' || firstChar == '~' ? firstChar : null;
 
     return tagDatas.map((tagData) {
-      final EHNamespace? namespaceEnum = EHNamespace.findNameSpaceFromDescOrAbbr(tagData.namespace);
+      final EHNamespace? namespaceEnum =
+          EHNamespace.findNameSpaceFromDescOrAbbr(tagData.namespace);
       final double namespaceScore = namespaceScoreMap[namespaceEnum ?? EHNamespace.other] ?? 0;
 
       double score = 0;
 
       int keyIndex = tagData.key.indexOf(sKey.toLowerCase());
       if (keyIndex != -1) {
-        score += namespaceScore * (sKey.length + 1) / tagData.key.length * (keyIndex == 0 ? 2 : 1);
+        score +=
+            namespaceScore * (sKey.length + 1) / tagData.key.length * (keyIndex == 0 ? 2 : 1);
       }
 
       int tagNameIndex = tagData.tagName?.indexOf(sKey) ?? -1;

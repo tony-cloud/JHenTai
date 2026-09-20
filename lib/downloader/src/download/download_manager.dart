@@ -8,6 +8,7 @@ import 'package:dio/io.dart';
 import 'package:retry/retry.dart';
 
 import 'package:jhentai/downloader/j_downloader.dart';
+import 'package:jhentai/downloader/src/download/content_length_retry_policy.dart';
 import 'package:jhentai/downloader/src/extension/file_extension.dart';
 import 'package:jhentai/downloader/src/file/file_manager.dart';
 import 'package:jhentai/downloader/src/function/function.dart';
@@ -32,7 +33,11 @@ class DownloadManager {
 
   late int _isolateCount;
 
-  late final Dio _dio;
+  late Dio _dio;
+  final ContentLengthRetryPolicy contentLengthRetryPolicy;
+  CancelToken? _startupCancelToken;
+  Future<void>? _stoppingIsolates;
+  Future<void>? _completingFile;
 
   late final int totalBytes;
 
@@ -70,12 +75,18 @@ class DownloadManager {
     required int isolateCount,
     required Duration connectionTimeout,
     required Duration receiveTimeout,
+    this.contentLengthRetryPolicy = const ContentLengthRetryPolicy(),
     this.lookup,
     this.enableDoh = false,
     this.dohEndpoint,
   }) : _isolateCount = isolateCount {
-    _dio = Dio(BaseOptions(connectTimeout: connectionTimeout, receiveTimeout: receiveTimeout));
-    final IOHttpClientAdapter adapter = _dio.httpClientAdapter as IOHttpClientAdapter;
+    _dio = _createDio(connectionTimeout, receiveTimeout);
+  }
+
+  Dio _createDio(Duration? connectionTimeout, Duration? receiveTimeout) {
+    final Dio dio =
+        Dio(BaseOptions(connectTimeout: connectionTimeout, receiveTimeout: receiveTimeout));
+    final IOHttpClientAdapter adapter = dio.httpClientAdapter as IOHttpClientAdapter;
     adapter.createHttpClient = () {
       final SocksProxyConfiguration? socksConfig = _buildSocksConfig(proxyConfig);
       final HttpClient client = createProxyHttpClient(
@@ -92,6 +103,13 @@ class DownloadManager {
       }
       return client;
     };
+    return dio;
+  }
+
+  void _resetHeadClient() {
+    final BaseOptions options = _dio.options;
+    _dio.close(force: true);
+    _dio = _createDio(options.connectTimeout, options.receiveTimeout);
   }
 
   void tryRecoverFromMetadata(bool deleteWhenUrlMismatch) {
@@ -125,39 +143,57 @@ class DownloadManager {
   }
 
   Future<void> start() {
+    final CancelToken cancelToken = CancelToken();
+    _startupCancelToken = cancelToken;
     return _statusChangeLock.lock(() async {
-      await _initTrunks();
-
-      await _preCreateDownloadFile();
-
-      await _startIsolates();
-
-      await _tryHandleTrunks();
+      try {
+        _completingFile = null;
+        await _initTrunks(cancelToken);
+        if (cancelToken.isCancelled) {
+          throw cancelToken.cancelError!;
+        }
+        await _preCreateDownloadFile();
+        if (cancelToken.isCancelled) {
+          throw cancelToken.cancelError!;
+        }
+        await _startIsolates();
+        if (cancelToken.isCancelled) {
+          throw cancelToken.cancelError!;
+        }
+        await _tryHandleTrunks();
+      } catch (_) {
+        await _killIsolates();
+        _resetHeadClient();
+        rethrow;
+      }
     });
   }
 
   Future<void> pause() {
-    return _statusChangeLock.lock(_killIsolates);
-  }
-
-  Future<void> dispose() async {
+    _startupCancelToken?.cancel();
     return _statusChangeLock.lock(() async {
       await _killIsolates();
-
+      await _completingFile;
+      _completingFile = null;
+      _resetHeadClient();
       if (_fileReady) {
         await _fileManager.close();
         _fileReady = false;
       }
+    });
+  }
 
+  Future<void> dispose() async {
+    await pause();
+    return _statusChangeLock.lock(() async {
+      _dio.close(force: true);
       File downloadFile = File(downloadPath);
       if (await downloadFile.exists()) {
         await downloadFile.delete();
       }
-
       _chunks.clear();
       _chunksBusy.clear();
       _chunksReady = false;
-
       unRegisterOnProgress();
       unRegisterOnDone();
       unRegisterOnError();
@@ -213,7 +249,8 @@ class DownloadManager {
           if (_chunks[i].downloadedBytes != 0) {
             newChunks.add(
               DownloadTrunk(
-                  size: _chunks[i].downloadedBytes, downloadedBytes: _chunks[i].downloadedBytes),
+                  size: _chunks[i].downloadedBytes,
+                  downloadedBytes: _chunks[i].downloadedBytes),
             );
           }
           if (_chunks[i].downloadedBytes != _chunks[i].size) {
@@ -242,8 +279,10 @@ class DownloadManager {
 
           newChunks[largestUnCompletedChunkIndex] =
               DownloadTrunk(size: largestUnCompletedChunkSize ~/ 2);
-          newChunks.insert(largestUnCompletedChunkIndex + 1,
-              DownloadTrunk(size: largestUnCompletedChunkSize - largestUnCompletedChunkSize ~/ 2));
+          newChunks.insert(
+              largestUnCompletedChunkIndex + 1,
+              DownloadTrunk(
+                  size: largestUnCompletedChunkSize - largestUnCompletedChunkSize ~/ 2));
         }
 
         _chunks = newChunks;
@@ -255,7 +294,7 @@ class DownloadManager {
       }
     });
 
-    if (wasRunning) {
+    if (wasRunning && _startupCancelToken?.isCancelled == false && _completingFile == null) {
       return start();
     }
   }
@@ -292,41 +331,64 @@ class DownloadManager {
     _onError = null;
   }
 
-  Future<void> _initTrunks() async {
+  Future<void> _initTrunks(CancelToken cancelToken) async {
     if (_chunksReady) {
       return;
     }
 
-    Response response;
-
-    try {
-      response = await retry(
-        () => _dio.head(url),
-        maxAttempts: 3,
-        retryIf: (e) =>
-            e is DioException &&
-            (e.type == DioExceptionType.connectionTimeout ||
-                e.type == DioExceptionType.sendTimeout ||
-                e.type == DioExceptionType.receiveTimeout),
-      );
-    } on DioException catch (e) {
-      throw JDownloadException(JDownloadExceptionType.fetchContentLengthFailed, error: e);
+    int? contentLength;
+    for (int attempt = 1; attempt <= contentLengthRetryPolicy.maxAttempts; attempt++) {
+      if (cancelToken.isCancelled) {
+        throw cancelToken.cancelError!;
+      }
+      Response response;
+      try {
+        response = await retry(
+          () => _dio.head(url, cancelToken: cancelToken),
+          maxAttempts: 3,
+          retryIf: (e) =>
+              e is DioException &&
+              !cancelToken.isCancelled &&
+              (e.type == DioExceptionType.connectionTimeout ||
+                  e.type == DioExceptionType.sendTimeout ||
+                  e.type == DioExceptionType.receiveTimeout),
+        );
+      } on DioException catch (e) {
+        throw JDownloadException(JDownloadExceptionType.fetchContentLengthFailed, error: e);
+      }
+      contentLength =
+          int.tryParse(response.headers.value(HttpHeaders.contentLengthHeader) ?? '');
+      final String contentType = response.headers.value(HttpHeaders.contentTypeHeader) ?? '';
+      if (contentLength != null &&
+          contentLength > 0 &&
+          !contentType.toLowerCase().contains('text/html')) {
+        break;
+      }
+      if (attempt == contentLengthRetryPolicy.maxAttempts) {
+        throw JDownloadException(JDownloadExceptionType.noContentLengthHeaderFound);
+      }
+      log.download('Archive is still preparing; retrying content length in '
+          '${contentLengthRetryPolicy.delay.inSeconds}s (attempt $attempt/${contentLengthRetryPolicy.maxAttempts}).');
+      final Completer<void> delay = Completer<void>();
+      final Timer timer = Timer(contentLengthRetryPolicy.delay, delay.complete);
+      try {
+        await Future.any([delay.future, cancelToken.whenCancel]);
+        if (cancelToken.isCancelled) {
+          throw cancelToken.cancelError!;
+        }
+      } finally {
+        timer.cancel();
+      }
     }
 
-    int? contentLength =
-        int.tryParse(response.headers.value(HttpHeaders.contentLengthHeader) ?? '');
-    if (contentLength == null) {
-      throw JDownloadException(JDownloadExceptionType.noContentLengthHeaderFound);
-    }
-
-    totalBytes = contentLength;
+    totalBytes = contentLength!;
 
     _chunks = List.generate(
       _isolateCount,
       (index) => DownloadTrunk(
         size: index != _isolateCount - 1
-            ? contentLength ~/ _isolateCount
-            : contentLength - (_isolateCount - 1) * (contentLength ~/ _isolateCount),
+            ? totalBytes ~/ _isolateCount
+            : totalBytes - (_isolateCount - 1) * (totalBytes ~/ _isolateCount),
       ),
     );
     _chunksBusy = List.generate(_chunks.length, (_) => false);
@@ -343,7 +405,9 @@ class DownloadManager {
 
     try {
       List<Completer<void>> readyCompleters = List.generate(
-          min(_isolateCount, _chunks.where((c) => !c.completed).length), (_) => Completer<void>());
+          min(_isolateCount, _chunks.where((c) => !c.completed).length),
+          (_) => Completer<void>());
+      final List<Future<void>> starts = [];
       for (int i = 0; i < readyCompleters.length; i++) {
         MainIsolateManager isolateManager = MainIsolateManager(
           proxyConfig: proxyConfig,
@@ -351,11 +415,16 @@ class DownloadManager {
           dohEndpoint: dohEndpoint,
         )
           ..registerOnReady(readyCompleters[i].complete)
-          ..initIsolate();
+          ..registerOnError((error) {
+            if (!readyCompleters[i].isCompleted) {
+              readyCompleters[i].completeError(error);
+            }
+          });
         _isolates.add(isolateManager);
+        starts.add(isolateManager.initIsolate().then((_) => readyCompleters[i].future));
       }
 
-      await Future.wait(readyCompleters.map((e) => e.future));
+      await Future.wait(starts);
     } on Exception catch (e) {
       await _killIsolates();
       _isolates.clear();
@@ -364,6 +433,7 @@ class DownloadManager {
 
     for (MainIsolateManager isolate in _isolates) {
       isolate.unRegisterOnReady();
+      isolate.unRegisterOnError();
     }
 
     _isolatesReady = true;
@@ -371,7 +441,11 @@ class DownloadManager {
 
   Future<void> _tryHandleTrunks() async {
     if (_chunks.every((chunk) => chunk.completed)) {
-      _completeDownloadFile();
+      // Progress from all workers can arrive before their individual done
+      // messages. Finalize only once, after every file writer has closed.
+      if (_chunksBusy.every((busy) => !busy)) {
+        await (_completingFile ??= _completeDownloadFile());
+      }
       return;
     }
 
@@ -459,20 +533,20 @@ class DownloadManager {
     return (start: start, end: end);
   }
 
-  Future<void> _killIsolates() async {
-    List<Future> killFutures = _isolates.map((e) => e.killIsolate()).toList();
+  Future<void> _killIsolates() {
+    return _stoppingIsolates ??= _stopIsolates().whenComplete(() => _stoppingIsolates = null);
+  }
 
-    for (MainIsolateManager isolate in _isolates) {
+  Future<void> _stopIsolates() async {
+    final List<MainIsolateManager> isolates = List.of(_isolates);
+    for (final isolate in isolates) {
       isolate.unRegisterOnProgress();
       isolate.unRegisterOnDone();
       isolate.unRegisterOnError();
     }
-
+    await Future.wait(isolates.map((e) => e.killIsolate()));
     _chunksBusy = List.generate(_chunks.length, (_) => false);
     _isolatesReady = false;
-
-    await Future.wait(killFutures);
-
     _isolates.clear();
   }
 
@@ -511,6 +585,7 @@ class DownloadManager {
     IOSink? saveFileOutput;
     try {
       await _fileManager.close();
+      _fileReady = false;
 
       await saveFile.create(recursive: true);
 
@@ -526,11 +601,12 @@ class DownloadManager {
       await downloadFile.delete();
     } on Exception catch (e) {
       await saveFileOutput?.close();
-      _onError
-          ?.call(JDownloadException(JDownloadExceptionType.completeDownloadFileFailed, error: e));
+      _onError?.call(
+          JDownloadException(JDownloadExceptionType.completeDownloadFileFailed, error: e));
       return;
     } finally {
       await _killIsolates();
+      _resetHeadClient();
     }
 
     _onDone?.call();

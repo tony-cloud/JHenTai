@@ -13,6 +13,7 @@ import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:jhentai/downloader/j_downloader.dart';
+import 'package:jhentai/downloader/src/download/content_length_retry_policy.dart';
 import 'package:jhentai/database/dao/archive_group_dao.dart';
 import 'package:jhentai/database/database.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
@@ -518,16 +519,16 @@ class ArchiveDownloadService extends GetxController
 
       log.info('Pause archive: ${archive.title}, original: ${archive.isOriginal}');
 
+      final Future<void> statusUpdate = _updateArchiveStatus(
+          gid, needReUnlock ? ArchiveStatus.needReUnlock : ArchiveStatus.paused);
       archiveDownloadInfo.cancelToken.cancel();
-      archiveDownloadInfo.cancelToken = CancelToken();
       await archiveDownloadInfo.downloadTask?.pause();
-      archiveDownloadInfo.downloadCompleter?.completeError(CancelException());
+      if (archiveDownloadInfo.downloadCompleter?.isCompleted == false) {
+        archiveDownloadInfo.downloadCompleter!.completeError(CancelException());
+      }
+      archiveDownloadInfo.downloadCompleter = null;
       archiveDownloadInfo.speedComputer.pause();
-
-      await _updateArchiveStatus(
-        gid,
-        needReUnlock ? ArchiveStatus.needReUnlock : ArchiveStatus.paused,
-      );
+      await statusUpdate;
 
       _tryWakeWaitingTasks();
     }
@@ -560,6 +561,7 @@ class ArchiveDownloadService extends GetxController
 
       log.info('Resume archive: ${archive.title}, original: ${archive.isOriginal}');
 
+      archiveDownloadInfo.cancelToken = CancelToken();
       await _updateArchiveStatus(gid, ArchiveStatus.unlocking);
 
       downloadArchive(archive, resume: true);
@@ -589,11 +591,15 @@ class ArchiveDownloadService extends GetxController
       archiveDownloadInfo.archiveStatus = ArchiveStatus.unlocking;
       archiveDownloadInfo.downloadPageUrl = null;
       archiveDownloadInfo.downloadUrl = null;
-      archiveDownloadInfo.downloadTask = null;
       archiveDownloadInfo.cancelToken.cancel();
-      archiveDownloadInfo.cancelToken = CancelToken();
+      // Stop the old transfer before dropping its only owning reference.
       await archiveDownloadInfo.downloadTask?.pause();
-      archiveDownloadInfo.downloadCompleter?.completeError(CancelException());
+      if (archiveDownloadInfo.downloadCompleter?.isCompleted == false) {
+        archiveDownloadInfo.downloadCompleter!.completeError(CancelException());
+      }
+      archiveDownloadInfo.downloadTask = null;
+      archiveDownloadInfo.downloadCompleter = null;
+      archiveDownloadInfo.cancelToken = CancelToken();
 
       await _updateArchiveInDatabase(archive.gid);
       update(['$archiveStatusId::${archive.gid}']);
@@ -1389,32 +1395,46 @@ class ArchiveDownloadService extends GetxController
   }
 
   JDownloadTask _generateDownloadTask(String url, ArchiveDownloadedData archive) {
-    return JDownloadTask.newTask(
+    final ArchiveDownloadInfo owner = archiveDownloadInfos[archive.gid]!;
+    JDownloadTask? task;
+    bool isCurrent() =>
+        identical(archiveDownloadInfos[archive.gid], owner) &&
+        task != null &&
+        identical(owner.downloadTask, task);
+    task = JDownloadTask.newTask(
       url: url,
       savePath: computePackingFileDownloadPath(archive),
       isolateCount: downloadSetting.archiveDownloadIsolateCount.value,
+      contentLengthRetryPolicy: ContentLengthRetryPolicy.forArchiveSize(owner.size),
       deleteWhenUrlMismatch: false,
       proxyConfig: ehRequest.currentProxyConfig(),
       headConnectionTimeout: Duration(milliseconds: networkSetting.connectTimeout.value),
       headReceiveTimeout: Duration(milliseconds: networkSetting.receiveTimeout.value),
       onProgress: (current, total) {
-        ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[archive.gid]!;
-        archiveDownloadInfo.speedComputer.downloadedBytes = current;
-        if (total != archiveDownloadInfo.size) {
-          archiveDownloadInfo.size = total;
+        if (!isCurrent()) {
+          return;
+        }
+        owner.speedComputer.downloadedBytes = current;
+        if (total != owner.size) {
+          owner.size = total;
           _updateArchiveInDatabase(archive.gid);
         }
       },
-      onDone: () async {
-        archiveDownloadInfos[archive.gid]!.downloadCompleter?.complete();
+      onDone: () {
+        if (isCurrent() && owner.downloadCompleter?.isCompleted == false) {
+          owner.downloadCompleter!.complete();
+        }
       },
-      onError: (JDownloadException e) async {
-        archiveDownloadInfos[archive.gid]!.downloadCompleter?.completeError(e);
+      onError: (JDownloadException e) {
+        if (isCurrent() && owner.downloadCompleter?.isCompleted == false) {
+          owner.downloadCompleter!.completeError(e);
+        }
       },
       lookup: dohService.lookup,
       enableDnsOverHttps: networkSetting.enableDnsOverHttps.value,
       dnsOverHttpsEndpoint: networkSetting.dnsOverHttpsEndpoint.value,
     );
+    return task;
   }
 
   Future<void> _check410Reason(String url, ArchiveDownloadedData archive) async {
@@ -1476,7 +1496,11 @@ class ArchiveDownloadService extends GetxController
           level: Level.warning,
         );
 
-        archiveDownloadInfos[archive.gid]!.downloadUrl = null;
+        final ArchiveDownloadInfo info = archiveDownloadInfos[archive.gid]!;
+        await info.downloadTask?.pause();
+        info.downloadTask = null;
+        info.downloadUrl = null;
+        await _updateArchiveStatus(archive.gid, ArchiveStatus.parsedDownloadPageUrl);
 
         await _getDownloadUrl(archive, reParse: true);
         return _doDownloadArchiveViaMultiIsolate(archive);
@@ -1486,10 +1510,24 @@ class ArchiveDownloadService extends GetxController
     return _doDownloadArchiveViaMultiIsolate(archive);
   }
 
+  int _reservedIsolateCount({int? excludingGid}) {
+    return archiveDownloadInfos.entries
+        .where((entry) =>
+            entry.key != excludingGid &&
+            entry.value.archiveStatus == ArchiveStatus.downloading)
+        .fold(0, (count, entry) {
+      final JDownloadTask? task = entry.value.downloadTask;
+      if (task == null ||
+          task.status == TaskStatus.completed ||
+          task.status == TaskStatus.disposed) {
+        return count;
+      }
+      return count + max(task.activeIsolateCount, task.isolateCount);
+    });
+  }
+
   Future<void> _tryWakeWaitingTasks() async {
-    int currentActiveIsolateCount = archiveDownloadInfos.values
-        .where((a) => a.archiveStatus == ArchiveStatus.downloading)
-        .fold(0, (previousValue, a) => previousValue + a.downloadTask!.activeIsolateCount);
+    int currentActiveIsolateCount = _reservedIsolateCount();
     if (currentActiveIsolateCount >= _maxIsolateCountsTotal) {
       return;
     }
@@ -1874,116 +1912,83 @@ class ArchiveDownloadService extends GetxController
   }
 
   Future<void> _doDownloadArchiveViaMultiIsolate(ArchiveDownloadedData archive) async {
-    ArchiveDownloadInfo archiveDownloadInfo = archiveDownloadInfos[archive.gid]!;
-    if (!_isTaskInStatus(archive.gid, [
-      ArchiveStatus.parsedDownloadUrl,
-      ArchiveStatus.downloading,
-    ])) {
+    final ArchiveDownloadInfo? info = archiveDownloadInfos[archive.gid];
+    if (info == null ||
+        info.downloadCompleter != null ||
+        !_isTaskInStatus(archive.gid, [
+          ArchiveStatus.parsedDownloadUrl,
+          ArchiveStatus.downloading,
+        ])) {
       return;
     }
-
-    log.download(
-      'Begin to download archive: ${archive.title}, original: ${archive.isOriginal}',
-      level: Level.info,
-    );
-
-    await _updateArchiveStatus(archive.gid, ArchiveStatus.downloading);
-
-    JDownloadTask task = archiveDownloadInfo.downloadTask ??= _generateDownloadTask(
-      archiveDownloadInfo.downloadUrl!,
-      archive,
-    );
-    archiveDownloadInfo.speedComputer
-      ..resetDownloadedBytes(task.currentBytes)
-      ..start();
-    log.download(
-      '${archive.title} downloaded bytes: ${task.currentBytes}',
-      level: Level.debug,
-    );
-
-    if (task.status != TaskStatus.completed) {
-      if (downloadSetting.manageArchiveDownloadConcurrency.isTrue) {
-        int currentActiveIsolateCount = archiveDownloadInfos.entries
-            .where((e) => e.value.archiveStatus == ArchiveStatus.downloading)
-            .where((e) => e.key != archive.gid)
-            .map((e) => e.value)
-            .fold(
-              0,
-              (previousValue, a) =>
-                  previousValue +
-                  (a.downloadTask!.activeIsolateCount > 0
-                      ? a.downloadTask!.activeIsolateCount
-                      : a.downloadTask!.isolateCount),
-            );
-        if (currentActiveIsolateCount + task.isolateCount > _maxIsolateCountsTotal) {
-          log.download('Archive ${archive.title} is waiting isolates...', level: Level.info);
-          return _updateArchiveStatus(archive.gid, ArchiveStatus.waitingIsolate);
-        }
-      }
-
-      try {
-        await task.start();
-
-        archiveDownloadInfo.downloadCompleter = Completer();
-        await archiveDownloadInfo.downloadCompleter!.future;
-      } on CancelException catch (_) {
-        archiveDownloadInfo.downloadCompleter = null;
-        return;
-      } on JDownloadException catch (e) {
-        archiveDownloadInfo.downloadCompleter = null;
-
-        if (e.type == JDownloadExceptionType.fetchContentLengthFailed ||
-            e.type == JDownloadExceptionType.downloadFailed) {
-          DioException dioException = e.error;
-          Response? response = dioException.response;
-
-          /// download too many bytes will cause 410
-          if (response?.statusCode == 410) {
-            return await _check410Reason(
-              archiveDownloadInfos[archive.gid]!.downloadUrl!,
-              archive,
-            );
-          }
-
-          /// too many download thread will cause 410
-          else if (response?.statusCode == 429) {
-            log.download('${'429Hints'.tr} Archive: ${archive.title}', level: Level.warning);
-            snack('archiveError'.tr, '429Hints'.tr, isShort: true);
-            return await pauseDownloadArchive(archive.gid);
-          } else {
-            log.download(
-              'Download archive failed: ${archive.title}, original: ${archive.isOriginal}, reason: $e',
-              level: Level.error,
-            );
-            snack('archiveError'.tr, e.error?.toString() ?? e.type.desc, isShort: true);
-            return pauseDownloadArchive(archive.gid);
-          }
-        } else {
-          log.download(
-            'Download archive failed: ${archive.title}, original: ${archive.isOriginal}, reason: $e',
-            level: Level.error,
-          );
-          snack('archiveError'.tr, e.error?.toString() ?? e.type.desc, isShort: true);
-          return pauseDownloadArchive(archive.gid);
-        }
-      } on Exception catch (e) {
-        log.download(
-          'Failed to download archive ${archive.title}, reason: $e',
-          level: Level.error,
-        );
-        snack('archiveError'.tr, e.toString(), isShort: true);
-        archiveDownloadInfo.downloadCompleter = null;
-        return pauseDownloadArchive(archive.gid);
+    final CancelToken session = info.cancelToken;
+    if (session.isCancelled) {
+      return;
+    }
+    final JDownloadTask task =
+        info.downloadTask ??= _generateDownloadTask(info.downloadUrl!, archive);
+    if (task.status != TaskStatus.completed &&
+        downloadSetting.manageArchiveDownloadConcurrency.isTrue &&
+        _reservedIsolateCount(excludingGid: archive.gid) + task.isolateCount >
+            _maxIsolateCountsTotal) {
+      info.speedComputer.pause();
+      return _updateArchiveStatus(archive.gid, ArchiveStatus.waitingIsolate);
+    }
+    // Listen before startup: very short downloads can finish before start returns.
+    final Completer<void> completion = Completer<void>();
+    info.downloadCompleter = completion;
+    completion.future.ignore();
+    void clearCompletion() {
+      if (identical(info.downloadCompleter, completion)) {
+        info.downloadCompleter = null;
       }
     }
 
-    log.download(
-      'Download archive success: ${archive.title}, original: ${archive.isOriginal}',
-      level: Level.info,
-    );
-
-    archiveDownloadInfo.speedComputer.dispose();
-    return _updateArchiveStatus(archive.gid, ArchiveStatus.downloaded);
+    try {
+      await _updateArchiveStatus(archive.gid, ArchiveStatus.downloading);
+      if (session.isCancelled) {
+        return;
+      }
+      info.speedComputer
+        ..resetDownloadedBytes(task.currentBytes)
+        ..start();
+      if (task.status != TaskStatus.completed) {
+        await task.start();
+        if (session.isCancelled) {
+          return;
+        }
+        if (task.status == TaskStatus.completed && !completion.isCompleted) {
+          completion.complete();
+        }
+        await completion.future;
+      }
+      if (session.isCancelled || !identical(archiveDownloadInfos[archive.gid], info)) {
+        return;
+      }
+      info.speedComputer.dispose();
+      await _updateArchiveStatus(archive.gid, ArchiveStatus.downloaded);
+      unawaited(_tryWakeWaitingTasks());
+    } on CancelException {
+      return;
+    } catch (error) {
+      if (session.isCancelled) {
+        return;
+      }
+      clearCompletion();
+      final Object? cause = error is JDownloadException ? error.error : error;
+      final int? statusCode = cause is DioException ? cause.response?.statusCode : null;
+      if (statusCode == 410) {
+        return await _check410Reason(info.downloadUrl!, archive);
+      }
+      log.download(
+          'Download archive failed: ${archive.title}, original: ${archive.isOriginal}, reason: $error',
+          level: Level.error);
+      snack('archiveError'.tr, statusCode == 429 ? '429Hints'.tr : error.toString(),
+          isShort: true);
+      await pauseDownloadArchive(archive.gid);
+    } finally {
+      clearCompletion();
+    }
   }
 
   Future<void> _unpackingArchive(ArchiveDownloadedData archive) async {

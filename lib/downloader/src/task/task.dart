@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:jhentai/downloader/j_downloader.dart';
 import 'package:jhentai/downloader/src/download/download_manager.dart';
+import 'package:jhentai/downloader/src/download/content_length_retry_policy.dart';
 import 'package:jhentai/downloader/src/function/function.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
 
@@ -43,6 +44,7 @@ class JDownloadTask {
     Duration headConnectionTimeout = const Duration(seconds: 5),
     Duration headReceiveTimeout = const Duration(seconds: 5),
     bool deleteWhenUrlMismatch = true,
+    ContentLengthRetryPolicy contentLengthRetryPolicy = const ContentLengthRetryPolicy(),
     DownloadProgressCallback? onProgress,
     VoidCallback? onDone,
     ValueCallback<JDownloadException>? onError,
@@ -65,6 +67,7 @@ class JDownloadTask {
       isolateCount: isolateCount,
       connectionTimeout: headConnectionTimeout,
       receiveTimeout: headReceiveTimeout,
+      contentLengthRetryPolicy: contentLengthRetryPolicy,
       lookup: lookup,
       enableDoh: enableDnsOverHttps,
       dohEndpoint: dnsOverHttpsEndpoint,
@@ -97,8 +100,17 @@ class JDownloadTask {
       return;
     }
 
-    await _downloadManager.start();
+    // Reserve the task before awaiting startup. Callbacks may complete or fail
+    // it before start() returns; never overwrite their terminal state.
     _status = TaskStatus.downloading;
+    try {
+      await _downloadManager.start();
+    } catch (_) {
+      if (_status == TaskStatus.downloading) {
+        _status = TaskStatus.failed;
+      }
+      rethrow;
+    }
   }
 
   Future<void> pause() async {
@@ -109,7 +121,9 @@ class JDownloadTask {
     }
 
     await _downloadManager.pause();
-    _status = TaskStatus.paused;
+    if (_status != TaskStatus.completed && _status != TaskStatus.disposed) {
+      _status = TaskStatus.paused;
+    }
   }
 
   Future<void> dispose() async {
