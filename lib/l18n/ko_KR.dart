@@ -329,6 +329,9 @@ class ko_KR {
       'unpackingArchiveError': 'Unpacking archive error',
       'failedToDealWith': '처리 실패',
       'hasDownloaded': '다운로드 완료',
+      'redeemArchiveAgain': '아카이브 다시 교환',
+      'redeemArchiveAgainHint': '새 아카이브 링크를 교환할까요? GP가 소모될 수 있습니다. 다운로드한 데이터는 유지되며 다운로드 순서가 되면 이어받습니다.',
+      'archiveLinkExpiredHint': '아카이브 링크가 만료되었거나 사용할 수 없습니다(404). 아카이브를 길게 눌러 다시 교환하세요. 다운로드한 데이터는 유지됩니다.',
       '410Hints': '이 아카이브에서 다운로드한 용량이 너무 많아서 다시 시작하려면 아카이브의 잠금을 다시 해제해야 합니다.',
       '429Hints':
           'Too many download requests! You\'d better decrease your archive download concurrency.',

@@ -283,7 +283,7 @@ void main() {
       DownloadTrunk(size: 8192),
     ];
     final metadata = DownloadProgress(
-      url: url,
+      url: 'https://expired.example/old-archive.zip',
       savePath: savePath,
       totalBytes: payload.length,
       chunks: chunks,
@@ -304,6 +304,7 @@ void main() {
       url: url,
       savePath: savePath,
       isolateCount: 3,
+      deleteWhenUrlMismatch: false,
       onDone: done.complete,
       onError: done.completeError,
     );

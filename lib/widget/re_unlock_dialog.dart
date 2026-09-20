@@ -10,8 +10,8 @@ class ReUnlockDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoAlertDialog(
-      title: Text('${'reUnlock'.tr} ?'),
-      content: Text('reUnlockHint'.tr),
+      title: Text('${'redeemArchiveAgain'.tr}?'),
+      content: Text('redeemArchiveAgainHint'.tr),
       actions: [
         CupertinoDialogAction(
           onPressed: backRoute,

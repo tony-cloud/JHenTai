@@ -307,6 +307,9 @@ class en_US {
       'unpackingArchiveError': 'Unpacking archive error',
       'failedToDealWith': 'Failed to deal with',
       'hasDownloaded': 'Has downloaded',
+      'redeemArchiveAgain': 'Redeem archive again',
+      'redeemArchiveAgainHint': 'Redeem a fresh archive link? This may cost GP. Already downloaded data will be kept and resumed when a download slot is available.',
+      'archiveLinkExpiredHint': 'Archive link expired or is unavailable (404). Long-press the archive and choose "Redeem archive again" to continue. Downloaded data is kept.',
       '410Hints':
           'You have clocked too many downloaded bytes on this archive, and need to re-unlock of this archive to resume.',
       '429Hints':

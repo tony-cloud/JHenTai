@@ -195,6 +195,15 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
       context: context,
       builder: (BuildContext context) => CupertinoActionSheet(
         actions: <CupertinoActionSheetAction>[
+          if (archiveDownloadInfo != null &&
+              archiveDownloadInfo.archiveStatus.code < ArchiveStatus.downloaded.code)
+            CupertinoActionSheetAction(
+              child: Text('redeemArchiveAgain'.tr),
+              onPressed: () {
+                backRoute();
+                handleReUnlockArchive(archive);
+              },
+            ),
           if (superResolutionSetting.modelDirectoryPath.value != null &&
               (superResolutionService.get(archive.gid, SuperResolutionType.archive) == null ||
                   superResolutionService
@@ -306,8 +315,7 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
   Future<void> handleReUnlockArchive(ArchiveDownloadedData archive) async {
     bool? ok = await Get.dialog(const ReUnlockDialog());
     if (ok ?? false) {
-      await archiveDownloadService.cancelArchive(archive.gid);
-      await archiveDownloadService.downloadArchive(archive, resume: true, reParse: true);
+      await archiveDownloadService.redeemArchiveAgain(archive.gid);
     }
   }
 

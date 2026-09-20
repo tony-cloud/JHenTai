@@ -64,6 +64,8 @@ void main() {
       publishTime: '2026-09-21',
       archiveStatusCode: 60,
       archivePageUrl: '',
+      downloadPageUrl: 'https://example.test/expired-page',
+      downloadUrl: 'https://example.test/archive.zip',
       isOriginal: true,
       insertTime: '2026-09-21 00:00:00',
       sortOrder: 0,
@@ -94,6 +96,8 @@ void main() {
       await stop.future;
     });
     info.downloadTask = task;
+    final partialFile = File(task.downloadPath);
+    await partialFile.writeAsBytes([1, 2, 3, 4]);
     final completion = Completer<void>();
     info.downloadCompleter = completion;
     final cancelledCompletion = expectLater(completion.future, throwsA(anything));
@@ -107,6 +111,10 @@ void main() {
     expect(info.downloadTask, isNull);
     expect(info.downloadCompleter, isNull);
     expect(info.cancelToken.isCancelled, isFalse);
+    final stored = await appDb.select(appDb.archiveDownloaded).getSingle();
+    expect(stored.downloadPageUrl, isNull);
+    expect(stored.downloadUrl, isNull);
+    expect(await partialFile.readAsBytes(), [1, 2, 3, 4]);
     info.speedComputer.dispose();
   });
 

@@ -339,6 +339,9 @@ class pt_BR {
       'unpackingArchiveError': 'Unpacking archive error',
       'failedToDealWith': 'Falha ao lidar com',
       'hasDownloaded': 'Baixado',
+      'redeemArchiveAgain': 'Resgatar arquivo novamente',
+      'redeemArchiveAgainHint': 'Resgatar um novo link? Isso pode custar GP. Os dados baixados serão mantidos e retomados quando houver uma vaga para download.',
+      'archiveLinkExpiredHint': 'O link expirou ou está indisponível (404). Pressione e segure o arquivo e escolha "Resgatar arquivo novamente". Os dados baixados serão mantidos.',
       '410Hints':
           'Você registrou muitos bytes baixados neste arquivo e precisa desbloquear novamente este arquivo para continuar.',
       '429Hints':
