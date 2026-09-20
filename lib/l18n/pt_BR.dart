@@ -1093,6 +1093,7 @@ class pt_BR {
       'useJH2UpdateGallery': 'Use JH server to accelerate gallery updates',
 
       /// archive bot settings
+      'hideArchiveBot': 'Ocultar downloads pelo bot de arquivos',
       'archiveBotSettings': 'Archive Bot Settings',
       'archiveBotSettingsHint': 'Use archive bot to get archive links for free',
       'apiSetting': 'API Setting',

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/service/archive_download_service.dart';
+import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/utils/route_util.dart';
 
 class EHArchiveParseSourceSelectDialog extends StatefulWidget {
   const EHArchiveParseSourceSelectDialog({super.key});
 
   @override
-  State<EHArchiveParseSourceSelectDialog> createState() => _EHArchiveParseSourceSelectDialogState();
+  State<EHArchiveParseSourceSelectDialog> createState() =>
+      _EHArchiveParseSourceSelectDialogState();
 }
 
 class _EHArchiveParseSourceSelectDialogState extends State<EHArchiveParseSourceSelectDialog> {
@@ -32,17 +34,19 @@ class _EHArchiveParseSourceSelectDialogState extends State<EHArchiveParseSourceS
                 title: Text('official'.tr),
                 value: ArchiveParseSource.official,
               ),
-              RadioListTile(
-                title: Text('archiveBot'.tr),
-                value: ArchiveParseSource.bot,
-              ),
+              if (archiveBotSetting.isVisible)
+                RadioListTile(
+                  title: Text('archiveBot'.tr),
+                  value: ArchiveParseSource.bot,
+                ),
             ],
           ),
         ),
       ),
       actions: [
         TextButton(onPressed: backRoute, child: Text('cancel'.tr)),
-        TextButton(child: Text('OK'.tr), onPressed: () => backRoute(result: _archiveParseSource)),
+        TextButton(
+            child: Text('OK'.tr), onPressed: () => backRoute(result: _archiveParseSource)),
       ],
     );
   }

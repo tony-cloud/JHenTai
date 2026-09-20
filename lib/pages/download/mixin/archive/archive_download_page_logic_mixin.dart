@@ -261,6 +261,7 @@ mixin ArchiveDownloadPageLogicMixin on GetxController
             ),
           if (archiveDownloadInfo != null &&
               archiveDownloadInfo.archiveStatus.code < ArchiveStatus.downloaded.code &&
+              archiveBotSetting.isVisible &&
               archiveBotSetting.isReady &&
               archiveDownloadInfo.parseSource == ArchiveParseSource.official.code)
             CupertinoActionSheetAction(

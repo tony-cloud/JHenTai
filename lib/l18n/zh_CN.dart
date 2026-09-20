@@ -1043,6 +1043,7 @@ favnote：匹配收藏备注
       'useJH2UpdateGallery': '使用JH服务器加速画廊更新',
 
       /// archive bot settings
+      'hideArchiveBot': '隐藏归档机器人下载',
       'archiveBotSettings': '归档机器人设置',
       'archiveBotSettingsHint': '使用归档机器人免费获取归档链接',
       'apiSetting': 'API设置',

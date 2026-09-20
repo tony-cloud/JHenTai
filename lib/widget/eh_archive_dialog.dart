@@ -56,7 +56,9 @@ class _EHArchiveDialogState extends State<EHArchiveDialog> {
   LoadingState botCostState = LoadingState.idle;
   int? balance;
   int? botCost;
-  bool useBot = archiveBotSetting.isReady && archiveBotSetting.preferBotSource.isTrue;
+  bool useBot = archiveBotSetting.isVisible &&
+      archiveBotSetting.isReady &&
+      archiveBotSetting.preferBotSource.isTrue;
 
   @override
   void initState() {
@@ -99,7 +101,7 @@ class _EHArchiveDialogState extends State<EHArchiveDialog> {
           currentGroup: group,
           listener: (g) => group = g,
         ),
-        _buildSourceSelector().marginOnly(top: 12),
+        if (archiveBotSetting.isVisible) _buildSourceSelector().marginOnly(top: 12),
         if (!useBot && archive.creditCount != null && archive.gpCount != null)
           EHAsset(
             gpCount: archive.gpCount!,

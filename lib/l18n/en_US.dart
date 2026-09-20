@@ -1096,6 +1096,7 @@ class en_US {
       'useJH2UpdateGallery': 'Use JH server to accelerate gallery updates',
 
       /// archive bot settings
+      'hideArchiveBot': 'Hide archive bot downloads',
       'archiveBotSettings': 'Archive Bot Settings',
       'archiveBotSettingsHint': 'Use archive bot to get archive links for free',
       'apiSetting': 'API Setting',

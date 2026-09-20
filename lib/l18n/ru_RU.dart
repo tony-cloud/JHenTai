@@ -1095,6 +1095,7 @@ class ru_RU {
       'useJH2UpdateGallery': 'Use JH server to accelerate gallery updates',
 
       /// archive bot settings
+      'hideArchiveBot': 'Скрыть загрузку через архивного бота',
       'archiveBotSettings': 'Archive Bot Settings',
       'archiveBotSettingsHint': 'Use archive bot to get archive links for free',
       'apiSetting': 'API Setting',

@@ -1051,6 +1051,7 @@ class ko_KR {
       'useJH2UpdateGallery': 'Use JH server to accelerate gallery updates',
 
       /// archive bot settings
+      'hideArchiveBot': '아카이브 봇 다운로드 숨기기',
       'archiveBotSettings': 'Archive Bot Settings',
       'archiveBotSettingsHint': 'Use archive bot to get archive links for free',
       'apiSetting': 'API Setting',

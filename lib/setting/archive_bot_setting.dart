@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:jhentai/config/jh_api_secret_config.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/log.dart';
 
@@ -10,14 +11,23 @@ import 'package:jhentai/service/jh_service.dart';
 ArchiveBotSetting archiveBotSetting = ArchiveBotSetting();
 
 class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCircleBean {
+  final bool hasJHServer;
+
+  ArchiveBotSetting({this.hasJHServer = JHApiSecretConfig.secret != ''});
+
   final RxnString apiAddress = RxnString(ArchiveBotConsts.serverAddress);
   final RxnString apiKey = RxnString(null);
   final RxBool useProxyServer = false.obs;
 
   final RxBool preferBotSource = false.obs;
+  final RxBool hideArchiveBot = true.obs;
+
+  bool get isVisible => hasJHServer && hideArchiveBot.isFalse;
 
   bool get isReady =>
-      (apiAddress.value != null || useProxyServer.isTrue) && apiKey.value != null;
+      hasJHServer &&
+      (apiAddress.value != null || useProxyServer.isTrue) &&
+      apiKey.value != null;
 
   @override
   ConfigEnum get configEnum => ConfigEnum.archiveBotSetting;
@@ -28,6 +38,7 @@ class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLife
     apiAddress.value = map['apiAddress'] ?? apiAddress.value;
     apiKey.value = map['apiKey'];
     preferBotSource.value = map['preferBotSource'] ?? false;
+    hideArchiveBot.value = map['hideArchiveBot'] ?? true;
     useProxyServer.value = map['useProxyServer'] ?? true;
   }
 
@@ -37,6 +48,7 @@ class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLife
       'apiAddress': apiAddress.value,
       'apiKey': apiKey.value,
       'preferBotSource': preferBotSource.value,
+      'hideArchiveBot': hideArchiveBot.value,
       'useProxyServer': useProxyServer.value,
     });
   }
@@ -69,6 +81,11 @@ class ArchiveBotSetting with JHLifeCircleBeanWithConfigStorage implements JHLife
 
   Future<void> savePreferBotSource(bool value) async {
     preferBotSource.value = value;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveHideArchiveBot(bool value) async {
+    hideArchiveBot.value = value;
     await saveBeanConfig();
   }
 

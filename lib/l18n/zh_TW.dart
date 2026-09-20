@@ -1025,6 +1025,7 @@ favnote：配對收藏備註
       'useJH2UpdateGallery': '使用JH服務器加速畫廊更新',
 
       /// archive bot settings
+      'hideArchiveBot': '隱藏歸檔機器人下載',
       'archiveBotSettings': '歸檔機器人設定',
       'archiveBotSettingsHint': '使用歸檔機器人免費獲取歸檔連結',
       'apiSetting': 'API設置',

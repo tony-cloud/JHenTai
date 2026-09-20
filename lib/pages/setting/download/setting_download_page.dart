@@ -9,6 +9,7 @@ import 'package:jhentai/extension/string_extension.dart';
 import 'package:jhentai/extension/widget_extension.dart';
 import 'package:jhentai/service/local_gallery_service.dart';
 import 'package:jhentai/setting/download_setting.dart';
+import 'package:jhentai/setting/archive_bot_setting.dart';
 import 'package:jhentai/setting/user_setting.dart';
 import 'package:jhentai/utils/file_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
@@ -61,7 +62,13 @@ class _SettingDownloadPageState extends State<SettingDownloadPage> {
               _buildDefaultGalleryGroup(context),
               _buildPrioritizeRecentGalleryGroups(),
               _buildDefaultArchiveGroup(context),
-              _buildArchiveBotSettings(),
+              if (archiveBotSetting.hasJHServer)
+                SwitchListTile(
+                  title: Text('hideArchiveBot'.tr),
+                  value: archiveBotSetting.hideArchiveBot.value,
+                  onChanged: archiveBotSetting.saveHideArchiveBot,
+                ),
+              if (archiveBotSetting.isVisible) _buildArchiveBotSettings(),
               _buildDownloadConcurrency(),
               _buildSpeedLimit(context),
               _buildDownloadAllGallerysOfSamePriority(),

@@ -323,7 +323,7 @@ class ScheduleService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBea
       return;
     }
 
-    if (!archiveBotSetting.isReady) {
+    if (!archiveBotSetting.isVisible || !archiveBotSetting.isReady) {
       return;
     }
 
