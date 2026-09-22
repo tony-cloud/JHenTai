@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jhentai/downloader/j_downloader.dart';
 import 'package:jhentai/downloader/src/download/content_length_retry_policy.dart';
@@ -64,6 +65,8 @@ void main() {
   JDownloadTask task(
       {int workers = 3,
       ContentLengthRetryPolicy policy = const ContentLengthRetryPolicy(),
+      Duration receiveTimeout = const Duration(seconds: 5),
+      int timeoutRetryTimes = 3,
       void Function()? onDone,
       void Function(JDownloadException)? onError}) {
     final result = JDownloadTask.newTask(
@@ -71,6 +74,8 @@ void main() {
       savePath: '${directory.path}/archive-${DateTime.now().microsecondsSinceEpoch}.zip',
       isolateCount: workers,
       contentLengthRetryPolicy: policy,
+      headReceiveTimeout: receiveTimeout,
+      timeoutRetryTimes: timeoutRetryTimes,
       onDone: onDone,
       onError: onError,
     );
@@ -225,6 +230,156 @@ void main() {
     handler = serveArchive;
     await download.start();
     await done.future.timeout(const Duration(seconds: 10));
+    expect(await File(download.savePath).readAsBytes(), payload);
+  });
+
+  for (final workers in [1, 3]) {
+    for (final stall in ['headers', 'first byte', 'middle']) {
+      test('retries a stalled $stall response with $workers workers from the saved offset',
+          () async {
+        final release = Completer<void>();
+        addTearDown(release.complete);
+        final requestedStarts = <int>[];
+        handler = (request) async {
+          if (request.method == 'HEAD') {
+            await serveArchive(request);
+            return;
+          }
+          final range = request.headers.value('range')!.split('-').map(int.parse).toList();
+          requestedStarts.add(range[0]);
+          if (requestedStarts.length > 1) {
+            await serveArchive(request);
+            return;
+          }
+          request.response.bufferOutput = false;
+          request.response.statusCode = HttpStatus.partialContent;
+          request.response.contentLength = range[1] - range[0] + 1;
+          if (stall == 'middle') {
+            request.response.add(payload.sublist(range[0], range[0] + 1024));
+          }
+          if (stall != 'headers') {
+            await request.response.flush();
+          }
+          await release.future;
+          await request.response.close();
+        };
+        final done = Completer<void>();
+        final download = task(
+          workers: workers,
+          receiveTimeout: const Duration(milliseconds: 200),
+          onDone: done.complete,
+          onError: done.completeError,
+        );
+        await download.start();
+        await done.future.timeout(const Duration(seconds: 8));
+        expect(requestedStarts.length, workers + 1);
+        expect(
+            requestedStarts.last, requestedStarts.first + (stall == 'middle' ? 1024 : 0));
+        expect(
+            requestedStarts.take(workers),
+            unorderedEquals(
+                List.generate(workers, (index) => payload.length ~/ workers * index)));
+        expect(download.status, TaskStatus.completed);
+        expect(download.activeIsolateCount, 0);
+        expect(await File(download.savePath).readAsBytes(), payload);
+      });
+    }
+  }
+
+  test('slow but progressing responses do not hit a total transfer deadline', () async {
+    int requests = 0;
+    handler = (request) async {
+      if (request.method == 'HEAD') {
+        await serveArchive(request);
+        return;
+      }
+      requests++;
+      request.response.bufferOutput = false;
+      request.response.statusCode = HttpStatus.partialContent;
+      request.response.contentLength = payload.length;
+      for (int offset = 0; offset < payload.length; offset += 4096) {
+        request.response.add(payload.sublist(offset, offset + 4096));
+        await request.response.flush();
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+      }
+      await request.response.close();
+    };
+    final done = Completer<void>();
+    final download = task(
+      workers: 1,
+      receiveTimeout: const Duration(milliseconds: 300),
+      onDone: done.complete,
+      onError: done.completeError,
+    );
+    await download.start();
+    await done.future.timeout(const Duration(seconds: 8));
+    expect(requests, 1);
+    expect(await File(download.savePath).readAsBytes(), payload);
+  });
+
+  test('persistent stalls exhaust retries and release workers', () async {
+    final release = Completer<void>();
+    addTearDown(release.complete);
+    int requests = 0;
+    handler = (request) async {
+      if (request.method == 'HEAD') {
+        await serveArchive(request);
+        return;
+      }
+      requests++;
+      await release.future;
+      await request.response.close();
+    };
+    final failed = Completer<JDownloadException>();
+    final download = task(
+      workers: 1,
+      receiveTimeout: const Duration(milliseconds: 150),
+      timeoutRetryTimes: 1,
+      onError: failed.complete,
+    );
+    await download.start();
+    final error = await failed.future.timeout(const Duration(seconds: 8));
+    expect((error.error as DioException).type, DioExceptionType.receiveTimeout);
+    expect(requests, 2);
+    expect(download.status, TaskStatus.failed);
+    expect(download.activeIsolateCount, 0);
+  });
+
+  test('pause during retry backoff cancels retries and allows manual resume', () async {
+    final release = Completer<void>();
+    addTearDown(release.complete);
+    final firstRequest = Completer<void>();
+    int requests = 0;
+    handler = (request) async {
+      if (request.method == 'HEAD') {
+        await serveArchive(request);
+        return;
+      }
+      requests++;
+      if (!firstRequest.isCompleted) {
+        firstRequest.complete();
+      }
+      await release.future;
+      await request.response.close();
+    };
+    final done = Completer<void>();
+    final download = task(
+      workers: 1,
+      receiveTimeout: const Duration(milliseconds: 150),
+      onDone: done.complete,
+      onError: done.completeError,
+    );
+    await download.start();
+    await firstRequest.future.timeout(const Duration(seconds: 5));
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    await download.pause().timeout(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 1000));
+    expect(requests, 1);
+    expect(download.status, TaskStatus.paused);
+    expect(download.activeIsolateCount, 0);
+    handler = serveArchive;
+    await download.start();
+    await done.future.timeout(const Duration(seconds: 8));
     expect(await File(download.savePath).readAsBytes(), payload);
   });
 

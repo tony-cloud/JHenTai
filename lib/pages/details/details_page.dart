@@ -1210,7 +1210,18 @@ class DetailsPage extends StatelessWidget with Scroll2TopPageMixin {
                 ),
               ),
               onPressed: disabled ? null : () => logic.handleTapArchive(context),
-              onLongPress: () => toRoute(Routes.download),
+              onLongPress: () {
+                final DownloadPageArgument argument = DownloadPageArgument(
+                  galleryType: DownloadPageGalleryType.archive,
+                  targetArchiveGid: archiveDownloadService.containArchive(state.galleryUrl.gid)
+                      ? state.galleryUrl.gid
+                      : null,
+                );
+                if (styleSetting.actualLayout == LayoutMode.desktop) {
+                  DownloadPageFocusBridge.setPendingArgument(argument);
+                }
+                toRoute(Routes.download, arguments: argument);
+              },
             );
           },
         );

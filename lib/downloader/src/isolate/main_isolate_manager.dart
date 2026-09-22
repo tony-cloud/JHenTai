@@ -139,8 +139,15 @@ class MainIsolateManager {
     });
   }
 
-  void beginDownload(String url, String downloadPath, ({int start, int end}) downloadRange,
-      int fileWriteOffset) {
+  void beginDownload(
+    String url,
+    String downloadPath,
+    ({int start, int end}) downloadRange,
+    int fileWriteOffset, {
+    required Duration connectionTimeout,
+    required Duration receiveTimeout,
+    required int timeoutRetryTimes,
+  }) {
     assert(_isolate != null && _mainReceivePort != null && _subSendPort != null && _ready);
 
     if (!_free) {
@@ -155,7 +162,10 @@ class MainIsolateManager {
           url: url,
           downloadPath: downloadPath,
           downloadRange: downloadRange,
-          fileWriteOffset: fileWriteOffset
+          fileWriteOffset: fileWriteOffset,
+          connectionTimeout: connectionTimeout,
+          receiveTimeout: receiveTimeout,
+          timeoutRetryTimes: timeoutRetryTimes,
         ),
       ),
     );

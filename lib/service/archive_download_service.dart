@@ -1489,6 +1489,7 @@ class ArchiveDownloadService extends GetxController
       proxyConfig: ehRequest.currentProxyConfig(),
       headConnectionTimeout: Duration(milliseconds: networkSetting.connectTimeout.value),
       headReceiveTimeout: Duration(milliseconds: networkSetting.receiveTimeout.value),
+      timeoutRetryTimes: networkSetting.timeoutRetryTimes.value,
       onProgress: (current, total) {
         if (!isCurrent()) {
           return;

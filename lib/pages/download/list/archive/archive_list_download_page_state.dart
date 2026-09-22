@@ -12,6 +12,11 @@ class ArchiveListDownloadPageState
   Set<String> displayGroups = {};
   Completer<void> displayGroupsCompleter = Completer<void>();
 
+  int? highlightedGid;
+  int? lastFocusRequestId;
+  Timer? focusRequestTimer;
+  Timer? focusHighlightTimer;
+
   final GroupedListController<String, ArchiveDownloadedData> groupedListController =
       GroupedListController<String, ArchiveDownloadedData>();
 }

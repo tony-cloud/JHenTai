@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/extension/get_logic_extension.dart';
 import 'package:jhentai/mixin/update_global_gallery_status_logic_mixin.dart';
@@ -55,6 +58,76 @@ class ArchiveListDownloadPageLogic extends GetxController
     super.onClose();
 
     maxGalleryNum4AnimationListener.dispose();
+    state.focusRequestTimer?.cancel();
+    state.focusHighlightTimer?.cancel();
+  }
+
+  void applyFocusRequest({
+    int? focusArchiveGid,
+    int? focusRequestId,
+    Duration focusHighlightDuration = const Duration(milliseconds: 1500),
+  }) {
+    if (focusArchiveGid == null ||
+        focusRequestId == null ||
+        state.lastFocusRequestId == focusRequestId) {
+      return;
+    }
+    state.lastFocusRequestId = focusRequestId;
+    state.focusRequestTimer?.cancel();
+    // Allow the desktop tab switch and the grouped list to attach first.
+    state.focusRequestTimer = Timer(const Duration(milliseconds: 220), () async {
+      await state.displayGroupsCompleter.future;
+      await WidgetsBinding.instance.endOfFrame;
+      if (isClosed || state.lastFocusRequestId != focusRequestId) {
+        return;
+      }
+      final String? group = archiveDownloadService.archiveDownloadInfos[focusArchiveGid]?.group;
+      if (group == null || !state.groupedListController.isAttached) {
+        return;
+      }
+      if (!state.displayGroups.contains(group)) {
+        await toggleDisplayGroups(group);
+        await WidgetsBinding.instance.endOfFrame;
+      }
+      if (isClosed ||
+          state.lastFocusRequestId != focusRequestId ||
+          !state.scrollController.hasClients) {
+        return;
+      }
+
+      double offset = 0;
+      for (final String currentGroup in archiveDownloadService.allGroups) {
+        offset += UIConfig.groupListHeight + 10;
+        if (!state.displayGroups.contains(currentGroup)) {
+          continue;
+        }
+        final List<ArchiveDownloadedData> archives =
+            archiveDownloadService.archivesWithGroup(currentGroup);
+        if (currentGroup == group) {
+          final int index = archives.indexWhere((archive) => archive.gid == focusArchiveGid);
+          if (index < 0) {
+            return;
+          }
+          offset += index * (UIConfig.downloadPageCardHeight + 10);
+          break;
+        }
+        offset += archives.length * (UIConfig.downloadPageCardHeight + 10);
+      }
+      final ScrollPosition position = state.scrollController.positions.last;
+      position.jumpTo(offset.clamp(position.minScrollExtent, position.maxScrollExtent).toDouble());
+
+      final int? oldHighlightedGid = state.highlightedGid;
+      state.highlightedGid = focusArchiveGid;
+      state.focusHighlightTimer?.cancel();
+      updateSafely([
+        if (oldHighlightedGid != null) '$itemCardId::$oldHighlightedGid',
+        '$itemCardId::$focusArchiveGid',
+      ]);
+      state.focusHighlightTimer = Timer(focusHighlightDuration, () {
+        state.highlightedGid = null;
+        updateSafely(['$itemCardId::$focusArchiveGid']);
+      });
+    });
   }
 
   Future<void> toggleDisplayGroups(String groupName) async {

@@ -33,7 +33,18 @@ import 'package:jhentai/pages/download/list/archive/archive_list_download_page_s
 
 class ArchiveListDownloadPage extends StatelessWidget
     with Scroll2TopPageMixin, MultiSelectDownloadPageMixin, ArchiveDownloadPageMixin {
-  ArchiveListDownloadPage({super.key});
+  ArchiveListDownloadPage({
+    super.key,
+    int? focusArchiveGid,
+    int? focusRequestId,
+    Duration focusHighlightDuration = const Duration(milliseconds: 1500),
+  }) {
+    logic.applyFocusRequest(
+      focusArchiveGid: focusArchiveGid,
+      focusRequestId: focusRequestId,
+      focusHighlightDuration: focusHighlightDuration,
+    );
+  }
 
   final ArchiveListDownloadPageLogic logic =
       Get.put<ArchiveListDownloadPageLogic>(ArchiveListDownloadPageLogic(), permanent: true);
@@ -259,10 +270,15 @@ class ArchiveListDownloadPage extends StatelessWidget
     return GetBuilder<ArchiveListDownloadPageLogic>(
       id: '${logic.itemCardId}::${archive.gid}',
       builder: (_) => Container(
-        decoration: state.selectedGids.contains(archive.gid)
+        decoration: state.selectedGids.contains(archive.gid) || state.highlightedGid == archive.gid
             ? BoxDecoration(
-                color: UIConfig.downloadPageCardSelectedColor(context),
+                color: state.selectedGids.contains(archive.gid)
+                    ? UIConfig.downloadPageCardSelectedColor(context)
+                    : UIConfig.alertColor(context).withValues(alpha: 0.16),
                 borderRadius: BorderRadius.circular(UIConfig.downloadPageCardBorderRadius),
+                border: state.highlightedGid == archive.gid
+                    ? Border.all(color: UIConfig.alertColor(context), width: 1.2)
+                    : null,
               )
             : null,
         height: UIConfig.downloadPageCardHeight,

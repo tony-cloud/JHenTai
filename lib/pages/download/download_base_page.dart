@@ -25,19 +25,27 @@ class DownloadPage extends StatefulWidget {
 
 class DownloadPageArgument {
   final int? targetGalleryGid;
+  final int? targetArchiveGid;
+  final DownloadPageGalleryType galleryType;
   final Duration focusHighlightDuration;
 
   const DownloadPageArgument({
     this.targetGalleryGid,
+    this.targetArchiveGid,
+    this.galleryType = DownloadPageGalleryType.download,
     this.focusHighlightDuration = const Duration(milliseconds: 1500),
   });
 }
 
 class DownloadPageFocusBridge {
   static DownloadPageArgument? _pendingArgument;
+  static final ValueNotifier<int> changes = ValueNotifier(0);
 
   static void setPendingArgument(DownloadPageArgument? argument) {
     _pendingArgument = argument;
+    if (argument != null) {
+      changes.value++;
+    }
   }
 
   static DownloadPageArgument? takePendingArgument() {
@@ -54,6 +62,7 @@ class _DownloadPageState extends State<DownloadPage> {
   Completer<void> bodyTypeCompleter = Completer<void>();
 
   int? focusGalleryGid;
+  int? focusArchiveGid;
   int? focusRequestId;
   Duration focusHighlightDuration = const Duration(milliseconds: 1500);
 
@@ -62,14 +71,28 @@ class _DownloadPageState extends State<DownloadPage> {
     super.initState();
 
     _consumeFocusRequest();
+    DownloadPageFocusBridge.changes.addListener(_handlePendingFocusRequest);
 
     localConfigService.read(configKey: ConfigEnum.downloadPageBodyType).then((bodyTypeString) {
-      if (bodyTypeString != null && focusGalleryGid == null) {
+      if (bodyTypeString != null && focusGalleryGid == null && focusArchiveGid == null) {
         bodyType = DownloadPageBodyType.values[int.tryParse(bodyTypeString) ?? 0];
       }
     }).whenComplete(() {
       bodyTypeCompleter.complete();
     });
+  }
+
+  @override
+  void dispose() {
+    DownloadPageFocusBridge.changes.removeListener(_handlePendingFocusRequest);
+    super.dispose();
+  }
+
+  void _handlePendingFocusRequest() {
+    final DownloadPageArgument? argument = DownloadPageFocusBridge.takePendingArgument();
+    if (argument != null) {
+      setState(() => _applyFocusRequest(argument));
+    }
   }
 
   @override
@@ -89,7 +112,7 @@ class _DownloadPageState extends State<DownloadPage> {
       argument = DownloadPageFocusBridge.takePendingArgument();
     }
 
-    if (argument?.targetGalleryGid == null) {
+    if (argument == null) {
       return;
     }
 
@@ -100,15 +123,20 @@ class _DownloadPageState extends State<DownloadPage> {
       return;
     }
 
-    _applyFocusRequest(argument!);
+    _applyFocusRequest(argument);
   }
 
   void _applyFocusRequest(DownloadPageArgument argument) {
     focusGalleryGid = argument.targetGalleryGid;
+    focusArchiveGid = argument.targetArchiveGid;
     focusHighlightDuration = argument.focusHighlightDuration;
 
-    galleryType = DownloadPageGalleryType.download;
-    bodyType = DownloadPageBodyType.list;
+    galleryType = argument.targetArchiveGid != null
+        ? DownloadPageGalleryType.archive
+        : argument.galleryType;
+    if (focusGalleryGid != null || focusArchiveGid != null) {
+      bodyType = DownloadPageBodyType.list;
+    }
     focusRequestId = DateTime.now().microsecondsSinceEpoch;
   }
 
@@ -143,7 +171,11 @@ class _DownloadPageState extends State<DownloadPage> {
                   : galleryType == DownloadPageGalleryType.archive
                       ? bodyType == DownloadPageBodyType.list
                           ? ArchiveListDownloadPage(
-                              key: const PageStorageKey('ArchiveListDownloadBody'))
+                              key: const PageStorageKey('ArchiveListDownloadBody'),
+                              focusArchiveGid: focusArchiveGid,
+                              focusRequestId: focusRequestId,
+                              focusHighlightDuration: focusHighlightDuration,
+                            )
                           : ArchiveGridDownloadPage(
                               key: const PageStorageKey('ArchiveGridDownloadBody'))
                       : bodyType == DownloadPageBodyType.list

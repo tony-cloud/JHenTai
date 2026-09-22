@@ -35,6 +35,7 @@ class DownloadManager {
 
   late Dio _dio;
   final ContentLengthRetryPolicy contentLengthRetryPolicy;
+  final int timeoutRetryTimes;
   CancelToken? _startupCancelToken;
   Future<void>? _stoppingIsolates;
   Future<void>? _completingFile;
@@ -75,6 +76,7 @@ class DownloadManager {
     required int isolateCount,
     required Duration connectionTimeout,
     required Duration receiveTimeout,
+    this.timeoutRetryTimes = 3,
     this.contentLengthRetryPolicy = const ContentLengthRetryPolicy(),
     this.lookup,
     this.enableDoh = false,
@@ -300,7 +302,7 @@ class DownloadManager {
   }
 
   Future<void> changeConnectionTimeout(Duration duration) async {
-    _dio.options = _dio.options.copyWith(sendTimeout: duration);
+    _dio.options = _dio.options.copyWith(connectTimeout: duration);
   }
 
   Future<void> changeReceiveTimeout(Duration duration) async {
@@ -480,6 +482,9 @@ class DownloadManager {
           downloadPath,
           _computeChunkDownloadRange(_chunks, i),
           _computeFileWriteOffset(_chunks, i),
+          connectionTimeout: _dio.options.connectTimeout ?? const Duration(seconds: 5),
+          receiveTimeout: _dio.options.receiveTimeout ?? const Duration(seconds: 5),
+          timeoutRetryTimes: timeoutRetryTimes,
         );
 
         continue nextIsolate;

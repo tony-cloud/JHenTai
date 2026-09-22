@@ -73,13 +73,19 @@ class SubIsolateManager {
                 String url,
                 String downloadPath,
                 ({int start, int end}) downloadRange,
-                int fileWriteOffset
+                int fileWriteOffset,
+                Duration connectionTimeout,
+                Duration receiveTimeout,
+                int timeoutRetryTimes,
               })>;
           download(
             message.data.url,
             message.data.downloadPath,
             message.data.downloadRange,
             message.data.fileWriteOffset,
+            message.data.connectionTimeout,
+            message.data.receiveTimeout,
+            message.data.timeoutRetryTimes,
           );
           break;
         case MainIsolateMessageType.close:
@@ -96,57 +102,114 @@ class SubIsolateManager {
     });
   }
 
-  Future<void> download(String url, String downloadPath, ({int start, int end}) downloadRange,
-      int fileWriteOffset) async {
+  Future<void> download(
+      String url,
+      String downloadPath,
+      ({int start, int end}) downloadRange,
+      int fileWriteOffset,
+      Duration connectionTimeout,
+      Duration receiveTimeout,
+      int timeoutRetryTimes) async {
     final CancelToken cancelToken = CancelToken();
     _cancelToken = cancelToken;
-    final Dio client = Dio();
     RandomAccessFile? file;
     JDownloadException? failure;
     bool cancelled = false;
     int received = 0;
     _mainSendPort.send(SubIsolateMessage<Null>(SubIsolateMessageType.begin, null));
     try {
-      final Response<ResponseBody> response = await client.get<ResponseBody>(
-        url,
-        options: Options(
-          sendTimeout: const Duration(seconds: 5),
-          // Preserve the archive downloader's legacy wire format. Changing the
-          // header case or adding "bytes=" can make archive endpoints ignore it.
-          preserveHeaderCase: true,
-          headers: {'Range': '${downloadRange.start}-${downloadRange.end - 1}'},
-          responseType: ResponseType.stream,
-        ),
-        cancelToken: cancelToken,
-      );
-      if (response.statusCode != HttpStatus.partialContent) {
-        throw JDownloadException(JDownloadExceptionType.serverNotSupport,
-            error: StateError('Expected HTTP 206 for archive range '
-                '${downloadRange.start}-${downloadRange.end - 1}, '
-                'received HTTP ${response.statusCode}'));
-      }
       file = await File(downloadPath).open(mode: FileMode.writeOnlyAppend);
       await file.setPosition(fileWriteOffset);
-      await for (final Uint8List data in response.data!.stream) {
+      int retriesWithoutProgress = 0;
+      while (received < downloadRange.end - downloadRange.start) {
         if (cancelToken.isCancelled) {
           throw cancelToken.cancelError!;
         }
-        if (received + data.length > downloadRange.end - downloadRange.start) {
-          throw JDownloadException(JDownloadExceptionType.receiveDataFailed,
-              error: StateError('Archive range response exceeds requested length'));
-        }
+        // A fresh client releases the stalled socket before resuming the range.
+        final Dio client = Dio(BaseOptions(
+          connectTimeout: connectionTimeout,
+          sendTimeout: connectionTimeout,
+          receiveTimeout: receiveTimeout,
+        ));
         try {
-          await file.writeFrom(data);
-        } on FileSystemException catch (e) {
-          throw JDownloadException(JDownloadExceptionType.writeDownloadFileFailed, error: e);
+          final int start = downloadRange.start + received;
+          final Response<ResponseBody> response = await client.get<ResponseBody>(
+            url,
+            options: Options(
+              // Preserve the archive endpoint's legacy Range wire format.
+              preserveHeaderCase: true,
+              headers: {'Range': '$start-${downloadRange.end - 1}'},
+              responseType: ResponseType.stream,
+            ),
+            cancelToken: cancelToken,
+          );
+          if (response.statusCode != HttpStatus.partialContent) {
+            throw JDownloadException(JDownloadExceptionType.serverNotSupport,
+                error: StateError('Expected HTTP 206 for archive range '
+                    '$start-${downloadRange.end - 1}, received HTTP ${response.statusCode}'));
+          }
+          // Also cover a server that sends headers but never sends the first
+          // body byte. This is an idle timeout, not a total download deadline.
+          final Stream<Uint8List> stream = receiveTimeout > Duration.zero
+              ? response.data!.stream.timeout(receiveTimeout, onTimeout: (sink) {
+                  sink.addError(DioException.receiveTimeout(
+                    timeout: receiveTimeout,
+                    requestOptions: response.requestOptions,
+                  ));
+                  sink.close();
+                })
+              : response.data!.stream;
+          await for (final Uint8List data in stream) {
+            if (cancelToken.isCancelled) {
+              throw cancelToken.cancelError!;
+            }
+            if (received + data.length > downloadRange.end - downloadRange.start) {
+              throw JDownloadException(JDownloadExceptionType.receiveDataFailed,
+                  error: StateError('Archive range response exceeds requested length'));
+            }
+            try {
+              await file.writeFrom(data);
+            } on FileSystemException catch (e) {
+              throw JDownloadException(JDownloadExceptionType.writeDownloadFileFailed,
+                  error: e);
+            }
+            received += data.length;
+            if (data.isNotEmpty) {
+              retriesWithoutProgress = 0;
+            }
+            _mainSendPort
+                .send(SubIsolateMessage<int>(SubIsolateMessageType.progress, data.length));
+          }
+          if (received != downloadRange.end - downloadRange.start) {
+            throw JDownloadException(JDownloadExceptionType.receiveDataFailed,
+                error: StateError('Incomplete archive range response'));
+          }
+        } catch (error) {
+          if (cancelToken.isCancelled ||
+              !_isRetryableNetworkError(error) ||
+              retriesWithoutProgress >= timeoutRetryTimes) {
+            rethrow;
+          }
+          // Close before backoff; pausing must cancel the wait immediately.
+          client.close(force: true);
+          final Duration delay = Duration(seconds: 1 << min(retriesWithoutProgress++, 4));
+          _mainSendPort.send(SubIsolateMessage(
+              SubIsolateMessageType.log,
+              LogEvent(
+                  Level.warning,
+                  'Archive range stalled; retry '
+                  '$retriesWithoutProgress/$timeoutRetryTimes in ${delay.inSeconds}s '
+                  'from byte ${downloadRange.start + received}: $error')));
+          final Completer<void> waiting = Completer<void>();
+          final Timer timer = Timer(delay, waiting.complete);
+          try {
+            await Future.any([waiting.future, cancelToken.whenCancel]);
+          } finally {
+            timer.cancel();
+          }
+        } finally {
+          client.close(force: true);
         }
-        received += data.length;
-        _mainSendPort
-            .send(SubIsolateMessage<int>(SubIsolateMessageType.progress, data.length));
-      }
-      if (received != downloadRange.end - downloadRange.start) {
-        throw JDownloadException(JDownloadExceptionType.receiveDataFailed,
-            error: StateError('Incomplete archive range response'));
       }
       await file.flush();
     } on JDownloadException catch (e) {
@@ -165,9 +228,6 @@ class SubIsolateManager {
               : JDownloadExceptionType.receiveDataFailed,
           error: e);
     } finally {
-      // Close sockets even after an HTTP error or an idle completed range.
-      // The next task must never inherit a server-side connection lease.
-      client.close(force: true);
       try {
         await file?.close();
       } on FileSystemException catch (e) {
@@ -184,6 +244,18 @@ class SubIsolateManager {
     } else {
       _mainSendPort.send(SubIsolateMessage<Null>(SubIsolateMessageType.done, null));
     }
+  }
+
+  bool _isRetryableNetworkError(Object error) {
+    if (error is SocketException || error is HttpException) {
+      return true;
+    }
+    return error is DioException &&
+        (error.type == DioExceptionType.connectionTimeout ||
+            error.type == DioExceptionType.sendTimeout ||
+            error.type == DioExceptionType.receiveTimeout ||
+            error.type == DioExceptionType.connectionError ||
+            (error.type == DioExceptionType.unknown && error.error is SocketException));
   }
 
   void _configureDohClient() {
