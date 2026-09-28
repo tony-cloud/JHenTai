@@ -836,9 +836,8 @@ class ImageBlockService with JHLifeCircleBeanWithConfigStorage implements JHLife
 
   Future<List<String>> _readBuiltInAssetPaths() async {
     try {
-      String manifestContent = await rootBundle.loadString('AssetManifest.json');
-      Map<String, dynamic> manifestMap = json.decode(manifestContent) as Map<String, dynamic>;
-      return manifestMap.keys
+      final AssetManifest manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      return manifest.listAssets()
           .where((String key) => key.startsWith('assets/blocked_hashes/'))
           .toList(growable: false);
     } catch (e, stack) {

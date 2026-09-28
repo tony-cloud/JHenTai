@@ -106,6 +106,12 @@ class _GroupedListState<G, E> extends State<GroupedList<G, E>>
   void didUpdateWidget(covariant GroupedList<G, E> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    if (oldWidget.controller != widget.controller) {
+      controller.detach(this);
+      controller = widget.controller ?? GroupedListController<G, E>();
+      controller.attach(this);
+    }
+
     maxGalleryNum4Animation = widget.maxGalleryNum4Animation;
 
     _initGroupsAndElements(widget);
@@ -294,14 +300,12 @@ class GroupedListController<G, E> {
   }
 
   Future<void> removeElement(E element) {
-    assert(isAttached);
-
-    return _delegate!.removeElement(element);
+    // Removal is a visual delay; the caller must still delete the data when
+    // navigation or a rebuild has detached the list.
+    return _delegate?.removeElement(element) ?? Future<void>.value();
   }
 
   void toggleGroup(G group) {
-    assert(isAttached);
-
-    _delegate!.toggleGroup(group);
+    _delegate?.toggleGroup(group);
   }
 }

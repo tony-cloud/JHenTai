@@ -3,6 +3,46 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jhentai/widget/grouped_list.dart';
 
 void main() {
+  test('detached controllers do not block removal or group changes', () async {
+    final controller = GroupedListController<String, int>();
+    await controller.removeElement(1);
+    controller.toggleGroup('group');
+    expect(controller.isAttached, isFalse);
+  });
+
+  testWidgets('replacing a controller transfers the mounted list attachment', (tester) async {
+    final oldController = GroupedListController<String, int>();
+    final newController = GroupedListController<String, int>();
+    Widget buildList(GroupedListController<String, int> controller) => MaterialApp(
+          home: Scaffold(
+            body: GroupedList<String, int>(
+              groups: const {'group': false},
+              elements: const [1],
+              elementGroup: (_) => 'group',
+              groupUniqueKey: (group) => group,
+              elementUniqueKey: (element) => '$element',
+              groupBuilder: (_, __, isOpen) => Text('open: $isOpen'),
+              elementBuilder: (_, __, ___, ____) => const Text('row'),
+              maxGalleryNum4Animation: 50,
+              controller: controller,
+            ),
+          ),
+        );
+
+    await tester.pumpWidget(buildList(oldController));
+    await tester.pumpWidget(buildList(newController));
+    expect(oldController.isAttached, isFalse);
+    expect(newController.isAttached, isTrue);
+    newController.toggleGroup('group');
+    await tester.pumpAndSettle();
+    expect(find.text('open: true'), findsOneWidget);
+    await oldController.removeElement(1);
+
+    await tester.pumpWidget(const SizedBox());
+    expect(newController.isAttached, isFalse);
+    await newController.removeElement(1);
+  });
+
   testWidgets('10K collapsed items build no rows; expanded items stay lazy',
       (tester) async {
     final controller = GroupedListController<String, int>();
