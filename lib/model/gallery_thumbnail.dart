@@ -22,10 +22,10 @@ class GalleryThumbnail {
   /// 4e6f3ee6fd4ea261c11e11d6091b41a9a68503b6
   String? originImageHash;
 
-  /// Key required by MPV's imagedispatch API
+  /// Gallery token in the MPV URL. The dispatch key is read from the MPV page.
   String? mpvKey;
 
-  bool get isMPV => mpvKey != null;
+  bool get isMPV => mpvKey != null || Uri.tryParse(href)?.path.startsWith('/mpv/') == true;
 
   /// Large image
   bool isLarge;

@@ -585,8 +585,8 @@ class EHSpiderParser {
     String? mpvKey = RegExp(r'var\s+mpvkey\s*=\s*"([^"\\]+)"').firstMatch(html)?.group(1);
     if (mpvKey == null || mpvKey.isEmpty) {
       throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
         shouldPauseAllDownloadTasks: false,
       );
     }
@@ -596,15 +596,24 @@ class EHSpiderParser {
     ).firstMatch(html);
     if (imagelistMatch == null) {
       throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
         shouldPauseAllDownloadTasks: false,
       );
     }
 
     String imagelistRaw = imagelistMatch.group(1)!;
     String sanitizedImagelist = imagelistRaw.replaceAll(RegExp(r'//.*?(?=\n|\r|$)'), '');
-    List<dynamic> imagelist = jsonDecode(sanitizedImagelist) as List<dynamic>;
+    List<dynamic> imagelist;
+    try {
+      imagelist = jsonDecode(sanitizedImagelist) as List<dynamic>;
+    } on FormatException {
+      throw EHParseException(
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
+        shouldPauseAllDownloadTasks: false,
+      );
+    }
 
     Map<int, String> imageKeys = {};
     for (int index = 0; index < imagelist.length; index++) {
@@ -619,8 +628,8 @@ class EHSpiderParser {
 
     if (imageKeys.isEmpty) {
       throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
         shouldPauseAllDownloadTasks: false,
       );
     }
@@ -997,16 +1006,11 @@ class EHSpiderParser {
   static GalleryImage _parseImagePageFromHtml(String html, {required bool preferOriginal}) {
     Document document = parse(html);
     Element? img = document.querySelector('#img');
-    if (img == null && document.querySelector('#pane_images') != null) {
-      throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
-      );
-    }
     if (img == null) {
       throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
+        shouldPauseAllDownloadTasks: false,
       );
     }
 
@@ -1021,8 +1025,9 @@ class EHSpiderParser {
     String? url = img.attributes['src'];
     if (isEmptyOrNull(url)) {
       throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
+        shouldPauseAllDownloadTasks: false,
       );
     }
     if (url == EHConsts.EH509ImageUrl || url == EHConsts.EX509ImageUrl) {
@@ -1085,8 +1090,9 @@ class EHSpiderParser {
     originalUrl = isEmptyOrNull(originalUrl) ? null : "${EHConsts.EIndex}/${originalUrl!}";
     if (isEmptyOrNull(url)) {
       throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
+        shouldPauseAllDownloadTasks: false,
       );
     }
 

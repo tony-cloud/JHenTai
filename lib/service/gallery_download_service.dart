@@ -2026,6 +2026,7 @@ class GalleryDownloadService extends GetxController
       }
 
       bool usedMpvFlow = false;
+      int mpvKeysGeneration = galleryDownloadInfo.mpvKeysGeneration;
       String? mpvKeyForRequest;
       String? mpvImageKeyForRequest;
       String? mpvReloadKeyForRequest;
@@ -2034,8 +2035,6 @@ class GalleryDownloadService extends GetxController
         Future<GalleryImage> Function()? requestImageFactory;
 
         if (thumbnail.isMPV) {
-          galleryDownloadInfo.mpvKey ??= thumbnail.mpvKey;
-
           try {
             await _ensureMpvImageKeys(
               gallery,
@@ -2044,16 +2043,17 @@ class GalleryDownloadService extends GetxController
               serialNo,
             );
           } on EHParseException catch (e) {
-            if (e.type != EHParseExceptionType.unsupportedImagePageStyle) {
+            if (e.type != EHParseExceptionType.invalidImagePage) {
               rethrow;
             }
             log.download(
-              'MPV page unsupported, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo',
+              'MPV key response could not be parsed, fall back to legacy parser. Gid: ${gallery.gid}, index: $serialNo',
               level: Level.warning,
             );
           }
 
-          mpvKeyForRequest = galleryDownloadInfo.mpvKey ?? thumbnail.mpvKey;
+          mpvKeysGeneration = galleryDownloadInfo.mpvKeysGeneration;
+          mpvKeyForRequest = galleryDownloadInfo.mpvKey;
           mpvImageKeyForRequest = galleryDownloadInfo.mpvImageKeys[serialNo];
 
           if (mpvKeyForRequest != null && mpvImageKeyForRequest != null) {
@@ -2116,10 +2116,19 @@ class GalleryDownloadService extends GetxController
           ),
         );
       } on EHParseException catch (e) {
-        if (e.type == EHParseExceptionType.unsupportedImagePageStyle &&
+        if (e.type == EHParseExceptionType.invalidImagePage && thumbnail.isMPV) {
+          // Other images may still be finishing requests with the old keys.
+          // Only the first failed response for a generation invalidates them.
+          if (mpvKeysGeneration == galleryDownloadInfo.mpvKeysGeneration) {
+            galleryDownloadInfo.invalidateMpvKeys();
+            _saveGalleryMetadataInDisk(gallery);
+          }
+          await ehRequest.removeCacheByUrl(thumbnail.href.split('#').first);
+        }
+        if (e.type == EHParseExceptionType.invalidImagePage &&
             reParseDepth < _maxReparseImageUrlAttempts) {
           log.download(
-            'Parse image url returned unsupported page style, force re-parse href. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}',
+            'Parse image response failed, refresh href and MPV keys. Gid: ${gallery.gid}, index: $serialNo, attempt: ${reParseDepth + 1}',
             level: Level.warning,
           );
           await ehRequest.removeCacheByUrl(
@@ -2163,21 +2172,9 @@ class GalleryDownloadService extends GetxController
         return;
       }
 
-      if (usedMpvFlow && mpvKeyForRequest != null && mpvImageKeyForRequest != null) {
-        bool metadataChanged = false;
-        if (galleryDownloadInfo.mpvKey != mpvKeyForRequest) {
-          galleryDownloadInfo.mpvKey = mpvKeyForRequest;
-          metadataChanged = true;
-        }
-        if (galleryDownloadInfo.mpvImageKeys[serialNo] != mpvImageKeyForRequest) {
-          galleryDownloadInfo.mpvImageKeys[serialNo] = mpvImageKeyForRequest;
-          metadataChanged = true;
-        }
+      if (usedMpvFlow && mpvKeysGeneration == galleryDownloadInfo.mpvKeysGeneration) {
         if (galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] != image.reloadKey) {
           galleryDownloadInfo.mpvSkipServerIdentifiers[serialNo] = image.reloadKey;
-          metadataChanged = true;
-        }
-        if (metadataChanged) {
           _saveGalleryMetadataInDisk(gallery);
         }
       }
@@ -2939,32 +2936,25 @@ class GalleryDownloadService extends GetxController
     GalleryThumbnail thumbnail,
     int serialNo,
   ) async {
-    if (galleryDownloadInfo.mpvImageKeys[serialNo] != null &&
-        (galleryDownloadInfo.mpvKey ?? thumbnail.mpvKey) != null) {
-      return;
-    }
+    while (galleryDownloadInfo.mpvImageKeys[serialNo] == null ||
+        galleryDownloadInfo.mpvKey == null) {
+      final int generation = galleryDownloadInfo.mpvKeysGeneration;
+      final Future<void> fetchFuture = galleryDownloadInfo.mpvKeysFuture ??=
+          _fetchMpvKeys(gallery, galleryDownloadInfo, thumbnail);
+      try {
+        await fetchFuture;
+      } finally {
+        if (identical(galleryDownloadInfo.mpvKeysFuture, fetchFuture)) {
+          galleryDownloadInfo.mpvKeysFuture = null;
+        }
+      }
 
-    Future<void>? inFlight = galleryDownloadInfo.mpvKeysFuture;
-    if (inFlight != null) {
-      await inFlight;
-    }
-
-    if (galleryDownloadInfo.mpvImageKeys[serialNo] != null &&
-        (galleryDownloadInfo.mpvKey ?? thumbnail.mpvKey) != null) {
-      return;
-    }
-
-    Future<void> fetchFuture = _fetchMpvKeys(gallery, galleryDownloadInfo, thumbnail);
-    galleryDownloadInfo.mpvKeysFuture = fetchFuture;
-    try {
-      await fetchFuture;
-    } finally {
-      if (identical(galleryDownloadInfo.mpvKeysFuture, fetchFuture)) {
-        galleryDownloadInfo.mpvKeysFuture = null;
+      if (generation == galleryDownloadInfo.mpvKeysGeneration) {
+        // A partial imagelist may need the legacy page for this image. Do not
+        // loop forever fetching a list that does not contain the target page.
+        return;
       }
     }
-
-    galleryDownloadInfo.mpvKey ??= thumbnail.mpvKey;
   }
 
   Future<void> _fetchMpvKeys(
@@ -2972,11 +2962,12 @@ class GalleryDownloadService extends GetxController
     GalleryDownloadInfo galleryDownloadInfo,
     GalleryThumbnail thumbnail,
   ) async {
+    final int generation = galleryDownloadInfo.mpvKeysGeneration;
     String mpvUrl = thumbnail.href.split('#').first;
     if (mpvUrl.isEmpty) {
       throw EHParseException(
-        type: EHParseExceptionType.unsupportedImagePageStyle,
-        message: 'unsupportedImagePageStyle'.tr,
+        type: EHParseExceptionType.invalidImagePage,
+        message: 'parsePageFailed'.tr,
         shouldPauseAllDownloadTasks: false,
       );
     }
@@ -2985,11 +2976,14 @@ class GalleryDownloadService extends GetxController
       () => ehRequest.requestMpvPage(
         mpvUrl,
         cancelToken: galleryDownloadInfo.cancelToken,
+        // Dispatch keys can expire independently of the HTML cache. Retries
+        // must never read the same expired or malformed MPV page again.
+        useCacheIfAvailable: false,
         parser: EHSpiderParser.mpvPage2MpvKeyAndImageKeys,
       ),
       retryIf: (e) =>
           e is DioException && e.type != DioExceptionType.cancel ||
-          e is EHParseException && e.type == EHParseExceptionType.unsupportedImagePageStyle,
+          e is EHParseException && e.type == EHParseExceptionType.invalidImagePage,
       onRetry: (e) => log.download(
         'Fetch MPV image keys failed, retry. Reason: ${_mpvKeyFetchRetryReason(e)}',
         level: Level.warning,
@@ -2997,6 +2991,10 @@ class GalleryDownloadService extends GetxController
       delayFactor: const Duration(milliseconds: 500),
       maxAttempts: _maxRetryTimes,
     );
+
+    if (generation != galleryDownloadInfo.mpvKeysGeneration) {
+      return;
+    }
 
     bool metadataChanged = false;
     if (galleryDownloadInfo.mpvKey != result.mpvKey) {
@@ -4391,6 +4389,16 @@ class GalleryDownloadInfo {
   List<String?> mpvSkipServerIdentifiers;
 
   Future<void>? mpvKeysFuture;
+
+  int mpvKeysGeneration = 0;
+
+  void invalidateMpvKeys() {
+    mpvKeysGeneration++;
+    mpvKey = null;
+    mpvImageKeys.fillRange(0, mpvImageKeys.length, null);
+    mpvSkipServerIdentifiers.fillRange(0, mpvSkipServerIdentifiers.length, null);
+    mpvKeysFuture = null;
+  }
 
   GalleryDownloadInfo({
     required this.thumbnailsCountPerPage,

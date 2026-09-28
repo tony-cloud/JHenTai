@@ -834,12 +834,15 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   Future<T> requestMpvPage<T>(
     String mpvUrl, {
     CancelToken? cancelToken,
+    bool useCacheIfAvailable = true,
     required HtmlParser<T> parser,
   }) async {
     Response response = await _getWithErrorHandler(
       mpvUrl,
       cancelToken: cancelToken,
-      options: CacheOptions.cacheOptionsIgnoreParams.toOptions(),
+      options: useCacheIfAvailable
+          ? CacheOptions.cacheOptionsIgnoreParams.toOptions()
+          : CacheOptions.noCacheOptionsIgnoreParams.toOptions(),
     );
     return _parseResponse(response, parser);
   }
