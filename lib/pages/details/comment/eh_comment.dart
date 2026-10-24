@@ -18,10 +18,10 @@ import 'package:jhentai/setting/preference_setting.dart';
 import 'package:jhentai/utils/date_util.dart';
 import 'package:jhentai/utils/domain_fronting_util.dart';
 import 'package:jhentai/utils/eh_spider_parser.dart';
-import 'package:jhentai/utils/rpc_media_proxy_util.dart';
 import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/eh_alert_dialog.dart';
 import 'package:jhentai/widget/eh_comment_score_details_dialog.dart';
+import 'package:jhentai/widget/eh_image_request_builder.dart';
 import 'package:jhentai/widget/like_button.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -284,10 +284,6 @@ class _EHCommentTextBody extends StatelessWidget {
       }
 
       String url = node.attributes['src']!.replaceAll('s.exhentai.org', 'ehgt.org');
-      final RPCMediaProxyResult proxy = RPCMediaProxyUtil.build(url);
-      DomainFrontingResult fronting =
-          proxy.proxied ? DomainFrontingResult(url: proxy.url) : DomainFrontingUtil.build(url);
-      final Map<String, String>? headers = proxy.headers ?? fronting.headers;
       return WidgetSpan(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -295,27 +291,28 @@ class _EHCommentTextBody extends StatelessWidget {
               constraints: BoxConstraints(
                 maxWidth: _computeImageMaxWidth(constraints, node),
               ),
-              child: ExtendedImage.network(
-                fronting.url,
-                headers: headers,
-                handleLoadingProgress: true,
-                loadStateChanged: (ExtendedImageState state) {
-                  switch (state.extendedImageLoadState) {
-                    case LoadState.loading:
-                      return Center(child: UIConfig.loadingAnimation(context));
-                    case LoadState.failed:
-                      if (!proxy.proxied) {
+              child: EHImageRequestBuilder(
+                url: url,
+                loadingBuilder: (context) => Center(child: UIConfig.loadingAnimation(context)),
+                builder: (context, fronting, headers, retry) => ExtendedImage.network(
+                  fronting.url,
+                  headers: headers,
+                  handleLoadingProgress: true,
+                  loadStateChanged: (ExtendedImageState state) {
+                    switch (state.extendedImageLoadState) {
+                      case LoadState.loading:
+                        return Center(child: UIConfig.loadingAnimation(context));
+                      case LoadState.failed:
                         DomainFrontingUtil.markUnavailableFromResult(fronting);
-                      }
-                      return Center(
-                        child: GestureDetector(
-                            onTap: state.reLoadImage,
-                            child: const Icon(Icons.sentiment_very_dissatisfied)),
-                      );
-                    default:
-                      return null;
-                  }
-                },
+                        return Center(
+                          child: GestureDetector(
+                              onTap: retry, child: const Icon(Icons.sentiment_very_dissatisfied)),
+                        );
+                      default:
+                        return null;
+                    }
+                  },
+                ),
               ),
             );
           },

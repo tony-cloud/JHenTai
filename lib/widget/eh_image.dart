@@ -15,7 +15,7 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/advanced_setting.dart';
 import 'package:jhentai/setting/style_setting.dart';
 import 'package:jhentai/utils/domain_fronting_util.dart';
-import 'package:jhentai/utils/rpc_media_proxy_util.dart';
+import 'package:jhentai/widget/eh_image_request_builder.dart';
 
 typedef LoadingProgressWidgetBuilder = Widget Function(double);
 typedef FailedWidgetBuilder = Widget Function(ExtendedImageState state);
@@ -129,63 +129,61 @@ class EHImage extends StatelessWidget {
   Widget buildNetworkImage(BuildContext context) {
     final int? effectiveMaxBytes = kIsWeb ? null : maxBytes;
     final String rawUrl = _replaceEXUrl(galleryImage.url);
-    final RPCMediaProxyResult proxy = RPCMediaProxyUtil.build(rawUrl);
-    final DomainFrontingResult fronting =
-        proxy.proxied ? DomainFrontingResult(url: proxy.url) : DomainFrontingUtil.build(rawUrl);
-    final Map<String, String>? headers = proxy.headers ?? fronting.headers;
-
-    return ExtendedImage.network(
-      fronting.url,
-      fit: fit,
-      height: containerHeight,
-      width: containerWidth,
-      headers: headers,
-      handleLoadingProgress: loadingProgressWidgetBuilder != null,
-      printError: kDebugMode,
-      enableSlideOutPage: enableSlideOutPage,
-      clearMemoryCacheWhenDispose: clearMemoryCacheWhenDispose,
-      loadStateChanged: (ExtendedImageState state) {
-        switch (state.extendedImageLoadState) {
-          case LoadState.loading:
-            return loadingProgressWidgetBuilder != null
-                ? loadingProgressWidgetBuilder!
-                    .call(_computeLoadingProgress(state.loadingProgress, state.extendedImageInfo))
-                : Center(child: UIConfig.loadingAnimation(context));
-          case LoadState.failed:
-            if (!proxy.proxied) {
+    return EHImageRequestBuilder(
+      url: rawUrl,
+      loadingBuilder: (context) =>
+          loadingProgressWidgetBuilder?.call(0.01) ??
+          Center(child: UIConfig.loadingAnimation(context)),
+      builder: (context, fronting, headers, retry) => ExtendedImage.network(
+        fronting.url,
+        fit: fit,
+        height: containerHeight,
+        width: containerWidth,
+        headers: headers,
+        handleLoadingProgress: loadingProgressWidgetBuilder != null,
+        printError: kDebugMode,
+        enableSlideOutPage: enableSlideOutPage,
+        clearMemoryCacheWhenDispose: clearMemoryCacheWhenDispose,
+        loadStateChanged: (ExtendedImageState state) {
+          switch (state.extendedImageLoadState) {
+            case LoadState.loading:
+              return loadingProgressWidgetBuilder != null
+                  ? loadingProgressWidgetBuilder!
+                      .call(_computeLoadingProgress(state.loadingProgress, state.extendedImageInfo))
+                  : Center(child: UIConfig.loadingAnimation(context));
+            case LoadState.failed:
               DomainFrontingUtil.markUnavailableFromResult(fronting);
-            }
-            return failedWidgetBuilder?.call(state) ??
-                Center(
-                  child: GestureDetector(
-                      onTap: state.reLoadImage,
-                      child: const Icon(Icons.sentiment_very_dissatisfied)),
-                );
-          case LoadState.completed:
-            state.returnLoadStateChangedWidget = true;
+              return failedWidgetBuilder?.call(state) ??
+                  Center(
+                    child: GestureDetector(
+                        onTap: retry, child: const Icon(Icons.sentiment_very_dissatisfied)),
+                  );
+            case LoadState.completed:
+              state.returnLoadStateChangedWidget = true;
 
-            Widget child = completedWidgetBuilder?.call(state) ?? _buildExtendedRawImage(state);
+              Widget child = completedWidgetBuilder?.call(state) ?? _buildExtendedRawImage(state);
 
-            if (borderRadius != BorderRadius.zero) {
-              child = ClipRRect(borderRadius: borderRadius, child: child);
-            }
+              if (borderRadius != BorderRadius.zero) {
+                child = ClipRRect(borderRadius: borderRadius, child: child);
+              }
 
-            if (state.slidePageState != null) {
-              child = ExtendedImageSlidePageHandler(
-                  extendedImageSlidePageState: state.slidePageState, child: child);
-            }
+              if (state.slidePageState != null) {
+                child = ExtendedImageSlidePageHandler(
+                    extendedImageSlidePageState: state.slidePageState, child: child);
+              }
 
-            child = Center(
-              child: Container(
-                decoration: BoxDecoration(boxShadow: shadows, borderRadius: borderRadius),
-                child: child,
-              ),
-            );
+              child = Center(
+                child: Container(
+                  decoration: BoxDecoration(boxShadow: shadows, borderRadius: borderRadius),
+                  child: child,
+                ),
+              );
 
-            return forceFadeIn || !state.wasSynchronouslyLoaded ? child.fadeInWidget() : child;
-        }
-      },
-      maxBytes: effectiveMaxBytes,
+              return forceFadeIn || !state.wasSynchronouslyLoaded ? child.fadeInWidget() : child;
+          }
+        },
+        maxBytes: effectiveMaxBytes,
+      ),
     );
   }
 

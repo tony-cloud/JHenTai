@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 import 'package:jhentai/config/ui_config.dart';
 import 'package:jhentai/utils/domain_fronting_util.dart';
-import 'package:jhentai/utils/rpc_media_proxy_util.dart';
+import 'package:jhentai/widget/eh_image_request_builder.dart';
 
 class EHWarningImage extends StatefulWidget {
   final bool warning;
@@ -29,39 +29,55 @@ class _EHWarningImageState extends State<EHWarningImage> {
 
   @override
   Widget build(BuildContext context) {
-    final RPCMediaProxyResult proxy = RPCMediaProxyUtil.build(widget.src);
-    final DomainFrontingResult fronting =
-        proxy.proxied ? DomainFrontingResult(url: proxy.url) : DomainFrontingUtil.build(widget.src);
-    final Map<String, String>? headers = proxy.headers ?? fronting.headers;
-
-    return GestureDetector(
-      onTap: () {
-        if (warning) {
-          setState(() => warning = false);
-        }
-      },
-      child: warning
-          ? Blur(
-              blur: 15,
-              blurColor: UIConfig.warningImageBlurColor,
-              colorOpacity: 0.75,
-              overlay: Center(
-                child: Text(
-                  'warningImageHint'.tr,
-                  style: const TextStyle(
-                      fontSize: 12, height: 2, color: UIConfig.warningImageTextColor),
-                  textAlign: TextAlign.center,
+    return EHImageRequestBuilder(
+      url: widget.src,
+      loadingBuilder: (context) => Center(child: UIConfig.loadingAnimation(context)),
+      builder: (context, fronting, headers, retry) => GestureDetector(
+        onTap: () {
+          if (warning) {
+            setState(() => warning = false);
+          }
+        },
+        child: warning
+            ? Blur(
+                blur: 15,
+                blurColor: UIConfig.warningImageBlurColor,
+                colorOpacity: 0.75,
+                overlay: Center(
+                  child: Text(
+                    'warningImageHint'.tr,
+                    style: const TextStyle(
+                        fontSize: 12, height: 2, color: UIConfig.warningImageTextColor),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-              child: ExtendedImage.network(
-                fronting.url,
-                headers: headers,
-              ),
-            )
-          : ExtendedImage.network(
-              fronting.url,
-              headers: headers,
-            ),
+                child: _buildImage(fronting, headers, retry),
+              )
+            : _buildImage(fronting, headers, retry),
+      ),
+    );
+  }
+
+  Widget _buildImage(
+    DomainFrontingResult fronting,
+    Map<String, String>? headers,
+    VoidCallback retry,
+  ) {
+    return ExtendedImage.network(
+      fronting.url,
+      headers: headers,
+      loadStateChanged: (state) {
+        if (state.extendedImageLoadState != LoadState.failed) {
+          return null;
+        }
+        DomainFrontingUtil.markUnavailableFromResult(fronting);
+        return Center(
+          child: GestureDetector(
+            onTap: retry,
+            child: const Icon(Icons.sentiment_very_dissatisfied),
+          ),
+        );
+      },
     );
   }
 }

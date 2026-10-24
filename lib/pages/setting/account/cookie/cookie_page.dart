@@ -4,7 +4,6 @@ import 'package:clipboard/clipboard.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_rx/get_rx.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:jhentai/consts/eh_consts.dart';
 import 'package:jhentai/extension/dio_exception_extension.dart';
@@ -17,7 +16,7 @@ import 'package:jhentai/utils/toast_util.dart';
 import 'package:jhentai/widget/loading_state_indicator.dart';
 
 import 'package:jhentai/exception/eh_site_exception.dart';
-import 'package:jhentai/network/eh_ip_provider.dart';
+import 'package:jhentai/utils/domain_fronting_util.dart';
 import 'package:jhentai/network/eh_timeout_translator.dart';
 import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/network_setting.dart';
@@ -199,32 +198,19 @@ class _CookiePageState extends State<CookiePage> {
       ),
     );
 
-    EHIpProvider ehIpProvider = RoundRobinIpProvider(NetworkSetting.host2IPs);
-
     _dio!.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
-          if (networkSetting.enableDomainFronting.isFalse) {
-            handler.next(options);
-            return;
+        onRequest: (RequestOptions options, RequestInterceptorHandler handler) async {
+          try {
+            handler.next(await DomainFrontingUtil.buildRequest(options));
+          } catch (error, stackTrace) {
+            handler.reject(DioException(
+              requestOptions: options,
+              type: DioExceptionType.connectionError,
+              error: error,
+              stackTrace: stackTrace,
+            ));
           }
-
-          String rawPath = options.path;
-          String host = options.uri.host;
-          if (!ehIpProvider.supports(host)) {
-            handler.next(options);
-            return;
-          }
-
-          String ip = ehIpProvider.nextIP(host);
-          handler.next(
-            options.copyWith(
-              path: rawPath.replaceFirst(host, ip),
-              headers: {...options.headers, 'host': host},
-              extra: options.extra
-                ..[EHRequest.domainFrontingExtraKey] = {'host': host, 'ip': ip},
-            ),
-          );
         },
         onError: (DioException e, ErrorInterceptorHandler handler) {
           if (!e.requestOptions.extra.containsKey(EHRequest.domainFrontingExtraKey)) {
@@ -237,7 +223,7 @@ class _CookiePageState extends State<CookiePage> {
               e.type == DioExceptionType.connectionError) {
             String host = e.requestOptions.extra[EHRequest.domainFrontingExtraKey]['host'];
             String ip = e.requestOptions.extra[EHRequest.domainFrontingExtraKey]['ip'];
-            ehIpProvider.addUnavailableIp(host, ip);
+            DomainFrontingUtil.markUnavailable(host, ip);
             log.info('Refresh igneous, add unavailable host-ip: $host-$ip');
           }
 

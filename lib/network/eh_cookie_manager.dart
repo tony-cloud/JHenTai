@@ -7,6 +7,7 @@ import 'package:jhentai/enum/config_enum.dart';
 import 'package:jhentai/service/local_config_service.dart';
 import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/utils/cookie_util.dart';
+import 'package:jhentai/utils/domain_fronting_util.dart';
 
 class EHCookieManager extends Interceptor {
   final LocalConfigService localConfigService;
@@ -27,21 +28,27 @@ class EHCookieManager extends Interceptor {
     this.cookies.removeWhere((cookie) => cookies.any((c) => c.name == cookie.name));
     this.cookies.addAll(cookies);
 
-    List<Cookie> storeCookies = List.from(this.cookies)..removeWhere((cookie) => cookie.name == 'nw' || cookie.name == 'datatags');
-    await localConfigService.write(configKey: ConfigEnum.ehCookie, value: jsonEncode(storeCookies.map((cookie) => cookie.toString()).toList()));
+    List<Cookie> storeCookies = List.from(this.cookies)
+      ..removeWhere((cookie) => cookie.name == 'nw' || cookie.name == 'datatags');
+    await localConfigService.write(
+        configKey: ConfigEnum.ehCookie,
+        value: jsonEncode(storeCookies.map((cookie) => cookie.toString()).toList()));
   }
 
   Future<void> removeCookies(List<String> cookieNames) async {
     cookies.removeWhere((cookie) => cookieNames.any((name) => cookie.name == name));
 
-    List<Cookie> storeCookies = List.from(cookies)..removeWhere((cookie) => cookie.name == 'nw' || cookie.name == 'datatags');
-    await localConfigService.write(configKey: ConfigEnum.ehCookie, value: jsonEncode(storeCookies.map((cookie) => cookie.toString()).toList()));
+    List<Cookie> storeCookies = List.from(cookies)
+      ..removeWhere((cookie) => cookie.name == 'nw' || cookie.name == 'datatags');
+    await localConfigService.write(
+        configKey: ConfigEnum.ehCookie,
+        value: jsonEncode(storeCookies.map((cookie) => cookie.toString()).toList()));
   }
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     try {
-      if (networkSetting.allHostAndIPs.contains(options.uri.host)) {
+      if (networkSetting.allHostAndIPs.contains(DomainFrontingUtil.requestHost(options))) {
         options.headers[HttpHeaders.cookieHeader] = CookieUtil.parse2String(cookies);
       }
       handler.next(options);
@@ -81,8 +88,12 @@ class EHCookieManager extends Interceptor {
       return;
     }
 
-    if (networkSetting.allHostAndIPs.contains(response.requestOptions.uri.host)) {
-      List<Cookie> cookies = cookieStrs.map(Cookie.fromSetCookieValue).map((cookie) => Cookie(cookie.name, cookie.value)).toList();
+    if (networkSetting.allHostAndIPs
+        .contains(DomainFrontingUtil.requestHost(response.requestOptions))) {
+      List<Cookie> cookies = cookieStrs
+          .map(Cookie.fromSetCookieValue)
+          .map((cookie) => Cookie(cookie.name, cookie.value))
+          .toList();
       await storeEHCookies(cookies);
     }
   }

@@ -16,7 +16,7 @@ import 'package:jhentai/database/database.dart';
 import 'package:jhentai/exception/eh_site_exception.dart';
 import 'package:jhentai/model/gallery_page.dart';
 import 'package:jhentai/model/search_config.dart';
-import 'package:jhentai/network/eh_ip_provider.dart';
+import 'package:jhentai/utils/domain_fronting_util.dart';
 import 'package:jhentai/network/rpc_request.dart';
 import 'package:jhentai/network/request_retrier.dart';
 import 'package:jhentai/network/eh_timeout_translator.dart';
@@ -50,7 +50,6 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   late final Dio _dio;
   late final EHCookieManager _cookieManager;
   late final EHCacheManager _cacheManager;
-  late final EHIpProvider _ehIpProvider;
   late final String systemProxyAddress;
 
   int _requestSeq = 0;
@@ -69,7 +68,7 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
   List<Cookie> get cookies => List.unmodifiable(_cookieManager.cookies);
 
-  static const String domainFrontingExtraKey = 'JHDF';
+  static const String domainFrontingExtraKey = DomainFrontingUtil.requestExtraKey;
 
   @override
   List<JHLifeCircleBean> get initDependencies =>
@@ -94,7 +93,6 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       systemProxyAddress = '';
       await _initCookieManager();
       _initCacheManager();
-      _ehIpProvider = RoundRobinIpProvider(NetworkSetting.host2IPs);
       _initTimeOutTranslator();
 
       ever(ehSetting.site, (_) {
@@ -119,8 +117,6 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     _initDomainFronting();
     _initCertificateForAndroidWithOldVersion();
 
-    _ehIpProvider = RoundRobinIpProvider(NetworkSetting.host2IPs);
-
     _initTimeOutTranslator();
 
     ever(ehSetting.site, (_) {
@@ -142,7 +138,7 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
 
     SocksProxy.initProxy(
       onCreate: (client) => client.badCertificateCallback = (_, String host, __) {
-        return networkSetting.allIPs.contains(host);
+        return DomainFrontingUtil.isFrontingIP(host);
       },
       findProxy: (uri) {
         if (_buildSocksProxyConfiguration() != null) {
@@ -204,25 +200,17 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
   void _initDomainFronting() {
     /// domain fronting interceptor
     _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
-        if (networkSetting.enableDomainFronting.isFalse) {
-          handler.next(options);
-          return;
+      onRequest: (RequestOptions options, RequestInterceptorHandler handler) async {
+        try {
+          handler.next(await DomainFrontingUtil.buildRequest(options));
+        } catch (error, stackTrace) {
+          handler.reject(DioException(
+            requestOptions: options,
+            type: DioExceptionType.connectionError,
+            error: error,
+            stackTrace: stackTrace,
+          ));
         }
-
-        String rawPath = options.path;
-        String host = options.uri.host;
-        if (!_ehIpProvider.supports(host)) {
-          handler.next(options);
-          return;
-        }
-
-        String ip = _ehIpProvider.nextIP(host);
-        handler.next(options.copyWith(
-          path: rawPath.replaceFirst(host, ip),
-          headers: {...options.headers, 'host': host},
-          extra: options.extra..[domainFrontingExtraKey] = {'host': host, 'ip': ip},
-        ));
       },
       onError: (DioException e, ErrorInterceptorHandler handler) {
         if (!e.requestOptions.extra.containsKey(domainFrontingExtraKey)) {
@@ -238,7 +226,7 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
           if (!isGalleryDeleted404) {
             String host = e.requestOptions.extra[domainFrontingExtraKey]['host'];
             String ip = e.requestOptions.extra[domainFrontingExtraKey]['ip'];
-            _ehIpProvider.addUnavailableIp(host, ip);
+            DomainFrontingUtil.markUnavailable(host, ip);
             log.info('Add unavailable host-ip: $host-$ip');
           }
         }
@@ -1727,7 +1715,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
   String? _galleryDeletedMessageFrom404(DioException e) {
     if (e.response?.statusCode != 404 ||
-        !networkSetting.allHostAndIPs.contains(e.requestOptions.uri.host)) {
+        !networkSetting.allHostAndIPs.contains(DomainFrontingUtil.requestHost(e.requestOptions))) {
       return null;
     }
 
@@ -1738,7 +1726,8 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
   }
 
   void _emitEHExceptionIfFailed(Response response) {
-    if (!networkSetting.allHostAndIPs.contains(response.requestOptions.uri.host)) {
+    if (!networkSetting.allHostAndIPs
+        .contains(DomainFrontingUtil.requestHost(response.requestOptions))) {
       return;
     }
 

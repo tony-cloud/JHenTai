@@ -34,7 +34,7 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
 
   static const Map<String, List<String>> host2IPs = {
     'e-hentai.org': ['172.66.132.196', '172.66.140.62'],
-    'ehgt.org': ['62.112.8.21', '89.39.106.43', '109.236.85.28'],
+    'ehgt.org': ['62.112.8.152', '185.132.132.76', '185.132.132.79'],
     'exhentai.org': [
       '178.175.128.251',
       '178.175.128.252',
