@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/utils/domain_fronting_util.dart';
@@ -31,12 +32,14 @@ class EHImageRequestBuilder extends StatefulWidget {
 
 class _EHImageRequestBuilderState extends State<EHImageRequestBuilder> {
   late RPCMediaProxyResult _proxy;
-  late (bool, bool, String) _networkSettings;
+  late (bool, bool, bool, String) _networkSettings;
   late Future<DomainFrontingResult> _request;
+  late Worker _networkSettingsWorker;
 
-  (bool, bool, String) get _currentNetworkSettings => (
+  (bool, bool, bool, String) get _currentNetworkSettings => (
         networkSetting.enableDomainFronting.value,
         networkSetting.enableDnsOverHttps.value,
+        networkSetting.enableIPv6.value,
         networkSetting.dnsOverHttpsEndpoint.value,
       );
 
@@ -44,6 +47,22 @@ class _EHImageRequestBuilderState extends State<EHImageRequestBuilder> {
   void initState() {
     super.initState();
     _startResolution(RPCMediaProxyUtil.build(widget.url));
+    _networkSettingsWorker = everAll([
+      networkSetting.enableDomainFronting,
+      networkSetting.enableDnsOverHttps,
+      networkSetting.enableIPv6,
+      networkSetting.dnsOverHttpsEndpoint,
+    ], (_) {
+      if (_networkSettings != _currentNetworkSettings) {
+        setState(() => _startResolution(RPCMediaProxyUtil.build(widget.url)));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _networkSettingsWorker.dispose();
+    super.dispose();
   }
 
   @override

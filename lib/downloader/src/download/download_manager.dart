@@ -29,6 +29,7 @@ class DownloadManager {
   ProxyConfig? proxyConfig;
   final LookupCallback? lookup;
   final bool enableDoh;
+  final bool Function()? enableIPv6;
   final String? dohEndpoint;
 
   late int _isolateCount;
@@ -80,6 +81,7 @@ class DownloadManager {
     this.contentLengthRetryPolicy = const ContentLengthRetryPolicy(),
     this.lookup,
     this.enableDoh = false,
+    this.enableIPv6,
     this.dohEndpoint,
   }) : _isolateCount = isolateCount {
     _dio = _createDio(connectionTimeout, receiveTimeout);
@@ -94,6 +96,7 @@ class DownloadManager {
       final HttpClient client = createProxyHttpClient(
         socksConfig: socksConfig,
         lookup: lookup,
+        enableIPv6: enableIPv6,
       );
       if (socksConfig != null) {
         client.findProxy = (_) => 'DIRECT';
@@ -414,6 +417,7 @@ class DownloadManager {
         MainIsolateManager isolateManager = MainIsolateManager(
           proxyConfig: proxyConfig,
           enableDoh: enableDoh,
+          enableIPv6: enableIPv6?.call() ?? true,
           dohEndpoint: dohEndpoint,
         )
           ..registerOnReady(readyCompleters[i].complete)

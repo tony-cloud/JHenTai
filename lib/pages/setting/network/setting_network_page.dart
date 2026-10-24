@@ -49,6 +49,7 @@ class SettingNetworkPage extends StatelessWidget {
             _buildAllowSelfSignedCertificate(),
             _buildRpcBackendStatus(context),
             _buildRpcCapabilities(),
+            if (!GetPlatform.isWeb) _buildEnableIPv6(),
             if (!GetPlatform.isWeb) _buildEnableDnsOverHttps(),
             if (!GetPlatform.isWeb) _buildDnsOverHttpsEndpoint(context),
             if (!GetPlatform.isWeb) _buildEnableDomainFronting(),
@@ -284,6 +285,15 @@ class SettingNetworkPage extends StatelessWidget {
     );
   }
 
+  Widget _buildEnableIPv6() {
+    return SwitchListTile(
+      title: Text('enableIPv6'.tr),
+      subtitle: Text('enableIPv6Hint'.tr),
+      value: networkSetting.enableIPv6.value,
+      onChanged: networkSetting.saveEnableIPv6,
+    );
+  }
+
   Widget _buildEnableDnsOverHttps() {
     return SwitchListTile(
       title: Text('enableDnsOverHttps'.tr),
@@ -295,10 +305,16 @@ class SettingNetworkPage extends StatelessWidget {
 
   Widget _buildDnsOverHttpsEndpoint(BuildContext context) {
     final bool isAuto = networkSetting.dnsOverHttpsEndpoint.value == NetworkSetting.autoDohEndpoint;
+    final bool isIPv6EndpointDisabled = networkSetting.enableIPv6.isFalse &&
+        _isIPv6Endpoint(networkSetting.dnsOverHttpsEndpoint.value);
 
     return ListTile(
       title: Text('dnsOverHttpsEndpoint'.tr),
-      subtitle: Text(isAuto ? 'dnsOverHttpsAutoHint'.tr : 'dnsOverHttpsEndpointHint'.tr),
+      subtitle: Text(isIPv6EndpointDisabled
+          ? 'dnsOverHttpsIPv6DisabledHint'.tr
+          : isAuto
+              ? 'dnsOverHttpsAutoHint'.tr
+              : 'dnsOverHttpsEndpointHint'.tr),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -331,6 +347,7 @@ class SettingNetworkPage extends StatelessWidget {
               ),
               ...NetworkSetting.defaultDohEndpoints.map((endpoint) => CheckedPopupMenuItem(
                     value: endpoint,
+                    enabled: networkSetting.enableIPv6.isTrue || !_isIPv6Endpoint(endpoint),
                     checked: networkSetting.dnsOverHttpsEndpoint.value == endpoint,
                     child: Text(endpoint),
                   )),
@@ -352,6 +369,8 @@ class SettingNetworkPage extends StatelessWidget {
       ),
     );
   }
+
+  bool _isIPv6Endpoint(String endpoint) => Uri.tryParse(endpoint)?.host.contains(':') ?? false;
 
   void _saveDnsOverHttps() {
     final String endpoint = dnsOverHttpsController.text.trim();

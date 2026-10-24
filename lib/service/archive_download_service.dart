@@ -1512,6 +1512,7 @@ class ArchiveDownloadService extends GetxController
       },
       lookup: dohService.lookup,
       enableDnsOverHttps: networkSetting.enableDnsOverHttps.value,
+      enableIPv6: () => networkSetting.enableIPv6.value,
       dnsOverHttpsEndpoint: networkSetting.dnsOverHttpsEndpoint.value,
     );
     return task;

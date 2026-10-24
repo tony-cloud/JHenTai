@@ -608,6 +608,11 @@ class ru_RU {
       /// advanced setting page
       'enableDomainFronting': 'Включить Domain Fronting',
       'bypassSNIBlocking': 'Обход блокировки SNI',
+      'enableIPv6': 'Включить IPv6',
+      'enableIPv6Hint':
+          'При отключении использовать только IPv4 для DNS, DNS over HTTPS и соединений',
+      'dnsOverHttpsIPv6DisabledHint':
+          'Этот адрес использует IPv6 и недоступен, пока IPv6 отключён. Выберите автоматический режим или адрес с поддержкой IPv4.',
       'enableDnsOverHttps': 'Включить DNS over HTTPS',
       'enableDnsOverHttpsHint': 'Разрешать домены через HTTPS, а не системный DNS',
       'dnsOverHttpsEndpoint': 'Адрес DNS over HTTPS',

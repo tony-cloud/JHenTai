@@ -9,6 +9,7 @@ import 'package:jhentai/downloader/src/isolate/main_isolate_manager.dart';
 import 'package:jhentai/downloader/src/model/proxy_config.dart';
 import 'package:jhentai/network/doh_resolver.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/utils/socks_proxy.dart';
 
 void main() {
   test('bracketed IPv6 endpoint resolves over certificate-pinned HTTPS', () async {
@@ -36,7 +37,7 @@ void main() {
     final certificate = await File('test/fixtures/doh/server-cert.pem').readAsString();
     final dio = Dio()
       ..httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
-        final client = HttpClient(context: SecurityContext(withTrustedRoots: false));
+        final client = createProxyHttpClient(context: SecurityContext(withTrustedRoots: false));
         client.findProxy = (_) => 'DIRECT';
         client.badCertificateCallback =
             (cert, host, _) => host == '::1' && cert.pem.trim() == certificate.trim();
@@ -124,5 +125,81 @@ void main() {
     await done.future.timeout(const Duration(seconds: 10));
     expect(await File(path).readAsBytes(), [1, 2, 3, 4]);
     expect(attempted, ['/unavailable', '/unavailable', '/working', '/working']);
+  });
+  test('running download worker applies IPv4-only policy and skips IPv6 DoH endpoint', () async {
+    final directory = await Directory.systemTemp.createTemp('doh-ipv4-worker-');
+    final previousLogDir = log.logDirPath;
+    log.logDirPath = directory.path;
+    addTearDown(() async {
+      await log.clear();
+      log.logDirPath = previousLogDir;
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+      }
+    });
+    final dns = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final ipv6Dns = await HttpServer.bind(InternetAddress.loopbackIPv6, 0, v6Only: true);
+    final archive = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(() async {
+      await dns.close(force: true);
+      await ipv6Dns.close(force: true);
+      await archive.close(force: true);
+    });
+    int ipv6Queries = 0;
+    ipv6Dns.listen((request) async {
+      ipv6Queries++;
+      request.response.statusCode = 503;
+      await request.response.close();
+    });
+    final types = <String?>[];
+    dns.listen((request) async {
+      types.add(request.uri.queryParameters['type']);
+      request.response.headers.contentType = ContentType.json;
+      request.response.write(jsonEncode({
+        'Status': 0,
+        'Answer': [
+          {'type': 1, 'TTL': 60, 'data': '127.0.0.1'}
+        ],
+      }));
+      await request.response.close();
+    });
+    archive.listen((request) async {
+      request.response.statusCode = 206;
+      request.response.add([9, 8]);
+      await request.response.close();
+    });
+    final ready = Completer<void>();
+    final done = Completer<void>();
+    final worker = MainIsolateManager(
+      proxyConfig: ProxyConfig(type: ProxyType.direct, address: ''),
+      enableDoh: true,
+      enableIPv6: true,
+      dohEndpoint: DohResolver.autoEndpoint,
+      autoDohEndpoints: [
+        'http://[::1]:${ipv6Dns.port}/dns-query',
+        'http://127.0.0.1:${dns.port}/dns-query',
+      ],
+    )
+      ..registerOnReady(ready.complete)
+      ..registerOnDone(done.complete)
+      ..registerOnError(done.completeError);
+    addTearDown(worker.killIsolate);
+    await worker.initIsolate();
+    await ready.future.timeout(const Duration(seconds: 5));
+    MainIsolateManager.updateIPv6Policy(false);
+    final path = '${directory.path}/ipv4.bin';
+    worker.beginDownload(
+      'http://archive.ipv4.test:${archive.port}/archive.bin',
+      path,
+      (start: 0, end: 2),
+      0,
+      connectionTimeout: const Duration(seconds: 5),
+      receiveTimeout: const Duration(seconds: 5),
+      timeoutRetryTimes: 0,
+    );
+    await done.future.timeout(const Duration(seconds: 10));
+    expect(await File(path).readAsBytes(), [9, 8]);
+    expect(types, ['1']);
+    expect(ipv6Queries, 0);
   });
 }

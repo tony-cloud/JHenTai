@@ -599,6 +599,10 @@ class pt_BR {
       /// advanced setting page
       'enableDomainFronting': 'Ativar frente de Domínio',
       'bypassSNIBlocking': 'Ignorar bloqueio de SNI',
+      'enableIPv6': 'Ativar IPv6',
+      'enableIPv6Hint': 'Quando desativado, usar apenas IPv4 para DNS, DNS sobre HTTPS e conexões',
+      'dnsOverHttpsIPv6DisabledHint':
+          'Este endereço usa IPv6 e fica indisponível quando o IPv6 está desativado. Escolha Automático ou um endereço compatível com IPv4.',
       'enableDnsOverHttps': 'Ativar DNS sobre HTTPS',
       'enableDnsOverHttpsHint': 'Resolver domínios via HTTPS em vez do DNS do sistema',
       'dnsOverHttpsEndpoint': 'Endpoint de DNS sobre HTTPS',

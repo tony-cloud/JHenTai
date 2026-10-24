@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jhentai/network/doh_resolver.dart';
+import 'package:jhentai/utils/dns_lookup.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
 
 const _first = 'https://first.test/dns-query';
@@ -401,8 +402,179 @@ void main() {
 
   test('literal addresses bypass DNS traffic', () async {
     expect(_ips(await lookup('192.0.2.1')), ['192.0.2.1']);
-    expect(_ips(await lookup('2001:db8::1')), ['2001:db8::1']);
+    expect(_ips(await lookup('2001:db8::1', type: InternetAddressType.any)),
+        ['2001:db8::1']);
+    expect(await lookup('2001:db8::1'), isEmpty);
     expect(adapter.requests, isEmpty);
+  });
+
+  group('IPv6 address policy', () {
+    test('disabled IPv6 queries only A and filters unexpected IPv6 answers',
+        () async {
+      adapter.handler =
+          (_) => _json([_answer('192.0.2.1'), _answer('2001:db8::1')]);
+      final result = await resolver.lookup('one.test',
+          endpoint: _first, enableIPv6: false);
+      expect(_ips(result), ['192.0.2.1']);
+      expect(
+          adapter.requests
+              .map((request) => request.uri.queryParameters['type']),
+          ['1']);
+    });
+
+    test(
+        'an IPv6-only request returns no addresses or HTTP queries when disabled',
+        () async {
+      expect(
+          await resolver.lookup('one.test',
+              endpoint: _first,
+              enableIPv6: false,
+              type: InternetAddressType.IPv6),
+          isEmpty);
+      expect(adapter.requests, isEmpty);
+    });
+
+    test('Auto skips IPv6 literal endpoints when disabled', () async {
+      resolver = DohResolver(
+          dio: dio,
+          autoEndpoints: ['https://[2001:db8::53]/dns-query', _first],
+          now: () => now);
+      adapter.handler = (_) => _json([_answer('192.0.2.1')]);
+      final result = await resolver.lookup('one.test',
+          endpoint: DohResolver.autoEndpoint, enableIPv6: false);
+      expect(_ips(result), ['192.0.2.1']);
+      expect(adapter.providers, ['first.test']);
+    });
+
+    test(
+        'a previously selected IPv6 Auto endpoint is skipped after disabling IPv6',
+        () async {
+      const ipv6Endpoint = 'https://[2001:db8::53]/dns-query';
+      resolver = DohResolver(
+          dio: dio, autoEndpoints: [ipv6Endpoint, _first], now: () => now);
+      adapter.handler = (_) => _json([_answer('192.0.2.1')]);
+      await resolver.lookup('one.test',
+          endpoint: DohResolver.autoEndpoint, type: InternetAddressType.IPv4);
+      expect(adapter.requests.single.uri,
+          Uri.parse('$ipv6Endpoint?name=one.test&type=1'));
+      await resolver.lookup('two.test',
+          endpoint: DohResolver.autoEndpoint, enableIPv6: false);
+      expect(adapter.requests.last.uri.host, 'first.test');
+      expect(adapter.requests, hasLength(2));
+    });
+
+    test(
+        'an explicit IPv6 endpoint is rejected before HTTP dispatch when disabled',
+        () async {
+      await expectLater(
+          resolver.lookup('one.test',
+              endpoint: 'https://[2001:db8::53]:8443/dns-query',
+              enableIPv6: false),
+          throwsA(isA<SocketException>()));
+      expect(adapter.requests, isEmpty);
+    });
+
+    test('bare and bracketed IPv6 literals obey the policy without DNS traffic',
+        () async {
+      for (final host in ['2001:db8::1', '[2001:db8::1]']) {
+        expect(await resolver.lookup(host, endpoint: _first, enableIPv6: false),
+            isEmpty);
+        expect(_ips(await resolver.lookup(host, endpoint: _first)),
+            ['2001:db8::1']);
+        expect(
+            await resolver.lookup(host,
+                endpoint: _first, type: InternetAddressType.IPv4),
+            isEmpty);
+      }
+      expect(
+          _ips(await resolver.lookup('192.0.2.1',
+              endpoint: _first, enableIPv6: false)),
+          ['192.0.2.1']);
+      expect(adapter.requests, isEmpty);
+    });
+
+    test('IPv4-only cache does not reuse dual-family cache or overwrite it',
+        () async {
+      adapter.handler = (options) => _json([
+            _answer(options.uri.queryParameters['type'] == '1'
+                ? '192.0.2.1'
+                : '2001:db8::1')
+          ]);
+      expect(_ips(await resolver.lookup('one.test', endpoint: _first)),
+          ['192.0.2.1', '2001:db8::1']);
+      expect(
+          _ips(await resolver.lookup('one.test',
+              endpoint: _first, enableIPv6: false)),
+          ['192.0.2.1']);
+      expect(_ips(await resolver.lookup('one.test', endpoint: _first)),
+          ['192.0.2.1', '2001:db8::1']);
+      expect(
+          adapter.requests
+              .map((request) => request.uri.queryParameters['type']),
+          ['1', '28', '1']);
+    });
+
+    test('different IPv6 policies isolate in-flight IPv4 queries', () async {
+      final observed = Completer<void>();
+      final enabled = Completer<ResponseBody>();
+      final disabled = Completer<ResponseBody>();
+      adapter.handler = (_) {
+        if (adapter.requests.length == 1) {
+          return enabled.future;
+        }
+        observed.complete();
+        return disabled.future;
+      };
+      final first = resolver.lookup('one.test',
+          endpoint: _first, type: InternetAddressType.IPv4);
+      final second = resolver.lookup('one.test',
+          endpoint: _first, type: InternetAddressType.IPv4, enableIPv6: false);
+      try {
+        await observed.future;
+        expect(adapter.requests, hasLength(2));
+      } finally {
+        enabled.complete(_json([_answer('192.0.2.1')]));
+        disabled.complete(_json([_answer('192.0.2.2')]));
+        await Future.wait([first, second]);
+      }
+      expect(_ips(await first), ['192.0.2.1']);
+      expect(_ips(await second), ['192.0.2.2']);
+    });
+  });
+
+  group('system DNS address policy', () {
+    test('IPv4-only policy filters bare and bracketed IPv6 literals', () async {
+      for (final host in ['2001:db8::1', '[2001:db8::1]']) {
+        expect(await lookupSystemAddresses(host, enableIPv6: false), isEmpty);
+        expect(_ips(await lookupSystemAddresses(host)), ['2001:db8::1']);
+        expect(
+            await lookupSystemAddresses(host, type: InternetAddressType.IPv4),
+            isEmpty);
+      }
+      expect(_ips(await lookupSystemAddresses('192.0.2.1', enableIPv6: false)),
+          ['192.0.2.1']);
+      expect(
+          await lookupSystemAddresses('192.0.2.1',
+              type: InternetAddressType.IPv6),
+          isEmpty);
+    });
+
+    test('an IPv6-only request is empty while IPv6 is disabled', () async {
+      expect(
+          await lookupSystemAddresses('one.invalid',
+              type: InternetAddressType.IPv6, enableIPv6: false),
+          isEmpty);
+    });
+
+    test('localhost system fallback uses only IPv4 while IPv6 is disabled',
+        () async {
+      final result =
+          await lookupSystemAddresses('localhost', enableIPv6: false);
+      expect(result, isNotEmpty);
+      expect(
+          result.every((address) => address.type == InternetAddressType.IPv4),
+          isTrue);
+    });
   });
 
   test('DoH endpoint bootstrap bypasses the global application DNS callback',

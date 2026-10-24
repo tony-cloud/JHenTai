@@ -582,6 +582,9 @@ class zh_TW {
       /// advanced setting page
       'enableDomainFronting': '開啟域名前置',
       'bypassSNIBlocking': '繞過SNI封鎖',
+      'enableIPv6': '啟用IPv6',
+      'enableIPv6Hint': '關閉後，DNS、DNS over HTTPS和網路連線僅使用IPv4',
+      'dnsOverHttpsIPv6DisabledHint': '此位址使用IPv6，關閉IPv6後無法使用。請選擇自動模式或相容IPv4的位址。',
       'enableDnsOverHttps': '啟用DNS over HTTPS',
       'enableDnsOverHttpsHint': '透過HTTPS解析網域而非系統DNS',
       'dnsOverHttpsEndpoint': 'DNS over HTTPS位址',

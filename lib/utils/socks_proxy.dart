@@ -1,36 +1,49 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:socks5_proxy/socks_client.dart';
+
+part 'network_transport.dart';
 
 typedef LookupCallback = Future<List<InternetAddress>> Function(
   String host, {
   InternetAddressType type,
 });
 
+/// Supplies alternate origin addresses for an already-routed URL. Returning
+/// null retains normal DNS resolution. TLS always uses the URL authority.
+typedef ConnectionAddressProvider = Future<List<InternetAddress>?> Function(
+    Uri uri);
+
 typedef SocksProxyConfigProvider = SocksProxyConfiguration? Function();
 
 class SocksProxy {
   SocksProxy._();
 
-  /// Initializes global HTTP overrides so every new [HttpClient] respects the
-  /// configured proxy settings. Optional [findProxy] behaves like the standard
-  /// `HttpClient.findProxy` callback, while [socksConfig] allows providing SOCKS
-  /// specific settings that are handled through socks5_proxy.
+  static void refreshAddressPolicy() {
+    _managedClients.removeWhere((reference) => reference.target == null);
+    for (final reference in _managedClients.toList()) {
+      reference.target?._refreshAddressPolicy();
+    }
+  }
+
   static void initProxy({
     String? proxy,
     void Function(HttpClient client)? onCreate,
     String Function(Uri url)? findProxy,
     SocksProxyConfigProvider? socksConfig,
     LookupCallback? lookup,
+    bool Function()? enableIPv6,
+    ConnectionAddressProvider? connectionAddresses,
   }) {
-    if (lookup != null) {
-      IOOverrides.global = _LookupOverrides(lookup);
-    }
     HttpOverrides.global = _ProxyOverrides(
       onCreate: onCreate,
       findProxy: findProxy,
       socksConfig: socksConfig,
-      lookupCallback: lookup,
+      lookup: lookup,
+      enableIPv6: enableIPv6,
+      connectionAddresses: connectionAddresses,
     );
   }
 }
@@ -39,23 +52,15 @@ HttpClient createProxyHttpClient({
   SecurityContext? context,
   SocksProxyConfiguration? socksConfig,
   LookupCallback? lookup,
+  bool Function()? enableIPv6,
+  ConnectionAddressProvider? connectionAddresses,
 }) {
-  final HttpClient client = lookup == null
-      ? HttpOverrides.runWithHttpOverrides(
-          () => HttpClient(context: context),
-          _PassthroughHttpOverrides(),
-        )
-      : IOOverrides.runWithIOOverrides(
-          () => HttpOverrides.runWithHttpOverrides(
-            () => HttpClient(context: context),
-            _PassthroughHttpOverrides(lookupCallback: lookup),
-          ),
-          _LookupOverrides(lookup),
-        );
-  if (socksConfig != null) {
-    _applySocksProxy(client, socksConfig);
-  }
-  return client;
+  final client = HttpOverrides.runWithHttpOverrides(
+    () => HttpClient(context: context),
+    _PassthroughHttpOverrides(),
+  );
+  return _TransportHttpClient(
+      client, context, lookup, enableIPv6, socksConfig, connectionAddresses);
 }
 
 class SocksProxyConfiguration {
@@ -81,18 +86,23 @@ SocksProxyConfiguration? parseSocksProxyConfiguration(
     return null;
   }
 
-  final String addressWithScheme = rawAddress.contains('://') ? rawAddress : 'socks://$rawAddress';
+  final String addressWithScheme =
+      rawAddress.contains('://') ? rawAddress : 'socks://$rawAddress';
 
   final Uri? uri = Uri.tryParse(addressWithScheme);
-  if (uri == null || (uri.host.isEmpty && uri.authority.isEmpty) || uri.port == 0) {
+  if (uri == null ||
+      (uri.host.isEmpty && uri.authority.isEmpty) ||
+      uri.port == 0) {
     return null;
   }
 
   final String host = uri.host.isNotEmpty ? uri.host : uri.authority;
   final List<String> userInfoParts = uri.userInfo.split(':');
-  final String? parsedUsername = uri.userInfo.isEmpty ? username : userInfoParts.first;
-  final String? parsedPassword =
-      uri.userInfo.isEmpty ? password : (userInfoParts.length > 1 ? userInfoParts[1] : null);
+  final String? parsedUsername =
+      uri.userInfo.isEmpty ? username : userInfoParts.first;
+  final String? parsedPassword = uri.userInfo.isEmpty
+      ? password
+      : (userInfoParts.length > 1 ? userInfoParts[1] : null);
 
   return SocksProxyConfiguration(
     host: host,
@@ -102,148 +112,37 @@ SocksProxyConfiguration? parseSocksProxyConfiguration(
   );
 }
 
+class _PassthroughHttpOverrides extends HttpOverrides {}
+
 class _ProxyOverrides extends HttpOverrides {
-  _ProxyOverrides({
-    this.onCreate,
-    this.findProxy,
-    this.socksConfig,
-    this.lookupCallback,
-  });
+  _ProxyOverrides(
+      {this.onCreate,
+      this.findProxy,
+      this.socksConfig,
+      this.lookup,
+      this.enableIPv6,
+      this.connectionAddresses});
 
   final void Function(HttpClient client)? onCreate;
   final String Function(Uri url)? findProxy;
   final SocksProxyConfigProvider? socksConfig;
-  final LookupCallback? lookupCallback;
+  final LookupCallback? lookup;
+  final bool Function()? enableIPv6;
+  final ConnectionAddressProvider? connectionAddresses;
 
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    HttpClient build() {
-      final SocksProxyConfiguration? config = socksConfig?.call();
-      final HttpClient client = super.createHttpClient(context);
-
-      if (config != null) {
-        _applySocksProxy(client, config);
-        client.findProxy = (_) => 'DIRECT';
-      } else if (findProxy != null) {
-        client.findProxy = findProxy!;
-      }
-
-      onCreate?.call(client);
-      return client;
+    final client = _TransportHttpClient(super.createHttpClient(context),
+        context, lookup, enableIPv6, socksConfig?.call(), connectionAddresses);
+    if (findProxy != null && client._socks == null) {
+      client.findProxy = findProxy;
     }
-
-    if (lookupCallback == null) {
-      return build();
-    }
-
-    return IOOverrides.runWithIOOverrides(
-      build,
-      _LookupOverrides(lookupCallback!),
-    );
+    onCreate?.call(client);
+    return client;
   }
-}
-
-class _PassthroughHttpOverrides extends HttpOverrides {
-  _PassthroughHttpOverrides({this.lookupCallback});
-
-  final LookupCallback? lookupCallback;
-
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    // This is a passthrough HttpClient that does not modify requests.
-    if (lookupCallback == null) {
-      return super.createHttpClient(context);
-    }
-
-    return IOOverrides.runWithIOOverrides(
-      () => super.createHttpClient(context),
-      _LookupOverrides(lookupCallback!),
-    );
-  }
-}
-
-final class _LookupOverrides extends IOOverrides {
-  _LookupOverrides(this.lookupCallback);
-
-  final LookupCallback lookupCallback;
-
-  @override
-  Future<Socket> socketConnect(
-    dynamic host,
-    int port, {
-    dynamic sourceAddress,
-    int sourcePort = 0,
-    Duration? timeout,
-  }) async {
-    final InternetAddress resolved = await _resolveHost(host);
-    return super.socketConnect(
-      resolved,
-      port,
-      sourceAddress: sourceAddress,
-      sourcePort: sourcePort,
-      timeout: timeout,
-    );
-  }
-
-  @override
-  Future<ConnectionTask<Socket>> socketStartConnect(
-    dynamic host,
-    int port, {
-    dynamic sourceAddress,
-    int sourcePort = 0,
-  }) async {
-    final InternetAddress resolved = await _resolveHost(host);
-    return super.socketStartConnect(
-      resolved,
-      port,
-      sourceAddress: sourceAddress,
-      sourcePort: sourcePort,
-    );
-  }
-
-  Future<InternetAddress> _resolveHost(Object host) async {
-    if (host is InternetAddress) {
-      return host;
-    }
-
-    final List<InternetAddress> addresses = await lookupCallback(
-      host.toString(),
-      type: InternetAddressType.any,
-    );
-    if (addresses.isEmpty) {
-      throw SocketException(
-        'Failed to resolve host',
-        address: host is InternetAddress ? host : null,
-        port: null,
-      );
-    }
-    return addresses.first;
-  }
-}
-
-void _applySocksProxy(HttpClient client, SocksProxyConfiguration config) {
-  final InternetAddress host = _toInternetAddress(config.host);
-  final ProxySettings settings = ProxySettings(
-    host,
-    config.port,
-    username: _normalize(config.username),
-    password: _normalize(config.password),
-  );
-  SocksTCPClient.assignToHttpClient(client, [settings]);
-}
-
-InternetAddress _toInternetAddress(String host) {
-  final InternetAddress? direct = InternetAddress.tryParse(host);
-  if (direct != null) {
-    return direct;
-  }
-  return InternetAddress(host);
 }
 
 String? _normalize(String? value) {
-  if (value == null) {
-    return null;
-  }
-  final String trimmed = value.trim();
-  return trimmed.isEmpty ? null : trimmed;
+  final trimmed = value?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
 }

@@ -547,6 +547,9 @@ class zh_CN {
       /// advanced setting page
       'enableDomainFronting': '开启域名前置',
       'bypassSNIBlocking': '绕过SNI封锁',
+      'enableIPv6': '启用IPv6',
+      'enableIPv6Hint': '关闭后，DNS、DNS over HTTPS和网络连接仅使用IPv4',
+      'dnsOverHttpsIPv6DisabledHint': '此地址使用IPv6，关闭IPv6后不可用。请选择自动模式或兼容IPv4的地址。',
       'enableDnsOverHttps': '启用DNS over HTTPS',
       'enableDnsOverHttpsHint': '通过HTTPS解析域名，而非系统DNS',
       'dnsOverHttpsEndpoint': 'DNS over HTTPS地址',

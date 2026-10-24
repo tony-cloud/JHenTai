@@ -21,6 +21,7 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
   RxInt receiveTimeout = 6000.obs;
   RxInt timeoutRetryTimes = 10.obs;
   RxInt serverErrorRetryTimes = 3.obs;
+  RxBool enableIPv6 = true.obs;
   RxBool enableDnsOverHttps = false.obs;
   RxString dnsOverHttpsEndpoint = defaultDohEndpoint.obs;
 
@@ -98,6 +99,7 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
     receiveTimeout.value = map['receiveTimeout'] ?? receiveTimeout.value;
     timeoutRetryTimes.value = map['timeoutRetryTimes'] ?? timeoutRetryTimes.value;
     serverErrorRetryTimes.value = map['serverErrorRetryTimes'] ?? serverErrorRetryTimes.value;
+    enableIPv6.value = map['enableIPv6'] ?? enableIPv6.value;
     enableDnsOverHttps.value = map['enableDnsOverHttps'] ?? enableDnsOverHttps.value;
     dnsOverHttpsEndpoint.value = map['dnsOverHttpsEndpoint'] ?? dnsOverHttpsEndpoint.value;
   }
@@ -116,6 +118,7 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
       'receiveTimeout': receiveTimeout.value,
       'timeoutRetryTimes': timeoutRetryTimes.value,
       'serverErrorRetryTimes': serverErrorRetryTimes.value,
+      'enableIPv6': enableIPv6.value,
       'enableDnsOverHttps': enableDnsOverHttps.value,
       'dnsOverHttpsEndpoint': dnsOverHttpsEndpoint.value,
     });
@@ -176,6 +179,12 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
   Future<void> saveServerErrorRetryTimes(int serverErrorRetryTimes) async {
     log.debug('saveServerErrorRetryTimes:$serverErrorRetryTimes');
     this.serverErrorRetryTimes.value = serverErrorRetryTimes;
+    await saveBeanConfig();
+  }
+
+  Future<void> saveEnableIPv6(bool enableIPv6) async {
+    log.debug('saveEnableIPv6:$enableIPv6');
+    this.enableIPv6.value = enableIPv6;
     await saveBeanConfig();
   }
 

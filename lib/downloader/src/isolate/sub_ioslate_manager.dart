@@ -14,6 +14,7 @@ import 'package:jhentai/downloader/src/model/proxy_config.dart';
 import 'package:jhentai/downloader/src/model/sub_isolate_message.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
 import 'package:jhentai/network/doh_resolver.dart';
+import 'package:jhentai/utils/dns_lookup.dart';
 
 class SubIsolateManager {
   final ReceivePort _subReceivePort;
@@ -29,6 +30,7 @@ class SubIsolateManager {
   late final DohResolver _dohResolver;
 
   bool _enableDoh = false;
+  bool _enableIPv6 = true;
   String _dohEndpoint = '';
 
   CancelToken? _cancelToken;
@@ -49,11 +51,13 @@ class SubIsolateManager {
               ({
                 ProxyConfig? proxyConfig,
                 bool enableDoh,
+                bool enableIPv6,
                 String dohEndpoint,
                 List<String> autoDohEndpoints,
               })>;
           _proxyConfig = message.data.proxyConfig;
           _enableDoh = message.data.enableDoh;
+          _enableIPv6 = message.data.enableIPv6;
           _dohEndpoint = message.data.dohEndpoint;
           _dohResolver = DohResolver(
             dio: _dohClient,
@@ -65,10 +69,19 @@ class SubIsolateManager {
                     ? (_) => 'DIRECT'
                     : ProxyConfig.toFindProxy(_proxyConfig),
             socksConfig: () => _buildSocksConfig(_proxyConfig),
-            lookup: _enableDoh ? _lookupHost : null,
+            lookup: _lookupHost,
+            enableIPv6: () => _enableIPv6,
           );
           _configureDohClient();
           _mainSendPort.send(SubIsolateMessage<Null>(SubIsolateMessageType.inited, null));
+          break;
+        case MainIsolateMessageType.ipv6Policy:
+          if (_enableIPv6 != message.data as bool) {
+            _enableIPv6 = message.data as bool;
+            _dohResolver.clear();
+            _configureDohClient();
+            SocksProxy.refreshAddressPolicy();
+          }
           break;
         case MainIsolateMessageType.download:
           message = message as MainIsolateMessage<
@@ -258,11 +271,12 @@ class SubIsolateManager {
   }
 
   void _configureDohClient() {
-    final IOHttpClientAdapter adapter = _dohClient.httpClientAdapter as IOHttpClientAdapter;
-    adapter.createHttpClient = () {
+    _dohClient.httpClientAdapter.close(force: true);
+    _dohClient.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
       final SocksProxyConfiguration? socksConfig = _buildSocksConfig(_proxyConfig);
       final HttpClient client = createProxyHttpClient(
         socksConfig: socksConfig,
+        enableIPv6: () => _enableIPv6,
       );
       if (socksConfig != null) {
         client.findProxy = (_) => 'DIRECT';
@@ -272,26 +286,31 @@ class SubIsolateManager {
         client.findProxy = ProxyConfig.toFindProxy(_proxyConfig);
       }
       return client;
-    };
+    });
   }
 
   Future<List<InternetAddress>> _lookupHost(
     String host, {
     InternetAddressType type = InternetAddressType.any,
   }) async {
+    final bool enableIPv6 = _enableIPv6;
+    if (!enableIPv6 && type == InternetAddressType.IPv6) {
+      return [];
+    }
     final InternetAddress? ip = InternetAddress.tryParse(host);
     if (ip != null) {
-      return [ip];
+      return lookupSystemAddresses(host, type: type, enableIPv6: enableIPv6);
     }
 
     if (!_enableDoh || _dohEndpoint.trim().isEmpty) {
-      return InternetAddress.lookup(host, type: type);
+      return lookupSystemAddresses(host, type: type, enableIPv6: enableIPv6);
     }
 
     try {
-      return await _dohResolver.lookup(host, endpoint: _dohEndpoint, type: type);
+      return await _dohResolver.lookup(host,
+          endpoint: _dohEndpoint, type: type, enableIPv6: enableIPv6);
     } catch (_) {
-      return InternetAddress.lookup(host, type: type);
+      return lookupSystemAddresses(host, type: type, enableIPv6: enableIPv6);
     }
   }
 }

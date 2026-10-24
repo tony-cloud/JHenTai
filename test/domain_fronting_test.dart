@@ -94,17 +94,58 @@ void main() {
     }
   }
 
-  test('all fronted domains use DNS replies and accept refreshed addresses', () async {
+  test('DNS fronting refreshes addresses except EX static origins', () async {
     networkSetting.enableDomainFronting.value = true;
     networkSetting.enableDnsOverHttps.value = true;
     for (final host in NetworkSetting.host2IPs.keys) {
-      expect((await DomainFrontingUtil.build('https://$host/path')).ip, '192.0.2.10');
+      final result = await DomainFrontingUtil.build('https://$host/path');
+      expect(result.headers, {'host': host});
+      if (host == 'exhentai.org') {
+        expect(NetworkSetting.host2IPs[host], contains(result.ip));
+      } else {
+        expect(result.ip, '192.0.2.10');
+      }
     }
     resolver.addresses = [InternetAddress('192.0.2.11')];
     expect((await DomainFrontingUtil.build('https://ehgt.org/path')).ip, '192.0.2.11');
-    expect(resolver.hosts, [...NetworkSetting.host2IPs.keys, 'ehgt.org']);
+    expect(resolver.hosts,
+        [...NetworkSetting.host2IPs.keys.where((host) => host != 'exhentai.org'), 'ehgt.org']);
     expect(DomainFrontingUtil.isFrontingIP('192.0.2.10'), isTrue,
         reason: 'Existing image requests must remain valid after DNS refresh.');
+  });
+
+  test('fronting retains alternate IPs and filters IPv6 when disabled', () async {
+    networkSetting.enableDomainFronting.value = true;
+    networkSetting.enableDnsOverHttps.value = true;
+    resolver.addresses = [
+      InternetAddress('2001:db8::2'),
+      InternetAddress('192.0.2.20'),
+      InternetAddress('192.0.2.21')
+    ];
+    final result = await DomainFrontingUtil.build('https://ehgt.org/fallback.jpg');
+    expect(result.headers, {'host': 'ehgt.org'});
+    expect(
+        (await DomainFrontingUtil.connectionAddresses(Uri.parse(result.url)))!
+            .map((a) => a.address),
+        containsAll(['2001:db8::2', '192.0.2.20', '192.0.2.21']));
+    networkSetting.enableIPv6.value = false;
+    expect(
+        (await DomainFrontingUtil.connectionAddresses(Uri.parse(result.url)))!
+            .map((a) => a.address),
+        ['192.0.2.20', '192.0.2.21']);
+    final ipv4 = await DomainFrontingUtil.build('https://ehgt.org/fallback.jpg');
+    expect(ipv4.ip, isNot(contains(':')));
+    expect(await DomainFrontingUtil.connectionAddresses(Uri.parse('https://1.1.1.1/dns-query')),
+        isNull);
+  });
+
+  test('IPv4-only fronting rejects IPv6-only DNS replies', () async {
+    networkSetting.enableDomainFronting.value = true;
+    networkSetting.enableDnsOverHttps.value = true;
+    networkSetting.enableIPv6.value = false;
+    resolver.addresses = [InternetAddress('2001:db8::3')];
+    await expectLater(
+        DomainFrontingUtil.build('https://ehgt.org/v6.jpg'), throwsA(isA<SocketException>()));
   });
 
   test('fronted requests preserve query, site identity and login cookies', () async {
@@ -222,6 +263,7 @@ void main() {
     await dohService.doInitBean();
     SocksProxy.initProxy(
       lookup: dohService.lookup,
+      connectionAddresses: DomainFrontingUtil.connectionAddresses,
       findProxy: (_) => 'DIRECT',
       onCreate: (client) =>
           client.badCertificateCallback = (_, host, __) => DomainFrontingUtil.isFrontingIP(host),

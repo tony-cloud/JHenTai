@@ -13,6 +13,7 @@ class MainIsolateMessage<T> {
 enum MainIsolateMessageType {
   init(5),
   download(10),
+  ipv6Policy(15),
   close(20),
   ;
 

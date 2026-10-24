@@ -52,6 +52,7 @@ class JDownloadTask {
     ProxyConfig? proxyConfig,
     LookupCallback? lookup,
     bool enableDnsOverHttps = false,
+    bool Function()? enableIPv6,
     String? dnsOverHttpsEndpoint,
   })  : _isolateCount = isolateCount,
         _connectionTimeout = headConnectionTimeout,
@@ -72,6 +73,7 @@ class JDownloadTask {
       contentLengthRetryPolicy: contentLengthRetryPolicy,
       lookup: lookup,
       enableDoh: enableDnsOverHttps,
+      enableIPv6: enableIPv6,
       dohEndpoint: dnsOverHttpsEndpoint,
     )
       ..registerOnProgress((current, total) {

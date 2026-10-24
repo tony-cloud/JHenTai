@@ -13,8 +13,20 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/network_setting.dart';
 
 class MainIsolateManager {
+  static final Set<MainIsolateManager> _activeManagers = {};
+
+  static void updateIPv6Policy(bool enabled) {
+    for (final manager in _activeManagers) {
+      manager._enableIPv6 = enabled;
+      if (manager._ready) {
+        manager._subSendPort?.send(MainIsolateMessage(MainIsolateMessageType.ipv6Policy, enabled));
+      }
+    }
+  }
+
   final ProxyConfig? _proxyConfig;
   final bool _enableDoh;
+  bool _enableIPv6;
   final String _dohEndpoint;
   final List<String> _autoDohEndpoints;
 
@@ -40,10 +52,12 @@ class MainIsolateManager {
   MainIsolateManager({
     ProxyConfig? proxyConfig,
     required bool enableDoh,
+    bool enableIPv6 = true,
     required String? dohEndpoint,
     List<String> autoDohEndpoints = NetworkSetting.defaultDohEndpoints,
   })  : _proxyConfig = proxyConfig,
         _enableDoh = enableDoh,
+        _enableIPv6 = enableIPv6,
         _dohEndpoint = dohEndpoint ?? '',
         _autoDohEndpoints = List.unmodifiable(autoDohEndpoints);
 
@@ -52,6 +66,7 @@ class MainIsolateManager {
       return;
     }
 
+    _activeManagers.add(this);
     _closing = false;
     _mainReceivePort = ReceivePort();
 
@@ -59,6 +74,7 @@ class MainIsolateManager {
       _isolate = await Isolate.spawn(subIsolateEntryPoint, _mainReceivePort!.sendPort);
     } catch (e) {
       _mainReceivePort!.close();
+      _activeManagers.remove(this);
       rethrow;
     }
 
@@ -85,6 +101,7 @@ class MainIsolateManager {
                 ({
                   ProxyConfig? proxyConfig,
                   bool enableDoh,
+                  bool enableIPv6,
                   String dohEndpoint,
                   List<String> autoDohEndpoints,
                 })>(
@@ -92,6 +109,7 @@ class MainIsolateManager {
               (
                 proxyConfig: _proxyConfig,
                 enableDoh: _enableDoh,
+                enableIPv6: _enableIPv6,
                 dohEndpoint: _dohEndpoint,
                 autoDohEndpoints: _autoDohEndpoints,
               ),
@@ -100,6 +118,8 @@ class MainIsolateManager {
           break;
         case SubIsolateMessageType.inited:
           _ready = true;
+          // Apply changes made while the isolate was starting as well.
+          _subSendPort?.send(MainIsolateMessage(MainIsolateMessageType.ipv6Policy, _enableIPv6));
           _free = true;
           _onReady?.call();
           break;
@@ -120,6 +140,7 @@ class MainIsolateManager {
           message = message as SubIsolateMessage<Null>;
           _mainReceivePort?.close();
           _isolate?.kill();
+          _activeManagers.remove(this);
           _isolate = null;
           _subSendPort = null;
           _ready = false;

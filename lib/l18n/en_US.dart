@@ -568,6 +568,10 @@ class en_US {
       /// advanced setting page
       'enableDomainFronting': 'Enable Domain Fronting',
       'bypassSNIBlocking': 'Bypass SNI blocking',
+      'enableIPv6': 'Enable IPv6',
+      'enableIPv6Hint': 'When disabled, use only IPv4 for DNS, DNS over HTTPS and connections',
+      'dnsOverHttpsIPv6DisabledHint':
+          'This endpoint uses IPv6 and is unavailable while IPv6 is disabled. Choose Auto or an IPv4-compatible endpoint.',
       'enableDnsOverHttps': 'Enable DNS over HTTPS',
       'enableDnsOverHttpsHint': 'Resolve domains through HTTPS instead of system DNS',
       'dnsOverHttpsEndpoint': 'DNS over HTTPS Endpoint',

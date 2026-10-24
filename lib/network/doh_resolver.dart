@@ -39,15 +39,22 @@ class DohResolver {
     String host, {
     required String endpoint,
     InternetAddressType type = InternetAddressType.any,
+    bool enableIPv6 = true,
   }) {
-    final InternetAddress? literal = InternetAddress.tryParse(host);
+    if (!enableIPv6 && type == InternetAddressType.IPv6) {
+      return Future.value(const []);
+    }
+    final InternetAddressType effectiveType = enableIPv6 ? type : InternetAddressType.IPv4;
+    final InternetAddress? literal = InternetAddress.tryParse(_unbracket(host));
     if (literal != null) {
-      return Future.value([literal]);
+      return Future.value(effectiveType == InternetAddressType.any || literal.type == effectiveType
+          ? [literal]
+          : <InternetAddress>[]);
     }
 
     final String selection = endpoint.trim();
     final String name = host.trim().toLowerCase();
-    final String key = '$selection\n$name\n${type.name}';
+    final String key = '$selection\n$name\n${effectiveType.name}\n$enableIPv6';
     final _LookupResult? cached = _cache[key];
     if (cached != null && cached.expiresAt.isAfter(_now())) {
       return Future.value(cached.addresses);
@@ -63,8 +70,8 @@ class DohResolver {
     lookup = (() async {
       try {
         final _LookupResult result = selection == autoEndpoint
-            ? await _resolveAuto(name, type, generation)
-            : await _resolveEndpoint(selection, name, type, generation);
+            ? await _resolveAuto(name, effectiveType, generation, enableIPv6)
+            : await _resolveEndpoint(selection, name, effectiveType, generation, enableIPv6);
         if (generation == _generation && result.expiresAt.isAfter(_now())) {
           _cache[key] = result;
         }
@@ -89,16 +96,18 @@ class DohResolver {
     _discovery = null;
   }
 
-  Future<_LookupResult> _resolveAuto(String host, InternetAddressType type, int generation) async {
+  Future<_LookupResult> _resolveAuto(
+      String host, InternetAddressType type, int generation, bool enableIPv6) async {
     final Set<String> failed = {};
     while (true) {
       final _Selection? selected = generation == _generation ? _selection : null;
       if (selected != null &&
           selected.expiresAt.isAfter(_now()) &&
-          !failed.contains(selected.endpoint)) {
+          !failed.contains(selected.endpoint) &&
+          _endpointAllowed(selected.endpoint, enableIPv6)) {
         try {
           final _LookupResult result =
-              await _resolveEndpoint(selected.endpoint, host, type, generation);
+              await _resolveEndpoint(selected.endpoint, host, type, generation, enableIPv6);
           // A later domain can shorten the lease, but cannot perpetually renew it.
           if (generation == _generation &&
               identical(_selection, selected) &&
@@ -127,11 +136,12 @@ class DohResolver {
       }
       try {
         for (final String endpoint in _autoEndpoints) {
-          if (failed.contains(endpoint)) {
+          if (failed.contains(endpoint) || !_endpointAllowed(endpoint, enableIPv6)) {
             continue;
           }
           try {
-            final _LookupResult result = await _resolveEndpoint(endpoint, host, type, generation);
+            final _LookupResult result =
+                await _resolveEndpoint(endpoint, host, type, generation, enableIPv6);
             if (generation == _generation) {
               _selection = _Selection(endpoint, result.expiresAt);
             }
@@ -150,8 +160,11 @@ class DohResolver {
     }
   }
 
-  Future<_LookupResult> _resolveEndpoint(
-      String endpoint, String host, InternetAddressType type, int generation) async {
+  Future<_LookupResult> _resolveEndpoint(String endpoint, String host, InternetAddressType type,
+      int generation, bool enableIPv6) async {
+    if (!_endpointAllowed(endpoint, enableIPv6)) {
+      throw const SocketException('IPv6 DNS-over-HTTPS endpoint is disabled');
+    }
     final List<int> recordTypes = [
       if (type == InternetAddressType.any || type == InternetAddressType.IPv4) 1,
       if (type == InternetAddressType.any || type == InternetAddressType.IPv6) 28,
@@ -174,6 +187,16 @@ class DohResolver {
       usable.map((result) => result.expiresAt).reduce((a, b) => a.isBefore(b) ? a : b),
     );
   }
+
+  bool _endpointAllowed(String endpoint, bool enableIPv6) {
+    final Uri? uri = Uri.tryParse(endpoint);
+    return enableIPv6 ||
+        uri == null ||
+        InternetAddress.tryParse(_unbracket(uri.host))?.type != InternetAddressType.IPv6;
+  }
+
+  String _unbracket(String host) =>
+      host.startsWith('[') && host.endsWith(']') ? host.substring(1, host.length - 1) : host;
 
   Future<_LookupResult> _query(String endpoint, String host, int recordType, int generation) async {
     if (_protocols[endpoint] == _Protocol.wire) {

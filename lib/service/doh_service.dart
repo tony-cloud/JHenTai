@@ -12,6 +12,8 @@ import 'package:jhentai/service/log.dart';
 import 'package:jhentai/setting/network_setting.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
 import 'package:jhentai/utils/proxy_util.dart';
+import 'package:jhentai/utils/dns_lookup.dart';
+import 'package:jhentai/downloader/src/isolate/main_isolate_manager.dart';
 
 DohService dohService = DohService();
 
@@ -56,6 +58,11 @@ class DohService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     ever(networkSetting.proxyAddress, (_) => _configureHttpClient());
     ever(networkSetting.proxyUsername, (_) => _configureHttpClient());
     ever(networkSetting.proxyPassword, (_) => _configureHttpClient());
+    ever(networkSetting.enableIPv6, (enabled) {
+      _configureHttpClient();
+      SocksProxy.refreshAddressPolicy();
+      MainIsolateManager.updateIPv6Policy(enabled);
+    });
     ever(networkSetting.enableDnsOverHttps, (_) => _resolver.clear());
     ever(networkSetting.dnsOverHttpsEndpoint, (_) => _resolver.clear());
   }
@@ -67,6 +74,7 @@ class DohService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       final SocksProxyConfiguration? socksConfig = _buildSocksProxyConfig();
       final HttpClient client = createProxyHttpClient(
         socksConfig: socksConfig,
+        enableIPv6: () => networkSetting.enableIPv6.value,
       );
       if (socksConfig != null) {
         client.findProxy = (_) => 'DIRECT';
@@ -131,13 +139,17 @@ class DohService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
     String host, {
     InternetAddressType type = InternetAddressType.any,
   }) async {
+    final bool enableIPv6 = networkSetting.enableIPv6.value;
+    if (!enableIPv6 && type == InternetAddressType.IPv6) {
+      return [];
+    }
     final InternetAddress? ip = InternetAddress.tryParse(host);
     if (ip != null) {
-      return [ip];
+      return lookupSystemAddresses(host, type: type, enableIPv6: enableIPv6);
     }
 
     if (!_shouldUseDoh()) {
-      return InternetAddress.lookup(host, type: type);
+      return lookupSystemAddresses(host, type: type, enableIPv6: enableIPv6);
     }
 
     try {
@@ -145,10 +157,11 @@ class DohService with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
         host,
         endpoint: networkSetting.dnsOverHttpsEndpoint.value,
         type: type,
+        enableIPv6: enableIPv6,
       );
     } catch (e, stack) {
       log.error('DoH lookup failed for host: $host, reason: $e', e, stack);
-      return InternetAddress.lookup(host, type: type);
+      return lookupSystemAddresses(host, type: type, enableIPv6: enableIPv6);
     }
   }
 

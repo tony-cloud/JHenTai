@@ -152,6 +152,8 @@ class EHRequest with JHLifeCircleBeanErrorCatch implements JHLifeCircleBean {
       },
       socksConfig: _buildSocksProxyConfiguration,
       lookup: dohService.lookup,
+      connectionAddresses: DomainFrontingUtil.connectionAddresses,
+      enableIPv6: () => networkSetting.enableIPv6.value,
     );
   }
 

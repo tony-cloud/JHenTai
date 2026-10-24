@@ -583,6 +583,10 @@ class ko_KR {
       /// advanced setting page
       'enableDomainFronting': '도메인 우회 활성화',
       'bypassSNIBlocking': 'SNI 우회 차단',
+      'enableIPv6': 'IPv6 사용',
+      'enableIPv6Hint': '끄면 DNS, DNS over HTTPS 및 네트워크 연결에 IPv4만 사용합니다',
+      'dnsOverHttpsIPv6DisabledHint':
+          '이 주소는 IPv6를 사용하므로 IPv6가 꺼져 있으면 사용할 수 없습니다. 자동 또는 IPv4 호환 주소를 선택하세요.',
       'enableDnsOverHttps': 'DNS over HTTPS 사용',
       'enableDnsOverHttpsHint': '시스템 DNS 대신 HTTPS로 도메인 조회',
       'dnsOverHttpsEndpoint': 'DNS over HTTPS 주소',

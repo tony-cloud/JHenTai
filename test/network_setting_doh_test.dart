@@ -59,6 +59,23 @@ void main() {
     Get.testMode = false;
   });
 
+  test('IPv6 stays enabled for legacy settings and persists changes', () async {
+    expect(networkSetting.enableIPv6.value, isTrue);
+    networkSetting.applyBeanConfig('{}');
+    expect(networkSetting.enableIPv6.value, isTrue);
+
+    await networkSetting.saveEnableIPv6(false);
+    expect(jsonDecode(config.storedNetworkSetting!)['enableIPv6'], isFalse);
+    final restored = NetworkSetting()..applyBeanConfig(config.storedNetworkSetting!);
+    expect(restored.enableIPv6.value, isFalse);
+    restored.applyBeanConfig('{}');
+    expect(restored.enableIPv6.value, isFalse);
+
+    await networkSetting.saveEnableIPv6(true);
+    restored.applyBeanConfig(config.storedNetworkSetting!);
+    expect(restored.enableIPv6.value, isTrue);
+  });
+
   test('Auto survives settings persistence without changing existing defaults or URLs', () async {
     expect(networkSetting.dnsOverHttpsEndpoint.value, NetworkSetting.defaultDohEndpoint);
     await networkSetting.saveDnsOverHttpsEndpoint(NetworkSetting.autoDohEndpoint);
@@ -122,5 +139,76 @@ void main() {
     await tester.pump();
     expect(networkSetting.dnsOverHttpsEndpoint.value, customEndpoint);
     expect(jsonDecode(config.storedNetworkSetting!)['dnsOverHttpsEndpoint'], customEndpoint);
+  });
+
+  testWidgets('IPv6 switch persists and disables IPv6 DoH presets without replacing the saved URL',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1600, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    const ipv6Endpoint = 'https://[2606:4700:4700::1111]/dns-query';
+    networkSetting.enableDnsOverHttps.value = true;
+    networkSetting.dnsOverHttpsEndpoint.value = ipv6Endpoint;
+    final page = SettingNetworkPage();
+    await tester.pumpWidget(GetMaterialApp(
+      locale: const Locale('en', 'US'),
+      fallbackLocale: const Locale('en', 'US'),
+      translations: LocaleText(),
+      home: page,
+    ));
+
+    final ipv6Switch = find.widgetWithText(SwitchListTile, 'Enable IPv6');
+    await tester.ensureVisible(ipv6Switch);
+    await tester.tap(ipv6Switch);
+    await tester.pumpAndSettle();
+    expect(networkSetting.enableIPv6.value, isFalse);
+    expect(jsonDecode(config.storedNetworkSetting!)['enableIPv6'], isFalse);
+    expect(networkSetting.dnsOverHttpsEndpoint.value, ipv6Endpoint);
+    expect(page.dnsOverHttpsController.text, ipv6Endpoint);
+    expect(find.textContaining('This endpoint uses IPv6'), findsOneWidget);
+
+    final presetButton = find.byTooltip('Common DoH providers');
+    await tester.ensureVisible(presetButton);
+    await tester.tap(presetButton);
+    await tester.pumpAndSettle();
+    final items = tester
+        .widgetList<CheckedPopupMenuItem<String>>(find.byType(CheckedPopupMenuItem<String>))
+        .toList();
+    expect(items.map((item) => item.value),
+        [NetworkSetting.autoDohEndpoint, ...NetworkSetting.defaultDohEndpoints]);
+    for (final item in items) {
+      final isIPv6 = Uri.tryParse(item.value!)?.host.contains(':') ?? false;
+      expect(item.enabled, !isIPv6, reason: item.value);
+    }
+    expect(items.singleWhere((item) => item.value == ipv6Endpoint).checked, isTrue);
+
+    await tester.tap(find.byWidgetPredicate(
+        (widget) => widget is CheckedPopupMenuItem<String> && widget.value == ipv6Endpoint));
+    await tester.pumpAndSettle();
+    expect(networkSetting.dnsOverHttpsEndpoint.value, ipv6Endpoint);
+    expect(find.byType(CheckedPopupMenuItem<String>), findsWidgets);
+
+    await tester.tap(find.byWidgetPredicate((widget) =>
+        widget is CheckedPopupMenuItem<String> && widget.value == NetworkSetting.autoDohEndpoint));
+    await tester.pumpAndSettle();
+    expect(networkSetting.dnsOverHttpsEndpoint.value, NetworkSetting.autoDohEndpoint);
+    expect(page.dnsOverHttpsController.text, isEmpty);
+
+    await tester.ensureVisible(ipv6Switch);
+    await tester.tap(ipv6Switch);
+    await tester.pumpAndSettle();
+    expect(networkSetting.enableIPv6.value, isTrue);
+    await tester.ensureVisible(presetButton);
+    await tester.tap(presetButton);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widgetList<CheckedPopupMenuItem<String>>(find.byType(CheckedPopupMenuItem<String>))
+          .every((item) => item.enabled),
+      isTrue,
+    );
+    await tester.tap(find.byWidgetPredicate(
+        (widget) => widget is CheckedPopupMenuItem<String> && widget.value == ipv6Endpoint));
+    await tester.pumpAndSettle();
+    expect(networkSetting.dnsOverHttpsEndpoint.value, ipv6Endpoint);
   });
 }
