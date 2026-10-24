@@ -30,7 +30,6 @@ class DomainFrontingUtil {
   static final Map<String, List<String>> _resolvedIPs = {};
   static final Set<String> _issuedIPs = {};
   static final Map<String, EHIpProvider> _resolvedProviders = {};
-  static final Map<String, Future<List<InternetAddress>>> _pendingLookups = {};
 
   static Future<RequestOptions> buildRequest(RequestOptions options) async {
     final DomainFrontingResult fronting = await build(options.uri.toString());
@@ -73,18 +72,8 @@ class DomainFrontingUtil {
   }
 
   static Future<DomainFrontingResult> _resolveAndFront(Uri uri) async {
-    // A grid can request many thumbnails before the first DNS reply arrives.
-    final String lookupKey = '${networkSetting.dnsOverHttpsEndpoint.value}|${uri.host}';
-    final Future<List<InternetAddress>> lookup =
-        _pendingLookups.putIfAbsent(lookupKey, () => dohService.lookup(uri.host));
-    late final List<InternetAddress> addresses;
-    try {
-      addresses = await lookup;
-    } finally {
-      if (identical(_pendingLookups[lookupKey], lookup)) {
-        _pendingLookups.remove(lookupKey);
-      }
-    }
+    // The resolver coalesces requests and invalidates them when settings change.
+    final List<InternetAddress> addresses = await dohService.lookup(uri.host);
     final List<String> ips = addresses.map((address) => address.address).toSet().toList();
     if (ips.isEmpty) {
       throw SocketException('Failed to resolve domain fronting host: ${uri.host}');

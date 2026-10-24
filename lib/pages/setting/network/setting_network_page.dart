@@ -23,8 +23,10 @@ class SettingNetworkPage extends StatelessWidget {
       TextEditingController(text: networkSetting.timeoutRetryTimes.value.toString());
   final TextEditingController serverErrorRetryTimesController =
       TextEditingController(text: networkSetting.serverErrorRetryTimes.value.toString());
-  final TextEditingController dnsOverHttpsController =
-      TextEditingController(text: networkSetting.dnsOverHttpsEndpoint.value);
+  final TextEditingController dnsOverHttpsController = TextEditingController(
+      text: networkSetting.dnsOverHttpsEndpoint.value == NetworkSetting.autoDohEndpoint
+          ? ''
+          : networkSetting.dnsOverHttpsEndpoint.value);
   final TextEditingController rpcServerAddressController =
       TextEditingController(text: rpcSetting.serverAddress.value);
   final TextEditingController rpcAccessTokenController =
@@ -292,9 +294,11 @@ class SettingNetworkPage extends StatelessWidget {
   }
 
   Widget _buildDnsOverHttpsEndpoint(BuildContext context) {
+    final bool isAuto = networkSetting.dnsOverHttpsEndpoint.value == NetworkSetting.autoDohEndpoint;
+
     return ListTile(
       title: Text('dnsOverHttpsEndpoint'.tr),
-      subtitle: Text('dnsOverHttpsEndpointHint'.tr),
+      subtitle: Text(isAuto ? 'dnsOverHttpsAutoHint'.tr : 'dnsOverHttpsEndpointHint'.tr),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -302,9 +306,10 @@ class SettingNetworkPage extends StatelessWidget {
             width: 210,
             child: TextField(
               controller: dnsOverHttpsController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 isDense: true,
-                labelStyle: TextStyle(fontSize: 12),
+                hintText: isAuto ? 'auto'.tr : null,
+                labelStyle: const TextStyle(fontSize: 12),
               ),
               enabled: networkSetting.enableDnsOverHttps.value,
               onSubmitted: (_) => _saveDnsOverHttps(),
@@ -312,13 +317,24 @@ class SettingNetworkPage extends StatelessWidget {
           ),
           PopupMenuButton<String>(
             tooltip: 'dnsOverHttpsPreset'.tr,
+            enabled: networkSetting.enableDnsOverHttps.value,
+            initialValue: networkSetting.dnsOverHttpsEndpoint.value,
             onSelected: (value) {
-              dnsOverHttpsController.text = value;
-              _saveDnsOverHttps();
+              dnsOverHttpsController.text = value == NetworkSetting.autoDohEndpoint ? '' : value;
+              networkSetting.saveDnsOverHttpsEndpoint(value);
             },
-            itemBuilder: (_) => NetworkSetting.defaultDohEndpoints
-                .map((e) => PopupMenuItem(value: e, child: Text(e)))
-                .toList(),
+            itemBuilder: (_) => [
+              CheckedPopupMenuItem(
+                value: NetworkSetting.autoDohEndpoint,
+                checked: isAuto,
+                child: Text('auto'.tr),
+              ),
+              ...NetworkSetting.defaultDohEndpoints.map((endpoint) => CheckedPopupMenuItem(
+                    value: endpoint,
+                    checked: networkSetting.dnsOverHttpsEndpoint.value == endpoint,
+                    child: Text(endpoint),
+                  )),
+            ],
           ),
           IconButton(
             onPressed: networkSetting.enableDnsOverHttps.isFalse
@@ -338,7 +354,12 @@ class SettingNetworkPage extends StatelessWidget {
   }
 
   void _saveDnsOverHttps() {
-    networkSetting.saveDnsOverHttpsEndpoint(dnsOverHttpsController.text.trim());
+    final String endpoint = dnsOverHttpsController.text.trim();
+    if (endpoint.isEmpty &&
+        networkSetting.dnsOverHttpsEndpoint.value == NetworkSetting.autoDohEndpoint) {
+      return;
+    }
+    networkSetting.saveDnsOverHttpsEndpoint(endpoint);
   }
 
   Widget _buildProxyAddress() {

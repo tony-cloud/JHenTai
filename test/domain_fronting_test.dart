@@ -142,18 +142,6 @@ void main() {
     expect(config.storedCookies, contains('ipb_member_id=123'));
   });
 
-  test('concurrent thumbnails share an in-flight lookup', () async {
-    networkSetting.enableDomainFronting.value = true;
-    networkSetting.enableDnsOverHttps.value = true;
-    resolver.pending = Completer<List<InternetAddress>>();
-    final first = DomainFrontingUtil.build('https://ehgt.org/one.jpg');
-    final second = DomainFrontingUtil.build('https://ehgt.org/two.jpg');
-    expect(resolver.hosts, ['ehgt.org']);
-    resolver.pending!.complete([InternetAddress('192.0.2.12')]);
-    expect((await first).ip, '192.0.2.12');
-    expect((await second).ip, '192.0.2.12');
-  });
-
   test('empty or failed resolution never falls back to the stored host list', () async {
     networkSetting.enableDomainFronting.value = true;
     networkSetting.enableDnsOverHttps.value = true;

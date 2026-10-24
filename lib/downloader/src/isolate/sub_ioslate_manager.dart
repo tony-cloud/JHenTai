@@ -13,6 +13,7 @@ import 'package:jhentai/downloader/src/model/main_isolate_message.dart';
 import 'package:jhentai/downloader/src/model/proxy_config.dart';
 import 'package:jhentai/downloader/src/model/sub_isolate_message.dart';
 import 'package:jhentai/utils/socks_proxy.dart';
+import 'package:jhentai/network/doh_resolver.dart';
 
 class SubIsolateManager {
   final ReceivePort _subReceivePort;
@@ -25,12 +26,10 @@ class SubIsolateManager {
       receiveTimeout: const Duration(seconds: 10),
     ),
   );
-  final Map<String, _SubDnsCacheEntry> _dnsCache = {};
+  late final DohResolver _dohResolver;
 
   bool _enableDoh = false;
   String _dohEndpoint = '';
-
-  static const Duration _defaultTtl = Duration(minutes: 5);
 
   CancelToken? _cancelToken;
 
@@ -38,12 +37,11 @@ class SubIsolateManager {
     required SendPort mainSendPort,
   })  : _mainSendPort = mainSendPort,
         _subReceivePort = ReceivePort() {
-    _mainSendPort
-        .send(SubIsolateMessage(SubIsolateMessageType.created, _subReceivePort.sendPort));
+    _mainSendPort.send(SubIsolateMessage(SubIsolateMessageType.created, _subReceivePort.sendPort));
 
     _subReceivePort.listen((message) {
-      _mainSendPort.send(SubIsolateMessage(SubIsolateMessageType.log,
-          LogEvent(Level.debug, 'received main message: $message')));
+      _mainSendPort.send(SubIsolateMessage(
+          SubIsolateMessageType.log, LogEvent(Level.debug, 'received main message: $message')));
 
       switch (message.type) {
         case MainIsolateMessageType.init:
@@ -52,15 +50,20 @@ class SubIsolateManager {
                 ProxyConfig? proxyConfig,
                 bool enableDoh,
                 String dohEndpoint,
+                List<String> autoDohEndpoints,
               })>;
           _proxyConfig = message.data.proxyConfig;
           _enableDoh = message.data.enableDoh;
           _dohEndpoint = message.data.dohEndpoint;
+          _dohResolver = DohResolver(
+            dio: _dohClient,
+            autoEndpoints: message.data.autoDohEndpoints,
+          );
           SocksProxy.initProxy(
-            findProxy: _proxyConfig?.type == ProxyType.socks5 ||
-                    _proxyConfig?.type == ProxyType.socks4
-                ? (_) => 'DIRECT'
-                : ProxyConfig.toFindProxy(_proxyConfig),
+            findProxy:
+                _proxyConfig?.type == ProxyType.socks5 || _proxyConfig?.type == ProxyType.socks4
+                    ? (_) => 'DIRECT'
+                    : ProxyConfig.toFindProxy(_proxyConfig),
             socksConfig: () => _buildSocksConfig(_proxyConfig),
             lookup: _enableDoh ? _lookupHost : null,
           );
@@ -90,8 +93,7 @@ class SubIsolateManager {
           break;
         case MainIsolateMessageType.close:
           if (_cancelToken == null || _cancelToken!.isCancelled) {
-            _mainSendPort
-                .send(SubIsolateMessage<Null>(SubIsolateMessageType.closeReady, null));
+            _mainSendPort.send(SubIsolateMessage<Null>(SubIsolateMessageType.closeReady, null));
           } else {
             _cancelToken!.cancel();
           }
@@ -170,15 +172,13 @@ class SubIsolateManager {
             try {
               await file.writeFrom(data);
             } on FileSystemException catch (e) {
-              throw JDownloadException(JDownloadExceptionType.writeDownloadFileFailed,
-                  error: e);
+              throw JDownloadException(JDownloadExceptionType.writeDownloadFileFailed, error: e);
             }
             received += data.length;
             if (data.isNotEmpty) {
               retriesWithoutProgress = 0;
             }
-            _mainSendPort
-                .send(SubIsolateMessage<int>(SubIsolateMessageType.progress, data.length));
+            _mainSendPort.send(SubIsolateMessage<int>(SubIsolateMessageType.progress, data.length));
           }
           if (received != downloadRange.end - downloadRange.start) {
             throw JDownloadException(JDownloadExceptionType.receiveDataFailed,
@@ -231,8 +231,7 @@ class SubIsolateManager {
       try {
         await file?.close();
       } on FileSystemException catch (e) {
-        failure ??=
-            JDownloadException(JDownloadExceptionType.writeDownloadFileFailed, error: e);
+        failure ??= JDownloadException(JDownloadExceptionType.writeDownloadFileFailed, error: e);
       }
       _cancelToken = null;
     }
@@ -289,134 +288,12 @@ class SubIsolateManager {
       return InternetAddress.lookup(host, type: type);
     }
 
-    final String cacheKey = '$host-${type.name}';
-    final _SubDnsCacheEntry? cached = _dnsCache[cacheKey];
-    if (cached != null && cached.expireAt.isAfter(DateTime.now())) {
-      return cached.addresses;
-    }
-
     try {
-      final _SubLookupResult result = await _queryDoh(host, type: type);
-      if (result.addresses.isNotEmpty) {
-        _dnsCache[cacheKey] = _SubDnsCacheEntry(
-          addresses: result.addresses,
-          expireAt: DateTime.now().add(result.ttl),
-        );
-        return result.addresses;
-      }
-    } catch (_) {}
-
-    return InternetAddress.lookup(host, type: type);
+      return await _dohResolver.lookup(host, endpoint: _dohEndpoint, type: type);
+    } catch (_) {
+      return InternetAddress.lookup(host, type: type);
+    }
   }
-
-  Future<_SubLookupResult> _queryDoh(
-    String host, {
-    InternetAddressType type = InternetAddressType.any,
-  }) async {
-    final List<_SubLookupResult> results = [];
-    if (type == InternetAddressType.any || type == InternetAddressType.IPv4) {
-      results.add(await _querySingle(host, 1));
-    }
-    if (type == InternetAddressType.any || type == InternetAddressType.IPv6) {
-      results.add(await _querySingle(host, 28));
-    }
-
-    final List<InternetAddress> addresses =
-        results.expand((r) => r.addresses).toSet().toList(growable: false);
-    if (addresses.isEmpty) {
-      return _SubLookupResult.empty();
-    }
-
-    final Duration ttl = results.map((r) => r.ttl).reduce((a, b) => a < b ? a : b);
-    return _SubLookupResult(addresses: addresses, ttl: ttl);
-  }
-
-  Future<_SubLookupResult> _querySingle(String host, int recordType) async {
-    if (_dohEndpoint.trim().isEmpty) {
-      return _SubLookupResult.empty();
-    }
-
-    final Uri base = Uri.parse(_dohEndpoint);
-    final Map<String, String> params = Map.of(base.queryParameters);
-    params['name'] = host;
-    params['type'] = recordType.toString();
-
-    final Uri uri = base.replace(queryParameters: params);
-    final Response response = await _dohClient.getUri(
-      uri,
-      options: Options(
-        headers: {'accept': 'application/dns-json'},
-        responseType: ResponseType.json,
-      ),
-    );
-
-    final dynamic data = response.data;
-    if (data is! Map) {
-      return _SubLookupResult.empty();
-    }
-
-    final int? status = (data['Status'] as num?)?.toInt();
-    if (status != null && status != 0) {
-      return _SubLookupResult.empty();
-    }
-
-    final List answers = data['Answer'] as List? ?? const [];
-    final List<InternetAddress> addresses = [];
-    int? minTtl;
-    for (final dynamic answer in answers) {
-      if (answer is! Map) {
-        continue;
-      }
-
-      final int? typeValue = (answer['type'] as num?)?.toInt();
-      if (typeValue != recordType) {
-        continue;
-      }
-
-      final String? dataStr = answer['data'] as String?;
-      if (dataStr == null) {
-        continue;
-      }
-
-      final InternetAddress? address = InternetAddress.tryParse(dataStr);
-      if (address == null) {
-        continue;
-      }
-      addresses.add(address);
-
-      final int? ttl = (answer['TTL'] as num?)?.toInt();
-      if (ttl != null && ttl > 0) {
-        minTtl = minTtl == null ? ttl : min(minTtl, ttl);
-      }
-    }
-
-    if (addresses.isEmpty) {
-      return _SubLookupResult.empty();
-    }
-
-    final int minTtlSeconds = minTtl == null || minTtl <= 0 ? _defaultTtl.inSeconds : minTtl;
-    return _SubLookupResult(
-      addresses: addresses,
-      ttl: Duration(seconds: minTtlSeconds),
-    );
-  }
-}
-
-class _SubLookupResult {
-  _SubLookupResult({required this.addresses, required this.ttl});
-
-  factory _SubLookupResult.empty() =>
-      _SubLookupResult(addresses: const [], ttl: SubIsolateManager._defaultTtl);
-
-  final List<InternetAddress> addresses;
-  final Duration ttl;
-}
-
-class _SubDnsCacheEntry {
-  _SubDnsCacheEntry({required this.addresses, required this.expireAt});
-
-  final List<InternetAddress> addresses;
-  final DateTime expireAt;
 }
 
 SocksProxyConfiguration? _buildSocksConfig(ProxyConfig? config) {

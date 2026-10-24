@@ -10,11 +10,13 @@ import 'package:jhentai/downloader/src/model/proxy_config.dart';
 import 'package:jhentai/downloader/src/model/sub_isolate_message.dart';
 import 'package:jhentai/downloader/src/function/function.dart';
 import 'package:jhentai/service/log.dart';
+import 'package:jhentai/setting/network_setting.dart';
 
 class MainIsolateManager {
   final ProxyConfig? _proxyConfig;
   final bool _enableDoh;
   final String _dohEndpoint;
+  final List<String> _autoDohEndpoints;
 
   bool _ready = false;
 
@@ -39,9 +41,11 @@ class MainIsolateManager {
     ProxyConfig? proxyConfig,
     required bool enableDoh,
     required String? dohEndpoint,
+    List<String> autoDohEndpoints = NetworkSetting.defaultDohEndpoints,
   })  : _proxyConfig = proxyConfig,
         _enableDoh = enableDoh,
-        _dohEndpoint = dohEndpoint ?? '';
+        _dohEndpoint = dohEndpoint ?? '',
+        _autoDohEndpoints = List.unmodifiable(autoDohEndpoints);
 
   Future<void> initIsolate() async {
     if (_ready) {
@@ -82,12 +86,14 @@ class MainIsolateManager {
                   ProxyConfig? proxyConfig,
                   bool enableDoh,
                   String dohEndpoint,
+                  List<String> autoDohEndpoints,
                 })>(
               MainIsolateMessageType.init,
               (
                 proxyConfig: _proxyConfig,
                 enableDoh: _enableDoh,
                 dohEndpoint: _dohEndpoint,
+                autoDohEndpoints: _autoDohEndpoints,
               ),
             ),
           );

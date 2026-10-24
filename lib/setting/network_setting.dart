@@ -25,11 +25,24 @@ class NetworkSetting with JHLifeCircleBeanWithConfigStorage implements JHLifeCir
   RxString dnsOverHttpsEndpoint = defaultDohEndpoint.obs;
 
   static const String defaultDohEndpoint = 'https://1.1.1.1/dns-query';
+  static const String autoDohEndpoint = 'auto';
 
   static const List<String> defaultDohEndpoints = [
     defaultDohEndpoint,
     'https://1.0.0.1/dns-query',
+    'https://[2606:4700:4700::1111]/dns-query',
+    'https://[2606:4700:4700::1001]/dns-query',
+    'https://8.8.8.8/dns-query',
+    'https://208.67.222.222/dns-query',
+    'https://208.67.220.220/dns-query',
+    'https://185.222.222.222/dns-query',
+    'https://45.11.45.11/dns-query',
+    'https://cloudflare-dns.com/dns-query',
     'https://dns.google/dns-query',
+    'https://dns10.quad9.net/dns-query',
+    'https://dns-unfiltered.adguard.com/dns-query',
+    'https://doh.sb/dns-query',
+    'https://doh.opendns.com/dns-query'
   ];
 
   static const Map<String, List<String>> host2IPs = {

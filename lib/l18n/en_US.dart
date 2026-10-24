@@ -572,6 +572,8 @@ class en_US {
       'enableDnsOverHttpsHint': 'Resolve domains through HTTPS instead of system DNS',
       'dnsOverHttpsEndpoint': 'DNS over HTTPS Endpoint',
       'dnsOverHttpsEndpointHint': 'Pick a public resolver or enter a custom URL',
+      'dnsOverHttpsAutoHint':
+          'Auto tries providers from top to bottom and caches results for their DNS TTL. Enter a URL to use a custom resolver.',
       'dnsOverHttpsPreset': 'Common DoH providers',
       'enableRpcMode': 'Enable RPC Mode',
       'enableRpcModeHint': 'Use an external backend server over HTTPS for requests',

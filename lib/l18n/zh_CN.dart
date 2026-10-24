@@ -551,6 +551,7 @@ class zh_CN {
       'enableDnsOverHttpsHint': '通过HTTPS解析域名，而非系统DNS',
       'dnsOverHttpsEndpoint': 'DNS over HTTPS地址',
       'dnsOverHttpsEndpointHint': '选择公共解析服务或填写自定义URL',
+      'dnsOverHttpsAutoHint': '自动模式按列表顺序尝试服务商，按DNS TTL缓存结果。输入URL可切换为自定义解析服务。',
       'dnsOverHttpsPreset': '常用DoH服务商',
       'enableRpcMode': '启用RPC模式',
       'enableRpcModeHint': '通过HTTPS连接外部后端服务器处理请求',

@@ -586,6 +586,7 @@ class zh_TW {
       'enableDnsOverHttpsHint': '透過HTTPS解析網域而非系統DNS',
       'dnsOverHttpsEndpoint': 'DNS over HTTPS位址',
       'dnsOverHttpsEndpointHint': '選擇公共解析服務或輸入自訂URL',
+      'dnsOverHttpsAutoHint': '自動模式依清單順序嘗試服務商，依DNS TTL快取結果。輸入URL可切換為自訂解析服務。',
       'dnsOverHttpsPreset': '常用DoH服務商',
       'enableRpcMode': '啟用RPC模式',
       'enableRpcModeHint': '透過HTTPS連線外部後端伺服器處理請求',
