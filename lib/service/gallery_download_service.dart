@@ -1359,7 +1359,7 @@ class GalleryDownloadService extends GetxController
     executor.scheduleTask(priority, task).then((_) async {
       galleryDownloadInfos[gid]?.tasks.remove(task);
       _notifyDownloadActivityChanged();
-      await _pauseGalleryIfIncompleteAndIdle(gid);
+      await _settleGalleryIfIdle(gid);
     }).onError((e, stackTrace) async {
       galleryDownloadInfos[gid]?.tasks.remove(task);
       _notifyDownloadActivityChanged();
@@ -1367,12 +1367,12 @@ class GalleryDownloadService extends GetxController
         log.error('Executor exception!', e, stackTrace);
         log.uploadError(e);
       }
-      await _pauseGalleryIfIncompleteAndIdle(gid);
+      await _settleGalleryIfIdle(gid);
       return null;
     });
   }
 
-  Future<void> _pauseGalleryIfIncompleteAndIdle(int gid) async {
+  Future<void> _settleGalleryIfIdle(int gid) async {
     GalleryDownloadInfo? galleryDownloadInfo = galleryDownloadInfos[gid];
     if (galleryDownloadInfo == null) {
       return;
@@ -1387,13 +1387,18 @@ class GalleryDownloadService extends GetxController
       return;
     }
 
-    if (galleryDownloadInfo.downloadProgress.curCount ==
-        galleryDownloadInfo.downloadProgress.totalCount) {
+    GalleryDownloadedData? gallery = gallerys.firstWhereOrNull((g) => g.gid == gid);
+    if (gallery == null) {
       return;
     }
 
-    GalleryDownloadedData? gallery = gallerys.firstWhereOrNull((g) => g.gid == gid);
-    if (gallery == null) {
+    if (galleryDownloadInfo.downloadProgress.curCount ==
+        galleryDownloadInfo.downloadProgress.totalCount) {
+      // Restored galleries may already have every image downloaded, so no
+      // image task remains to publish their completion.
+      await _updateGalleryDownloadStatus(gallery, DownloadStatus.downloaded);
+      galleryDownloadInfo.speedComputer.dispose();
+      update(['$galleryDownloadSuccessId::$gid', '$galleryDownloadProgressId::$gid']);
       return;
     }
 

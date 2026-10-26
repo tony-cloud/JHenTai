@@ -14,6 +14,8 @@ class WakelockService extends GetxService
   final Map<String, _WakelockEntry> _locks = <String, _WakelockEntry>{};
   Future<void> _serialTask = Future<void>.value();
   bool _wakelockEnabledByService = false;
+  bool _closed = false;
+  Timer? _releaseRetryTimer;
 
   List<String> get activeLocks => List<String>.unmodifiable(_locks.keys);
 
@@ -31,11 +33,12 @@ class WakelockService extends GetxService
 
   Future<void> acquire(String name, {Duration? timeout}) {
     return _enqueue(() async {
+      if (_closed) {
+        return;
+      }
       final _WakelockEntry entry =
           _locks.putIfAbsent(name, () => _WakelockEntry(name: name, timeout: timeout));
-      if (timeout != null) {
-        entry.timeout = timeout;
-      }
+      entry.timeout = timeout;
       _armTimer(entry);
       await _syncWakelock();
     });
@@ -50,14 +53,8 @@ class WakelockService extends GetxService
   }
 
   Future<void> resetTimer(String name, {Duration? timeout}) {
-    return _enqueue(() async {
-      final _WakelockEntry entry =
-          _locks.putIfAbsent(name, () => _WakelockEntry(name: name, timeout: timeout));
-      if (timeout != null) {
-        entry.timeout = timeout;
-      }
-      _armTimer(entry);
-    });
+    // A reader can change the limit after its previous lock has expired.
+    return acquire(name, timeout: timeout);
   }
 
   Future<void> _enqueue(Future<void> Function() action) {
@@ -69,6 +66,7 @@ class WakelockService extends GetxService
 
   void _armTimer(_WakelockEntry entry) {
     entry.timer?.cancel();
+    final int version = entry.bumpVersion();
 
     final Duration? timeout = entry.timeout;
     if (timeout == null) {
@@ -76,7 +74,6 @@ class WakelockService extends GetxService
       return;
     }
 
-    final int version = entry.bumpVersion();
     entry.timer = Timer(timeout, () => _handleTimerExpired(entry.name, version));
   }
 
@@ -95,6 +92,8 @@ class WakelockService extends GetxService
   }
 
   Future<void> _syncWakelock() async {
+    _releaseRetryTimer?.cancel();
+    _releaseRetryTimer = null;
     final bool shouldKeepAwake = _locks.isNotEmpty;
 
     if (shouldKeepAwake) {
@@ -116,19 +115,27 @@ class WakelockService extends GetxService
     if (_wakelockEnabledByService) {
       try {
         await WakelockPlus.disable();
+        _wakelockEnabledByService = false;
       } on Exception catch (e, stack) {
         log.error('Disable wakelock failed', e, stack);
+        // Keep ownership until the native release succeeds. There may be no
+        // more activity to trigger another sync once the last task has ended.
+        _releaseRetryTimer = Timer(const Duration(seconds: 5), () {
+          unawaited(_enqueue(_syncWakelock));
+        });
       }
-      _wakelockEnabledByService = false;
     }
   }
 
   @override
   void onClose() {
+    _closed = true;
     for (final _WakelockEntry entry in _locks.values) {
       entry.dispose();
     }
     _locks.clear();
+    // Serialize cleanup after any native acquisition already in flight.
+    unawaited(_enqueue(_syncWakelock));
     super.onClose();
   }
 }

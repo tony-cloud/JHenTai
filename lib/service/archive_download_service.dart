@@ -1805,7 +1805,7 @@ class ArchiveDownloadService extends GetxController
       if (e.type == DioExceptionType.cancel) {
         return;
       }
-      return await _unlock(archive);
+      return await pauseDownloadArchive(archive.gid);
     } on EHSiteException catch (e) {
       log.download(
         'Parsing archive download page url failed, reason: ${e.message}',
